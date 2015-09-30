@@ -63,6 +63,7 @@ class AutomationTimeAxisView;
 class AutomationRegionView;
 class MidiCutBuffer;
 class MidiListEditor;
+class MidiTrackerEditor;
 class EditNoteDialog;
 class PatchChange;
 class ItemCounts;
@@ -322,6 +323,7 @@ public:
 	void velocity_edit ();
 
 	void show_list_editor ();
+	void show_tracker_editor ();
 
 	typedef std::set<NoteBase*> Selection;
 	Selection selection () const {
@@ -542,6 +544,7 @@ public:
 	void update_ghost_note (double, double, uint32_t state);
 
 	MidiListEditor* _list_editor;
+	MidiTrackerEditor* _tracker_editor;
 	bool _no_sound_notes;
 
 	void snap_changed ();
