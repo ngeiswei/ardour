@@ -125,6 +125,12 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, visible_channel (false)
 	, visible_velocity (false)
 	, visible_delay (false)
+	, octave_label ("Octave")
+	, octave_adjustment (4, -1, 9, 1, 2)
+	, octave_spinner (octave_adjustment)
+	, steps_label ("Steps")
+	, steps_adjustment (1, 0, 256, 1, 4)
+	, steps_spinner (steps_adjustment)
 	, region (reg)
 	, track (tr)
 	, midi_model (region->midi_source(0)->model())
@@ -1763,6 +1769,36 @@ MidiTrackerEditor::setup_toolbar ()
 	automation_button.show ();
 	toolbar.pack_start (automation_button, false, false);
 
+	// Remove/add note column
+	rm_add_note_column_separator.show ();
+	toolbar.pack_start (rm_add_note_column_separator, false, false);
+	remove_note_column_button.set_name ("remove note column");
+	remove_note_column_button.set_text (S_("Remove|-"));
+	remove_note_column_button.show ();
+	toolbar.pack_start (remove_note_column_button, false, false);
+	add_note_column_button.set_name ("add note column");
+	add_note_column_button.set_text (S_("Add|+"));
+	add_note_column_button.show ();
+	toolbar.pack_start (add_note_column_button, false, false);
+
+	// Octave spinner
+	octave_separator.show ();
+	toolbar.pack_start (octave_separator, false, false);
+	octave_label.show ();
+	toolbar.pack_start (octave_label, false, false);
+	octave_spinner.set_activates_default ();
+	octave_spinner.show ();
+	toolbar.pack_start (octave_spinner, false, false);
+
+	// Steps spinner
+	steps_separator.show ();
+	toolbar.pack_start (steps_separator, false, false);
+	steps_label.show ();
+	toolbar.pack_start (steps_label, false, false);
+	steps_spinner.set_activates_default ();
+	steps_spinner.show ();
+	toolbar.pack_start (steps_spinner, false, false);
+	
 	toolbar.show ();
 }
 
