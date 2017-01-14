@@ -312,6 +312,8 @@ class MidiTrackerEditor : public ArdourWindow
 	Gtk::HBox                    toolbar;
 	Gtk::VBox                    vbox;
 	Gtkmm2ext::ActionMap         myactions;
+
+	// TODO: put this toolbar in its own class
 	ArdourDropdown               beats_per_row_selector;
 	std::vector<std::string>     beats_per_row_strings;
 	uint8_t                      rows_per_beat;
@@ -323,6 +325,17 @@ class MidiTrackerEditor : public ArdourWindow
 	bool                         visible_channel;
 	bool                         visible_velocity;
 	bool                         visible_delay;
+	Gtk::VSeparator              rm_add_note_column_separator;
+	ArdourButton                 remove_note_column_button;
+	ArdourButton                 add_note_column_button;
+	Gtk::VSeparator              octave_separator;
+	Gtk::Label                   octave_label;
+	Gtk::Adjustment              octave_adjustment;
+	Gtk::SpinButton              octave_spinner;
+	Gtk::VSeparator              steps_separator;
+	Gtk::Label                   steps_label;
+	Gtk::Adjustment              steps_adjustment;
+	Gtk::SpinButton              steps_spinner;
 
 	boost::shared_ptr<ARDOUR::MidiRegion> region;
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
