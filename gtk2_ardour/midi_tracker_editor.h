@@ -363,6 +363,9 @@ class MidiTrackerEditor : public ArdourWindow
 	void redisplay_visible_automation ();
 	void redisplay_visible_automation_delay ();
 	void automation_click ();
+	void update_remove_note_column_button ();
+	bool remove_note_column_press (GdkEventButton* ev);
+	bool add_note_column_press (GdkEventButton* ev);
 
 	void setup_tooltips ();
 	void setup_toolbar ();

@@ -42,7 +42,9 @@ using Timecode::BBT_Time;
 MidiTrackerPattern::MidiTrackerPattern(ARDOUR::Session* session,
                                        boost::shared_ptr<ARDOUR::MidiRegion> region,
                                        boost::shared_ptr<ARDOUR::MidiModel> midi_model)
-	: TrackerPattern(session, region), _midi_model(midi_model)
+	: TrackerPattern(session, region),
+	  ntracks(0), nreqtracks(0),
+	  _midi_model(midi_model)
 {
 }
 
@@ -75,14 +77,15 @@ void MidiTrackerPattern::update_pattern()
 		// Insert the note in the first free track
 		notes_per_track[freetrack].insert(*note);
 	}
-	ntracks = notes_per_track.size();
+	nreqtracks = notes_per_track.size();
+	ntracks = std::max(nreqtracks, ntracks);
 
 	notes_on.clear();
 	notes_on.resize(ntracks);
 	notes_off.clear();
 	notes_off.resize(ntracks);
 
-	for (uint16_t itrack = 0; itrack < ntracks; ++itrack) {
+	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = notes_per_track[itrack].begin();
 		     inote != notes_per_track[itrack].end(); ++inote) {
 			Evoral::Beats on_time = (*inote)->time() + first_beats;
@@ -104,4 +107,14 @@ void MidiTrackerPattern::update_pattern()
 			}
 		}
 	}
+}
+
+void MidiTrackerPattern::inc_ntracks()
+{
+	ntracks++;
+}
+
+void MidiTrackerPattern::dec_ntracks()
+{
+	ntracks--;
 }

@@ -1381,6 +1381,42 @@ MidiTrackerEditor::automation_click ()
 }
 
 void
+MidiTrackerEditor::update_remove_note_column_button ()
+{
+	remove_note_column_button.set_sensitive (mtp->nreqtracks < mtp->ntracks);
+}
+
+bool
+MidiTrackerEditor::remove_note_column_press(GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	mtp->dec_ntracks ();
+	redisplay_model ();
+	update_remove_note_column_button ();
+
+	return false;
+}
+
+bool
+MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	mtp->inc_ntracks ();
+	redisplay_model ();
+	update_remove_note_column_button ();
+
+	return false;
+}
+
+void
 MidiTrackerEditor::redisplay_model ()
 {
 	view.set_model (Glib::RefPtr<Gtk::ListStore>(0));
@@ -1433,7 +1469,9 @@ MidiTrackerEditor::redisplay_model ()
 			// Render midi notes pattern
 			size_t ntracks = mtp->ntracks;
 			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
-				std::cout << "Warning: Number of note tracks needed for the tracker interface is too high, some notes might be discarded" << std::endl;
+				std::cout << "Warning: Number of note tracks needed for "
+				          << "the tracker interface is too high, "
+				          << "some notes might be discarded" << std::endl;
 				ntracks = MAX_NUMBER_OF_NOTE_TRACKS;
 			}
 			for (size_t i = 0; i < ntracks; i++) {
@@ -1774,10 +1812,13 @@ MidiTrackerEditor::setup_toolbar ()
 	toolbar.pack_start (rm_add_note_column_separator, false, false);
 	remove_note_column_button.set_name ("remove note column");
 	remove_note_column_button.set_text (S_("Remove|-"));
+	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::remove_note_column_press), false);
 	remove_note_column_button.show ();
+	remove_note_column_button.set_sensitive (false);
 	toolbar.pack_start (remove_note_column_button, false, false);
 	add_note_column_button.set_name ("add note column");
 	add_note_column_button.set_text (S_("Add|+"));
+	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::add_note_column_press), false);
 	add_note_column_button.show ();
 	toolbar.pack_start (add_note_column_button, false, false);
 
