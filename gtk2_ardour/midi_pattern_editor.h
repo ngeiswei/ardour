@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_midi_tracker_editor_h_
-#define __ardour_gtk2_midi_tracker_editor_h_
+#ifndef __ardour_gtk2_midi_editor_h_
+#define __ardour_gtk2_midi_editor_h_
 
 #include <boost/bimap/bimap.hpp>
 
@@ -38,9 +38,9 @@
 #include "editing.h"
 #include "midi_time_axis.h"
 
-#include "midi_tracker_pattern.h"
-#include "track_automation_tracker_pattern.h"
-#include "region_automation_tracker_pattern.h"
+#include "midi_pattern.h"
+#include "track_automation_pattern.h"
+#include "region_automation_pattern.h"
 
 namespace Evoral {
 	template<typename Time> class Note;
@@ -87,13 +87,13 @@ bool is_key_in(const typename M::key_type& key, const M& map)
 	return map.find(key) != map.end();
 }
 
-class MidiTrackerEditor : public ArdourWindow
+class MidiPatternEditor : public ArdourWindow
 {
   public:
 	typedef Evoral::Note<Evoral::Beats> NoteType;
 
-	MidiTrackerEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, boost::shared_ptr<ARDOUR::MidiRegion>, boost::shared_ptr<ARDOUR::MidiTrack>);
-	~MidiTrackerEditor();
+	MidiPatternEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, boost::shared_ptr<ARDOUR::MidiRegion>, boost::shared_ptr<ARDOUR::MidiTrack>);
+	~MidiPatternEditor();
 
   private:
 
@@ -106,9 +106,9 @@ class MidiTrackerEditor : public ArdourWindow
 		Gtk::CheckMenuItem*                       menu_item;
 		// corresponding column index. If set to 0 then undetermined yet
 		size_t                                    column;
-		MidiTrackerEditor&                        parent;
+		MidiPatternEditor&                        parent;
 
-		ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem, MidiTrackerEditor& p)
+		ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem, MidiPatternEditor& p)
 		    : what (w), menu_item (mitem), column(0), parent (p) {}
 
 	    ~ProcessorAutomationNode ();
@@ -198,7 +198,7 @@ class MidiTrackerEditor : public ArdourWindow
 
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
-	void processor_menu_item_toggled (MidiTrackerEditor::ProcessorAutomationInfo*, MidiTrackerEditor::ProcessorAutomationNode*);
+	void processor_menu_item_toggled (MidiPatternEditor::ProcessorAutomationInfo*, MidiPatternEditor::ProcessorAutomationNode*);
 	void build_automation_action_menu ();
 	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, ARDOUR::AutomationType auto_type, uint8_t cmd);
 	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
@@ -238,8 +238,8 @@ class MidiTrackerEditor : public ArdourWindow
 	// Other (to sort out)	  //
 	////////////////////////////
 
-	struct MidiTrackerModelColumns : public Gtk::TreeModel::ColumnRecord {
-		MidiTrackerModelColumns()
+	struct MidiPatternModelColumns : public Gtk::TreeModel::ColumnRecord {
+		MidiPatternModelColumns()
 		{
 			// The background color differs when the row is on beats and
 			// bars. This is to keep track of it.
@@ -300,7 +300,7 @@ class MidiTrackerEditor : public ArdourWindow
 	MidiTimeAxisView* midi_time_axis_view;
 	boost::shared_ptr<ARDOUR::Route> route;
 
-	MidiTrackerModelColumns      columns;
+	MidiPatternModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 	Gtk::TreeView                view;
 	Gtk::ScrolledWindow          scroller;
@@ -341,9 +341,9 @@ class MidiTrackerEditor : public ArdourWindow
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
 
-	MidiTrackerPattern* mtp;
-	TrackAutomationTrackerPattern* tatp;
-	RegionAutomationTrackerPattern* ratp;
+	MidiPattern* mtp;
+	TrackAutomationPattern* tatp;
+	RegionAutomationPattern* ratp;
 
 	/** connection used to connect to model's ContentChanged signal */
 	PBD::ScopedConnection content_connection;
@@ -393,4 +393,4 @@ class MidiTrackerEditor : public ArdourWindow
 	}
 };
 
-#endif /* __ardour_gtk2_midi_tracker_editor_h_ */
+#endif /* __ardour_gtk2_midi_pattern_editor_h_ */

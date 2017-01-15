@@ -16,14 +16,14 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_automation_tracker_pattern_h_
-#define __ardour_gtk2_automation_tracker_pattern_h_
+#ifndef __ardour_gtk2_automation_pattern_h_
+#define __ardour_gtk2_automation_pattern_h_
 
 #include <set>
 
 #include "ardour/automation_control.h"
 
-#include "tracker_pattern.h"
+#include "pattern.h"
 
 namespace ARDOUR {
 	class Session;
@@ -37,16 +37,16 @@ typedef std::set<boost::shared_ptr<ARDOUR::AutomationControl> > AutomationContro
 /**
  * Data structure holding the automation list pattern.
  */
-class AutomationTrackerPattern : public TrackerPattern {
+class AutomationPattern : public Pattern {
 public:
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
 
-	AutomationTrackerPattern(ARDOUR::Session* session,
-	                         boost::shared_ptr<ARDOUR::Region> region,
-	                         const AutomationControlSet& automation_controls);
+	AutomationPattern(ARDOUR::Session* session,
+	                  boost::shared_ptr<ARDOUR::Region> region,
+	                  const AutomationControlSet& automation_controls);
 
-	// Build or rebuild the pattern (implement TrackerPattern::update_pattern)
+	// Build or rebuild the pattern (implement Pattern::update_pattern)
 	void update_pattern();
 
 	// Assign a control event to a row
@@ -59,4 +59,4 @@ private:
 	AutomationControlSet _automation_controls;
 };
 
-#endif /* __ardour_gtk2_automation_tracker_pattern_h_ */
+#endif /* __ardour_gtk2_automation_pattern_h_ */
