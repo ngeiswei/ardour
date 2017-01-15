@@ -50,9 +50,16 @@ public:
 	// Build or rebuild the pattern (implement TrackerPattern::update_pattern)
 	void update_pattern();
 
-	// Number of tracker tracks of that midi track (determined by the number of
-	// overlapping notes)
+	// Increase and decrease the number of tracks
+	void inc_ntracks();
+	void dec_ntracks();
+
+	// Number of tracker columns of that midi track (determined by the number
+	// of overlapping notes)
 	uint16_t ntracks;
+
+	// Minimum of number of columns required to display all notes
+	uint16_t nreqtracks;
 
 	// Map row index to notes on for each track
 	std::vector<RowToNotes> notes_on;
