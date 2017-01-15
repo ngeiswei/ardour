@@ -19,24 +19,24 @@
 #include <cmath>
 #include <map>
 
-#include "automation_tracker_pattern.h"
+#include "automation_pattern.h"
 
 using namespace std;
 using namespace ARDOUR;
 using Timecode::BBT_Time;
 
-//////////////////////////////
-// AutomationTrackerPattern //
-//////////////////////////////
+///////////////////////
+// AutomationPattern //
+///////////////////////
 
-AutomationTrackerPattern::AutomationTrackerPattern(ARDOUR::Session* session,
-                                                   boost::shared_ptr<ARDOUR::Region> region,
-                                                   const AutomationControlSet& auto_ctrls)
-	: TrackerPattern(session, region), _automation_controls(auto_ctrls)
+AutomationPattern::AutomationPattern(ARDOUR::Session* session,
+                                     boost::shared_ptr<ARDOUR::Region> region,
+                                     const AutomationControlSet& auto_ctrls)
+	: Pattern(session, region), _automation_controls(auto_ctrls)
 {
 }
 
-void AutomationTrackerPattern::update_pattern()
+void AutomationPattern::update_pattern()
 {
 	set_row_range();
 
