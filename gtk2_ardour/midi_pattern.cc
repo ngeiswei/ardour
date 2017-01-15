@@ -29,26 +29,26 @@
 #include "ardour/session.h"
 #include "ardour/tempo.h"
 
-#include "midi_tracker_pattern.h"
+#include "midi_pattern.h"
 
 using namespace std;
 using namespace ARDOUR;
 using Timecode::BBT_Time;
 
-////////////////////////
-// MidiTrackerPattern //
-////////////////////////
+/////////////////
+// MidiPattern //
+/////////////////
 
-MidiTrackerPattern::MidiTrackerPattern(ARDOUR::Session* session,
-                                       boost::shared_ptr<ARDOUR::MidiRegion> region,
-                                       boost::shared_ptr<ARDOUR::MidiModel> midi_model)
-	: TrackerPattern(session, region),
+MidiPattern::MidiPattern(ARDOUR::Session* session,
+                         boost::shared_ptr<ARDOUR::MidiRegion> region,
+                         boost::shared_ptr<ARDOUR::MidiModel> midi_model)
+	: Pattern(session, region),
 	  ntracks(0), nreqtracks(0),
 	  _midi_model(midi_model)
 {
 }
 
-void MidiTrackerPattern::update_pattern()
+void MidiPattern::update_pattern()
 {
 	set_row_range();
 
@@ -109,12 +109,12 @@ void MidiTrackerPattern::update_pattern()
 	}
 }
 
-void MidiTrackerPattern::inc_ntracks()
+void MidiPattern::inc_ntracks()
 {
 	ntracks++;
 }
 
-void MidiTrackerPattern::dec_ntracks()
+void MidiPattern::dec_ntracks()
 {
 	ntracks--;
 }

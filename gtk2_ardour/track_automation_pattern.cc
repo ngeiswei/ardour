@@ -19,24 +19,24 @@
 #include <cmath>
 #include <map>
 
-#include "track_automation_tracker_pattern.h"
+#include "track_automation_pattern.h"
 
 using namespace std;
 using namespace ARDOUR;
 
-///////////////////////////////////
-// TrackAutomationTrackerPattern //
-///////////////////////////////////
+////////////////////////////
+// TrackAutomationPattern //
+////////////////////////////
 
-TrackAutomationTrackerPattern::TrackAutomationTrackerPattern(ARDOUR::Session* session,
-                                                             boost::shared_ptr<ARDOUR::Region> region,
-                                                             const AutomationControlSet& auto_ctrls)
-	: AutomationTrackerPattern(session, region, auto_ctrls)
+TrackAutomationPattern::TrackAutomationPattern(ARDOUR::Session* session,
+                                               boost::shared_ptr<ARDOUR::Region> region,
+                                               const AutomationControlSet& auto_ctrls)
+	: AutomationPattern(session, region, auto_ctrls)
 {
 }
 
 uint32_t
-TrackAutomationTrackerPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+TrackAutomationPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	framepos_t frame = event->when;
 	uint32_t row = row_at_frame(frame);

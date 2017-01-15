@@ -16,13 +16,13 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_midi_tracker_pattern_h_
-#define __ardour_gtk2_midi_tracker_pattern_h_
+#ifndef __ardour_gtk2_midi_pattern_h_
+#define __ardour_gtk2_midi_pattern_h_
 
 #include "evoral/types.hpp"
 #include "ardour/session_handle.h"
 
-#include "tracker_pattern.h"
+#include "pattern.h"
 
 namespace ARDOUR {
 	class MidiRegion;
@@ -36,18 +36,18 @@ namespace ARDOUR {
  * representation. Plus some goodies method to generate a tracker pattern given
  * a midi region.
  */
-class MidiTrackerPattern : public TrackerPattern {
+class MidiPattern : public Pattern {
 public:
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
 	typedef Evoral::Note<Evoral::Beats> NoteType;
 	typedef std::multimap<uint32_t, boost::shared_ptr<NoteType> > RowToNotes;
 
-	MidiTrackerPattern(ARDOUR::Session* session,
-	                   boost::shared_ptr<ARDOUR::MidiRegion> region,
-	                   boost::shared_ptr<ARDOUR::MidiModel> midi_model);
+	MidiPattern(ARDOUR::Session* session,
+	            boost::shared_ptr<ARDOUR::MidiRegion> region,
+	            boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
-	// Build or rebuild the pattern (implement TrackerPattern::update_pattern)
+	// Build or rebuild the pattern (implement Pattern::update_pattern)
 	void update_pattern();
 
 	// Increase and decrease the number of tracks
@@ -72,4 +72,4 @@ private:
 	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
 };
 
-#endif /* __ardour_gtk2_midi_tracker_pattern_h_ */
+#endif /* __ardour_gtk2_midi_pattern_h_ */

@@ -46,7 +46,7 @@
 #include "gtkmm2ext/rgb_macros.h"
 
 #include "ui_config.h"
-#include "midi_tracker_editor.h"
+#include "midi_pattern_editor.h"
 #include "note_player.h"
 #include "tooltips.h"
 #include "axis_view.h"
@@ -82,7 +82,7 @@ using Timecode::BBT_Time;
 // - [ ] Remember what notes are on which tracks
 
 ///////////////////////
-// MidiTrackerEditor //
+// MidiPatternEditor //
 ///////////////////////
 
 static const gchar *_beats_per_row_strings[] = {
@@ -109,10 +109,10 @@ static const gchar *_beats_per_row_strings[] = {
 
 #define COMBO_TRIANGLE_WIDTH 25
 
-const std::string MidiTrackerEditor::note_off_str = "===";
-const std::string MidiTrackerEditor::undefined_str = "***";
+const std::string MidiPatternEditor::note_off_str = "===";
+const std::string MidiPatternEditor::undefined_str = "***";
 
-MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, boost::shared_ptr<MidiRegion> reg, boost::shared_ptr<MidiTrack> tr)
+MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, boost::shared_ptr<MidiRegion> reg, boost::shared_ptr<MidiTrack> tr)
 	: ArdourWindow (reg->name())
 	, automation_action_menu(0)
 	, controller_menu (0)
@@ -171,7 +171,7 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	redisplay_model ();
 
 	midi_model->ContentsChanged.connect (content_connection, invalidator (*this),
-	                                     boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
+	                                     boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
 
 	vbox.show ();
 
@@ -184,7 +184,7 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	set_size_request (-1, 400);
 }
 
-MidiTrackerEditor::~MidiTrackerEditor ()
+MidiPatternEditor::~MidiPatternEditor ()
 {
 	delete mtp;
 	delete tatp;
@@ -197,8 +197,8 @@ MidiTrackerEditor::~MidiTrackerEditor ()
 // Automation //
 ////////////////
 
-MidiTrackerEditor::ProcessorAutomationNode*
-MidiTrackerEditor::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter what)
+MidiPatternEditor::ProcessorAutomationNode*
+MidiPatternEditor::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter what)
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 
@@ -215,7 +215,7 @@ MidiTrackerEditor::find_processor_automation_node (boost::shared_ptr<Processor> 
 	return 0;
 }
 
-Gtk::CheckMenuItem* MidiTrackerEditor::automation_child_menu_item(const Evoral::Parameter& param)
+Gtk::CheckMenuItem* MidiPatternEditor::automation_child_menu_item(const Evoral::Parameter& param)
 {
 	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find(param);
 	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find(param);
@@ -228,12 +228,12 @@ Gtk::CheckMenuItem* MidiTrackerEditor::automation_child_menu_item(const Evoral::
 }
 
 bool
-MidiTrackerEditor::is_pan_type (const Evoral::Parameter& param) const {
+MidiPatternEditor::is_pan_type (const Evoral::Parameter& param) const {
 	return _pan_param_types.find((ARDOUR::AutomationType)param.type()) != _pan_param_types.end();
 }
 
 size_t
-MidiTrackerEditor::select_available_automation_column ()
+MidiPatternEditor::select_available_automation_column ()
 {
 	// Find the next available column
 	if (available_automation_columns.empty()) {
@@ -248,7 +248,7 @@ MidiTrackerEditor::select_available_automation_column ()
 }
 
 size_t
-MidiTrackerEditor::add_main_automation_column (const Evoral::Parameter& param)
+MidiPatternEditor::add_main_automation_column (const Evoral::Parameter& param)
 {
 	// Select the next available column
 	size_t column = select_available_automation_column ();
@@ -268,7 +268,7 @@ MidiTrackerEditor::add_main_automation_column (const Evoral::Parameter& param)
 }
 
 size_t
-MidiTrackerEditor::add_midi_automation_column (const Evoral::Parameter& param)
+MidiPatternEditor::add_midi_automation_column (const Evoral::Parameter& param)
 {
 	// Select the next available column
 	size_t column = select_available_automation_column ();
@@ -289,7 +289,7 @@ MidiTrackerEditor::add_midi_automation_column (const Evoral::Parameter& param)
  * parameter.
  */
 void
-MidiTrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
+MidiPatternEditor::add_processor_automation_column (boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
 {
 	ProcessorAutomationNode* pan;
 
@@ -322,7 +322,7 @@ MidiTrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor>
 }
 
 void
-MidiTrackerEditor::show_all_processor_automations ()
+MidiPatternEditor::show_all_processor_automations ()
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
@@ -347,7 +347,7 @@ MidiTrackerEditor::show_all_processor_automations ()
 // TODO: this menu needs to be persistent between sessions. Should also be
 // fixed for the track/piano roll view.
 void
-MidiTrackerEditor::show_all_automation ()
+MidiPatternEditor::show_all_automation ()
 {
 	show_all_main_automations ();
 	show_existing_midi_automations ();
@@ -357,7 +357,7 @@ MidiTrackerEditor::show_all_automation ()
 }
 
 void
-MidiTrackerEditor::show_existing_midi_automations ()
+MidiPatternEditor::show_existing_midi_automations ()
 {
 	const set<Evoral::Parameter> params = midi_track()->midi_playlist()->contained_automation();
 	for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
@@ -374,7 +374,7 @@ MidiTrackerEditor::show_existing_midi_automations ()
 }
 
 void
-MidiTrackerEditor::show_existing_processor_automations ()
+MidiPatternEditor::show_existing_processor_automations ()
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
@@ -402,7 +402,7 @@ MidiTrackerEditor::show_existing_processor_automations ()
 }
 
 void
-MidiTrackerEditor::show_existing_automation ()
+MidiPatternEditor::show_existing_automation ()
 {
 	show_existing_main_automations ();
 	show_existing_midi_automations ();
@@ -412,7 +412,7 @@ MidiTrackerEditor::show_existing_automation ()
 }
 
 void
-MidiTrackerEditor::hide_midi_automations ()
+MidiPatternEditor::hide_midi_automations ()
 {
 	std::set<size_t> to_remove;
 	for (std::set<size_t>::iterator it = visible_automation_columns.begin();
@@ -434,7 +434,7 @@ MidiTrackerEditor::hide_midi_automations ()
 }
 
 void
-MidiTrackerEditor::hide_processor_automations ()
+MidiPatternEditor::hide_processor_automations ()
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
@@ -449,7 +449,7 @@ MidiTrackerEditor::hide_processor_automations ()
 }
 
 void
-MidiTrackerEditor::hide_all_automation ()
+MidiPatternEditor::hide_all_automation ()
 {
 	hide_main_automations ();
 	hide_midi_automations ();
@@ -462,15 +462,15 @@ MidiTrackerEditor::hide_all_automation ()
  *  display automation curves for any parameters which have data.
  */
 void
-MidiTrackerEditor::setup_processor_menu_and_curves ()
+MidiPatternEditor::setup_processor_menu_and_curves ()
 {
 	_subplugin_menu_map.clear ();
 	subplugin_menu.items().clear ();
-	route->foreach_processor (sigc::mem_fun (*this, &MidiTrackerEditor::add_processor_to_subplugin_menu));
+	route->foreach_processor (sigc::mem_fun (*this, &MidiPatternEditor::add_processor_to_subplugin_menu));
 }
 
 void
-MidiTrackerEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
+MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
 {
 	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
 
@@ -557,7 +557,7 @@ MidiTrackerEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 
 		}
 
-		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::processor_menu_item_toggled), rai, pan));
+		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::processor_menu_item_toggled), rai, pan));
 	}
 
 	if (items.size() == 0) {
@@ -575,7 +575,7 @@ MidiTrackerEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 }
 
 void
-MidiTrackerEditor::processor_menu_item_toggled (MidiTrackerEditor::ProcessorAutomationInfo* rai, MidiTrackerEditor::ProcessorAutomationNode* pan)
+MidiPatternEditor::processor_menu_item_toggled (MidiPatternEditor::ProcessorAutomationInfo* rai, MidiPatternEditor::ProcessorAutomationNode* pan)
 {
 	const bool showit = pan->menu_item->get_active();
 
@@ -592,7 +592,7 @@ MidiTrackerEditor::processor_menu_item_toggled (MidiTrackerEditor::ProcessorAuto
 }
 
 void
-MidiTrackerEditor::build_automation_action_menu ()
+MidiPatternEditor::build_automation_action_menu ()
 {
 	using namespace Menu_Helpers;
 
@@ -610,13 +610,13 @@ MidiTrackerEditor::build_automation_action_menu ()
 	automation_action_menu->set_name ("ArdourContextMenu");
 
 	items.push_back (MenuElem (_("Show All Automation"),
-	                           sigc::mem_fun (*this, &MidiTrackerEditor::show_all_automation)));
+	                           sigc::mem_fun (*this, &MidiPatternEditor::show_all_automation)));
 
 	items.push_back (MenuElem (_("Show Existing Automation"),
-	                           sigc::mem_fun (*this, &MidiTrackerEditor::show_existing_automation)));
+	                           sigc::mem_fun (*this, &MidiPatternEditor::show_existing_automation)));
 
 	items.push_back (MenuElem (_("Hide All Automation"),
-	                           sigc::mem_fun (*this, &MidiTrackerEditor::hide_all_automation)));
+	                           sigc::mem_fun (*this, &MidiPatternEditor::hide_all_automation)));
 
 	/* Attach the plugin submenu. It may have previously been used elsewhere,
 	   so it was detached above
@@ -631,25 +631,25 @@ MidiTrackerEditor::build_automation_action_menu ()
 	/* Add any route automation */
 
 	if (true) {
-		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (*this, &MidiTrackerEditor::update_gain_column_visibility)));
+		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (*this, &MidiPatternEditor::update_gain_column_visibility)));
 		gain_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
 		gain_automation_item->set_active (is_gain_visible());
 	}
 
 	if (false /*trim_track*/ /* TODO: support audio track */) {
-		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (*this, &MidiTrackerEditor::update_trim_column_visibility)));
+		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (*this, &MidiPatternEditor::update_trim_column_visibility)));
 		trim_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
 		trim_automation_item->set_active (false);
 	}
 
 	if (true /*mute_track*/) {
-		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (*this, &MidiTrackerEditor::update_mute_column_visibility)));
+		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (*this, &MidiPatternEditor::update_mute_column_visibility)));
 		mute_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
 		mute_automation_item->set_active (is_mute_visible());
 	}
 
 	if (true /*pan_tracks*/) {
-		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (*this, &MidiTrackerEditor::update_pan_columns_visibility)));
+		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (*this, &MidiPatternEditor::update_pan_columns_visibility)));
 		pan_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
 		pan_automation_item->set_active (is_pan_visible());
 	}
@@ -698,7 +698,7 @@ MidiTrackerEditor::build_automation_action_menu ()
 }
 
 void
-MidiTrackerEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
+MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
                                                   const string&           label,
                                                   AutomationType          auto_type,
                                                   uint8_t                 cmd)
@@ -732,11 +732,11 @@ MidiTrackerEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		chn_items.push_back (
 			MenuElem (_("Hide all channels"),
-			          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
 			                      false, param_without_channel)));
 		chn_items.push_back (
 			MenuElem (_("Show all channels"),
-			          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
 			                      true, param_without_channel)));
 
 		for (uint8_t chn = 0; chn < 16; chn++) {
@@ -747,7 +747,7 @@ MidiTrackerEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-					               sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
 				bool visible = is_automation_visible(fully_qualified_param);
@@ -772,7 +772,7 @@ MidiTrackerEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				items.push_back (
 					CheckMenuElem (label,
-					               sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
 				bool visible = is_automation_visible(fully_qualified_param);
@@ -789,7 +789,7 @@ MidiTrackerEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 }
 
 void
-MidiTrackerEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
+MidiPatternEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
 {
 	const uint16_t selected_channels = midi_track()->get_playback_channel_mask();
 
@@ -810,7 +810,7 @@ MidiTrackerEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parame
  *  Will add column if necessary.
  */
 void
-MidiTrackerEditor::update_automation_column_visibility (const Evoral::Parameter& param)
+MidiPatternEditor::update_automation_column_visibility (const Evoral::Parameter& param)
 {
 	// Find menu item associated to this parameter
 	Gtk::CheckMenuItem* mitem = automation_child_menu_item(param);
@@ -836,7 +836,7 @@ MidiTrackerEditor::update_automation_column_visibility (const Evoral::Parameter&
 }
 
 void
-MidiTrackerEditor::build_controller_menu ()
+MidiPatternEditor::build_controller_menu ()
 {
 	using namespace Menu_Helpers;
 
@@ -945,7 +945,7 @@ MidiTrackerEditor::build_controller_menu ()
 }
 
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiTrackerEditor::get_device_names()
+MidiPatternEditor::get_device_names()
 {
 	return midi_time_axis_view->get_device_names();
 }
@@ -953,7 +953,7 @@ MidiTrackerEditor::get_device_names()
 
 /** Add a single menu item for a controller on one channel. */
 void
-MidiTrackerEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
+MidiPatternEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
                                                       int                     ctl,
                                                       const std::string&      name)
 {
@@ -968,7 +968,7 @@ MidiTrackerEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ct
 				CheckMenuElem (
 					string_compose ("<b>%1</b>: %2 [%3]", ctl, name, int (chn + 1)),
 					sigc::bind (
-						sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
+						sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
 						fully_qualified_param)));
 			dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
 
@@ -986,7 +986,7 @@ MidiTrackerEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ct
 
 /** Add a submenu with 1 item per channel for a controller on many channels. */
 void
-MidiTrackerEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
+MidiPatternEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
                                                      int                     ctl,
                                                      const std::string&      name)
 {
@@ -1002,11 +1002,11 @@ MidiTrackerEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 	Evoral::Parameter param_without_channel (MidiCCAutomation, 0, ctl);
 	chn_items.push_back (
 		MenuElem (_("Hide all channels"),
-		          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
 		                      false, param_without_channel)));
 	chn_items.push_back (
 		MenuElem (_("Show all channels"),
-		          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
 		                      true, param_without_channel)));
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -1017,7 +1017,7 @@ MidiTrackerEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
 			chn_items.push_back (
 				CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-				               sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
+				               sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
 				                           fully_qualified_param)));
 
 			bool visible = is_automation_visible(fully_qualified_param);
@@ -1035,7 +1035,7 @@ MidiTrackerEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 }
 
 bool
-MidiTrackerEditor::is_automation_visible(const Evoral::Parameter& param) const
+MidiPatternEditor::is_automation_visible(const Evoral::Parameter& param) const
 {
 	ColParamBimap::right_const_iterator it = col2param.right.find(param);
 	return it != col2param.right.end() &&
@@ -1043,21 +1043,21 @@ MidiTrackerEditor::is_automation_visible(const Evoral::Parameter& param) const
 }
 
 bool
-MidiTrackerEditor::is_gain_visible() const
+MidiPatternEditor::is_gain_visible() const
 {
 	return visible_automation_columns.find(gain_column)
 		!= visible_automation_columns.end();
 };
 
 bool
-MidiTrackerEditor::is_mute_visible() const
+MidiPatternEditor::is_mute_visible() const
 {
 	return visible_automation_columns.find(mute_column)
 		!= visible_automation_columns.end();
 };
 
 bool
-MidiTrackerEditor::is_pan_visible() const
+MidiPatternEditor::is_pan_visible() const
 {
 	bool visible = not pan_columns.empty();
 	for (std::vector<size_t>::const_iterator it = pan_columns.begin(); it != pan_columns.end(); ++it) {
@@ -1069,7 +1069,7 @@ MidiTrackerEditor::is_pan_visible() const
 };
 
 void
-MidiTrackerEditor::update_gain_column_visibility ()
+MidiPatternEditor::update_gain_column_visibility ()
 {
 	const bool showit = gain_automation_item->get_active();
 
@@ -1090,7 +1090,7 @@ MidiTrackerEditor::update_gain_column_visibility ()
 }
 
 void
-MidiTrackerEditor::update_trim_column_visibility ()
+MidiPatternEditor::update_trim_column_visibility ()
 {
 	// bool const showit = trim_automation_item->get_active();
 
@@ -1106,7 +1106,7 @@ MidiTrackerEditor::update_trim_column_visibility ()
 }
 
 void
-MidiTrackerEditor::update_mute_column_visibility ()
+MidiPatternEditor::update_mute_column_visibility ()
 {
 	const bool showit = mute_automation_item->get_active();
 
@@ -1127,7 +1127,7 @@ MidiTrackerEditor::update_mute_column_visibility ()
 }
 
 void
-MidiTrackerEditor::update_pan_columns_visibility ()
+MidiPatternEditor::update_pan_columns_visibility ()
 {
 	const bool showit = pan_automation_item->get_active();
 
@@ -1153,7 +1153,8 @@ MidiTrackerEditor::update_pan_columns_visibility ()
 	redisplay_model ();
 }
 
-void MidiTrackerEditor::show_all_main_automations ()
+void
+MidiPatternEditor::show_all_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (true);
@@ -1168,7 +1169,8 @@ void MidiTrackerEditor::show_all_main_automations ()
 	update_pan_columns_visibility ();
 }
 
-bool MidiTrackerEditor::has_pan_automation() const
+bool
+MidiPatternEditor::has_pan_automation() const
 {
 	for (std::set<AutomationType>::const_iterator it = _pan_param_types.begin();
 	     it != _pan_param_types.end(); ++it) {
@@ -1179,7 +1181,8 @@ bool MidiTrackerEditor::has_pan_automation() const
 	return false;
 }
 
-void MidiTrackerEditor::show_existing_main_automations ()
+void
+MidiPatternEditor::show_existing_main_automations ()
 {
 	// Gain
 	bool gain_visible = param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
@@ -1204,7 +1207,8 @@ void MidiTrackerEditor::show_existing_main_automations ()
 	update_pan_columns_visibility ();
 }
 
-void MidiTrackerEditor::hide_main_automations ()
+void
+MidiPatternEditor::hide_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (false);
@@ -1224,33 +1228,33 @@ void MidiTrackerEditor::hide_main_automations ()
 /////////////////////////
 
 void
-MidiTrackerEditor::register_actions ()
+MidiPatternEditor::register_actions ()
 {
 	Glib::RefPtr<ActionGroup> beats_per_row_actions = myactions.create_action_group (X_("BeatsPerRow"));
 	RadioAction::Group beats_per_row_choice_group;
 
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-onetwentyeighths"), _("Beats Per Row to One Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv128)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixtyfourths"), _("Beats Per Row to Sixty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv64)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv32)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv28)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv24)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv20)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv16)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv14)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv12)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv10)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv8)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv7)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv6)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv5)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv4)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv3)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv2)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeat)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-onetwentyeighths"), _("Beats Per Row to One Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv128)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixtyfourths"), _("Beats Per Row to Sixty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv64)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv32)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv28)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv24)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv20)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv16)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv14)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv12)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv10)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv8)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv7)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv6)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv5)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv4)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv3)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv2)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeat)));
 }
 
 void
-MidiTrackerEditor::redisplay_visible_note()
+MidiPatternEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(i*4 + 1)->set_visible(i < mtp->ntracks ? visible_note : false);
@@ -1261,7 +1265,7 @@ MidiTrackerEditor::redisplay_visible_note()
 }
 
 bool
-MidiTrackerEditor::visible_note_press(GdkEventButton* ev)
+MidiPatternEditor::visible_note_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1274,7 +1278,7 @@ MidiTrackerEditor::visible_note_press(GdkEventButton* ev)
 }
 
 void
-MidiTrackerEditor::redisplay_visible_channel()
+MidiPatternEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(i*4 + 2)->set_visible(i < mtp->ntracks ? visible_channel : false);
@@ -1285,7 +1289,7 @@ MidiTrackerEditor::redisplay_visible_channel()
 }
 
 bool
-MidiTrackerEditor::visible_channel_press(GdkEventButton* ev)
+MidiPatternEditor::visible_channel_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1298,7 +1302,7 @@ MidiTrackerEditor::visible_channel_press(GdkEventButton* ev)
 }
 
 void
-MidiTrackerEditor::redisplay_visible_velocity()
+MidiPatternEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(i*4 + 3)->set_visible(i < mtp->ntracks ? visible_velocity : false);
@@ -1309,7 +1313,7 @@ MidiTrackerEditor::redisplay_visible_velocity()
 }
 
 bool
-MidiTrackerEditor::visible_velocity_press(GdkEventButton* ev)
+MidiPatternEditor::visible_velocity_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1322,7 +1326,7 @@ MidiTrackerEditor::visible_velocity_press(GdkEventButton* ev)
 }
 
 void
-MidiTrackerEditor::redisplay_visible_delay()
+MidiPatternEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(i*4 + 4)->set_visible(i < mtp->ntracks ? visible_delay : false);
@@ -1334,7 +1338,7 @@ MidiTrackerEditor::redisplay_visible_delay()
 }
 
 bool
-MidiTrackerEditor::visible_delay_press(GdkEventButton* ev)
+MidiPatternEditor::visible_delay_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1347,7 +1351,7 @@ MidiTrackerEditor::visible_delay_press(GdkEventButton* ev)
 }
 
 void
-MidiTrackerEditor::redisplay_visible_automation()
+MidiPatternEditor::redisplay_visible_automation()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_col_offset + 2 * i;
@@ -1361,7 +1365,7 @@ MidiTrackerEditor::redisplay_visible_automation()
 }
 
 void
-MidiTrackerEditor::redisplay_visible_automation_delay()
+MidiPatternEditor::redisplay_visible_automation_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_col_offset + 2 * i;
@@ -1374,20 +1378,20 @@ MidiTrackerEditor::redisplay_visible_automation_delay()
 }
 
 void
-MidiTrackerEditor::automation_click ()
+MidiPatternEditor::automation_click ()
 {
 	build_automation_action_menu ();
 	automation_action_menu->popup (1, gtk_get_current_event_time());
 }
 
 void
-MidiTrackerEditor::update_remove_note_column_button ()
+MidiPatternEditor::update_remove_note_column_button ()
 {
 	remove_note_column_button.set_sensitive (mtp->nreqtracks < mtp->ntracks);
 }
 
 bool
-MidiTrackerEditor::remove_note_column_press(GdkEventButton* ev)
+MidiPatternEditor::remove_note_column_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1402,7 +1406,7 @@ MidiTrackerEditor::remove_note_column_press(GdkEventButton* ev)
 }
 
 bool
-MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
+MidiPatternEditor::add_note_column_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1417,7 +1421,7 @@ MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
 }
 
 void
-MidiTrackerEditor::redisplay_model ()
+MidiPatternEditor::redisplay_model ()
 {
 	view.set_model (Glib::RefPtr<Gtk::ListStore>(0));
 	model->clear ();
@@ -1492,8 +1496,8 @@ MidiTrackerEditor::redisplay_model ()
 				size_t notes_on_count = mtp->notes_on[i].count(irow);
 
 				if (notes_on_count > 0 || notes_off_count > 0) {
-					MidiTrackerPattern::RowToNotes::const_iterator i_off = mtp->notes_off[i].find(irow);
-					MidiTrackerPattern::RowToNotes::const_iterator i_on = mtp->notes_on[i].find(irow);
+					MidiPattern::RowToNotes::const_iterator i_off = mtp->notes_off[i].find(irow);
+					MidiPattern::RowToNotes::const_iterator i_on = mtp->notes_on[i].find(irow);
 
 					// Determine whether the row is defined
 					bool undefined = (notes_off_count > 1 || notes_on_count > 1)
@@ -1505,7 +1509,7 @@ MidiTrackerEditor::redisplay_model ()
 						row[columns._note_foreground_color[i]] = active_foreground_color;
 					} else {
 						// Notes off
-						MidiTrackerPattern::RowToNotes::const_iterator i_off = mtp->notes_off[i].find(irow);
+						MidiPattern::RowToNotes::const_iterator i_off = mtp->notes_off[i].find(irow);
 						if (i_off != mtp->notes_off[i].end()) {
 							boost::shared_ptr<NoteType> note = i_off->second;
 							row[columns.note_name[i]] = note_off_str;
@@ -1522,7 +1526,7 @@ MidiTrackerEditor::redisplay_model ()
 						}
 
 						// Notes on
-						MidiTrackerPattern::RowToNotes::const_iterator i_on = mtp->notes_on[i].find(irow);
+						MidiPattern::RowToNotes::const_iterator i_on = mtp->notes_on[i].find(irow);
 						if (i_on != mtp->notes_on[i].end()) {
 							boost::shared_ptr<NoteType> note = i_on->second;
 							row[columns.channel[i]] = to_string (note->channel() + 1);
@@ -1550,7 +1554,7 @@ MidiTrackerEditor::redisplay_model ()
 				size_t i = col2autotrack[col_idx];
 				const Evoral::Parameter& param = cp_it->second;
 				bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-				const AutomationTrackerPattern::RowToAutomationIt& r2at = is_region_automation ? ratp->automations[param] : tatp->automations[param];
+				const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? ratp->automations[param] : tatp->automations[param];
 				size_t auto_count = r2at.count(irow);
 
 				if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS) {
@@ -1569,7 +1573,7 @@ MidiTrackerEditor::redisplay_model ()
 					if (undefined) {
 						row[columns.automation[i]] = undefined_str;
 					} else {
-						AutomationTrackerPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
+						AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
 						if (auto_it != r2at.end()) {
 							double aval = (*auto_it->second)->value;
 							row[columns.automation[i]] = to_string (aval);
@@ -1609,19 +1613,19 @@ MidiTrackerEditor::redisplay_model ()
 }
 
 bool
-MidiTrackerEditor::is_midi_track () const
+MidiPatternEditor::is_midi_track () const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route) != 0;
 }
 
 boost::shared_ptr<ARDOUR::MidiTrack>
-MidiTrackerEditor::midi_track() const
+MidiPatternEditor::midi_track() const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route);
 }
 
 void
-MidiTrackerEditor::build_param2actrl ()
+MidiPatternEditor::build_param2actrl ()
 {
 	// Gain
 	param2actrl[Evoral::Parameter(GainAutomation)] =  route->gain_control();
@@ -1649,9 +1653,9 @@ MidiTrackerEditor::build_param2actrl ()
 }
 
 void
-MidiTrackerEditor::setup_pattern ()
+MidiPatternEditor::setup_pattern ()
 {
-	mtp = new MidiTrackerPattern(_session, region, midi_model);
+	mtp = new MidiPattern(_session, region, midi_model);
 
 	// Get automation controls
 	AutomationControlSet tacs, racs;
@@ -1662,8 +1666,8 @@ MidiTrackerEditor::setup_pattern ()
 		else
 			tacs.insert(it->second);
 	}
-	tatp = new TrackAutomationTrackerPattern(_session, region, tacs);
-	ratp = new RegionAutomationTrackerPattern(_session, region, racs);
+	tatp = new TrackAutomationPattern(_session, region, tacs);
+	ratp = new RegionAutomationPattern(_session, region, racs);
 
 	edit_column = -1;
 	editing_renderer = 0;
@@ -1754,7 +1758,7 @@ MidiTrackerEditor::setup_pattern ()
 }
 
 void
-MidiTrackerEditor::setup_toolbar ()
+MidiPatternEditor::setup_toolbar ()
 {
 	uint32_t inactive_button_color = RGBA_TO_UINT(255, 255, 255, 64);
 	uint32_t active_button_color = RGBA_TO_UINT(168, 248, 48, 255);
@@ -1770,7 +1774,7 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_note_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_note_button.show ();
-	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_note_press), false);
+	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_note_press), false);
 	toolbar.pack_start (visible_note_button, false, false);
 
 	// Add visible channel button
@@ -1779,7 +1783,7 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_channel_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_channel_button.show ();
-	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_channel_press), false);
+	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_channel_press), false);
 	toolbar.pack_start (visible_channel_button, false, false);
 
 	// Add visible velocity button
@@ -1788,7 +1792,7 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_velocity_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_velocity_button.show ();
-	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_velocity_press), false);
+	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_velocity_press), false);
 	toolbar.pack_start (visible_velocity_button, false, false);
 
 	// Add visible delay button
@@ -1797,13 +1801,13 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_delay_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_delay_button.show ();
-	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_delay_press), false);
+	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_delay_press), false);
 	toolbar.pack_start (visible_delay_button, false, false);
 
 	// Add automation button
 	automation_button.set_name ("automation button");
 	automation_button.set_text (S_("Automation|A"));
-	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackerEditor::automation_click));
+	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiPatternEditor::automation_click));
 	automation_button.show ();
 	toolbar.pack_start (automation_button, false, false);
 
@@ -1812,13 +1816,13 @@ MidiTrackerEditor::setup_toolbar ()
 	toolbar.pack_start (rm_add_note_column_separator, false, false);
 	remove_note_column_button.set_name ("remove note column");
 	remove_note_column_button.set_text (S_("Remove|-"));
-	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::remove_note_column_press), false);
+	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::remove_note_column_press), false);
 	remove_note_column_button.show ();
 	remove_note_column_button.set_sensitive (false);
 	toolbar.pack_start (remove_note_column_button, false, false);
 	add_note_column_button.set_name ("add note column");
 	add_note_column_button.set_text (S_("Add|+"));
-	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::add_note_column_press), false);
+	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::add_note_column_press), false);
 	add_note_column_button.show ();
 	toolbar.pack_start (add_note_column_button, false, false);
 
@@ -1844,7 +1848,7 @@ MidiTrackerEditor::setup_toolbar ()
 }
 
 void
-MidiTrackerEditor::setup_scroller ()
+MidiPatternEditor::setup_scroller ()
 {
 	scroller.add (view);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
@@ -1852,34 +1856,34 @@ MidiTrackerEditor::setup_scroller ()
 }
 
 void
-MidiTrackerEditor::build_beats_per_row_menu ()
+MidiPatternEditor::build_beats_per_row_menu ()
 {
 	using namespace Menu_Helpers;
 
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv128 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv128)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv64 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv64)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv32 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv32)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv28 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv28)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv24 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv24)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv20 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv20)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv16 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv16)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv14 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv14)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv12 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv12)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv10 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv10)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv8 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv8)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv7 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv7)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv6 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv6)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv5 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv5)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv4 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv4)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv3 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv3)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv2 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv2)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeat - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeat)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv128 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv128)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv64 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv64)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv32 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv32)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv28 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv28)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv24 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv24)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv20 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv20)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv16 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv16)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv14 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv14)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv12 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv12)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv10 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv10)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv8 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv8)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv7 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv7)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv6 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv6)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv5 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv5)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv4 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv4)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv3 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv3)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv2 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv2)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeat - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeat)));
 
 	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings, COMBO_TRIANGLE_WIDTH, 2);
 }
 
 void
-MidiTrackerEditor::setup_tooltips ()
+MidiPatternEditor::setup_tooltips ()
 {
 	set_tooltip (beats_per_row_selector, _("Beats Per Row"));
 	set_tooltip (visible_note_button, _("Toggle Note Visibility"));
@@ -1888,7 +1892,8 @@ MidiTrackerEditor::setup_tooltips ()
 	set_tooltip (visible_delay_button, _("Toggle Delay Visibility"));
 }
 
-void MidiTrackerEditor::set_beats_per_row_to (SnapType st)
+void
+MidiPatternEditor::set_beats_per_row_to (SnapType st)
 {
 	unsigned int snap_ind = (int)st - (int)SnapToBeatDiv128;
 
@@ -1925,7 +1930,8 @@ void MidiTrackerEditor::set_beats_per_row_to (SnapType st)
 	redisplay_model ();
 }
 
-void MidiTrackerEditor::beats_per_row_selection_done (SnapType snaptype)
+void
+MidiPatternEditor::beats_per_row_selection_done (SnapType snaptype)
 {
 	RefPtr<RadioAction> ract = beats_per_row_action (snaptype);
 	if (ract) {
@@ -1934,7 +1940,7 @@ void MidiTrackerEditor::beats_per_row_selection_done (SnapType snaptype)
 }
 
 RefPtr<RadioAction>
-MidiTrackerEditor::beats_per_row_action (SnapType type)
+MidiPatternEditor::beats_per_row_action (SnapType type)
 {
 	const char* action = 0;
 	RefPtr<Action> act;
@@ -2006,13 +2012,13 @@ MidiTrackerEditor::beats_per_row_action (SnapType type)
 		return ract;
 
 	} else  {
-		error << string_compose (_("programming error: %1"), "MidiTrackerEditor::beats_per_row_chosen could not find action to match type.") << endmsg;
+		error << string_compose (_("programming error: %1"), "MidiPatternEditor::beats_per_row_chosen could not find action to match type.") << endmsg;
 		return RefPtr<RadioAction>();
 	}
 }
 
 void
-MidiTrackerEditor::beats_per_row_chosen (SnapType type)
+MidiPatternEditor::beats_per_row_chosen (SnapType type)
 {
 	/* this is driven by a toggle on a radio group, and so is invoked twice,
 	   once for the item that became inactive and once for the one that became

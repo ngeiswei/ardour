@@ -16,22 +16,22 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_track_automation_tracker_pattern_h_
-#define __ardour_gtk2_track_automation_tracker_pattern_h_
+#ifndef __ardour_gtk2_track_automation_pattern_h_
+#define __ardour_gtk2_track_automation_pattern_h_
 
-#include "automation_tracker_pattern.h"
+#include "automation_pattern.h"
 
 /**
  * Data structure holding the automation list pattern held by a track.
  */
-class TrackAutomationTrackerPattern : public AutomationTrackerPattern {
+class TrackAutomationPattern : public AutomationPattern {
 public:
-	TrackAutomationTrackerPattern(ARDOUR::Session* session,
-	                              boost::shared_ptr<ARDOUR::Region> region,
-	                              const AutomationControlSet& automation_controls);
+	TrackAutomationPattern(ARDOUR::Session* session,
+	                       boost::shared_ptr<ARDOUR::Region> region,
+	                       const AutomationControlSet& automation_controls);
 
 	// Assign a control event to a row
 	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 };
 
-#endif /* __ardour_gtk2_track_automation_tracker_pattern_h_ */
+#endif /* __ardour_gtk2_track_automation_pattern_h_ */

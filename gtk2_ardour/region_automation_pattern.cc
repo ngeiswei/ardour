@@ -19,24 +19,24 @@
 #include <cmath>
 #include <map>
 
-#include "region_automation_tracker_pattern.h"
+#include "region_automation_pattern.h"
 
 using namespace std;
 using namespace ARDOUR;
 
-////////////////////////////////////
-// RegionAutomationTrackerPattern //
-////////////////////////////////////
+/////////////////////////////
+// RegionAutomationPattern //
+/////////////////////////////
 
-RegionAutomationTrackerPattern::RegionAutomationTrackerPattern(ARDOUR::Session* session,
-                                                               boost::shared_ptr<ARDOUR::Region> region,
-                                                               const AutomationControlSet& auto_ctrls)
-	: AutomationTrackerPattern(session, region, auto_ctrls)
+RegionAutomationPattern::RegionAutomationPattern(ARDOUR::Session* session,
+                                                 boost::shared_ptr<ARDOUR::Region> region,
+                                                 const AutomationControlSet& auto_ctrls)
+	: AutomationPattern(session, region, auto_ctrls)
 {
 }
 
 uint32_t
-RegionAutomationTrackerPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+RegionAutomationPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	Evoral::Beats beats(event->when);
 	uint32_t row = row_at_beats(beats + first_beats);
