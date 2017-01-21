@@ -131,6 +131,12 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, steps_label ("Steps")
 	, steps_adjustment (1, 0, 256, 1, 4)
 	, steps_spinner (steps_adjustment)
+	, velocity_label ("Vel")
+	, velocity_adjustment (64, 0, 127, 1, 4)
+	, velocity_spinner (velocity_adjustment)
+	, channel_label ("Ch")
+	, channel_adjustment (1, 1, 16, 1, 4)
+	, channel_spinner (channel_adjustment)
 	, region (reg)
 	, track (tr)
 	, midi_model (region->midi_source(0)->model())
@@ -1843,7 +1849,25 @@ MidiPatternEditor::setup_toolbar ()
 	steps_spinner.set_activates_default ();
 	steps_spinner.show ();
 	toolbar.pack_start (steps_spinner, false, false);
-	
+
+	// Velocity spinner
+	velocity_separator.show ();
+	toolbar.pack_start (velocity_separator, false, false);
+	velocity_label.show ();
+	toolbar.pack_start (velocity_label, false, false);
+	velocity_spinner.set_activates_default ();
+	velocity_spinner.show ();
+	toolbar.pack_start (velocity_spinner, false, false);
+
+	// Channel spinner
+	channel_separator.show ();
+	toolbar.pack_start (channel_separator, false, false);
+	channel_label.show ();
+	toolbar.pack_start (channel_label, false, false);
+	channel_spinner.set_activates_default ();
+	channel_spinner.show ();
+	toolbar.pack_start (channel_spinner, false, false);
+
 	toolbar.show ();
 }
 
