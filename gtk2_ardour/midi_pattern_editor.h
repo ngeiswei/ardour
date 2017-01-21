@@ -67,10 +67,10 @@ class AutomationTimeAxisView;
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
-// Maximum number of note tracks in the midi tracker editor
+// Maximum number of note columns in the midi pattern editor
 #define MAX_NUMBER_OF_NOTE_TRACKS 64
 
-// Maximum number of automation trackts in the midi tracker editor
+// Maximum number of automation columns in the midi pattern editor
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS 64
 
 // Test if element is in container
@@ -282,13 +282,11 @@ class MidiPatternEditor : public ArdourWindow
 		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_AUTOMATION_TRACKS];
 	};
 
-	enum tracker_columns {
-		TIME_COLNUM,
-		NOTE_COLNUM,
+	enum midi_note_columns {
+		NOTE_COLNUM=1,			// from 1 cause the first column is for time
 		CHANNEL_COLNUM,
 		VELOCITY_COLNUM,
-		DELAY_COLNUM,
-		TRACKER_COLNUM_COUNT
+		DELAY_COLNUM
 	};
 
 	static const std::string note_off_str;
