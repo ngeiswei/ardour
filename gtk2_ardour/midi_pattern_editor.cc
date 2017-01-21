@@ -1311,7 +1311,7 @@ void
 MidiPatternEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + VELOCITY_COLUNM)->set_visible(i < mtp->ntracks ? visible_velocity : false);
+		view.get_column(i*4 + VELOCITY_COLNUM)->set_visible(i < mtp->ntracks ? visible_velocity : false);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1451,11 +1451,11 @@ MidiPatternEditor::redisplay_model ()
 
 		uint32_t nrows = std::max(std::max(mtp->nrows, tatp->nrows), ratp->nrows);
 
-		std::string beat_background_color = UIConfiguration::instance().color_str ("tracker editor: beat background");
-		std::string background_color = UIConfiguration::instance().color_str ("tracker editor: background");
-		std::string blank_foreground_color = UIConfiguration::instance().color_str ("tracker editor: blank foreground");
-		std::string active_foreground_color = UIConfiguration::instance().color_str ("tracker editor: active foreground");
-		std::string passive_foreground_color = UIConfiguration::instance().color_str ("tracker editor: passive foreground");
+		std::string beat_background_color = UIConfiguration::instance().color_str ("pattern editor: beat background");
+		std::string background_color = UIConfiguration::instance().color_str ("pattern editor: background");
+		std::string blank_foreground_color = UIConfiguration::instance().color_str ("pattern editor: blank foreground");
+		std::string active_foreground_color = UIConfiguration::instance().color_str ("pattern editor: active foreground");
+		std::string passive_foreground_color = UIConfiguration::instance().color_str ("pattern editor: passive foreground");
 
 		// Generate each row
 		for (uint32_t irow = 0; irow < nrows; irow++) {
@@ -1480,7 +1480,7 @@ MidiPatternEditor::redisplay_model ()
 			size_t ntracks = mtp->ntracks;
 			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
 				std::cout << "Warning: Number of note tracks needed for "
-				          << "the tracker interface is too high, "
+				          << "the pattern interface is too high, "
 				          << "some notes might be discarded" << std::endl;
 				ntracks = MAX_NUMBER_OF_NOTE_TRACKS;
 			}
@@ -1564,7 +1564,7 @@ MidiPatternEditor::redisplay_model ()
 				size_t auto_count = r2at.count(irow);
 
 				if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS) {
-					std::cout << "Warning: Number of automation tracks needed for the tracker interface is too high, some automations might be discarded" << std::endl;
+					std::cout << "Warning: Number of automation tracks needed for the pattern interface is too high, some automations might be discarded" << std::endl;
 					continue;
 				}
 
