@@ -137,6 +137,9 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, channel_label ("Ch")
 	, channel_adjustment (1, 1, 16, 1, 4)
 	, channel_spinner (channel_adjustment)
+	, delay_label ("Delay")
+	, delay_adjustment (0, 0, 0, 1, 4)
+	, delay_spinner (delay_adjustment)
 	, region (reg)
 	, track (tr)
 	, midi_model (region->midi_source(0)->model())
@@ -1867,6 +1870,15 @@ MidiPatternEditor::setup_toolbar ()
 	channel_spinner.set_activates_default ();
 	channel_spinner.show ();
 	toolbar.pack_start (channel_spinner, false, false);
+
+	// Delay spinner
+	delay_separator.show ();
+	toolbar.pack_start (delay_separator, false, false);
+	delay_label.show ();
+	toolbar.pack_start (delay_label, false, false);
+	delay_spinner.set_activates_default ();
+	delay_spinner.show ();
+	toolbar.pack_start (delay_spinner, false, false);
 
 	toolbar.show ();
 }

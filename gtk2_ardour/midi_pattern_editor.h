@@ -342,6 +342,10 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::Label                   channel_label;
 	Gtk::Adjustment              channel_adjustment;
 	Gtk::SpinButton              channel_spinner;
+	Gtk::VSeparator              delay_separator;
+	Gtk::Label                   delay_label;
+	Gtk::Adjustment              delay_adjustment;
+	Gtk::SpinButton              delay_spinner;	
 
 	boost::shared_ptr<ARDOUR::MidiRegion> region;
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
