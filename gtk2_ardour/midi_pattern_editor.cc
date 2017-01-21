@@ -1257,7 +1257,7 @@ void
 MidiPatternEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + 1)->set_visible(i < mtp->ntracks ? visible_note : false);
+		view.get_column(i*4 + NOTE_COLNUM)->set_visible(i < mtp->ntracks ? visible_note : false);
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1281,7 +1281,7 @@ void
 MidiPatternEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + 2)->set_visible(i < mtp->ntracks ? visible_channel : false);
+		view.get_column(i*4 + CHANNEL_COLNUM)->set_visible(i < mtp->ntracks ? visible_channel : false);
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1305,7 +1305,7 @@ void
 MidiPatternEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + 3)->set_visible(i < mtp->ntracks ? visible_velocity : false);
+		view.get_column(i*4 + VELOCITY_COLUNM)->set_visible(i < mtp->ntracks ? visible_velocity : false);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1329,7 +1329,7 @@ void
 MidiPatternEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + 4)->set_visible(i < mtp->ntracks ? visible_delay : false);
+		view.get_column(i*4 + DELAY_COLNUM)->set_visible(i < mtp->ntracks ? visible_delay : false);
 	redisplay_visible_automation_delay ();
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
