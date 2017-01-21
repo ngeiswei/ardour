@@ -343,6 +343,11 @@
 		<ColorAlias name="plugin bypass button: led active" alias="color 1"/>
 		<ColorAlias name="pluginlist filter button: fill active" alias="color 14"/>
 		<ColorAlias name="pluginlist hide button: led active" alias="color 14"/>
+		<ColorAlias name="pattern editor: active foreground" alias="color 4"/>
+		<ColorAlias name="pattern editor: background" alias="color 1"/>
+		<ColorAlias name="pattern editor: beat background" alias="color 2"/>
+		<ColorAlias name="pattern editor: blank foreground" alias="color 3"/>
+		<ColorAlias name="pattern editor: passive foreground" alias="color 23"/>
 		<ColorAlias name="processor automation line" alias="color 1"/>
 		<ColorAlias name="processor control button: fill" alias="color 1"/>
 		<ColorAlias name="processor control button: fill active" alias="color 46"/>
@@ -449,11 +454,6 @@
 		<ColorAlias name="time axis view item base" alias="color 94"/>
 		<ColorAlias name="time stretch fill" alias="color 100"/>
 		<ColorAlias name="time stretch outline" alias="color 94"/>
-		<ColorAlias name="tracker editor: active foreground" alias="color 4"/>
-		<ColorAlias name="tracker editor: background" alias="color 1"/>
-		<ColorAlias name="tracker editor: beat background" alias="color 2"/>
-		<ColorAlias name="tracker editor: blank foreground" alias="color 3"/>
-		<ColorAlias name="tracker editor: passive foreground" alias="color 23"/>
 		<ColorAlias name="tracknumber label: fill" alias="color 34"/>
 		<ColorAlias name="tracknumber label: fill active" alias="color 46"/>
 		<ColorAlias name="tracknumber label: led active" alias="color 9"/>

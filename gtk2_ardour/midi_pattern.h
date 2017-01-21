@@ -32,9 +32,8 @@ namespace ARDOUR {
 };
 
 /**
- * Data structure holding the pattern of events for the tracker
- * representation. Plus some goodies method to generate a tracker pattern given
- * a midi region.
+ * Data structure holding the pattern of midi events for the pattern editor.
+ * Plus some goodies method to generate a midi pattern given a midi region.
  */
 class MidiPattern : public Pattern {
 public:
@@ -54,8 +53,8 @@ public:
 	void inc_ntracks();
 	void dec_ntracks();
 
-	// Number of tracker columns of that midi track (determined by the number
-	// of overlapping notes)
+	// Number of columns of that midi track (determined by the number of
+	// overlapping notes)
 	uint16_t ntracks;
 
 	// Minimum of number of columns required to display all notes

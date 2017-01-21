@@ -201,6 +201,11 @@
     <ColorAlias name="gtk_mono" alias="color 95"/>
     <ColorAlias name="gtk_mute" alias="color 52"/>
     <ColorAlias name="gtk_not_so_bright_indicator" alias="color 32"/>
+    <ColorAlias name="pattern editor: active foreground" alias="color 10"/>
+    <ColorAlias name="pattern editor: background" alias="color 105"/>
+    <ColorAlias name="pattern editor: beat background" alias="color 29"/>
+    <ColorAlias name="pattern editor: blank foreground" alias="color 106"/>
+    <ColorAlias name="pattern editor: passive foreground" alias="color 106"/>
     <ColorAlias name="gtk_processor_fader" alias="color 94"/>
     <ColorAlias name="gtk_processor_fader_frame" alias="color 104"/>
     <ColorAlias name="gtk_processor_frame_selected" alias="color 32"/>
@@ -470,11 +475,6 @@
     <ColorAlias name="time axis view item base" alias="color 94"/>
     <ColorAlias name="time stretch fill" alias="color 100"/>
     <ColorAlias name="time stretch outline" alias="color 94"/>
-    <ColorAlias name="tracker editor: active foreground" alias="color 10"/>
-    <ColorAlias name="tracker editor: background" alias="color 105"/>
-    <ColorAlias name="tracker editor: beat background" alias="color 29"/>
-    <ColorAlias name="tracker editor: blank foreground" alias="color 106"/>
-    <ColorAlias name="tracker editor: passive foreground" alias="color 106"/>
     <ColorAlias name="tracknumber label: fill" alias="color 34"/>
     <ColorAlias name="tracknumber label: fill active" alias="color 46"/>
     <ColorAlias name="tracknumber label: led active" alias="color 9"/>
