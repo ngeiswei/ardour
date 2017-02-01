@@ -125,19 +125,19 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, visible_channel (false)
 	, visible_velocity (false)
 	, visible_delay (false)
-	, octave_label ("Octave")
+	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
-	, steps_label ("Steps")
+	, steps_label (_("Steps"))
 	, steps_adjustment (1, 0, 256, 1, 4)
 	, steps_spinner (steps_adjustment)
-	, velocity_label ("Vel")
+	, velocity_label (S_("Velocity|Vel"))
 	, velocity_adjustment (64, 0, 127, 1, 4)
 	, velocity_spinner (velocity_adjustment)
-	, channel_label ("Ch")
+	, channel_label (S_("Channel|Ch"))
 	, channel_adjustment (1, 1, 16, 1, 4)
 	, channel_spinner (channel_adjustment)
-	, delay_label ("Delay")
+	, delay_label (_("Delay"))
 	, delay_adjustment (0, 0, 0, 1, 4)
 	, delay_spinner (delay_adjustment)
 	, region (reg)
@@ -1696,10 +1696,10 @@ MidiPatternEditor::setup_pattern ()
 		stringstream ss_ch;
 		stringstream ss_vel;
 		stringstream ss_delay;
-		ss_note << "Note"; // << i;
-		ss_ch << "Ch"; // << i;
-		ss_vel << "Vel"; // << i;
-		ss_delay << "Delay"; // << i;
+		ss_note << _("Note"); // << i;
+		ss_ch << S_("Channel|Ch"); // << i;
+		ss_vel << S_("Velocity|Vel"); // << i;
+		ss_delay << _("Delay"); // << i;
 
 		// TODO be careful of potential memory leaks
 		Gtk::TreeViewColumn* viewcolumn_note = new Gtk::TreeViewColumn (_(ss_note.str().c_str()), columns.note_name[i]);
@@ -1734,7 +1734,7 @@ MidiPatternEditor::setup_pattern ()
 		stringstream ss_automation;
 		stringstream ss_automation_delay;
 		ss_automation << "A" << i;
-		ss_automation_delay << "Delay";
+		ss_automation_delay << _("Delay");
 
 		Gtk::TreeViewColumn* viewcolumn_automation = new Gtk::TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[i]);
 		Gtk::TreeViewColumn* viewcolumn_automation_delay = new Gtk::TreeViewColumn (_(ss_automation_delay.str().c_str()), columns.automation_delay[i]);
