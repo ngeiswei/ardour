@@ -362,6 +362,10 @@ class MidiPatternEditor : public ArdourWindow
 
 	void register_actions ();
 
+	////////////////////////
+	// Display Pattern    //
+	////////////////////////
+
 	bool visible_note_press (GdkEventButton*);
 	bool visible_channel_press (GdkEventButton*);
 	bool visible_velocity_press (GdkEventButton*);
@@ -379,9 +383,36 @@ class MidiPatternEditor : public ArdourWindow
 
 	void setup_tooltips ();
 	void setup_toolbar ();
+	void setup_time_column();
+	void setup_note_column(size_t);
+	void setup_channel_column(size_t);
+	void setup_velocity_column(size_t);
+	void setup_note_delay_column(size_t);
+	void setup_automation_column(size_t);
+	void setup_automation_delay_column(size_t);
 	void setup_pattern ();
 	void setup_scroller ();
 	void redisplay_model ();
+
+	/////////////////////
+	// Edit Pattern    //
+	/////////////////////
+
+	// void edited (const std::string&, const std::string&);
+	// void editing_started (Gtk::CellEditable*, const std::string& path, int);
+	// void editing_canceled ();
+	// void stop_editing (bool cancelled = false);
+
+	// bool key_press (GdkEventKey* ev);
+	// bool key_release (GdkEventKey* ev);
+	// bool scroll_event (GdkEventScroll*);
+
+	// void delete_selected_note ();
+	// void selection_changed ();
+
+	/////////////////////////
+	// Other (sort out)    //
+	/////////////////////////
 
 	bool is_midi_track () const;
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track() const;
