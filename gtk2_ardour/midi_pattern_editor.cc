@@ -1662,6 +1662,79 @@ MidiPatternEditor::build_param2actrl ()
 }
 
 void
+MidiPatternEditor::setup_time_column()
+{
+	Gtk::TreeViewColumn* viewcolumn_time  = new Gtk::TreeViewColumn (_("Time"), columns.time);
+	Gtk::CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();		
+	viewcolumn_time->add_attribute(cellrenderer_time->property_cell_background (), columns._background_color);
+	view.append_column (*viewcolumn_time);
+}
+
+void
+MidiPatternEditor::setup_note_column (size_t i)
+{
+	string note_str(_("Note"));
+
+	// TODO be careful of potential memory leaks
+	Gtk::TreeViewColumn* viewcolumn_note = new Gtk::TreeViewColumn (note_str.c_str(), columns.note_name[i]);
+
+	Gtk::CellRendererText* cellrenderer_note = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_note->get_first_cell_renderer ());
+
+	viewcolumn_note->add_attribute(cellrenderer_note->property_cell_background (), columns._background_color);
+	viewcolumn_note->add_attribute(cellrenderer_note->property_foreground (), columns._note_foreground_color[i]);
+
+	view.append_column (*viewcolumn_note);
+}
+
+void
+MidiPatternEditor::setup_channel_column(size_t i)
+{
+	string ch_str(S_("Channel|Ch"));
+
+	// TODO be careful of potential memory leaks
+	Gtk::TreeViewColumn* viewcolumn_channel = new Gtk::TreeViewColumn (ch_str.c_str(), columns.channel[i]);
+
+	Gtk::CellRendererText* cellrenderer_channel = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_channel->get_first_cell_renderer ());
+
+	viewcolumn_channel->add_attribute(cellrenderer_channel->property_cell_background (), columns._background_color);
+	viewcolumn_channel->add_attribute(cellrenderer_channel->property_foreground (), columns._channel_foreground_color[i]);
+
+	view.append_column (*viewcolumn_channel);
+}
+
+void
+MidiPatternEditor::setup_velocity_column(size_t i)
+{
+	string vel_str(S_("Velocity|Vel"));
+
+	// TODO be careful of potential memory leaks
+	Gtk::TreeViewColumn* viewcolumn_velocity = new Gtk::TreeViewColumn (vel_str.c_str(), columns.velocity[i]);
+
+	Gtk::CellRendererText* cellrenderer_velocity = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_velocity->get_first_cell_renderer ());
+
+	viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_cell_background (), columns._background_color);
+	viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_foreground (), columns._velocity_foreground_color[i]);
+
+	view.append_column (*viewcolumn_velocity);
+}
+
+void
+MidiPatternEditor::setup_note_delay_column(size_t i)
+{
+	string delay_str(_("Delay"));
+
+	// TODO be careful of potential memory leaks
+	Gtk::TreeViewColumn* viewcolumn_delay = new Gtk::TreeViewColumn (delay_str.c_str(), columns.delay[i]);
+
+	Gtk::CellRendererText* cellrenderer_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_delay->get_first_cell_renderer ());
+
+	viewcolumn_delay->add_attribute(cellrenderer_delay->property_cell_background (), columns._background_color);
+	viewcolumn_delay->add_attribute(cellrenderer_delay->property_foreground (), columns._delay_foreground_color[i]);
+
+	view.append_column (*viewcolumn_delay);
+}
+
+void
 MidiPatternEditor::setup_pattern ()
 {
 	mtp = new MidiPattern(_session, region, midi_model);
@@ -1685,52 +1758,22 @@ MidiPatternEditor::setup_pattern ()
 	model = ListStore::create (columns);
 	view.set_model (model);
 
-	Gtk::TreeViewColumn* viewcolumn_time  = new Gtk::TreeViewColumn (_("Time"), columns.time);
-	Gtk::CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();		
-	viewcolumn_time->add_attribute(cellrenderer_time->property_cell_background (), columns._background_color);
-	view.append_column (*viewcolumn_time);
+	setup_time_column();
 
 	// Instantiate note tracks
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++) {
-		stringstream ss_note;
-		stringstream ss_ch;
-		stringstream ss_vel;
-		stringstream ss_delay;
-		ss_note << _("Note"); // << i;
-		ss_ch << S_("Channel|Ch"); // << i;
-		ss_vel << S_("Velocity|Vel"); // << i;
-		ss_delay << _("Delay"); // << i;
-
-		// TODO be careful of potential memory leaks
-		Gtk::TreeViewColumn* viewcolumn_note = new Gtk::TreeViewColumn (_(ss_note.str().c_str()), columns.note_name[i]);
-		Gtk::TreeViewColumn* viewcolumn_channel = new Gtk::TreeViewColumn (_(ss_ch.str().c_str()), columns.channel[i]);
-		Gtk::TreeViewColumn* viewcolumn_velocity = new Gtk::TreeViewColumn (_(ss_vel.str().c_str()), columns.velocity[i]);
-		Gtk::TreeViewColumn* viewcolumn_delay = new Gtk::TreeViewColumn (_(ss_delay.str().c_str()), columns.delay[i]);
-
-		Gtk::CellRendererText* cellrenderer_note = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_note->get_first_cell_renderer ());
-		Gtk::CellRendererText* cellrenderer_channel = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_channel->get_first_cell_renderer ());
-		Gtk::CellRendererText* cellrenderer_velocity = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_velocity->get_first_cell_renderer ());
-		Gtk::CellRendererText* cellrenderer_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_delay->get_first_cell_renderer ());
-
-		viewcolumn_note->add_attribute(cellrenderer_note->property_cell_background (), columns._background_color);
-		viewcolumn_note->add_attribute(cellrenderer_note->property_foreground (), columns._note_foreground_color[i]);
-		viewcolumn_channel->add_attribute(cellrenderer_channel->property_cell_background (), columns._background_color);
-		viewcolumn_channel->add_attribute(cellrenderer_channel->property_foreground (), columns._channel_foreground_color[i]);
-		viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_cell_background (), columns._background_color);
-		viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_foreground (), columns._velocity_foreground_color[i]);
-		viewcolumn_delay->add_attribute(cellrenderer_delay->property_cell_background (), columns._background_color);
-		viewcolumn_delay->add_attribute(cellrenderer_delay->property_foreground (), columns._delay_foreground_color[i]);
-
-		view.append_column (*viewcolumn_note);
-		view.append_column (*viewcolumn_channel);
-		view.append_column (*viewcolumn_velocity);
-		view.append_column (*viewcolumn_delay);
+		setup_note_column(i);
+		setup_channel_column(i);
+		setup_velocity_column(i);
+		setup_note_delay_column(i);
 	}
 
 	automation_col_offset = view.get_columns().size();
 
 	// Instantiate automation tracks
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
+		// Split into setup_automation_column(),
+		// setup_automation_delay_column().
 		stringstream ss_automation;
 		stringstream ss_automation_delay;
 		ss_automation << "A" << i;
