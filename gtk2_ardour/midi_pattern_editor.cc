@@ -1621,6 +1621,595 @@ MidiPatternEditor::redisplay_model ()
 	redisplay_visible_automation();
 }
 
+/////////////////////
+// Edit Pattern    //
+/////////////////////
+
+// TODO update all that, as well as the connections. For the
+// connections likely split these methods into Note, Channel, Vel and
+// Delay methods.
+
+// bool
+// MidiPatternEditor::scroll_event (GdkEventScroll* ev)
+// {
+// 	TreeModel::Path path;
+// 	TreeViewColumn* col;
+// 	int cellx;
+// 	int celly;
+// 	int idelta = 0;
+// 	double fdelta = 0;
+// 	MidiModel::NoteDiffCommand::Property prop (MidiModel::NoteDiffCommand::NoteNumber);
+// 	bool apply = false;
+// 	bool was_selected = false;
+// 	char const * opname;
+
+// 	if (!view.get_path_at_pos (ev->x, ev->y, path, col, cellx, celly)) {
+// 		return false;
+// 	}
+
+// 	if (view.get_selection()->count_selected_rows() == 0) {
+// 		was_selected = false;
+// 	} else if (view.get_selection()->is_selected (path)) {
+// 		was_selected = true;
+// 	} else {
+// 		was_selected = false;
+// 	}
+
+// 	int colnum = GPOINTER_TO_UINT (col->get_data (X_("colnum")));
+
+// 	switch (colnum) {
+// 	case 0:
+// 		if (Keyboard::modifier_state_equals (ev->state, Keyboard::SecondaryModifier)) {
+// 			fdelta = 1/64.0;
+// 		} else {
+// 			fdelta = 1/4.0;
+// 		}
+// 		if (ev->direction == GDK_SCROLL_DOWN || ev->direction == GDK_SCROLL_LEFT) {
+// 			fdelta = -fdelta;
+// 		}
+// 		prop = MidiModel::NoteDiffCommand::StartTime;
+// 		opname = _("edit note start");
+// 		apply = true;
+// 		break;
+// 	case 1:
+// 		idelta = 1;
+// 		if (ev->direction == GDK_SCROLL_DOWN || ev->direction == GDK_SCROLL_LEFT) {
+// 			idelta = -idelta;
+// 		}
+// 		prop = MidiModel::NoteDiffCommand::Channel;
+// 		opname = _("edit note channel");
+// 		apply = true;
+// 		break;
+// 	case 2:
+// 	case 3:
+// 		idelta = 1;
+// 		if (ev->direction == GDK_SCROLL_DOWN || ev->direction == GDK_SCROLL_LEFT) {
+// 			idelta = -idelta;
+// 		}
+// 		prop = MidiModel::NoteDiffCommand::NoteNumber;
+// 		opname = _("edit note number");
+// 		apply = true;
+// 		break;
+
+// 	case 4:
+// 		idelta = 1;
+// 		if (ev->direction == GDK_SCROLL_DOWN || ev->direction == GDK_SCROLL_LEFT) {
+// 			idelta = -idelta;
+// 		}
+// 		prop = MidiModel::NoteDiffCommand::Velocity;
+// 		opname = _("edit note velocity");
+// 		apply = true;
+// 		break;
+
+// 	case 5:
+// 		if (Keyboard::modifier_state_equals (ev->state, Keyboard::SecondaryModifier)) {
+// 			fdelta = 1/64.0;
+// 		} else {
+// 			fdelta = 1/4.0;
+// 		}
+// 		if (ev->direction == GDK_SCROLL_DOWN || ev->direction == GDK_SCROLL_LEFT) {
+// 			fdelta = -fdelta;
+// 		}
+// 		prop = MidiModel::NoteDiffCommand::Length;
+// 		opname = _("edit note length");
+// 		apply = true;
+// 		break;
+
+// 	default:
+// 		break;
+// 	}
+
+
+// 	if (apply) {
+
+// 		boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
+// 		MidiModel::NoteDiffCommand* cmd = m->new_note_diff_command (opname);
+// 		vector<TreeModel::Path> previous_selection;
+
+// 		if (was_selected) {
+
+// 			/* use selection */
+
+// 			TreeView::Selection::ListHandle_Path rows = view.get_selection()->get_selected_rows ();
+// 			TreeModel::iterator iter;
+// 			boost::shared_ptr<NoteType> note;
+
+// 			for (TreeView::Selection::ListHandle_Path::iterator i = rows.begin(); i != rows.end(); ++i) {
+
+// 				previous_selection.push_back (*i);
+
+// 				if ((iter = model->get_iter (*i))) {
+
+// 					note = (*iter)[columns._note];
+
+// 					switch (prop) {
+// 					case MidiModel::NoteDiffCommand::StartTime:
+// 						if (note->time() + fdelta >= 0) {
+// 							cmd->change (note, prop, note->time() + fdelta);
+// 						} else {
+// 							cmd->change (note, prop, Evoral::Beats());
+// 						}
+// 						break;
+// 					case MidiModel::NoteDiffCommand::Velocity:
+// 						cmd->change (note, prop, (uint8_t) (note->velocity() + idelta));
+// 						break;
+// 					case MidiModel::NoteDiffCommand::Length:
+// 						if (note->length().to_double() + fdelta >=
+// 						    Evoral::Beats::tick().to_double()) {
+// 							cmd->change (note, prop, note->length() + fdelta);
+// 						} else {
+// 							cmd->change (note, prop, Evoral::Beats::tick());
+// 						}
+// 						break;
+// 					case MidiModel::NoteDiffCommand::Channel:
+// 						cmd->change (note, prop, (uint8_t) (note->channel() + idelta));
+// 						break;
+// 					case MidiModel::NoteDiffCommand::NoteNumber:
+// 						cmd->change (note, prop, (uint8_t) (note->note() + idelta));
+// 						break;
+// 					default:
+// 						continue;
+// 					}
+// 				}
+// 			}
+
+// 		} else {
+
+// 			/* just this row */
+
+// 			TreeModel::iterator iter;
+// 			iter = model->get_iter (path);
+
+// 			previous_selection.push_back (path);
+
+// 			if (iter) {
+// 				boost::shared_ptr<NoteType> note = (*iter)[columns._note];
+
+// 				switch (prop) {
+// 				case MidiModel::NoteDiffCommand::StartTime:
+// 					if (note->time() + fdelta >= 0) {
+// 						cmd->change (note, prop, note->time() + fdelta);
+// 					} else {
+// 						cmd->change (note, prop, Evoral::Beats());
+// 					}
+// 					break;
+// 				case MidiModel::NoteDiffCommand::Velocity:
+// 					cmd->change (note, prop, (uint8_t) (note->velocity() + idelta));
+// 					break;
+// 				case MidiModel::NoteDiffCommand::Length:
+// 					if (note->length() + fdelta >=
+// 					    Evoral::Beats::tick().to_double()) {
+// 						cmd->change (note, prop, note->length() + fdelta);
+// 					} else {
+// 						cmd->change (note, prop, Evoral::Beats::tick());
+// 					}
+// 					break;
+// 				case MidiModel::NoteDiffCommand::Channel:
+// 					cmd->change (note, prop, (uint8_t) (note->channel() + idelta));
+// 					break;
+// 				case MidiModel::NoteDiffCommand::NoteNumber:
+// 					cmd->change (note, prop, (uint8_t) (note->note() + idelta));
+// 					break;
+// 				default:
+// 					break;
+// 				}
+// 			}
+// 		}
+
+// 		m->apply_command (*_session, cmd);
+
+// 		/* reset selection to be as it was before we rebuilt */
+
+// 		for (vector<TreeModel::Path>::iterator i = previous_selection.begin(); i != previous_selection.end(); ++i) {
+// 			view.get_selection()->select (*i);
+// 		}
+// 	}
+
+// 	return true;
+// }
+
+// bool
+// MidiPatternEditor::key_press (GdkEventKey* ev)
+// {
+// 	bool ret = false;
+// 	TreeModel::Path path;
+// 	TreeViewColumn* col;
+// 	int colnum;
+
+// 	switch (ev->keyval) {
+// 	case GDK_Tab:
+// 		if (edit_column > 0) {
+// 			colnum = edit_column;
+// 			path = edit_path;
+// 			if (editing_editable) {
+// 				editing_editable->editing_done ();
+// 			}
+// 			if (colnum >= 5) {
+// 				/* wrap to next line */
+// 				colnum = 0;
+// 				path.next();
+// 			} else {
+// 				colnum++;
+// 			}
+// 			col = view.get_column (colnum);
+// 			view.set_cursor (path, *col, true);
+// 			ret = true;
+// 		}
+// 		break;
+
+// 	case GDK_Up:
+// 	case GDK_uparrow:
+// 		if (edit_column > 0) {
+// 			colnum = edit_column;
+// 			path = edit_path;
+// 			if (editing_editable) {
+// 				editing_editable->editing_done ();
+// 			}
+// 			path.prev ();
+// 			col = view.get_column (colnum);
+// 			view.set_cursor (path, *col, true);
+// 			ret = true;
+// 		}
+// 		break;
+
+// 	case GDK_Down:
+// 	case GDK_downarrow:
+// 		if (edit_column > 0) {
+// 			colnum = edit_column;
+// 			path = edit_path;
+// 			if (editing_editable) {
+// 				editing_editable->editing_done ();
+// 			}
+// 			path.next ();
+// 			col = view.get_column (colnum);
+// 			view.set_cursor (path, *col, true);
+// 			ret = true;
+// 		}
+// 		break;
+
+// 	case GDK_Escape:
+// 		stop_editing (true);
+// 		break;
+
+// 	}
+
+// 	return ret;
+// }
+
+// bool
+// MidiPatternEditor::key_release (GdkEventKey* ev)
+// {
+// 	bool ret = false;
+// 	TreeModel::Path path;
+// 	TreeViewColumn* col;
+// 	TreeModel::iterator iter;
+// 	MidiModel::NoteDiffCommand* cmd;
+// 	boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
+// 	boost::shared_ptr<NoteType> note;
+// 	boost::shared_ptr<NoteType> copy;
+
+// 	switch (ev->keyval) {
+// 	case GDK_Insert:
+// 		/* add a new note to the model, based on the note at the cursor
+// 		 * pos
+// 		 */
+// 		view.get_cursor (path, col);
+// 		iter = model->get_iter (path);
+// 		cmd = m->new_note_diff_command (_("insert new note"));
+// 		note = (*iter)[columns._note];
+// 		copy.reset (new NoteType (*note.get()));
+// 		cmd->add (copy);
+// 		m->apply_command (*_session, cmd);
+// 		/* model has been redisplayed by now */
+// 		path.next ();
+// 		/* select, start editing column 2 (note) */
+// 		col = view.get_column (2);
+// 		view.set_cursor (path, *col, true);
+// 		break;
+
+// 	case GDK_Delete:
+// 	case GDK_BackSpace:
+// 		if (edit_column < 0) {
+// 			delete_selected_note ();
+// 		}
+// 		ret = true;
+// 		break;
+
+// 	case GDK_z:
+// 		if (_session && Gtkmm2ext::Keyboard::modifier_state_contains (ev->state, Gtkmm2ext::Keyboard::PrimaryModifier)) {
+// 			_session->undo (1);
+// 			ret = true;
+// 		}
+// 		break;
+
+// 	case GDK_r:
+// 		if (_session && Gtkmm2ext::Keyboard::modifier_state_contains (ev->state, Gtkmm2ext::Keyboard::PrimaryModifier)) {
+// 			_session->redo (1);
+// 			ret = true;
+// 		}
+// 		break;
+
+// 	default:
+// 		break;
+// 	}
+
+// 	return ret;
+// }
+
+// void
+// MidiPatternEditor::delete_selected_note ()
+// {
+// 	Glib::RefPtr<TreeSelection> selection = view.get_selection();
+// 	TreeView::Selection::ListHandle_Path rows = selection->get_selected_rows ();
+
+// 	if (rows.empty()) {
+// 		return;
+// 	}
+
+// 	typedef vector<boost::shared_ptr<NoteType> > Notes;
+// 	Notes to_delete;
+
+// 	for (TreeView::Selection::ListHandle_Path::iterator i = rows.begin(); i != rows.end(); ++i) {
+// 		TreeIter iter;
+
+// 		if ((iter = model->get_iter (*i))) {
+// 			boost::shared_ptr<NoteType> note = (*iter)[columns._note];
+// 			to_delete.push_back (note);
+// 		}
+// 	}
+
+// 	boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
+// 	MidiModel::NoteDiffCommand* cmd = m->new_note_diff_command (_("delete notes (from list)"));
+
+// 	for (Notes::iterator i = to_delete.begin(); i != to_delete.end(); ++i) {
+// 		cmd->remove (*i);
+// 	}
+
+// 	m->apply_command (*_session, cmd);
+// }
+
+// void
+// MidiPatternEditor::stop_editing (bool cancelled)
+// {
+// 	if (!cancelled) {
+// 		if (editing_editable) {
+// 			editing_editable->editing_done ();
+// 		}
+// 	} else {
+// 		if (editing_renderer) {
+// 			editing_renderer->stop_editing (cancelled);
+// 		}
+// 	}
+// }
+
+// void
+// MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int colno)
+// {
+// 	edit_path = TreePath (path);
+// 	edit_column = colno;
+// 	editing_renderer = dynamic_cast<CellRendererText*>(view.get_column_cell_renderer (colno));
+// 	editing_editable = ed;
+
+// 	if (ed) {
+// 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
+// 		if (e) {
+// 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_press), false);
+// 			e->signal_key_release_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_release), false);
+// 		}
+// 	}
+// }
+
+// void
+// MidiPatternEditor::editing_canceled ()
+// {
+// 	edit_path.clear ();
+// 	edit_column = -1;
+// 	editing_renderer = 0;
+// 	editing_editable = 0;
+// }
+
+// void
+// MidiPatternEditor::edited (const std::string& path, const std::string& text)
+// {
+// 	TreeModel::iterator iter = model->get_iter (path);
+
+// 	if (!iter || text.empty()) {
+// 		return;
+// 	}
+
+// 	boost::shared_ptr<NoteType> note = (*iter)[columns._note];
+// 	MidiModel::NoteDiffCommand::Property prop (MidiModel::NoteDiffCommand::NoteNumber);
+
+// 	double fval;
+// 	int    ival;
+// 	bool   apply = false;
+// 	int    idelta = 0;
+// 	double fdelta = 0;
+// 	char const * opname;
+// 	switch (edit_column) {
+// 	case 0: // start
+// 		break;
+// 	case 1: // channel
+// 		// correct ival for zero-based counting after scan
+// 		if (sscanf (text.c_str(), "%d", &ival) == 1 && --ival != note->channel()) {
+// 			idelta = ival - note->channel();
+// 			prop = MidiModel::NoteDiffCommand::Channel;
+// 			opname = _("change note channel");
+// 			apply = true;
+// 		}
+// 		break;
+// 	case 2: // note
+// 		if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->note()) {
+// 			idelta = ival - note->note();
+// 			prop = MidiModel::NoteDiffCommand::NoteNumber;
+// 			opname = _("change note number");
+// 			apply = true;
+// 		}
+// 		break;
+// 	case 3: // name
+// 		ival = ParameterDescriptor::midi_note_num (text);
+// 		if (ival < 128) {
+// 			idelta = ival - note->note();
+// 			prop = MidiModel::NoteDiffCommand::NoteNumber;
+// 			opname = _("change note number");
+// 			apply = true;
+// 		}
+// 		break;
+// 	case 4: // velocity
+// 		if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->velocity()) {
+// 			idelta = ival - note->velocity();
+// 			prop = MidiModel::NoteDiffCommand::Velocity;
+// 			opname = _("change note velocity");
+// 			apply = true;
+// 		}
+// 		break;
+// 	case 5: // length
+
+// 		if (sscanf (text.c_str(), "%lf", &fval) == 1) {
+
+// 			/* numeric value entered */
+
+// 			if (text.find ('.') == string::npos && text.find (',') == string::npos) {
+// 				/* integral => units are ticks */
+// 				fval = fval / BBT_Time::ticks_per_beat;
+// 			} else {
+// 				/* non-integral => beats, so use as-is */
+// 			}
+
+// 		} else {
+
+// 			/* assume its text from the combo. look for the map
+// 			 * entry for the actual note ticks
+// 			 */
+
+// 			uint64_t len_ticks = note->length().to_ticks();
+// 			std::map<int,string>::iterator x = note_length_map.find (len_ticks);
+
+// 			if (x == note_length_map.end()) {
+
+// 				/* tick length not in map - was
+// 				 * displaying numeric value ... use new value
+// 				 * from note length map, and convert to beats.
+// 				 */
+
+// 				for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
+// 					if (x->second == text) {
+// 						break;
+// 					}
+// 				}
+
+// 				if (x != note_length_map.end()) {
+// 					fval = x->first / BBT_Time::ticks_per_beat;
+// 				}
+
+// 			} else {
+
+// 				fval = -1.0;
+
+// 				if (text != x->second) {
+
+// 					/* get ticks for the newly selected
+// 					 * note length
+// 					 */
+
+// 					for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
+// 						if (x->second == text) {
+// 							break;
+// 						}
+// 					}
+
+// 					if (x != note_length_map.end()) {
+// 						/* convert to beats */
+// 						fval = (double) x->first / BBT_Time::ticks_per_beat;
+// 					}
+// 				}
+// 			}
+// 		}
+
+// 		if (fval > 0.0) {
+// 			fdelta = fval - note->length().to_double();
+// 			prop = MidiModel::NoteDiffCommand::Length;
+// 			opname = _("change note length");
+// 			apply = true;
+// 		}
+// 		break;
+
+// 	default:
+// 		break;
+// 	}
+
+// 	if (apply) {
+
+// 		boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
+// 		MidiModel::NoteDiffCommand* cmd = m->new_note_diff_command (opname);
+
+// 		TreeView::Selection::ListHandle_Path rows = view.get_selection()->get_selected_rows ();
+
+// 		for (TreeView::Selection::ListHandle_Path::iterator i = rows.begin(); i != rows.end(); ++i) {
+// 			if ((iter = model->get_iter (*i))) {
+
+// 				note = (*iter)[columns._note];
+
+// 				switch (prop) {
+// 				case MidiModel::NoteDiffCommand::Velocity:
+// 					cmd->change (note, prop, (uint8_t) (note->velocity() + idelta));
+// 					break;
+// 				case MidiModel::NoteDiffCommand::Length:
+// 					cmd->change (note, prop, note->length() + fdelta);
+// 					break;
+// 				case MidiModel::NoteDiffCommand::Channel:
+// 					cmd->change (note, prop, (uint8_t) (note->channel() + idelta));
+// 					break;
+// 				case MidiModel::NoteDiffCommand::NoteNumber:
+// 					cmd->change (note, prop, (uint8_t) (note->note() + idelta));
+// 					break;
+// 				default:
+// 					continue;
+// 				}
+// 			}
+// 		}
+
+// 		m->apply_command (*_session, cmd);
+
+// 		/* model has been redisplayed by now */
+// 		/* keep selected row(s), move cursor there, don't continue editing */
+
+// 		TreeViewColumn* col = view.get_column (edit_column);
+// 		view.set_cursor (edit_path, *col, 0);
+
+// 		/* reset edit info, since we're done */
+
+// 		edit_path.clear ();
+// 		edit_column = -1;
+// 		editing_renderer = 0;
+// 		editing_editable = 0;
+// 	}
+// }
+
+/////////////////////////
+// Other (sort out)    //
+/////////////////////////
+
 bool
 MidiPatternEditor::is_midi_track () const
 {
