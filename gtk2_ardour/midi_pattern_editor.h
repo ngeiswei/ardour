@@ -383,13 +383,13 @@ class MidiPatternEditor : public ArdourWindow
 
 	void setup_tooltips ();
 	void setup_toolbar ();
-	void setup_time_column();
-	void setup_note_column(size_t);
-	void setup_channel_column(size_t);
-	void setup_velocity_column(size_t);
-	void setup_note_delay_column(size_t);
-	void setup_automation_column(size_t);
-	void setup_automation_delay_column(size_t);
+	void setup_time_column ();
+	void setup_note_column (size_t);
+	void setup_channel_column (size_t);
+	void setup_velocity_column (size_t);
+	void setup_note_delay_column (size_t);
+	void setup_automation_column (size_t);
+	void setup_automation_delay_column (size_t);
 	void setup_pattern ();
 	void setup_scroller ();
 	void redisplay_model ();
@@ -398,10 +398,10 @@ class MidiPatternEditor : public ArdourWindow
 	// Edit Pattern    //
 	/////////////////////
 
-	// void edited (const std::string&, const std::string&);
-	// void editing_started (Gtk::CellEditable*, const std::string& path, int);
-	// void editing_canceled ();
-	// void stop_editing (bool cancelled = false);
+	void edited (const std::string&, const std::string&);
+	void editing_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_canceled ();
+	void stop_editing (bool cancelled = false);
 
 	// bool key_press (GdkEventKey* ev);
 	// bool key_release (GdkEventKey* ev);
