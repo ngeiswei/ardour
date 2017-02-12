@@ -1988,223 +1988,230 @@ MidiPatternEditor::redisplay_model ()
 // 	m->apply_command (*_session, cmd);
 // }
 
-// void
-// MidiPatternEditor::stop_editing (bool cancelled)
-// {
-// 	if (!cancelled) {
-// 		if (editing_editable) {
-// 			editing_editable->editing_done ();
-// 		}
-// 	} else {
-// 		if (editing_renderer) {
-// 			editing_renderer->stop_editing (cancelled);
-// 		}
-// 	}
-// }
+void
+MidiPatternEditor::stop_editing (bool cancelled)
+{
+	std::cout << "MidiPatternEditor::stop_editing cancelled = " << cancelled
+			  << std::endl;
+	// if (!cancelled) {
+	// 	if (editing_editable) {
+	// 		editing_editable->editing_done ();
+	// 	}
+	// } else {
+	// 	if (editing_renderer) {
+	// 		editing_renderer->stop_editing (cancelled);
+	// 	}
+	// }
+}
 
-// void
-// MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int colno)
-// {
-// 	edit_path = TreePath (path);
-// 	edit_column = colno;
-// 	editing_renderer = dynamic_cast<CellRendererText*>(view.get_column_cell_renderer (colno));
-// 	editing_editable = ed;
+void
+MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int colno)
+{
+	std::cout << "MidiPatternEditor::editing_started path = " << path
+			  << ", colno = " << colno << std::endl;
+	// edit_path = TreePath (path);
+	// edit_column = colno;
+	// editing_renderer = dynamic_cast<CellRendererText*>(view.get_column_cell_renderer (colno));
+	// editing_editable = ed;
 
-// 	if (ed) {
-// 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-// 		if (e) {
-// 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_press), false);
-// 			e->signal_key_release_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_release), false);
-// 		}
-// 	}
-// }
+	// if (ed) {
+	// 	Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
+	// 	if (e) {
+	// 		e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_press), false);
+	// 		e->signal_key_release_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_release), false);
+	// 	}
+	// }
+}
 
-// void
-// MidiPatternEditor::editing_canceled ()
-// {
-// 	edit_path.clear ();
-// 	edit_column = -1;
-// 	editing_renderer = 0;
-// 	editing_editable = 0;
-// }
+void
+MidiPatternEditor::editing_canceled ()
+{
+	std::cout << "MidiPatternEditor::editing_canceled" << std::endl;
+	// edit_path.clear ();
+	// edit_column = -1;
+	// editing_renderer = 0;
+	// editing_editable = 0;
+}
 
-// void
-// MidiPatternEditor::edited (const std::string& path, const std::string& text)
-// {
-// 	TreeModel::iterator iter = model->get_iter (path);
+void
+MidiPatternEditor::edited (const std::string& path, const std::string& text)
+{
+	std::cout << "MidiPatternEditor::edited path = " << path
+			  << ", text = " << text << std::endl;
+	// TreeModel::iterator iter = model->get_iter (path);
 
-// 	if (!iter || text.empty()) {
-// 		return;
-// 	}
+	// if (!iter || text.empty()) {
+	// 	return;
+	// }
 
-// 	boost::shared_ptr<NoteType> note = (*iter)[columns._note];
-// 	MidiModel::NoteDiffCommand::Property prop (MidiModel::NoteDiffCommand::NoteNumber);
+	// boost::shared_ptr<NoteType> note = (*iter)[columns._note];
+	// MidiModel::NoteDiffCommand::Property prop (MidiModel::NoteDiffCommand::NoteNumber);
 
-// 	double fval;
-// 	int    ival;
-// 	bool   apply = false;
-// 	int    idelta = 0;
-// 	double fdelta = 0;
-// 	char const * opname;
-// 	switch (edit_column) {
-// 	case 0: // start
-// 		break;
-// 	case 1: // channel
-// 		// correct ival for zero-based counting after scan
-// 		if (sscanf (text.c_str(), "%d", &ival) == 1 && --ival != note->channel()) {
-// 			idelta = ival - note->channel();
-// 			prop = MidiModel::NoteDiffCommand::Channel;
-// 			opname = _("change note channel");
-// 			apply = true;
-// 		}
-// 		break;
-// 	case 2: // note
-// 		if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->note()) {
-// 			idelta = ival - note->note();
-// 			prop = MidiModel::NoteDiffCommand::NoteNumber;
-// 			opname = _("change note number");
-// 			apply = true;
-// 		}
-// 		break;
-// 	case 3: // name
-// 		ival = ParameterDescriptor::midi_note_num (text);
-// 		if (ival < 128) {
-// 			idelta = ival - note->note();
-// 			prop = MidiModel::NoteDiffCommand::NoteNumber;
-// 			opname = _("change note number");
-// 			apply = true;
-// 		}
-// 		break;
-// 	case 4: // velocity
-// 		if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->velocity()) {
-// 			idelta = ival - note->velocity();
-// 			prop = MidiModel::NoteDiffCommand::Velocity;
-// 			opname = _("change note velocity");
-// 			apply = true;
-// 		}
-// 		break;
-// 	case 5: // length
+	// double fval;
+	// int    ival;
+	// bool   apply = false;
+	// int    idelta = 0;
+	// double fdelta = 0;
+	// char const * opname;
+	// switch (edit_column) {
+	// case 0: // start
+	// 	break;
+	// case 1: // channel
+	// 	// correct ival for zero-based counting after scan
+	// 	if (sscanf (text.c_str(), "%d", &ival) == 1 && --ival != note->channel()) {
+	// 		idelta = ival - note->channel();
+	// 		prop = MidiModel::NoteDiffCommand::Channel;
+	// 		opname = _("change note channel");
+	// 		apply = true;
+	// 	}
+	// 	break;
+	// case 2: // note
+	// 	if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->note()) {
+	// 		idelta = ival - note->note();
+	// 		prop = MidiModel::NoteDiffCommand::NoteNumber;
+	// 		opname = _("change note number");
+	// 		apply = true;
+	// 	}
+	// 	break;
+	// case 3: // name
+	// 	ival = ParameterDescriptor::midi_note_num (text);
+	// 	if (ival < 128) {
+	// 		idelta = ival - note->note();
+	// 		prop = MidiModel::NoteDiffCommand::NoteNumber;
+	// 		opname = _("change note number");
+	// 		apply = true;
+	// 	}
+	// 	break;
+	// case 4: // velocity
+	// 	if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->velocity()) {
+	// 		idelta = ival - note->velocity();
+	// 		prop = MidiModel::NoteDiffCommand::Velocity;
+	// 		opname = _("change note velocity");
+	// 		apply = true;
+	// 	}
+	// 	break;
+	// case 5: // length
 
-// 		if (sscanf (text.c_str(), "%lf", &fval) == 1) {
+	// 	if (sscanf (text.c_str(), "%lf", &fval) == 1) {
 
-// 			/* numeric value entered */
+	// 		/* numeric value entered */
 
-// 			if (text.find ('.') == string::npos && text.find (',') == string::npos) {
-// 				/* integral => units are ticks */
-// 				fval = fval / BBT_Time::ticks_per_beat;
-// 			} else {
-// 				/* non-integral => beats, so use as-is */
-// 			}
+	// 		if (text.find ('.') == string::npos && text.find (',') == string::npos) {
+	// 			/* integral => units are ticks */
+	// 			fval = fval / BBT_Time::ticks_per_beat;
+	// 		} else {
+	// 			/* non-integral => beats, so use as-is */
+	// 		}
 
-// 		} else {
+	// 	} else {
 
-// 			/* assume its text from the combo. look for the map
-// 			 * entry for the actual note ticks
-// 			 */
+	// 		/* assume its text from the combo. look for the map
+	// 		 * entry for the actual note ticks
+	// 		 */
 
-// 			uint64_t len_ticks = note->length().to_ticks();
-// 			std::map<int,string>::iterator x = note_length_map.find (len_ticks);
+	// 		uint64_t len_ticks = note->length().to_ticks();
+	// 		std::map<int,string>::iterator x = note_length_map.find (len_ticks);
 
-// 			if (x == note_length_map.end()) {
+	// 		if (x == note_length_map.end()) {
 
-// 				/* tick length not in map - was
-// 				 * displaying numeric value ... use new value
-// 				 * from note length map, and convert to beats.
-// 				 */
+	// 			/* tick length not in map - was
+	// 			 * displaying numeric value ... use new value
+	// 			 * from note length map, and convert to beats.
+	// 			 */
 
-// 				for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
-// 					if (x->second == text) {
-// 						break;
-// 					}
-// 				}
+	// 			for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
+	// 				if (x->second == text) {
+	// 					break;
+	// 				}
+	// 			}
 
-// 				if (x != note_length_map.end()) {
-// 					fval = x->first / BBT_Time::ticks_per_beat;
-// 				}
+	// 			if (x != note_length_map.end()) {
+	// 				fval = x->first / BBT_Time::ticks_per_beat;
+	// 			}
 
-// 			} else {
+	// 		} else {
 
-// 				fval = -1.0;
+	// 			fval = -1.0;
 
-// 				if (text != x->second) {
+	// 			if (text != x->second) {
 
-// 					/* get ticks for the newly selected
-// 					 * note length
-// 					 */
+	// 				/* get ticks for the newly selected
+	// 				 * note length
+	// 				 */
 
-// 					for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
-// 						if (x->second == text) {
-// 							break;
-// 						}
-// 					}
+	// 				for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
+	// 					if (x->second == text) {
+	// 						break;
+	// 					}
+	// 				}
 
-// 					if (x != note_length_map.end()) {
-// 						/* convert to beats */
-// 						fval = (double) x->first / BBT_Time::ticks_per_beat;
-// 					}
-// 				}
-// 			}
-// 		}
+	// 				if (x != note_length_map.end()) {
+	// 					/* convert to beats */
+	// 					fval = (double) x->first / BBT_Time::ticks_per_beat;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-// 		if (fval > 0.0) {
-// 			fdelta = fval - note->length().to_double();
-// 			prop = MidiModel::NoteDiffCommand::Length;
-// 			opname = _("change note length");
-// 			apply = true;
-// 		}
-// 		break;
+	// 	if (fval > 0.0) {
+	// 		fdelta = fval - note->length().to_double();
+	// 		prop = MidiModel::NoteDiffCommand::Length;
+	// 		opname = _("change note length");
+	// 		apply = true;
+	// 	}
+	// 	break;
 
-// 	default:
-// 		break;
-// 	}
+	// default:
+	// 	break;
+	// }
 
-// 	if (apply) {
+	// if (apply) {
 
-// 		boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
-// 		MidiModel::NoteDiffCommand* cmd = m->new_note_diff_command (opname);
+	// 	boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
+	// 	MidiModel::NoteDiffCommand* cmd = m->new_note_diff_command (opname);
 
-// 		TreeView::Selection::ListHandle_Path rows = view.get_selection()->get_selected_rows ();
+	// 	TreeView::Selection::ListHandle_Path rows = view.get_selection()->get_selected_rows ();
 
-// 		for (TreeView::Selection::ListHandle_Path::iterator i = rows.begin(); i != rows.end(); ++i) {
-// 			if ((iter = model->get_iter (*i))) {
+	// 	for (TreeView::Selection::ListHandle_Path::iterator i = rows.begin(); i != rows.end(); ++i) {
+	// 		if ((iter = model->get_iter (*i))) {
 
-// 				note = (*iter)[columns._note];
+	// 			note = (*iter)[columns._note];
 
-// 				switch (prop) {
-// 				case MidiModel::NoteDiffCommand::Velocity:
-// 					cmd->change (note, prop, (uint8_t) (note->velocity() + idelta));
-// 					break;
-// 				case MidiModel::NoteDiffCommand::Length:
-// 					cmd->change (note, prop, note->length() + fdelta);
-// 					break;
-// 				case MidiModel::NoteDiffCommand::Channel:
-// 					cmd->change (note, prop, (uint8_t) (note->channel() + idelta));
-// 					break;
-// 				case MidiModel::NoteDiffCommand::NoteNumber:
-// 					cmd->change (note, prop, (uint8_t) (note->note() + idelta));
-// 					break;
-// 				default:
-// 					continue;
-// 				}
-// 			}
-// 		}
+	// 			switch (prop) {
+	// 			case MidiModel::NoteDiffCommand::Velocity:
+	// 				cmd->change (note, prop, (uint8_t) (note->velocity() + idelta));
+	// 				break;
+	// 			case MidiModel::NoteDiffCommand::Length:
+	// 				cmd->change (note, prop, note->length() + fdelta);
+	// 				break;
+	// 			case MidiModel::NoteDiffCommand::Channel:
+	// 				cmd->change (note, prop, (uint8_t) (note->channel() + idelta));
+	// 				break;
+	// 			case MidiModel::NoteDiffCommand::NoteNumber:
+	// 				cmd->change (note, prop, (uint8_t) (note->note() + idelta));
+	// 				break;
+	// 			default:
+	// 				continue;
+	// 			}
+	// 		}
+	// 	}
 
-// 		m->apply_command (*_session, cmd);
+	// 	m->apply_command (*_session, cmd);
 
-// 		/* model has been redisplayed by now */
-// 		/* keep selected row(s), move cursor there, don't continue editing */
+	// 	/* model has been redisplayed by now */
+	// 	/* keep selected row(s), move cursor there, don't continue editing */
 
-// 		TreeViewColumn* col = view.get_column (edit_column);
-// 		view.set_cursor (edit_path, *col, 0);
+	// 	TreeViewColumn* col = view.get_column (edit_column);
+	// 	view.set_cursor (edit_path, *col, 0);
 
-// 		/* reset edit info, since we're done */
+	// 	/* reset edit info, since we're done */
 
-// 		edit_path.clear ();
-// 		edit_column = -1;
-// 		editing_renderer = 0;
-// 		editing_editable = 0;
-// 	}
-// }
+	// 	edit_path.clear ();
+	// 	edit_column = -1;
+	// 	editing_renderer = 0;
+	// 	editing_editable = 0;
+	// }
+}
 
 /////////////////////////
 // Other (sort out)    //
@@ -2272,11 +2279,17 @@ MidiPatternEditor::setup_note_column (size_t i)
 	viewcolumn_note->add_attribute(cellrenderer_note->property_cell_background (), columns._background_color);
 	viewcolumn_note->add_attribute(cellrenderer_note->property_foreground (), columns._note_foreground_color[i]);
 
+	cellrenderer_note->property_editable() = true;
+
+	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_note->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
+	cellrenderer_note->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::edited));
+
 	view.append_column (*viewcolumn_note);
 }
 
 void
-MidiPatternEditor::setup_channel_column(size_t i)
+MidiPatternEditor::setup_channel_column (size_t i)
 {
 	string ch_str(S_("Channel|Ch"));
 
@@ -2292,7 +2305,7 @@ MidiPatternEditor::setup_channel_column(size_t i)
 }
 
 void
-MidiPatternEditor::setup_velocity_column(size_t i)
+MidiPatternEditor::setup_velocity_column (size_t i)
 {
 	string vel_str(S_("Velocity|Vel"));
 
@@ -2308,7 +2321,7 @@ MidiPatternEditor::setup_velocity_column(size_t i)
 }
 
 void
-MidiPatternEditor::setup_note_delay_column(size_t i)
+MidiPatternEditor::setup_note_delay_column (size_t i)
 {
 	string delay_str(_("Delay"));
 
