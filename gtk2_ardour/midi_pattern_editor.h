@@ -302,10 +302,7 @@ class MidiPatternEditor : public ArdourWindow
 	Glib::RefPtr<Gtk::ListStore> model;
 	Gtk::TreeView                view;
 	Gtk::ScrolledWindow          scroller;
-	Gtk::TreeModel::Path         edit_path;
 	int                          edit_column;
-	Gtk::CellRendererText*       editing_renderer;
-	Gtk::CellEditable*           editing_editable;
 	Gtk::Table                   buttons;
 	Gtk::HBox                    toolbar;
 	Gtk::VBox                    vbox;
@@ -398,17 +395,16 @@ class MidiPatternEditor : public ArdourWindow
 	// Edit Pattern    //
 	/////////////////////
 
-	void edited (const std::string&, const std::string&);
+	// Get note from path and edit_column
+	boost::shared_ptr<NoteType> get_note (const std::string& path);
+
 	void editing_started (Gtk::CellEditable*, const std::string& path, int);
 	void editing_canceled ();
-	void stop_editing (bool cancelled = false);
 
-	// bool key_press (GdkEventKey* ev);
-	// bool key_release (GdkEventKey* ev);
-	// bool scroll_event (GdkEventScroll*);
-
-	// void delete_selected_note ();
-	// void selection_changed ();
+	void note_edited (const std::string&, const std::string&);
+	void channel_edited (const std::string&, const std::string&);
+	void velocity_edited (const std::string&, const std::string&);
+	void delay_edited (const std::string&, const std::string&);
 
 	/////////////////////////
 	// Other (sort out)    //
