@@ -60,12 +60,12 @@ public:
 	// Minimum of number of columns required to display all notes
 	uint16_t nreqtracks;
 
-	// Map row index to notes on for each track
-	std::vector<RowToNotes> notes_on;
+	// Map row index to on notes for each track
+	std::vector<RowToNotes> on_notes;
 
-	// Map row index to notes off (basically the same corresponding notes on)
+	// Map row index to off notes (basically the same corresponding on notes)
 	// for each track
-	std::vector<RowToNotes> notes_off;
+	std::vector<RowToNotes> off_notes;
 
 private:
 	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
