@@ -254,7 +254,8 @@ class MidiPatternEditor : public ArdourWindow
 				add (_velocity_foreground_color[i]);
 				add (delay[i]);
 				add (_delay_foreground_color[i]);
-				add (_note[i]);		// We keep that around to play the note
+				add (_on_note[i]);		// We keep that around to play and edit
+				add (_off_note[i]);		// We keep that around to play and edit
 			}
 			for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 				add (automation[i]);
@@ -274,7 +275,8 @@ class MidiPatternEditor : public ArdourWindow
 		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<boost::shared_ptr<NoteType> > _note[MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<boost::shared_ptr<NoteType> > _on_note[MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<boost::shared_ptr<NoteType> > _off_note[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<ARDOUR::AutomationList::iterator> _automation[MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_AUTOMATION_TRACKS];
@@ -396,7 +398,9 @@ class MidiPatternEditor : public ArdourWindow
 	/////////////////////
 
 	// Get note from path and edit_column
-	boost::shared_ptr<NoteType> get_note (const std::string& path);
+	boost::shared_ptr<NoteType> get_on_note (const std::string& path);
+	boost::shared_ptr<NoteType> get_off_note (const std::string& path);
+	boost::shared_ptr<NoteType> get_note (const std::string& path); // either on or off
 
 	void editing_started (Gtk::CellEditable*, const std::string& path, int);
 	void editing_canceled ();
