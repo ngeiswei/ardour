@@ -80,10 +80,10 @@ void MidiPattern::update_pattern()
 	nreqtracks = notes_per_track.size();
 	ntracks = std::max(nreqtracks, ntracks);
 
-	notes_on.clear();
-	notes_on.resize(ntracks);
-	notes_off.clear();
-	notes_off.resize(ntracks);
+	on_notes.clear();
+	on_notes.resize(ntracks);
+	off_notes.clear();
+	off_notes.resize(ntracks);
 
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = notes_per_track[itrack].begin();
@@ -96,14 +96,14 @@ void MidiPattern::update_pattern()
 			uint32_t row_off = row_at_beats(off_time);
 
 			if (row_on == row_off && row_on != row_off_min_delay) {
-				notes_on[itrack].insert(RowToNotes::value_type(row_on, *inote));
-				notes_off[itrack].insert(RowToNotes::value_type(row_off_min_delay, *inote));
+				on_notes[itrack].insert(RowToNotes::value_type(row_on, *inote));
+				off_notes[itrack].insert(RowToNotes::value_type(row_off_min_delay, *inote));
 			} else if (row_on == row_off && row_on_max_delay != row_off) {
-				notes_on[itrack].insert(RowToNotes::value_type(row_on_max_delay, *inote));
-				notes_off[itrack].insert(RowToNotes::value_type(row_off, *inote));
+				on_notes[itrack].insert(RowToNotes::value_type(row_on_max_delay, *inote));
+				off_notes[itrack].insert(RowToNotes::value_type(row_off, *inote));
 			} else {
-				notes_on[itrack].insert(RowToNotes::value_type(row_on, *inote));
-				notes_off[itrack].insert(RowToNotes::value_type(row_off, *inote));
+				on_notes[itrack].insert(RowToNotes::value_type(row_on, *inote));
+				off_notes[itrack].insert(RowToNotes::value_type(row_off, *inote));
 			}
 		}
 	}
