@@ -350,9 +350,9 @@ class MidiPatternEditor : public ArdourWindow
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
 
-	MidiPattern* mtp;
-	TrackAutomationPattern* tatp;
-	RegionAutomationPattern* ratp;
+	MidiPattern* mp;
+	TrackAutomationPattern* tap;
+	RegionAutomationPattern* rap;
 
 	/** connection used to connect to model's ContentChanged signal */
 	PBD::ScopedConnection content_connection;
@@ -396,6 +396,8 @@ class MidiPatternEditor : public ArdourWindow
 	/////////////////////
 	// Edit Pattern    //
 	/////////////////////
+
+	int get_row_index(const std::string& path);
 
 	// Get note from path and edit_column
 	boost::shared_ptr<NoteType> get_on_note (const std::string& path);
