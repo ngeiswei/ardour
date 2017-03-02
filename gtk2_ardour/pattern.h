@@ -99,6 +99,10 @@ public:
 	// Like delay_ticks but the event_time is relative to the region position
 	int64_t region_relative_delay_ticks(const Evoral::Beats& event_time, uint32_t irow);
 
+	// Return the minimum and maximum number ticks allowed for delay
+	int32_t delay_ticks_min();
+	int32_t delay_ticks_max();
+
 	// Beats corresponding to the region's first and last frame
 	Evoral::Beats first_beats;
 	Evoral::Beats last_beats;
