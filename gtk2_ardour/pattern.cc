@@ -128,3 +128,13 @@ int64_t Pattern::region_relative_delay_ticks(const Evoral::Beats& event_time, ui
 {
 	return delay_ticks(event_time + first_beats, irow);
 }
+
+int32_t Pattern::delay_ticks_min()
+{
+	return 1 - (int32_t)_ticks_per_row;
+}
+
+int32_t Pattern::delay_ticks_max()
+{
+	return (int32_t)_ticks_per_row - 1;
+}
