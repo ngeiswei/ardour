@@ -137,8 +137,8 @@ public:
 	}
 
 	inline bool operator==(double t) const {
-		/* Acceptable tolerance is 1 tick. */
-		return fabs(to_double() - t) <= (1.0 / PPQN);
+		/* Acceptable tolerance is 1/2 tick. */
+		return fabs(to_double() - t) <= (0.5 / PPQN);
 	}
 
 	inline bool operator==(int beats) const {
@@ -166,9 +166,9 @@ public:
 	}
 
 	inline bool operator<(double b) const {
-		/* Acceptable tolerance is 1 tick. */
+		/* Acceptable tolerance is 1/2 tick. */
 		const double time = to_double();
-		if (fabs(time - b) <= (1.0 / PPQN)) {
+		if (fabs(time - b) <= (0.5 / PPQN)) {
 			return false;  /* Effectively identical. */
 		} else {
 			return time < b;
@@ -180,9 +180,9 @@ public:
 	}
 
 	inline bool operator>(double b) const {
-		/* Acceptable tolerance is 1 tick. */
+		/* Acceptable tolerance is 1/2 tick. */
 		const double time = to_double();
-		if (fabs(time - b) <= (1.0 / PPQN)) {
+		if (fabs(time - b) <= (0.5 / PPQN)) {
 			return false;  /* Effectively identical. */
 		} else {
 			return time > b;
