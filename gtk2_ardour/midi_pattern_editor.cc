@@ -1439,6 +1439,8 @@ MidiPatternEditor::redisplay_model ()
 
 		mp->set_rows_per_beat(rows_per_beat);
 		mp->update_pattern();
+		delay_spinner.get_adjustment()->set_lower(mp->delay_ticks_min());
+		delay_spinner.get_adjustment()->set_upper(mp->delay_ticks_max());
 
 		tap->set_rows_per_beat(rows_per_beat);
 		tap->update_pattern();
