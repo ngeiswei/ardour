@@ -131,6 +131,9 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, steps_label (_("Steps"))
 	, steps_adjustment (1, 0, 256, 1, 4)
 	, steps_spinner (steps_adjustment)
+	, place_label (_("Place"))
+	, place_adjustment (0, -5, 5, 1, 2)
+	, place_spinner (place_adjustment)
 	, velocity_label (S_("Velocity|Vel"))
 	, velocity_adjustment (64, 0, 127, 1, 4)
 	, velocity_spinner (velocity_adjustment)
@@ -2290,6 +2293,15 @@ MidiPatternEditor::setup_toolbar ()
 	steps_spinner.set_activates_default ();
 	steps_spinner.show ();
 	toolbar.pack_start (steps_spinner, false, false);
+
+	// Place spinner
+	place_separator.show ();
+	toolbar.pack_start (place_separator, false, false);
+	place_label.show ();
+	toolbar.pack_start (place_label, false, false);
+	place_spinner.set_activates_default ();
+	place_spinner.show ();
+	toolbar.pack_start (place_spinner, false, false);
 
 	// Velocity spinner
 	velocity_separator.show ();

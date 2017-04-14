@@ -333,6 +333,10 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::Label                   steps_label;
 	Gtk::Adjustment              steps_adjustment;
 	Gtk::SpinButton              steps_spinner;
+	Gtk::VSeparator              place_separator;
+	Gtk::Label                   place_label;
+	Gtk::Adjustment              place_adjustment;
+	Gtk::SpinButton              place_spinner;
 	Gtk::VSeparator              velocity_separator;
 	Gtk::Label                   velocity_label;
 	Gtk::Adjustment              velocity_adjustment;
