@@ -67,6 +67,8 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Understand what TreeView::row_activated is
+//
 // - [ ] Get the width of the Gtk widget minimize automatically
 //
 // - [ ] Update automation when updated on the horizontal track view
@@ -128,21 +130,27 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
-	, steps_label (_("Steps"))
-	, steps_adjustment (1, 0, 256, 1, 4)
-	, steps_spinner (steps_adjustment)
-	, place_label (_("Place"))
-	, place_adjustment (0, -5, 5, 1, 2)
-	, place_spinner (place_adjustment)
-	, velocity_label (S_("Velocity|Vel"))
-	, velocity_adjustment (64, 0, 127, 1, 4)
-	, velocity_spinner (velocity_adjustment)
 	, channel_label (S_("Channel|Ch"))
 	, channel_adjustment (1, 1, 16, 1, 4)
 	, channel_spinner (channel_adjustment)
+	, velocity_label (S_("Velocity|Vel"))
+	, velocity_adjustment (64, 0, 127, 1, 4)
+	, velocity_spinner (velocity_adjustment)
 	, delay_label (_("Delay"))
 	, delay_adjustment (0, 0, 0, 1, 4)
 	, delay_spinner (delay_adjustment)
+	, place_label (_("Place"))
+	, place_adjustment (0, -5, 5, 1, 2)
+	, place_spinner (place_adjustment)
+	, steps_label (_("Steps"))
+	, steps_adjustment (1, 0, 256, 1, 4)
+	, steps_spinner (steps_adjustment)
+	, edrow_label (_("Edit row"))
+	, edrow_adjustment (0, 0, 255, 1, 2)
+	, edrow_spinner (edrow_adjustment)
+	, edcol_label (_("Edit column"))
+	, edcol_adjustment (0, 0, 255, 1, 2)
+	, edcol_spinner (edcol_adjustment)
 	, region (reg)
 	, track (tr)
 	, midi_model (region->midi_source(0)->model())
@@ -2134,6 +2142,79 @@ MidiPatternEditor::setup_note_delay_column (size_t i)
 	view.append_column (*viewcolumn_delay);
 }
 
+bool
+MidiPatternEditor::key_press (GdkEventKey* ev)
+{
+	bool ret = false;
+	TreeModel::Path path;
+	TreeViewColumn* col;
+	int colnum;
+
+	switch (ev->keyval) {
+		// TODO: add space bar for edit mode. In this mode both keyboard keys
+		// mapping midi notes for note colunms and numerical values for
+		// automations can be used for editing. As well as scrolling, otherwise
+		// scrolling is used for scrolling.
+	case GDK_z:
+		std::cout << "Press z key!" << std::endl;
+		view.get_cursor (path, col);
+		colnum = GPOINTER_TO_UINT (col->get_data (X_("colnum")));
+		std::cout << "path = " << path << ", col = " << col
+		          << ", colnum = " << colnum << std::endl;
+		break;
+	default:
+		break;
+	}
+
+	return ret;
+}
+
+bool
+MidiPatternEditor::key_release (GdkEventKey* ev)
+{
+}
+
+bool
+MidiPatternEditor::button_event (GdkEventButton* ev)
+{
+	// TODO: understand why get_path_at_pos does not work
+	// if (ev->button == 1) {
+		TreeModel::Path path;
+		TreeViewColumn* col;
+		int cell_x, cell_y;
+		view.get_path_at_pos(ev->x, ev->y, path, col, cell_x, cell_y);
+		int colnum = GPOINTER_TO_UINT (col->get_data (X_("colnum")));
+		std::cout << "ev->button = " << ev->button
+		          << ", ev->x = " << ev->x
+		          << ", ev->y = " << ev->y
+		          << ", ev->x_root = " << ev->x_root
+		          << ", ev->y_root = " << ev->y_root << std::endl;
+		std::cout << "ev->window = " << ev->window
+		          << ", get_bin_window()->gobj() = "
+		          << view.get_bin_window()->gobj() << endl;
+		std::cout << "path = " << path << ", colnum = " << colnum
+		          << ", cell_x = " << cell_x << ", cell_y = " << cell_y
+		          << endl;
+
+		int x, y;
+		int bx, by;
+		view.get_pointer (x, y);
+		view.convert_widget_to_bin_window_coords (x, y, bx, by);
+		view.get_path_at_pos (bx, by, path);
+		std::cout << "x = " << x << ", y = " << y
+		          << ", bx = " << bx << ", by = " << by
+		          << ", path-2 = " << path << std::endl;
+
+	// }
+	return true;
+}
+
+bool
+MidiPatternEditor::scroll_event (GdkEventScroll* ev)
+{
+	// TODO change values if editing is active, otherwise scroll.
+}
+
 void
 MidiPatternEditor::setup_pattern ()
 {
@@ -2199,10 +2280,22 @@ MidiPatternEditor::setup_pattern ()
 		view.get_column(column)->set_visible (false);
 	}
 
+	// Connect to key press events
+	view.signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_press), false);
+	view.signal_key_release_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_release), false);
+
+	// Connect to mouse button events
+	//
+	// Disabled for now because it doesn't work as expected
+	//
+	// view.signal_button_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::button_event), false);
+	// view.signal_scroll_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::scroll_event), false);
+
 	view.set_headers_visible (true);
 	view.set_rules_hint (true);
 	view.set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
 	view.get_selection()->set_mode (SELECTION_MULTIPLE);
+	view.set_enable_search(false);
 
 	view.show ();
 }
@@ -2285,23 +2378,14 @@ MidiPatternEditor::setup_toolbar ()
 	octave_spinner.show ();
 	toolbar.pack_start (octave_spinner, false, false);
 
-	// Steps spinner
-	steps_separator.show ();
-	toolbar.pack_start (steps_separator, false, false);
-	steps_label.show ();
-	toolbar.pack_start (steps_label, false, false);
-	steps_spinner.set_activates_default ();
-	steps_spinner.show ();
-	toolbar.pack_start (steps_spinner, false, false);
-
-	// Place spinner
-	place_separator.show ();
-	toolbar.pack_start (place_separator, false, false);
-	place_label.show ();
-	toolbar.pack_start (place_label, false, false);
-	place_spinner.set_activates_default ();
-	place_spinner.show ();
-	toolbar.pack_start (place_spinner, false, false);
+	// Channel spinner
+	channel_separator.show ();
+	toolbar.pack_start (channel_separator, false, false);
+	channel_label.show ();
+	toolbar.pack_start (channel_label, false, false);
+	channel_spinner.set_activates_default ();
+	channel_spinner.show ();
+	toolbar.pack_start (channel_spinner, false, false);
 
 	// Velocity spinner
 	velocity_separator.show ();
@@ -2312,15 +2396,6 @@ MidiPatternEditor::setup_toolbar ()
 	velocity_spinner.show ();
 	toolbar.pack_start (velocity_spinner, false, false);
 
-	// Channel spinner
-	channel_separator.show ();
-	toolbar.pack_start (channel_separator, false, false);
-	channel_label.show ();
-	toolbar.pack_start (channel_label, false, false);
-	channel_spinner.set_activates_default ();
-	channel_spinner.show ();
-	toolbar.pack_start (channel_spinner, false, false);
-
 	// Delay spinner
 	delay_separator.show ();
 	toolbar.pack_start (delay_separator, false, false);
@@ -2329,6 +2404,42 @@ MidiPatternEditor::setup_toolbar ()
 	delay_spinner.set_activates_default ();
 	delay_spinner.show ();
 	toolbar.pack_start (delay_spinner, false, false);
+
+	// Place spinner
+	place_separator.show ();
+	toolbar.pack_start (place_separator, false, false);
+	place_label.show ();
+	toolbar.pack_start (place_label, false, false);
+	place_spinner.set_activates_default ();
+	place_spinner.show ();
+	toolbar.pack_start (place_spinner, false, false);
+
+	// Steps spinner
+	steps_separator.show ();
+	toolbar.pack_start (steps_separator, false, false);
+	steps_label.show ();
+	toolbar.pack_start (steps_label, false, false);
+	steps_spinner.set_activates_default ();
+	steps_spinner.show ();
+	toolbar.pack_start (steps_spinner, false, false);
+
+	// Editing row spinner
+	edrow_separator.show ();
+	toolbar.pack_start (edrow_separator, false, false);
+	edrow_label.show ();
+	toolbar.pack_start (edrow_label, false, false);
+	edrow_spinner.set_activates_default ();
+	edrow_spinner.show ();
+	toolbar.pack_start (edrow_spinner, false, false);
+
+	// Editing column spinner
+	edcol_separator.show ();
+	toolbar.pack_start (edcol_separator, false, false);
+	edcol_label.show ();
+	toolbar.pack_start (edcol_label, false, false);
+	edcol_spinner.set_activates_default ();
+	edcol_spinner.show ();
+	toolbar.pack_start (edcol_spinner, false, false);
 
 	toolbar.show ();
 }
