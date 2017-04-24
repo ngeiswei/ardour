@@ -1889,10 +1889,7 @@ MidiPatternEditor::channel_edited (const std::string& path, const std::string& t
 		cmd->change (note, MidiModel::NoteDiffCommand::Channel, ival);
 
 		// Apply change command
-		midi_model->apply_command (_session, cmd);
-
-		// reset edit info, since we're done
-		edit_column = -1;
+		apply_command (cmd);
 	}
 }
 
@@ -1927,10 +1924,7 @@ MidiPatternEditor::velocity_edited (const std::string& path, const std::string& 
 		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, ival);
 
 		// Apply change command
-		midi_model->apply_command (_session, cmd);
-
-		// reset edit info, since we're done
-		edit_column = -1;
+		apply_command (cmd);
 	}
 }
 
@@ -1993,7 +1987,7 @@ MidiPatternEditor::delay_edited (const std::string& path, const std::string& tex
 
 	if (apply) {
 		// Apply delay changes
-		midi_model->apply_command (_session, cmd);
+		apply_command (cmd);
 	}
 }
 
@@ -2007,7 +2001,7 @@ MidiPatternEditor::is_midi_track () const
 	return boost::dynamic_pointer_cast<MidiTrack>(route) != 0;
 }
 
-boost::shared_ptr<ARDOUR::MidiTrack>
+boost::shared_ptr<MidiTrack>
 MidiPatternEditor::midi_track() const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route);
@@ -2627,4 +2621,14 @@ MidiPatternEditor::beats_per_row_chosen (SnapType type)
 	if (ract && ract->get_active()) {
 		set_beats_per_row_to (type);
 	}
+}
+
+void
+MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
+{
+	// Apply change command
+	midi_model->apply_command (_session, cmd);
+
+	// reset edit info, since we're done
+	edit_column = -1;
 }
