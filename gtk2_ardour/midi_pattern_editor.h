@@ -443,6 +443,8 @@ class MidiPatternEditor : public ArdourWindow
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::SnapType);
 	void beats_per_row_chosen (Editing::SnapType);
 
+	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
 	// Make it up for the lack of C++11 support
 	template<typename T> std::string to_string(const T& v)
 	{
