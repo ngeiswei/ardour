@@ -1688,18 +1688,27 @@ MidiPatternEditor::editing_canceled ()
 void
 MidiPatternEditor::note_edited (const std::string& path, const std::string& text)
 {
-	// TODO: start from here
+	TreeModel::iterator iter = model->get_iter (path);
 
-	// if (text.empty()) {
-	// 	return;
-	// }
+	if (!iter || text.empty()) {
+		return;
+	}
 
-	// boost::shared_ptr<NoteType> on_note = get_on_note(path);
-	// boost::shared_ptr<NoteType> off_note = get_off_note(path);
-	// if (!on_note && !off_note)
-	// 	return;
+	if (text == note_off_str)
+	int ival = ParameterDescriptor::midi_note_num (text);
 
-	// ival = ParameterDescriptor::midi_note_num (text);
+	boost::shared_ptr<NoteType> on_note = get_on_note(path);
+	boost::shared_ptr<NoteType> off_note = get_off_note(path);
+
+	if (on_note) {
+		// Replace on note by another
+		
+	} else if (off_note) {
+		// Replace off note by another
+	} else {
+		// Create a new note
+	}
+	
 	// if (ival < 128) {
 	// 	idelta = ival - note->note();
 	// 	prop = MidiModel::NoteDiffCommand::NoteNumber;
