@@ -206,7 +206,7 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 
 MidiPatternEditor::~MidiPatternEditor ()
 {
-	delete mp;
+	delete np;
 	delete tap;
 	delete rap;
 	delete automation_action_menu;
@@ -834,7 +834,7 @@ MidiPatternEditor::update_automation_column_visibility (const Evoral::Parameter&
 {
 	// Find menu item associated to this parameter
 	Gtk::CheckMenuItem* mitem = automation_child_menu_item(param);
-	assert(mitem);
+	assert (mitem);
 	const bool showit = mitem->get_active();
 
 	// Find the column associated to this parameter, assign one if necessary
@@ -1277,7 +1277,7 @@ void
 MidiPatternEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + NOTE_COLNUM)->set_visible(i < mp->ntracks ? visible_note : false);
+		view.get_column(i*4 + NOTE_COLNUM)->set_visible(i < np->ntracks ? visible_note : false);
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1301,7 +1301,7 @@ void
 MidiPatternEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + CHANNEL_COLNUM)->set_visible(i < mp->ntracks ? visible_channel : false);
+		view.get_column(i*4 + CHANNEL_COLNUM)->set_visible(i < np->ntracks ? visible_channel : false);
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1325,7 +1325,7 @@ void
 MidiPatternEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + VELOCITY_COLNUM)->set_visible(i < mp->ntracks ? visible_velocity : false);
+		view.get_column(i*4 + VELOCITY_COLNUM)->set_visible(i < np->ntracks ? visible_velocity : false);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Garanty that the window size is always kept to its minimum
@@ -1349,7 +1349,7 @@ void
 MidiPatternEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(i*4 + DELAY_COLNUM)->set_visible(i < mp->ntracks ? visible_delay : false);
+		view.get_column(i*4 + DELAY_COLNUM)->set_visible(i < np->ntracks ? visible_delay : false);
 	redisplay_visible_automation_delay ();
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
@@ -1407,7 +1407,7 @@ MidiPatternEditor::automation_click ()
 void
 MidiPatternEditor::update_remove_note_column_button ()
 {
-	remove_note_column_button.set_sensitive (mp->nreqtracks < mp->ntracks);
+	remove_note_column_button.set_sensitive (np->nreqtracks < np->ntracks);
 }
 
 bool
@@ -1418,7 +1418,7 @@ MidiPatternEditor::remove_note_column_press(GdkEventButton* ev)
 		return true;
 	}
 
-	mp->dec_ntracks ();
+	np->dec_ntracks ();
 	redisplay_model ();
 	update_remove_note_column_button ();
 
@@ -1433,7 +1433,7 @@ MidiPatternEditor::add_note_column_press (GdkEventButton* ev)
 		return true;
 	}
 
-	mp->inc_ntracks ();
+	np->inc_ntracks ();
 	redisplay_model ();
 	update_remove_note_column_button ();
 
@@ -1448,10 +1448,10 @@ MidiPatternEditor::redisplay_model ()
 
 	if (_session) {
 
-		mp->set_rows_per_beat(rows_per_beat);
-		mp->update_pattern();
-		delay_spinner.get_adjustment()->set_lower(mp->delay_ticks_min());
-		delay_spinner.get_adjustment()->set_upper(mp->delay_ticks_max());
+		np->set_rows_per_beat(rows_per_beat);
+		np->update_pattern();
+		delay_spinner.get_adjustment()->set_lower(np->delay_ticks_min());
+		delay_spinner.get_adjustment()->set_upper(np->delay_ticks_max());
 
 		tap->set_rows_per_beat(rows_per_beat);
 		tap->update_pattern();
@@ -1462,10 +1462,10 @@ MidiPatternEditor::redisplay_model ()
 		TreeModel::Row row;
 
 		// Make sure that midi and automation regions start at the same frame
-		assert (mp->frame_at_row(0) == tap->frame_at_row(0));
-		assert (mp->frame_at_row(0) == rap->frame_at_row(0));
+		assert (np->frame_at_row(0) == tap->frame_at_row(0));
+		assert (np->frame_at_row(0) == rap->frame_at_row(0));
 
-		uint32_t nrows = std::max(std::max(mp->nrows, tap->nrows), rap->nrows);
+		uint32_t nrows = std::max(std::max(np->nrows, tap->nrows), rap->nrows);
 
 		std::string beat_background_color = UIConfiguration::instance().color_str ("pattern editor: beat background");
 		std::string background_color = UIConfiguration::instance().color_str ("pattern editor: background");
@@ -1476,8 +1476,8 @@ MidiPatternEditor::redisplay_model ()
 		// Generate each row
 		for (uint32_t irow = 0; irow < nrows; irow++) {
 			row = *(model->append());
-			Evoral::Beats row_beats = mp->beats_at_row(irow);
-			uint32_t row_frame = mp->frame_at_row(irow);
+			Evoral::Beats row_beats = np->beats_at_row(irow);
+			uint32_t row_frame = np->frame_at_row(irow);
 
 			// Time
 			Timecode::BBT_Time row_bbt;
@@ -1493,7 +1493,7 @@ MidiPatternEditor::redisplay_model ()
 			// TODO: don't dismiss off-beat rows near the region boundaries
 
 			// Render midi notes pattern
-			size_t ntracks = mp->ntracks;
+			size_t ntracks = np->ntracks;
 			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
 				std::cout << "Warning: Number of note tracks needed for "
 				          << "the pattern interface is too high, "
@@ -1514,12 +1514,12 @@ MidiPatternEditor::redisplay_model ()
 				row[columns._velocity_foreground_color[i]] = blank_foreground_color;
 				row[columns._delay_foreground_color[i]] = blank_foreground_color;
 
-				size_t off_notes_count = mp->off_notes[i].count(irow);
-				size_t on_notes_count = mp->on_notes[i].count(irow);
+				size_t off_notes_count = np->off_notes[i].count(irow);
+				size_t on_notes_count = np->on_notes[i].count(irow);
 
 				if (on_notes_count > 0 || off_notes_count > 0) {
-					MidiPattern::RowToNotes::const_iterator i_off = mp->off_notes[i].find(irow);
-					MidiPattern::RowToNotes::const_iterator i_on = mp->on_notes[i].find(irow);
+					NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
+					NotePattern::RowToNotes::const_iterator i_on = np->on_notes[i].find(irow);
 
 					// Determine whether the row is defined
 					bool undefined = (off_notes_count > 1 || on_notes_count > 1)
@@ -1531,16 +1531,16 @@ MidiPatternEditor::redisplay_model ()
 						row[columns._note_foreground_color[i]] = active_foreground_color;
 					} else {
 						// Notes off
-						MidiPattern::RowToNotes::const_iterator i_off = mp->off_notes[i].find(irow);
-						if (i_off != mp->off_notes[i].end()) {
-							boost::shared_ptr<NoteType> note = i_off->second;
+						NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
+						if (i_off != np->off_notes[i].end()) {
+							NoteTypePtr note = i_off->second;
 							row[columns.note_name[i]] = note_off_str;
 							// row[columns.channel[i]] = to_string (note->channel() + 1);
 							// row[columns.velocity[i]] = to_string ((int)note->off_velocity());
 							row[columns._note_foreground_color[i]] = active_foreground_color;
 							// row[columns._channel_foreground_color[i]] = active_foreground_color;
 							// row[columns._velocity_foreground_color[i]] = active_foreground_color;
-							int64_t delay_ticks = mp->region_relative_delay_ticks(note->end_time(), irow);
+							int64_t delay_ticks = np->region_relative_delay_ticks(note->end_time(), irow);
 							if (delay_ticks != 0) {
 								row[columns.delay[i]] = to_string (delay_ticks);
 								row[columns._delay_foreground_color[i]] = active_foreground_color;
@@ -1550,9 +1550,9 @@ MidiPatternEditor::redisplay_model ()
 						}
 
 						// Notes on
-						MidiPattern::RowToNotes::const_iterator i_on = mp->on_notes[i].find(irow);
-						if (i_on != mp->on_notes[i].end()) {
-							boost::shared_ptr<NoteType> note = i_on->second;
+						NotePattern::RowToNotes::const_iterator i_on = np->on_notes[i].find(irow);
+						if (i_on != np->on_notes[i].end()) {
+							NoteTypePtr note = i_on->second;
 							row[columns.channel[i]] = to_string (note->channel() + 1);
 							row[columns.note_name[i]] = ParameterDescriptor::midi_note_name (note->note());
 							row[columns.velocity[i]] = to_string ((int)note->velocity());
@@ -1560,7 +1560,7 @@ MidiPatternEditor::redisplay_model ()
 							row[columns._channel_foreground_color[i]] = active_foreground_color;
 							row[columns._velocity_foreground_color[i]] = active_foreground_color;
 
-							int64_t delay_ticks = mp->region_relative_delay_ticks(note->time(), irow);
+							int64_t delay_ticks = np->region_relative_delay_ticks(note->time(), irow);
 							if (delay_ticks != 0) {
 								row[columns.delay[i]] = to_string (delay_ticks);
 								row[columns._delay_foreground_color[i]] = active_foreground_color;
@@ -1651,7 +1651,7 @@ MidiPatternEditor::get_on_note(const std::string& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
-		return boost::shared_ptr<NoteType>();
+		return NoteTypePtr();
 	return (*iter)[columns._on_note[edit_column]];
 }
 
@@ -1660,14 +1660,14 @@ MidiPatternEditor::get_off_note(const std::string& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
-		return boost::shared_ptr<NoteType>();
+		return NoteTypePtr();
 	return (*iter)[columns._off_note[edit_column]];
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
 MidiPatternEditor::get_note(const std::string& path)
 {
-	boost::shared_ptr<NoteType> note = get_on_note(path);
+	NoteTypePtr note = get_on_note(path);
 	if (!note)
 		note = get_off_note(path);
 	return note;
@@ -1688,207 +1688,59 @@ MidiPatternEditor::editing_canceled ()
 void
 MidiPatternEditor::note_edited (const std::string& path, const std::string& text)
 {
-	TreeModel::iterator iter = model->get_iter (path);
+	bool is_off = text == note_off_str;
+	uint8_t ival = ParameterDescriptor::midi_note_num (text);
+	int row_index = get_row_index (path);
 
-	if (!iter || text.empty()) {
+	// Abort if the new pitch is invalid
+	if (!is_off && 127 < ival)
 		return;
-	}
 
-	if (text == note_off_str)
-	int ival = ParameterDescriptor::midi_note_num (text);
+	char const * opname = _("change note name");
+	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
-	boost::shared_ptr<NoteType> on_note = get_on_note(path);
-	boost::shared_ptr<NoteType> off_note = get_off_note(path);
+	NoteTypePtr on_note = get_on_note(path);
+	NoteTypePtr off_note = get_off_note(path);
 
 	if (on_note) {
-		// Replace on note by another
-		
+		if (is_off) {
+			// Replace the on note by an off note, that is remove the on note
+			cmd->remove (on_note);
+
+			// If there is no off note, update the length of the preceding node
+			// to match the new off note (smart off note).
+			if (!off_note) {
+				NoteTypePtr prev_note = np->find_prev(row_index, edit_column);
+				if (prev_note) {
+					Evoral::Beats length = on_note->time() - prev_note->time();
+					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
+				}
+			}
+		} else {
+			// Change the pitch of the on note
+			cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, ival);
+		}
 	} else if (off_note) {
-		// Replace off note by another
+		// Replace off note by another (non-off) note
+		if (!is_off) {
+			// Calculate the start time and length of the new on note
+			Evoral::Beats start = off_note->end_time();
+			NoteTypePtr next_note = np->find_next(row_index, edit_column);
+			Evoral::Beats end = next_note ? next_note->time() : np->last_beats;
+			Evoral::Beats length = end - start;
+			// Build note using defaults
+			uint8_t chan = channel_spinner.get_value_as_int();
+			uint8_t vel = velocity_spinner.get_value_as_int();
+			NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
+			cmd->add (new_note);
+		}
 	} else {
 		// Create a new note
+		// TODO
 	}
-	
-	// if (ival < 128) {
-	// 	idelta = ival - note->note();
-	// 	prop = MidiModel::NoteDiffCommand::NoteNumber;
-	// 	opname = _("change note number");
-	// 	apply = true;
-	// }
 
-	// TreeModel::iterator iter = model->get_iter (path);
-
-	// if (!iter || text.empty()) {
-	// 	return;
-	// }
-
-	// boost::shared_ptr<NoteType> note = (*iter)[columns._note];
-	// MidiModel::NoteDiffCommand::Property prop (MidiModel::NoteDiffCommand::NoteNumber);
-
-	// double fval;
-	// int    ival;
-	// bool   apply = false;
-	// int    idelta = 0;
-	// double fdelta = 0;
-	// char const * opname;
-	// switch (edit_column) {
-	// case 0: // start
-	// 	break;
-	// case 1: // channel
-	// 	// correct ival for zero-based counting after scan
-	// 	if (sscanf (text.c_str(), "%d", &ival) == 1 && --ival != note->channel()) {
-	// 		idelta = ival - note->channel();
-	// 		prop = MidiModel::NoteDiffCommand::Channel;
-	// 		opname = _("change note channel");
-	// 		apply = true;
-	// 	}
-	// 	break;
-	// case 2: // note
-	// 	if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->note()) {
-	// 		idelta = ival - note->note();
-	// 		prop = MidiModel::NoteDiffCommand::NoteNumber;
-	// 		opname = _("change note number");
-	// 		apply = true;
-	// 	}
-	// 	break;
-	// case 3: // name
-	// 	ival = ParameterDescriptor::midi_note_num (text);
-	// 	if (ival < 128) {
-	// 		idelta = ival - note->note();
-	// 		prop = MidiModel::NoteDiffCommand::NoteNumber;
-	// 		opname = _("change note number");
-	// 		apply = true;
-	// 	}
-	// 	break;
-	// case 4: // velocity
-	// 	if (sscanf (text.c_str(), "%d", &ival) == 1 && ival != note->velocity()) {
-	// 		idelta = ival - note->velocity();
-	// 		prop = MidiModel::NoteDiffCommand::Velocity;
-	// 		opname = _("change note velocity");
-	// 		apply = true;
-	// 	}
-	// 	break;
-	// case 5: // length
-
-	// 	if (sscanf (text.c_str(), "%lf", &fval) == 1) {
-
-	// 		/* numeric value entered */
-
-	// 		if (text.find ('.') == string::npos && text.find (',') == string::npos) {
-	// 			/* integral => units are ticks */
-	// 			fval = fval / BBT_Time::ticks_per_beat;
-	// 		} else {
-	// 			/* non-integral => beats, so use as-is */
-	// 		}
-
-	// 	} else {
-
-	// 		/* assume its text from the combo. look for the map
-	// 		 * entry for the actual note ticks
-	// 		 */
-
-	// 		uint64_t len_ticks = note->length().to_ticks();
-	// 		std::map<int,string>::iterator x = note_length_map.find (len_ticks);
-
-	// 		if (x == note_length_map.end()) {
-
-	// 			/* tick length not in map - was
-	// 			 * displaying numeric value ... use new value
-	// 			 * from note length map, and convert to beats.
-	// 			 */
-
-	// 			for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
-	// 				if (x->second == text) {
-	// 					break;
-	// 				}
-	// 			}
-
-	// 			if (x != note_length_map.end()) {
-	// 				fval = x->first / BBT_Time::ticks_per_beat;
-	// 			}
-
-	// 		} else {
-
-	// 			fval = -1.0;
-
-	// 			if (text != x->second) {
-
-	// 				/* get ticks for the newly selected
-	// 				 * note length
-	// 				 */
-
-	// 				for (x = note_length_map.begin(); x != note_length_map.end(); ++x) {
-	// 					if (x->second == text) {
-	// 						break;
-	// 					}
-	// 				}
-
-	// 				if (x != note_length_map.end()) {
-	// 					/* convert to beats */
-	// 					fval = (double) x->first / BBT_Time::ticks_per_beat;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if (fval > 0.0) {
-	// 		fdelta = fval - note->length().to_double();
-	// 		prop = MidiModel::NoteDiffCommand::Length;
-	// 		opname = _("change note length");
-	// 		apply = true;
-	// 	}
-	// 	break;
-
-	// default:
-	// 	break;
-	// }
-
-	// if (apply) {
-
-	// 	boost::shared_ptr<MidiModel> m (region->midi_source(0)->model());
-	// 	MidiModel::NoteDiffCommand* cmd = m->new_note_diff_command (opname);
-
-	// 	TreeView::Selection::ListHandle_Path rows = view.get_selection()->get_selected_rows ();
-
-	// 	for (TreeView::Selection::ListHandle_Path::iterator i = rows.begin(); i != rows.end(); ++i) {
-	// 		if ((iter = model->get_iter (*i))) {
-
-	// 			note = (*iter)[columns._note];
-
-	// 			switch (prop) {
-	// 			case MidiModel::NoteDiffCommand::Velocity:
-	// 				cmd->change (note, prop, (uint8_t) (note->velocity() + idelta));
-	// 				break;
-	// 			case MidiModel::NoteDiffCommand::Length:
-	// 				cmd->change (note, prop, note->length() + fdelta);
-	// 				break;
-	// 			case MidiModel::NoteDiffCommand::Channel:
-	// 				cmd->change (note, prop, (uint8_t) (note->channel() + idelta));
-	// 				break;
-	// 			case MidiModel::NoteDiffCommand::NoteNumber:
-	// 				cmd->change (note, prop, (uint8_t) (note->note() + idelta));
-	// 				break;
-	// 			default:
-	// 				continue;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	m->apply_command (*_session, cmd);
-
-	// 	/* model has been redisplayed by now */
-	// 	/* keep selected row(s), move cursor there, don't continue editing */
-
-	// 	TreeViewColumn* col = view.get_column (edit_column);
-	// 	view.set_cursor (edit_path, *col, 0);
-
-	// 	/* reset edit info, since we're done */
-
-	// 	edit_path.clear ();
-	// 	edit_column = -1;
-	// 	editing_renderer = 0;
-	// 	editing_editable = 0;
-	// }
+	// Apply note changes
+	apply_command (cmd);
 }
 
 void
@@ -1898,7 +1750,7 @@ MidiPatternEditor::channel_edited (const std::string& path, const std::string& t
 		return;
 	}
 
-	boost::shared_ptr<NoteType> note = get_on_note(path);
+	NoteTypePtr note = get_on_note(path);
 	if (!note)
 		return;
 
@@ -1926,7 +1778,7 @@ MidiPatternEditor::velocity_edited (const std::string& path, const std::string& 
 		return;
 	}
 
-	boost::shared_ptr<NoteType> note = get_on_note(path);
+	NoteTypePtr note = get_on_note(path);
 	if (!note)
 		return;
 
@@ -1961,13 +1813,13 @@ MidiPatternEditor::delay_edited (const std::string& path, const std::string& tex
 		return;
 	}
 
-	boost::shared_ptr<NoteType> on_note = get_on_note(path);
-	boost::shared_ptr<NoteType> off_note = get_off_note(path);
+	NoteTypePtr on_note = get_on_note(path);
+	NoteTypePtr off_note = get_off_note(path);
 	if (!on_note && !off_note)
 		return;
 
 	int  ival;
-	bool apply = false;
+	bool apply = false;         // TODO: remove the apply crap
 	char const * opname = _("change note delay");
 	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
@@ -1978,14 +1830,14 @@ MidiPatternEditor::delay_edited (const std::string& path, const std::string& tex
 		return;
 
 	// Check if within acceptable boundaries
-	if (ival < mp->delay_ticks_min() || mp->delay_ticks_max() < ival)
+	if (ival < np->delay_ticks_min() || np->delay_ticks_max() < ival)
 		return;
 
 	if (on_note) {
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int idelta = ival - mp->region_relative_delay_ticks(on_note->time(), irow);
+		int idelta = ival - np->region_relative_delay_ticks(on_note->time(), irow);
 		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
 		Evoral::Beats new_start = on_note->time() + relative_beats;
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
@@ -2004,7 +1856,7 @@ MidiPatternEditor::delay_edited (const std::string& path, const std::string& tex
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int idelta = ival - mp->region_relative_delay_ticks(off_note->end_time(), irow);
+		int idelta = ival - np->region_relative_delay_ticks(off_note->end_time(), irow);
 		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
 		Evoral::Beats new_length = off_note->length() + relative_beats;
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
@@ -2015,6 +1867,16 @@ MidiPatternEditor::delay_edited (const std::string& path, const std::string& tex
 		// Apply delay changes
 		apply_command (cmd);
 	}
+}
+
+void
+MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
+{
+	// Apply change command
+	midi_model->apply_command (_session, cmd);
+
+	// reset edit info, since we're done
+	edit_column = -1;
 }
 
 /////////////////////////
@@ -2238,7 +2100,7 @@ MidiPatternEditor::scroll_event (GdkEventScroll* ev)
 void
 MidiPatternEditor::setup_pattern ()
 {
-	mp = new MidiPattern(_session, region, midi_model);
+	np = new NotePattern(_session, region, midi_model);
 
 	// Get automation controls
 	AutomationControlSet tacs, racs;
@@ -2647,14 +2509,4 @@ MidiPatternEditor::beats_per_row_chosen (SnapType type)
 	if (ract && ract->get_active()) {
 		set_beats_per_row_to (type);
 	}
-}
-
-void
-MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
-{
-	// Apply change command
-	midi_model->apply_command (_session, cmd);
-
-	// reset edit info, since we're done
-	edit_column = -1;
 }

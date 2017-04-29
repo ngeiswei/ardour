@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_midi_pattern_h_
-#define __ardour_gtk2_midi_pattern_h_
+#ifndef __ardour_gtk2_note_pattern_h_
+#define __ardour_gtk2_note_pattern_h_
 
 #include "evoral/types.hpp"
 #include "ardour/session_handle.h"
@@ -32,17 +32,19 @@ namespace ARDOUR {
 };
 
 /**
- * Data structure holding the pattern of midi events for the pattern editor.
- * Plus some goodies method to generate a midi pattern given a midi region.
+ * Data structure holding the pattern of midi notes for the pattern editor.
+ * Plus some goodies method to generate a pattern given a midi region.
  */
-class MidiPattern : public Pattern {
+class NotePattern : public Pattern {
 public:
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
 	typedef Evoral::Note<Evoral::Beats> NoteType;
-	typedef std::multimap<uint32_t, boost::shared_ptr<NoteType> > RowToNotes;
+	typedef boost::shared_ptr<NoteType> NoteTypePtr;
+	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
+	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
-	MidiPattern(ARDOUR::Session* session,
+	NotePattern(ARDOUR::Session* session,
 	            boost::shared_ptr<ARDOUR::MidiRegion> region,
 	            boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
@@ -52,6 +54,10 @@ public:
 	// Increase and decrease the number of tracks
 	void inc_ntracks();
 	void dec_ntracks();
+
+	// Find the previous (resp. next) note of a given row on a given column
+	NoteTypePtr find_prev(uint32_t row, int col) const;
+	NoteTypePtr find_next(uint32_t row, int col) const;
 
 	// Number of columns of that midi track (determined by the number of
 	// overlapping notes)
@@ -68,7 +74,10 @@ public:
 	std::vector<RowToNotes> off_notes;
 
 private:
+	NoteTypePtr earliest(const RowToNotesRange& rng) const;
+	NoteTypePtr lattest(const RowToNotesRange& rng) const;
+
 	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
 };
 
-#endif /* __ardour_gtk2_midi_pattern_h_ */
+#endif /* __ardour_gtk2_note_pattern_h_ */
