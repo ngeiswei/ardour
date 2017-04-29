@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015 Nil Geisweiller
+    Copyright (C) 2015-2017 Nil Geisweiller
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,17 +29,17 @@
 #include "ardour/session.h"
 #include "ardour/tempo.h"
 
-#include "midi_pattern.h"
+#include "note_pattern.h"
 
 using namespace std;
 using namespace ARDOUR;
 using Timecode::BBT_Time;
 
 /////////////////
-// MidiPattern //
+// NotePattern //
 /////////////////
 
-MidiPattern::MidiPattern(ARDOUR::Session* session,
+NotePattern::NotePattern(ARDOUR::Session* session,
                          boost::shared_ptr<ARDOUR::MidiRegion> region,
                          boost::shared_ptr<ARDOUR::MidiModel> midi_model)
 	: Pattern(session, region),
@@ -48,7 +48,7 @@ MidiPattern::MidiPattern(ARDOUR::Session* session,
 {
 }
 
-void MidiPattern::update_pattern()
+void NotePattern::update_pattern()
 {
 	set_row_range();
 
@@ -109,12 +109,47 @@ void MidiPattern::update_pattern()
 	}
 }
 
-void MidiPattern::inc_ntracks()
+void NotePattern::inc_ntracks()
 {
 	ntracks++;
 }
 
-void MidiPattern::dec_ntracks()
+void NotePattern::dec_ntracks()
 {
 	ntracks--;
+}
+
+NotePattern::NoteTypePtr NotePattern::find_prev(uint32_t row, int col) const
+{
+	const RowToNotes& r2n = on_notes[col];
+	RowToNotes::const_reverse_iterator rit =
+		std::reverse_iterator<RowToNotes::const_iterator>(r2n.lower_bound(row));
+	while (rit != r2n.rend() && rit->first == row) { ++rit; };
+	return rit != r2n.rend() ? lattest(r2n.equal_range(rit->first)) : NoteTypePtr();
+}
+
+NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int col) const
+{
+	const RowToNotes& r2n = on_notes[col];
+	RowToNotes::const_iterator it = r2n.upper_bound(row);
+	while (it != r2n.end() && it->first == row) { ++it; };
+	return it != r2n.end() ? earliest(r2n.equal_range(it->first)) : NoteTypePtr();
+}
+
+NotePattern::NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
+{
+	NoteTypePtr result;
+	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it)
+		if (!result || result->time() < it->second->time())
+			result = it->second;
+	return result;
+}
+
+NotePattern::NoteTypePtr NotePattern::lattest(const RowToNotesRange& rng) const
+{
+	NoteTypePtr result;
+	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it)
+		if (!result || it->second->time() < result->time())
+			result = it->second;
+	return result;
 }
