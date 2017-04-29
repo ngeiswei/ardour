@@ -38,7 +38,7 @@
 #include "editing.h"
 #include "midi_time_axis.h"
 
-#include "midi_pattern.h"
+#include "note_pattern.h"
 #include "track_automation_pattern.h"
 #include "region_automation_pattern.h"
 
@@ -238,6 +238,8 @@ class MidiPatternEditor : public ArdourWindow
 	// Other (to sort out)	  //
 	////////////////////////////
 
+	typedef boost::shared_ptr<NoteType> NoteTypePtr;
+
 	struct MidiPatternModelColumns : public Gtk::TreeModel::ColumnRecord {
 		MidiPatternModelColumns()
 		{
@@ -275,8 +277,8 @@ class MidiPatternEditor : public ArdourWindow
 		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<boost::shared_ptr<NoteType> > _on_note[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<boost::shared_ptr<NoteType> > _off_note[MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<ARDOUR::AutomationList::iterator> _automation[MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_AUTOMATION_TRACKS];
@@ -341,14 +343,14 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::Label                   delay_label;
 	Gtk::Adjustment              delay_adjustment;
 	Gtk::SpinButton              delay_spinner;	
-	Gtk::VSeparator              steps_separator;
-	Gtk::Label                   steps_label;
-	Gtk::Adjustment              steps_adjustment;
-	Gtk::SpinButton              steps_spinner;
 	Gtk::VSeparator              place_separator;
 	Gtk::Label                   place_label;
 	Gtk::Adjustment              place_adjustment;
 	Gtk::SpinButton              place_spinner;
+	Gtk::VSeparator              steps_separator;
+	Gtk::Label                   steps_label;
+	Gtk::Adjustment              steps_adjustment;
+	Gtk::SpinButton              steps_spinner;
 	Gtk::VSeparator              edrow_separator;
 	Gtk::Label                   edrow_label;
 	Gtk::Adjustment              edrow_adjustment;
@@ -362,7 +364,7 @@ class MidiPatternEditor : public ArdourWindow
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
 
-	MidiPattern* mp;
+	NotePattern* np;
 	TrackAutomationPattern* tap;
 	RegionAutomationPattern* rap;
 
@@ -413,12 +415,12 @@ class MidiPatternEditor : public ArdourWindow
 	// Edit Pattern    //
 	/////////////////////
 
-	int get_row_index(const std::string& path);
+	int get_row_index (const std::string& path);
 
 	// Get note from path and edit_column
-	boost::shared_ptr<NoteType> get_on_note (const std::string& path);
-	boost::shared_ptr<NoteType> get_off_note (const std::string& path);
-	boost::shared_ptr<NoteType> get_note (const std::string& path); // either on or off
+	NoteTypePtr get_on_note (const std::string& path);
+	NoteTypePtr get_off_note (const std::string& path);
+	NoteTypePtr get_note (const std::string& path); // on or off
 
 	void editing_started (Gtk::CellEditable*, const std::string& path, int);
 	void editing_canceled ();
@@ -427,6 +429,8 @@ class MidiPatternEditor : public ArdourWindow
 	void channel_edited (const std::string&, const std::string&);
 	void velocity_edited (const std::string&, const std::string&);
 	void delay_edited (const std::string&, const std::string&);
+
+	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	/////////////////////////
 	// Other (sort out)    //
@@ -442,8 +446,6 @@ class MidiPatternEditor : public ArdourWindow
 	void beats_per_row_selection_done (Editing::SnapType);
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::SnapType);
 	void beats_per_row_chosen (Editing::SnapType);
-
-	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	// Make it up for the lack of C++11 support
 	template<typename T> std::string to_string(const T& v)
