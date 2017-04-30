@@ -136,6 +136,12 @@ NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int col) const
 	return it != r2n.end() ? earliest(r2n.equal_range(it->first)) : NoteTypePtr();
 }
 
+Evoral::Beats NotePattern::next_off(uint32_t row, int col) const
+{
+	NoteTypePtr next_note = find_next(row, col);
+	return next_note ? next_note->time() : last_beats;
+}
+
 NotePattern::NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
 {
 	NoteTypePtr result;
