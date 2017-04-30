@@ -59,6 +59,10 @@ public:
 	NoteTypePtr find_prev(uint32_t row, int col) const;
 	NoteTypePtr find_next(uint32_t row, int col) const;
 
+	// Return the Beats of the note off as far as it can go (i.e. the next on
+	// note or the end of the region.)
+	Evoral::Beats next_off(uint32_t row, int col) const;
+
 	// Number of columns of that midi track (determined by the number of
 	// overlapping notes)
 	uint16_t ntracks;
