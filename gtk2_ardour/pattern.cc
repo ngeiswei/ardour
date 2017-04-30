@@ -72,14 +72,16 @@ void Pattern::set_row_range()
 	nrows = find_nrows();
 }
 
-framepos_t Pattern::frame_at_row(uint32_t irow)
+framepos_t Pattern::frame_at_row(uint32_t irow, int32_t delay)
 {
-	return _conv.to (beats_at_row(irow));
+	return _conv.to (beats_at_row(irow, delay));
 }
 
-Evoral::Beats Pattern::beats_at_row(uint32_t irow)
+Evoral::Beats Pattern::beats_at_row(uint32_t irow, int32_t delay)
 {
-	return first_row_beats + (irow*1.0) / rows_per_beat;
+	Evoral::Beats result = first_row_beats + (irow*1.0) / rows_per_beat;
+	result += Evoral::Beats::relative_ticks(delay);
+	return result;
 }
 
 uint32_t Pattern::row_at_beats(Evoral::Beats beats)

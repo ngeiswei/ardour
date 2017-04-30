@@ -62,11 +62,13 @@ public:
 	// Set first_row_beats, last_row_beats and nrows
 	void set_row_range();
 
-	// Return the frame at the corresponding row index
-	framepos_t frame_at_row(uint32_t irow);
+	// Return the frame at the corresponding row index and delay in relative
+	// ticks
+	framepos_t frame_at_row(uint32_t irow, int32_t delay=0);
 
-	// Return the beats at the corresponding row index
-	Evoral::Beats beats_at_row(uint32_t irow);
+	// Return the beats at the corresponding row index and delay in relative
+	// ticks
+	Evoral::Beats beats_at_row(uint32_t irow, int32_t delay=0);
 
 	// Return the row index corresponding to the given beats, assuming the
 	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
