@@ -1767,14 +1767,14 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Evoral::Beats start = prev_note->time();
-				Evoral::Beats end = np->beats_at_row(row_index, delay);
+				Evoral::Beats end = np->region_relative_beats_at_row(row_index, delay);
 				Evoral::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
 			if (!is_off) {
 				// Create the new note using the defaults. Calculate the start
 				// and length of the new note
-				Evoral::Beats start = np->beats_at_row(row_index, delay);
+				Evoral::Beats start = np->region_relative_beats_at_row(row_index, delay);
 				Evoral::Beats end = np->next_off(row_index, edit_column);
 				Evoral::Beats length = end - start;
 				uint8_t chan = channel_spinner.get_value_as_int();
