@@ -70,6 +70,9 @@ public:
 	// ticks
 	Evoral::Beats beats_at_row(uint32_t irow, int32_t delay=0);
 
+	// Like beats_at_row but the beats is calculated in reference to the region
+	Evoral::Beats region_relative_beats_at_row(uint32_t irow, int32_t delay=0);
+
 	// Return the row index corresponding to the given beats, assuming the
 	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
 	// is _ticks_per_row/2.

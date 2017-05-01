@@ -84,6 +84,11 @@ Evoral::Beats Pattern::beats_at_row(uint32_t irow, int32_t delay)
 	return result;
 }
 
+Evoral::Beats Pattern::region_relative_beats_at_row(uint32_t irow, int32_t delay)
+{
+	return beats_at_row(irow, delay) - first_beats;
+}
+
 uint32_t Pattern::row_at_beats(Evoral::Beats beats)
 {
 	Evoral::Beats half_row(0.5/rows_per_beat);
