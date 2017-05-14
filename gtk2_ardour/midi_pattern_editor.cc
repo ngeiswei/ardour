@@ -2002,7 +2002,7 @@ MidiPatternEditor::setup_note_column (size_t i)
 }
 
 void
-MidiPatternEditor::setup_channel_column (size_t i)
+MidiPatternEditor::setup_note_channel_column (size_t i)
 {
 	string ch_str(S_("Channel|Ch"));
 
@@ -2025,7 +2025,7 @@ MidiPatternEditor::setup_channel_column (size_t i)
 }
 
 void
-MidiPatternEditor::setup_velocity_column (size_t i)
+MidiPatternEditor::setup_note_velocity_column (size_t i)
 {
 	string vel_str(S_("Velocity|Vel"));
 
@@ -2068,6 +2068,44 @@ MidiPatternEditor::setup_note_delay_column (size_t i)
 	cellrenderer_delay->property_editable() = true;
 
 	view.append_column (*viewcolumn_delay);
+}
+
+void
+MidiPatternEditor::setup_automation_column (size_t i)
+{
+	stringstream ss_automation;
+	ss_automation << "A" << i;
+
+	Gtk::TreeViewColumn* viewcolumn_automation = new Gtk::TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[i]);
+
+	Gtk::CellRendererText* cellrenderer_automation = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation->get_first_cell_renderer ());
+
+	viewcolumn_automation->add_attribute(cellrenderer_automation->property_cell_background (), columns._background_color);
+	viewcolumn_automation->add_attribute(cellrenderer_automation->property_foreground (), columns._automation_foreground_color[i]);
+
+	size_t column = view.get_columns().size();
+	view.append_column (*viewcolumn_automation);
+	col2autotrack[column] = i;
+	available_automation_columns.insert(column);
+	view.get_column(column)->set_visible (false);
+}
+
+void
+MidiPatternEditor::setup_automation_delay_column (size_t i)
+{
+	stringstream ss_automation_delay;
+	ss_automation_delay << _("Delay");
+
+	Gtk::TreeViewColumn* viewcolumn_automation_delay = new Gtk::TreeViewColumn (_(ss_automation_delay.str().c_str()), columns.automation_delay[i]);
+
+	Gtk::CellRendererText* cellrenderer_automation_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation_delay->get_first_cell_renderer ());
+
+	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_cell_background (), columns._background_color);
+	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_foreground (), columns._automation_delay_foreground_color[i]);
+
+	size_t column = view.get_columns().size();
+	view.append_column (*viewcolumn_automation_delay);
+	view.get_column(column)->set_visible (false);
 }
 
 bool
@@ -2170,8 +2208,8 @@ MidiPatternEditor::setup_pattern ()
 	// Instantiate note tracks
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++) {
 		setup_note_column(i);
-		setup_channel_column(i);
-		setup_velocity_column(i);
+		setup_note_channel_column(i);
+		setup_note_velocity_column(i);
 		setup_note_delay_column(i);
 	}
 
@@ -2179,33 +2217,8 @@ MidiPatternEditor::setup_pattern ()
 
 	// Instantiate automation tracks
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
-		// Split into setup_automation_column(),
-		// setup_automation_delay_column().
-		stringstream ss_automation;
-		stringstream ss_automation_delay;
-		ss_automation << "A" << i;
-		ss_automation_delay << _("Delay");
-
-		Gtk::TreeViewColumn* viewcolumn_automation = new Gtk::TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[i]);
-		Gtk::TreeViewColumn* viewcolumn_automation_delay = new Gtk::TreeViewColumn (_(ss_automation_delay.str().c_str()), columns.automation_delay[i]);
-
-		Gtk::CellRendererText* cellrenderer_automation = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation->get_first_cell_renderer ());
-		Gtk::CellRendererText* cellrenderer_automation_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation_delay->get_first_cell_renderer ());
-
-		viewcolumn_automation->add_attribute(cellrenderer_automation->property_cell_background (), columns._background_color);
-		viewcolumn_automation->add_attribute(cellrenderer_automation->property_foreground (), columns._automation_foreground_color[i]);
-		viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_cell_background (), columns._background_color);
-		viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_foreground (), columns._automation_delay_foreground_color[i]);
-
-		size_t column = view.get_columns().size();
-		view.append_column (*viewcolumn_automation);
-		col2autotrack[column] = i;
-		available_automation_columns.insert(column);
-		view.get_column(column)->set_visible (false);
-
-		column = view.get_columns().size();
-		view.append_column (*viewcolumn_automation_delay);
-		view.get_column(column)->set_visible (false);
+		setup_automation_column(i);
+		setup_automation_delay_column(i);
 	}
 
 	// Connect to key press events
