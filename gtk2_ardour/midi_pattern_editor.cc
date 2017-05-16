@@ -1790,7 +1790,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 }
 
 void
-MidiPatternEditor::channel_edited (const std::string& path, const std::string& text)
+MidiPatternEditor::note_channel_edited (const std::string& path, const std::string& text)
 {
 	if (text.empty()) {
 		return;
@@ -1818,7 +1818,7 @@ MidiPatternEditor::channel_edited (const std::string& path, const std::string& t
 }
 
 void
-MidiPatternEditor::velocity_edited (const std::string& path, const std::string& text)
+MidiPatternEditor::note_velocity_edited (const std::string& path, const std::string& text)
 {
 	if (text.empty()) {
 		return;
@@ -1853,7 +1853,7 @@ MidiPatternEditor::velocity_edited (const std::string& path, const std::string& 
 }
 
 void
-MidiPatternEditor::delay_edited (const std::string& path, const std::string& text)
+MidiPatternEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
 	if (text.empty()) {
 		return;
@@ -1913,6 +1913,18 @@ MidiPatternEditor::delay_edited (const std::string& path, const std::string& tex
 		// Apply delay changes
 		apply_command (cmd);
 	}
+}
+
+void
+MidiPatternEditor::automation_edited (const std::string& path, const std::string& text)
+{
+	std::cout << "automation_edited: path = " << path << ", text = " << text << std::endl;
+}
+
+void
+MidiPatternEditor::automation_delay_edited (const std::string& path, const std::string& text)
+{
+	std::cout << "automation_delay_edited: path = " << path << ", text = " << text << std::endl;
 }
 
 void
@@ -1985,7 +1997,6 @@ MidiPatternEditor::setup_note_column (size_t i)
 
 	// TODO be careful of potential memory leaks
 	Gtk::TreeViewColumn* viewcolumn_note = new Gtk::TreeViewColumn (note_str.c_str(), columns.note_name[i]);
-
 	Gtk::CellRendererText* cellrenderer_note = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_note->get_first_cell_renderer ());
 
 	// Link to color attributes
@@ -2008,7 +2019,6 @@ MidiPatternEditor::setup_note_channel_column (size_t i)
 
 	// TODO be careful of potential memory leaks
 	Gtk::TreeViewColumn* viewcolumn_channel = new Gtk::TreeViewColumn (ch_str.c_str(), columns.channel[i]);
-
 	Gtk::CellRendererText* cellrenderer_channel = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_channel->get_first_cell_renderer ());
 
 	// Link to color attribute
@@ -2018,7 +2028,7 @@ MidiPatternEditor::setup_note_channel_column (size_t i)
 	// Link to editing methods
 	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
 	cellrenderer_channel->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::channel_edited));
+	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_channel_edited));
 	cellrenderer_channel->property_editable() = true;
 
 	view.append_column (*viewcolumn_channel);
@@ -2031,7 +2041,6 @@ MidiPatternEditor::setup_note_velocity_column (size_t i)
 
 	// TODO be careful of potential memory leaks
 	Gtk::TreeViewColumn* viewcolumn_velocity = new Gtk::TreeViewColumn (vel_str.c_str(), columns.velocity[i]);
-
 	Gtk::CellRendererText* cellrenderer_velocity = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_velocity->get_first_cell_renderer ());
 
 	// Link to color attribute
@@ -2041,7 +2050,7 @@ MidiPatternEditor::setup_note_velocity_column (size_t i)
 	// Link to editing methods
 	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
 	cellrenderer_velocity->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::velocity_edited));
+	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_velocity_edited));
 	cellrenderer_velocity->property_editable() = true;
 
 	view.append_column (*viewcolumn_velocity);
@@ -2054,7 +2063,6 @@ MidiPatternEditor::setup_note_delay_column (size_t i)
 
 	// TODO be careful of potential memory leaks
 	Gtk::TreeViewColumn* viewcolumn_delay = new Gtk::TreeViewColumn (delay_str.c_str(), columns.delay[i]);
-
 	Gtk::CellRendererText* cellrenderer_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_delay->get_first_cell_renderer ());
 
 	// Link to color attribute
@@ -2064,7 +2072,7 @@ MidiPatternEditor::setup_note_delay_column (size_t i)
 	// Link to editing methods
 	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
 	cellrenderer_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::delay_edited));
+	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_delay_edited));
 	cellrenderer_delay->property_editable() = true;
 
 	view.append_column (*viewcolumn_delay);
@@ -2076,12 +2084,19 @@ MidiPatternEditor::setup_automation_column (size_t i)
 	stringstream ss_automation;
 	ss_automation << "A" << i;
 
+	// TODO be careful of potential memory leaks
 	Gtk::TreeViewColumn* viewcolumn_automation = new Gtk::TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[i]);
-
 	Gtk::CellRendererText* cellrenderer_automation = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation->get_first_cell_renderer ());
 
+	// Link to color attributes
 	viewcolumn_automation->add_attribute(cellrenderer_automation->property_cell_background (), columns._background_color);
 	viewcolumn_automation->add_attribute(cellrenderer_automation->property_foreground (), columns._automation_foreground_color[i]);
+
+	// Link to editing methods
+	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_automation->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
+	cellrenderer_automation->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::automation_edited));
+	cellrenderer_automation->property_editable() = true;
 
 	size_t column = view.get_columns().size();
 	view.append_column (*viewcolumn_automation);
@@ -2096,12 +2111,19 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 	stringstream ss_automation_delay;
 	ss_automation_delay << _("Delay");
 
+	// TODO be careful of potential memory leaks
 	Gtk::TreeViewColumn* viewcolumn_automation_delay = new Gtk::TreeViewColumn (_(ss_automation_delay.str().c_str()), columns.automation_delay[i]);
-
 	Gtk::CellRendererText* cellrenderer_automation_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation_delay->get_first_cell_renderer ());
 
+	// Link to color attributes
 	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_cell_background (), columns._background_color);
 	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_foreground (), columns._automation_delay_foreground_color[i]);
+
+	// Link to editing methods
+	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_automation_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
+	cellrenderer_automation_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::automation_delay_edited));
+	cellrenderer_automation_delay->property_editable() = true;
 
 	size_t column = view.get_columns().size();
 	view.append_column (*viewcolumn_automation_delay);

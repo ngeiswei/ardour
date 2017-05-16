@@ -426,9 +426,12 @@ class MidiPatternEditor : public ArdourWindow
 	void editing_canceled ();
 
 	void note_edited (const std::string&, const std::string&);
-	void channel_edited (const std::string&, const std::string&);
-	void velocity_edited (const std::string&, const std::string&);
-	void delay_edited (const std::string&, const std::string&);
+	void note_channel_edited (const std::string&, const std::string&);
+	void note_velocity_edited (const std::string&, const std::string&);
+	void note_delay_edited (const std::string&, const std::string&);
+
+	void automation_edited (const std::string&, const std::string&);
+	void automation_delay_edited (const std::string&, const std::string&);
 
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
