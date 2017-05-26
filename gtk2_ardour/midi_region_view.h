@@ -504,7 +504,7 @@ public:
 
 	std::vector<NoteResizeData *> _resize_data;
 
-	/** connection used to connect to model's ContentChanged signal */
+	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnection content_connection;
 
 	NoteBase* find_canvas_note (std::shared_ptr<NoteType>);
