@@ -368,7 +368,7 @@ class MidiPatternEditor : public ArdourWindow
 	TrackAutomationPattern* tap;
 	RegionAutomationPattern* rap;
 
-	/** connection used to connect to model's ContentChanged signal */
+	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnection content_connection;
 
 	void build_beats_per_row_menu ();

@@ -98,7 +98,7 @@ private:
 	boost::shared_ptr<ARDOUR::MidiRegion> region;
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 
-	/** connection used to connect to model's ContentChanged signal */
+	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnection content_connection;
 
 	void edited (const std::string&, const std::string&);
