@@ -1620,7 +1620,8 @@ MidiPatternEditor::redisplay_model ()
 					if (param2actrl[param]) {
 						boost::shared_ptr<AutomationList> alist = param2actrl[param]->alist();
 						// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
-						// interfere with the lock inside ControlList::erase.
+						// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
+						// of the WriteLock in ControlList::erase and such, then eval can be used.
 						bool ok;
 						inter_auto_val = alist->rt_safe_eval(is_region_automation ? relative_row_beats.to_double() : row_frame, ok);
 					}
