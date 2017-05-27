@@ -1477,6 +1477,7 @@ MidiPatternEditor::redisplay_model ()
 		for (uint32_t irow = 0; irow < nrows; irow++) {
 			row = *(model->append());
 			Evoral::Beats row_beats = np->beats_at_row(irow);
+			Evoral::Beats relative_row_beats = np->region_relative_beats_at_row(irow);
 			uint32_t row_frame = np->frame_at_row(irow);
 
 			// Time
@@ -1609,7 +1610,7 @@ MidiPatternEditor::redisplay_model ()
 								row[columns._automation_delay_foreground_color[i]] = active_foreground_color;
 							}
 							// Keep the automation iterator around for editing it
-							row[columns._automation[i]] = auto_it->second;
+							row[columns._automation[i]] = auto_it->second; // TODO not sure it is useful yet
 						}
 					}
 					row[columns._automation_foreground_color[i]] = active_foreground_color;
@@ -1618,7 +1619,10 @@ MidiPatternEditor::redisplay_model ()
 					double inter_auto_val = 0;
 					if (param2actrl[param]) {
 						boost::shared_ptr<AutomationList> alist = param2actrl[param]->alist();
-						inter_auto_val = alist->eval(is_region_automation ? row_beats.to_double() : row_frame);
+						// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
+						// interfere with the lock inside ControlList::erase.
+						bool ok;
+						inter_auto_val = alist->rt_safe_eval(is_region_automation ? relative_row_beats.to_double() : row_frame, ok);
 					}
 					row[columns.automation[i]] = to_string (inter_auto_val);
 					row[columns._automation_foreground_color[i]] = passive_foreground_color;
