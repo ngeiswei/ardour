@@ -1928,7 +1928,9 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 void
 MidiPatternEditor::automation_edited (const std::string& path, const std::string& text)
 {
-	std::cout << "automation_edited: path = " << path << ", text = " << text << std::endl;
+	std::cout << "automation_edited: path = " << path
+	          << ", text = " << text
+	          << ", edit_column = " << edit_column << std::endl;
 }
 
 void
