@@ -43,8 +43,9 @@ public:
 	Pattern(ARDOUR::Session* session,
 	        boost::shared_ptr<ARDOUR::Region> region);
 
-	// Set the number of rows per beat. After changing that you probably need
-	// to update the pattern, see below.
+	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
+	// supported). After changing that you probably need to update the pattern,
+	// see below.
 	void set_rows_per_beat(uint16_t rpb);
 
 	// Build or rebuild the pattern
@@ -112,7 +113,8 @@ public:
 	Evoral::Beats first_beats;
 	Evoral::Beats last_beats;
 
-	// Number of rows per beat
+	// Number of rows per beat. 0 means one row per bar (TODO not fully
+	// supported).
 	uint8_t rows_per_beat;
 
 	// Determined by the number of rows per beat

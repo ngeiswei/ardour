@@ -346,6 +346,7 @@
 		<ColorAlias name="pattern editor: active foreground" alias="color 4"/>
 		<ColorAlias name="pattern editor: background" alias="color 1"/>
 		<ColorAlias name="pattern editor: beat background" alias="color 2"/>
+        <ColorAlias name="pattern editor: bar background" alias="color 4"/>
 		<ColorAlias name="pattern editor: blank foreground" alias="color 3"/>
 		<ColorAlias name="pattern editor: passive foreground" alias="color 23"/>
 		<ColorAlias name="processor automation line" alias="color 1"/>

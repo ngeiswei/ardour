@@ -9,6 +9,7 @@
     <Color name="color 104" value="0x7f7f7fff"/>
     <Color name="color 105" value="0x101010ff"/>
     <Color name="color 106" value="0x404040ff"/>
+    <Color name="color 107" value="0x303030ff"/>
     <Color name="color 11" value="0x9496a3ff"/>
     <Color name="color 12" value="0x18ab27ff"/>
     <Color name="color 13" value="0xffffffff"/>
@@ -204,6 +205,7 @@
     <ColorAlias name="pattern editor: active foreground" alias="color 10"/>
     <ColorAlias name="pattern editor: background" alias="color 105"/>
     <ColorAlias name="pattern editor: beat background" alias="color 29"/>
+    <ColorAlias name="pattern editor: bar background" alias="color 107"/>
     <ColorAlias name="pattern editor: blank foreground" alias="color 106"/>
     <ColorAlias name="pattern editor: passive foreground" alias="color 106"/>
     <ColorAlias name="gtk_processor_fader" alias="color 94"/>
