@@ -46,6 +46,7 @@ Pattern::Pattern(ARDOUR::Session* session,
 void Pattern::set_rows_per_beat(uint16_t rpb)
 {
 	rows_per_beat = rpb;
+	// TODO: deal with rpb == 0
 	beats_per_row = Evoral::Beats(1.0 / rows_per_beat);
 	_ticks_per_row = BBT_Time::ticks_per_beat/rows_per_beat;
 }
