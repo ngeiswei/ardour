@@ -106,6 +106,7 @@ static const gchar *_beats_per_row_strings[] = {
 	N_("Beats/3"),
 	N_("Beats/2"),
 	N_("Beats"),
+	N_("Bars"),
 	0
 };
 
@@ -1271,6 +1272,7 @@ MidiPatternEditor::register_actions ()
 	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv3)));
 	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv2)));
 	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeat)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBar)));
 }
 
 void
@@ -1468,6 +1470,7 @@ MidiPatternEditor::redisplay_model ()
 		uint32_t nrows = std::max(std::max(np->nrows, tap->nrows), rap->nrows);
 
 		std::string beat_background_color = UIConfiguration::instance().color_str ("pattern editor: beat background");
+		std::string bar_background_color = UIConfiguration::instance().color_str ("pattern editor: bar background");
 		std::string background_color = UIConfiguration::instance().color_str ("pattern editor: background");
 		std::string blank_foreground_color = UIConfiguration::instance().color_str ("pattern editor: blank foreground");
 		std::string active_foreground_color = UIConfiguration::instance().color_str ("pattern editor: active foreground");
@@ -1487,9 +1490,11 @@ MidiPatternEditor::redisplay_model ()
 			print_padded(ss, row_bbt);
 			row[columns.time] = ss.str();
 
-			// If the row is on a beat the color differs
-			row[columns._background_color] = row_beats == row_beats.round_up_to_beat() ?
-				beat_background_color : background_color;
+			// If the row is on a bar, beat or otherwise, the color differs
+			row[columns._background_color] =
+				(row_beats == row_beats.round_up_to_beat() ?
+				 (row_bbt.beats == 1 ? bar_background_color : beat_background_color)
+				 : background_color);
 
 			// TODO: don't dismiss off-beat rows near the region boundaries
 
@@ -2443,6 +2448,8 @@ MidiPatternEditor::build_beats_per_row_menu ()
 	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv3 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv3)));
 	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv2 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv2)));
 	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeat - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeat)));
+	// TODO SnapToBar is not yet supported
+	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBar - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBar)));
 
 	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings, COMBO_TRIANGLE_WIDTH, 2);
 }
@@ -2487,6 +2494,7 @@ MidiPatternEditor::set_beats_per_row_to (SnapType st)
 	case SnapToBeatDiv3: rows_per_beat = 3; break;
 	case SnapToBeatDiv2: rows_per_beat = 2; break;
 	case SnapToBeat: rows_per_beat = 1; break;
+	case SnapToBar: rows_per_beat = 0; break;
 	default:
 		/* relax */
 		break;
@@ -2564,6 +2572,9 @@ MidiPatternEditor::beats_per_row_action (SnapType type)
 		break;
 	case Editing::SnapToBeat:
 		action = "beats-per-row-beat";
+		break;
+	case Editing::SnapToBar:
+		action = "beats-per-row-bar";
 		break;
 	default:
 		fatal << string_compose (_("programming error: %1: %2"), "Editor: impossible beats-per-row", (int) type) << endmsg;
