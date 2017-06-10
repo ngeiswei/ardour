@@ -148,8 +148,9 @@ class MidiPatternEditor : public ArdourWindow
 	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
 	Parameter2AutomationControl param2actrl;
 
-	// Map column index to automation track index
-	std::map<size_t, size_t> col2autotrack;
+	// Map column index to automation track index and vice versa
+	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
+	ColAutoTrackBimap col2autotrack;
 
 	ArdourButton                 automation_button;
 	Gtk::Menu                    subplugin_menu;
@@ -306,7 +307,7 @@ class MidiPatternEditor : public ArdourWindow
 	Glib::RefPtr<Gtk::ListStore> model;
 	Gtk::TreeView                view;
 	Gtk::ScrolledWindow          scroller;
-	int                          edit_column;
+	int                          edit_tracknum;
 	Gtk::Table                   buttons;
 	Gtk::HBox                    toolbar;
 	Gtk::VBox                    vbox;
