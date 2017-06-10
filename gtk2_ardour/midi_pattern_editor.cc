@@ -1931,7 +1931,28 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 {
 	std::cout << "automation_edited: path = " << path
 	          << ", text = " << text
-	          << ", edit_column = " << edit_column << std::endl;
+	          << ", edit_tracknum = " << edit_tracknum << std::endl;
+
+	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
+	if (ac_it == col2autotrack.right.end())
+		return;
+	size_t edited_colnum = ac_it->second;
+	std::cout << "edited_colnum = " << edited_colnum << std::endl;
+
+	ColParamBimap::left_const_iterator it = col2param.left.find(edited_colnum);
+	if (it == col2param.left.end())
+		return;
+	int row_index = get_row_index (path);
+
+	const Evoral::Parameter& param = it->second;
+	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
+	const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_index);
+	if (auto_it == r2at.end())
+		return;
+	double aval = (*auto_it->second)->value;
+	double awhen = (*auto_it->second)->when;
+	std::cout << "aval = " << aval << ", awhen = " << awhen << std::endl;
 }
 
 void
