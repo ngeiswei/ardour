@@ -1581,7 +1581,8 @@ MidiPatternEditor::redisplay_model ()
 			// Render automation pattern
 			for (ColParamBimap::left_const_iterator cp_it = col2param.left.begin(); cp_it != col2param.left.end(); ++cp_it) {
 				size_t col_idx = cp_it->first;
-				size_t i = col2autotrack[col_idx];
+				ColAutoTrackBimap::left_const_iterator ca_it = col2autotrack.left.find(col_idx);
+				size_t i = ca_it->second;
 				const Evoral::Parameter& param = cp_it->second;
 				bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
 				const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
@@ -1662,7 +1663,7 @@ MidiPatternEditor::get_on_note(const std::string& path)
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
 		return NoteTypePtr();
-	return (*iter)[columns._on_note[edit_column]];
+	return (*iter)[columns._on_note[edit_tracknum]];
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
@@ -1671,7 +1672,7 @@ MidiPatternEditor::get_off_note(const std::string& path)
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
 		return NoteTypePtr();
-	return (*iter)[columns._off_note[edit_column]];
+	return (*iter)[columns._off_note[edit_tracknum]];
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
@@ -1684,15 +1685,15 @@ MidiPatternEditor::get_note(const std::string& path)
 }
 
 void
-MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int colno)
+MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_column = colno;
+	edit_tracknum = tracknum;
 }
 
 void
 MidiPatternEditor::editing_canceled ()
 {
-	edit_column = -1;
+	edit_tracknum = -1;
 }
 
 void
@@ -1723,11 +1724,11 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// If there is an off note, update the length of the preceding note
 			// to match the next note or the end of the region.
 			if (off_note) {
-				NoteTypePtr prev_note = np->find_prev(row_index, edit_column);
+				NoteTypePtr prev_note = np->find_prev(row_index, edit_tracknum);
 				if (prev_note) {
 					// Calculate the length of the previous note
 					Evoral::Beats start = prev_note->time();
-					Evoral::Beats end = np->next_off(row_index, edit_column);
+					Evoral::Beats end = np->next_off(row_index, edit_tracknum);
 					Evoral::Beats length = end - start;
 					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 				}
@@ -1739,7 +1740,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// If there is no off note, update the length of the preceding node
 			// to match the new off note (smart off note).
 			if (!off_note) {
-				NoteTypePtr prev_note = np->find_prev(row_index, edit_column);
+				NoteTypePtr prev_note = np->find_prev(row_index, edit_tracknum);
 				if (prev_note) {
 					Evoral::Beats length = on_note->time() - prev_note->time();
 					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -1754,14 +1755,14 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// Update the length of the corresponding on note so the off note
 			// matches the next note or the end of the region.
 			Evoral::Beats start = off_note->time();
-			Evoral::Beats end = np->next_off(row_index, edit_column);
+			Evoral::Beats end = np->next_off(row_index, edit_tracknum);
 			Evoral::Beats length = end - start;
 			cmd->change (off_note, MidiModel::NoteDiffCommand::Length, length);
 		} else if (!is_off) {
 			// Replace off note by another (non-off) note. Calculate the start
 			// time and length of the new on note.
 			Evoral::Beats start = off_note->end_time();
-			Evoral::Beats end = np->next_off(row_index, edit_column);
+			Evoral::Beats end = np->next_off(row_index, edit_tracknum);
 			Evoral::Beats length = end - start;
 			// Build note using defaults
 			uint8_t chan = channel_spinner.get_value_as_int();
@@ -1772,7 +1773,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	} else {
 		if (!is_del) {
 			// Update the length the previous note to match the new note
-			NoteTypePtr prev_note = np->find_prev(row_index, edit_column);
+			NoteTypePtr prev_note = np->find_prev(row_index, edit_tracknum);
 			int delay = delay_spinner.get_value_as_int();
 			if (prev_note) {
 				// Calculate the length of the previous note
@@ -1785,7 +1786,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 				// Create the new note using the defaults. Calculate the start
 				// and length of the new note
 				Evoral::Beats start = np->region_relative_beats_at_row(row_index, delay);
-				Evoral::Beats end = np->next_off(row_index, edit_column);
+				Evoral::Beats end = np->next_off(row_index, edit_tracknum);
 				Evoral::Beats length = end - start;
 				uint8_t chan = channel_spinner.get_value_as_int();
 				uint8_t vel = velocity_spinner.get_value_as_int();
@@ -1946,7 +1947,7 @@ MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
 	midi_model->apply_command (_session, cmd);
 
 	// reset edit info, since we're done
-	edit_column = -1;
+	edit_tracknum = -1;
 }
 
 /////////////////////////
@@ -2112,7 +2113,7 @@ MidiPatternEditor::setup_automation_column (size_t i)
 
 	size_t column = view.get_columns().size();
 	view.append_column (*viewcolumn_automation);
-	col2autotrack[column] = i;
+	col2autotrack.insert(ColAutoTrackBimap::value_type(column, i));
 	available_automation_columns.insert(column);
 	view.get_column(column)->set_visible (false);
 }
@@ -2232,7 +2233,7 @@ MidiPatternEditor::setup_pattern ()
 	tap = new TrackAutomationPattern(_session, region, tacs);
 	rap = new RegionAutomationPattern(_session, region, racs);
 
-	edit_column = -1;
+	edit_tracknum = -1;
 
 	model = ListStore::create (columns);
 	view.set_model (model);
