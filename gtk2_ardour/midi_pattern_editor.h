@@ -451,6 +451,15 @@ class MidiPatternEditor : public ArdourWindow
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::SnapType);
 	void beats_per_row_chosen (Editing::SnapType);
 
+	/**
+	 * Limit x to be within [l, u], that is return max(l, min(u, x))
+	 */
+	template<typename Num>
+	Num limit(Num x, Num l, Num u)
+	{
+		return std::max(l, std::min(u, x));
+	}
+
 	// Make it up for the lack of C++11 support
 	template<typename T> std::string to_string(const T& v)
 	{

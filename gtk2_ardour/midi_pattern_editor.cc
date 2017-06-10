@@ -1629,7 +1629,8 @@ MidiPatternEditor::redisplay_model ()
 						// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 						// of the WriteLock in ControlList::erase and such, then eval can be used.
 						bool ok;
-						inter_auto_val = alist->rt_safe_eval(is_region_automation ? relative_row_beats.to_double() : row_frame, ok);
+						double awhen = is_region_automation ? relative_row_beats.to_double() : row_frame;
+						inter_auto_val = alist->rt_safe_eval(awhen, ok);
 					}
 					row[columns.automation[i]] = to_string (inter_auto_val);
 					row[columns._automation_foreground_color[i]] = passive_foreground_color;
@@ -1929,30 +1930,58 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 void
 MidiPatternEditor::automation_edited (const std::string& path, const std::string& text)
 {
-	std::cout << "automation_edited: path = " << path
-	          << ", text = " << text
-	          << ", edit_tracknum = " << edit_tracknum << std::endl;
+	bool is_del = text.empty();
+	double nval;
+	bool is_changed = is_del ? true : (sscanf (text.c_str(), "%lg", &nval) == 1);
+	int irow = get_row_index (path);
+	Evoral::Beats row_beats = tap->beats_at_row(irow);
+	Evoral::Beats relative_row_beats = tap->region_relative_beats_at_row(irow);
+	uint32_t row_frame = tap->frame_at_row(irow);
 
+	// Find the parameter to automate
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
 	if (ac_it == col2autotrack.right.end())
 		return;
 	size_t edited_colnum = ac_it->second;
-	std::cout << "edited_colnum = " << edited_colnum << std::endl;
-
 	ColParamBimap::left_const_iterator it = col2param.left.find(edited_colnum);
 	if (it == col2param.left.end())
 		return;
-	int row_index = get_row_index (path);
-
 	const Evoral::Parameter& param = it->second;
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
+	boost::shared_ptr<AutomationList> alist = actrl->alist();
+
+	// Limit nval to its range
+	nval = limit (nval, actrl->lower(), actrl->upper ());
+
+	// TODO take care of ***
+
+	// Find the control iterator to change
 	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
 	const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_index);
-	if (auto_it == r2at.end())
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
+
+	// If no existing value, insert one
+	if (auto_it == r2at.end()) {
+		if (!is_del) {
+			int delay = delay_spinner.get_value_as_int ();
+			// TODO: support delay
+			double awhen = is_region_automation ? relative_row_beats.to_double() : row_frame;
+			alist->add (awhen, nval);
+		}
 		return;
-	double aval = (*auto_it->second)->value;
-	double awhen = (*auto_it->second)->when;
-	std::cout << "aval = " << aval << ", awhen = " << awhen << std::endl;
+	}
+
+	// Delete existing value
+	if (is_del) {
+		alist->erase (auto_it->second);
+		return;
+	}
+
+	// Change existing value
+	if (is_changed) {
+		double awhen = (*auto_it->second)->when;
+		alist->modify (auto_it->second, awhen, nval);
+	}
 }
 
 void
