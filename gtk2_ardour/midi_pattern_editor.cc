@@ -1480,7 +1480,7 @@ MidiPatternEditor::redisplay_model ()
 		for (uint32_t irow = 0; irow < nrows; irow++) {
 			row = *(model->append());
 			Evoral::Beats row_beats = np->beats_at_row(irow);
-			Evoral::Beats relative_row_beats = np->region_relative_beats_at_row(irow);
+			Evoral::Beats row_relative_beats = np->region_relative_beats_at_row(irow);
 			uint32_t row_frame = np->frame_at_row(irow);
 
 			// Time
@@ -1629,7 +1629,7 @@ MidiPatternEditor::redisplay_model ()
 						// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 						// of the WriteLock in ControlList::erase and such, then eval can be used.
 						bool ok;
-						double awhen = is_region_automation ? relative_row_beats.to_double() : row_frame;
+						double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
 						inter_auto_val = alist->rt_safe_eval(awhen, ok);
 					}
 					row[columns.automation[i]] = to_string (inter_auto_val);
@@ -1934,9 +1934,10 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	double nval;
 	bool is_changed = is_del ? true : (sscanf (text.c_str(), "%lg", &nval) == 1);
 	int irow = get_row_index (path);
-	Evoral::Beats row_beats = tap->beats_at_row(irow);
-	Evoral::Beats relative_row_beats = tap->region_relative_beats_at_row(irow);
-	uint32_t row_frame = tap->frame_at_row(irow);
+	int delay = delay_spinner.get_value_as_int ();
+	Evoral::Beats row_beats = tap->beats_at_row(irow, delay);
+	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(irow, delay);
+	uint32_t row_frame = tap->frame_at_row(irow, delay);
 
 	// Find the parameter to automate
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
@@ -1963,9 +1964,7 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		if (!is_del) {
-			int delay = delay_spinner.get_value_as_int ();
-			// TODO: support delay
-			double awhen = is_region_automation ? relative_row_beats.to_double() : row_frame;
+			double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
 			alist->add (awhen, nval);
 		}
 		return;
