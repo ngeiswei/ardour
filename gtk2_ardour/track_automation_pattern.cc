@@ -38,6 +38,7 @@ TrackAutomationPattern::TrackAutomationPattern(ARDOUR::Session* session,
 uint32_t
 TrackAutomationPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
+	// TODO: support a more intelligent control 2 row dispatching
 	framepos_t frame = event->when;
 	uint32_t row = row_at_frame(frame);
 	if (automations[param].count(row) == 0)
