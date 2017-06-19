@@ -1867,24 +1867,19 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 void
 MidiPatternEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
-	if (text.empty()) {
-		return;
-	}
-
 	NoteTypePtr on_note = get_on_note(path);
 	NoteTypePtr off_note = get_off_note(path);
 	if (!on_note && !off_note)
 		return;
 
-	int  ival;
-	bool apply = false;         // TODO: remove the apply crap
+	int  ival = 0;
 	char const * opname = _("change note delay");
 	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
 	int irow = get_row_index(path);
 
 	// Parse the edited delay
-	if (sscanf (text.c_str(), "%d", &ival) != 1)
+	if (!text.empty() and sscanf (text.c_str(), "%d", &ival) != 1)
 		return;
 
 	// Check if within acceptable boundaries
@@ -1909,7 +1904,6 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 			Evoral::Beats new_off_length = off_note->length() + relative_beats;
 			cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_off_length);
 		}
-		apply = true;
 	}
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
@@ -1918,13 +1912,9 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
 		Evoral::Beats new_length = off_note->length() + relative_beats;
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
-		apply = true;
 	}
 
-	if (apply) {
-		// Apply delay changes
-		apply_command (cmd);
-	}
+	apply_command (cmd);
 }
 
 void
