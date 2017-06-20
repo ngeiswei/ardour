@@ -1976,7 +1976,46 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 void
 MidiPatternEditor::automation_delay_edited (const std::string& path, const std::string& text)
 {
-	std::cout << "automation_delay_edited: path = " << path << ", text = " << text << std::endl;
+	int delay = 0;
+	// Parse the edited delay
+	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1)
+		return;
+
+	// Check if within acceptable boundaries
+	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
+		return;
+
+	int irow = get_row_index (path);
+	Evoral::Beats row_beats = tap->beats_at_row(irow, delay);
+	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(irow, delay);
+	uint32_t row_frame = tap->frame_at_row(irow, delay);
+
+	// Find the parameter to change delay
+	// TODO: this can probably be factorized
+	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
+	if (ac_it == col2autotrack.right.end())
+		return;
+	size_t edited_colnum = ac_it->second;
+	ColParamBimap::left_const_iterator it = col2param.left.find(edited_colnum);
+	if (it == col2param.left.end())
+		return;
+	const Evoral::Parameter& param = it->second;
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
+	boost::shared_ptr<AutomationList> alist = actrl->alist();
+
+	// Find the control iterator to change
+	// TODO: this can probably be factorized
+	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
+	const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
+
+	// If no existing value, abort
+	if (auto_it == r2at.end())
+		return;
+
+	// Change existing delay
+	double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
+	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
 }
 
 void
