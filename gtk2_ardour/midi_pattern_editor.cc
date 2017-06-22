@@ -67,17 +67,15 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Add keyboard shortcuts to edit notes and automations
+//
 // - [ ] Understand what TreeView::row_activated is
 //
-// - [ ] Get the width of the Gtk widget minimize automatically
-//
-// - [ ] Update automation when updated on the horizontal track view
+// - [ ] Don't get the height of the Gtk widget minimize automatically
 //
 // - [ ] Support audio tracks and trim automation
 //
 // - [ ] Support multiple tracks and regions.
-//
-// - [ ] Support editing.
 //
 // - [ ] Create a dedicated Gtk widget instead of Gtk::TreeView.
 //
