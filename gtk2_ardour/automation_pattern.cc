@@ -46,7 +46,6 @@ void AutomationPattern::update_pattern()
 		boost::shared_ptr<AutomationList> al = (*actrl)->alist();
 		const Evoral::Parameter& param = (*actrl)->parameter();
 		// Build automation pattern
-		// TODO: support a more intelligent control 2 row dispatching
 		for (AutomationList::iterator it = al->begin(); it != al->end(); ++it) {
 			uint32_t row = control_event2row(param, *it);
 			automations[param].insert(RowToAutomationIt::value_type(row, it));
