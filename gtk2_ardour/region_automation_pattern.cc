@@ -38,10 +38,9 @@ RegionAutomationPattern::RegionAutomationPattern(ARDOUR::Session* session,
 uint32_t
 RegionAutomationPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	// TODO: support a more intelligent control 2 row dispatching
 	Evoral::Beats beats(event->when);
 	uint32_t row = row_at_beats(beats + first_beats);
-	if (automations[param].count(row) == 0)
+	if (automations[param].count(row) != 0)
 		row = row_at_beats_min_delay(beats + first_beats);
 	return row;
 }
