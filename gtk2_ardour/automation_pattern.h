@@ -52,6 +52,10 @@ public:
 	// Assign a control event to a row
 	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
 
+	// Return true iff the automation point is displayable, i.e. iff there is
+	// only one of them.
+	bool is_displayable(uint32_t row, const Evoral::Parameter& param) const;
+
 	// Map parameters to maps of row to automation range
 	std::map<Evoral::Parameter, RowToAutomationIt> automations;
 

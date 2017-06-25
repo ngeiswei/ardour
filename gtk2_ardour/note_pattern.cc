@@ -90,20 +90,26 @@ void NotePattern::update_pattern()
 		     inote != notes_per_track[itrack].end(); ++inote) {
 			Evoral::Beats on_time = (*inote)->time() + first_beats;
 			Evoral::Beats off_time = (*inote)->end_time() + first_beats;
-			uint32_t row_on_max_delay = row_at_beats_max_delay(on_time);
-			uint32_t row_on = row_at_beats(on_time);
-			uint32_t row_off_min_delay = row_at_beats_min_delay(off_time);
-			uint32_t row_off = row_at_beats(off_time);
+			uint32_t on_max_delay_row = row_at_beats_max_delay(on_time);
+			uint32_t on_row = row_at_beats(on_time);
+			uint32_t off_min_delay_row = row_at_beats_min_delay(off_time);
+			uint32_t off_row = row_at_beats(off_time);
 
-			if (row_on == row_off && row_on != row_off_min_delay) {
-				on_notes[itrack].insert(RowToNotes::value_type(row_on, *inote));
-				off_notes[itrack].insert(RowToNotes::value_type(row_off_min_delay, *inote));
-			} else if (row_on == row_off && row_on_max_delay != row_off) {
-				on_notes[itrack].insert(RowToNotes::value_type(row_on_max_delay, *inote));
-				off_notes[itrack].insert(RowToNotes::value_type(row_off, *inote));
+			// TODO: make row assignement more intelligent. Given the possible
+			// rows for each on and off notes find an assignement that
+			// minimizes the number displayable rows. If however the number of
+			// combinations to explore is too high fallback on the following
+			// cheap strategy.
+
+			if (on_row == off_row && on_row != off_min_delay_row) {
+				on_notes[itrack].insert(RowToNotes::value_type(on_row, *inote));
+				off_notes[itrack].insert(RowToNotes::value_type(off_min_delay_row, *inote));
+			} else if (on_row == off_row && on_max_delay_row != off_row) {
+				on_notes[itrack].insert(RowToNotes::value_type(on_max_delay_row, *inote));
+				off_notes[itrack].insert(RowToNotes::value_type(off_row, *inote));
 			} else {
-				on_notes[itrack].insert(RowToNotes::value_type(row_on, *inote));
-				off_notes[itrack].insert(RowToNotes::value_type(row_off, *inote));
+				on_notes[itrack].insert(RowToNotes::value_type(on_row, *inote));
+				off_notes[itrack].insert(RowToNotes::value_type(off_row, *inote));
 			}
 		}
 	}
@@ -119,27 +125,38 @@ void NotePattern::dec_ntracks()
 	ntracks--;
 }
 
-NotePattern::NoteTypePtr NotePattern::find_prev(uint32_t row, int col) const
+NotePattern::NoteTypePtr NotePattern::find_prev(uint32_t row, int track_idx) const
 {
-	const RowToNotes& r2n = on_notes[col];
+	const RowToNotes& r2n = on_notes[track_idx];
 	RowToNotes::const_reverse_iterator rit =
 		std::reverse_iterator<RowToNotes::const_iterator>(r2n.lower_bound(row));
 	while (rit != r2n.rend() && rit->first == row) { ++rit; };
 	return rit != r2n.rend() ? lattest(r2n.equal_range(rit->first)) : NoteTypePtr();
 }
 
-NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int col) const
+NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int track_idx) const
 {
-	const RowToNotes& r2n = on_notes[col];
+	const RowToNotes& r2n = on_notes[track_idx];
 	RowToNotes::const_iterator it = r2n.upper_bound(row);
 	while (it != r2n.end() && it->first == row) { ++it; };
 	return it != r2n.end() ? earliest(r2n.equal_range(it->first)) : NoteTypePtr();
 }
 
-Evoral::Beats NotePattern::next_off(uint32_t row, int col) const
+Evoral::Beats NotePattern::next_off(uint32_t row, int track_idx) const
 {
-	NoteTypePtr next_note = find_next(row, col);
+	NoteTypePtr next_note = find_next(row, track_idx);
 	return next_note ? next_note->time() : last_beats;
+}
+
+bool NotePattern::is_displayable(uint32_t row, int track_idx) const
+{
+	size_t off_notes_count = off_notes[track_idx].count(row);
+	size_t on_notes_count = on_notes[track_idx].count(row);
+	NotePattern::RowToNotes::const_iterator i_off = off_notes[track_idx].find(row);
+	NotePattern::RowToNotes::const_iterator i_on = on_notes[track_idx].find(row);
+	return off_notes_count <= 1 && on_notes_count <= 1
+		&& (off_notes_count != 1 || on_notes_count != 1
+		    || i_off->second->end_time() == i_on->second->time());
 }
 
 NotePattern::NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const

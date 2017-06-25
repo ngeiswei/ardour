@@ -52,3 +52,9 @@ void AutomationPattern::update_pattern()
 		}
 	}
 }
+
+bool AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
+{
+	return automations.find(param) == automations.end()
+		|| automations.find(param)->second.count(row) <= 1;
+}

@@ -1525,15 +1525,7 @@ MidiPatternEditor::redisplay_model ()
 					NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
 					NotePattern::RowToNotes::const_iterator i_on = np->on_notes[i].find(irow);
 
-					// Determine whether the row is defined
-					bool undefined = (off_notes_count > 1 || on_notes_count > 1)
-						|| (off_notes_count == 1 && on_notes_count == 1
-						    && i_off->second->end_time() != i_on->second->time());
-
-					if (undefined) {
-						row[columns.note_name[i]] = undefined_str;
-						row[columns._note_foreground_color[i]] = active_foreground_color;
-					} else {
+					if (np->is_displayable(irow, i)) {
 						// Notes off
 						NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
 						if (i_off != np->off_notes[i].end()) {
@@ -1572,18 +1564,24 @@ MidiPatternEditor::redisplay_model ()
 							// Keep the note around for playing and editing
 							row[columns._on_note[i]] = note;
 						}
+					} else {
+						// Too many notes, not displayable
+						row[columns.note_name[i]] = undefined_str;
+						row[columns._note_foreground_color[i]] = active_foreground_color;
 					}
 				}
 			}
 
 			// Render automation pattern
+			// TODO: split between columns refering to region and track automation.
 			for (ColParamBimap::left_const_iterator cp_it = col2param.left.begin(); cp_it != col2param.left.end(); ++cp_it) {
 				size_t col_idx = cp_it->first;
 				ColAutoTrackBimap::left_const_iterator ca_it = col2autotrack.left.find(col_idx);
 				size_t i = ca_it->second;
 				const Evoral::Parameter& param = cp_it->second;
 				bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-				const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
+				AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+				const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 				size_t auto_count = r2at.count(irow);
 
 				if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS) {
@@ -1598,10 +1596,7 @@ MidiPatternEditor::redisplay_model ()
 				row[columns.automation_delay[i]] = "-----";
 
 				if (auto_count > 0) {
-					bool undefined = auto_count > 1;
-					if (undefined) {
-						row[columns.automation[i]] = undefined_str;
-					} else {
+					if (ap->is_displayable(irow, param)) {
 						AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
 						if (auto_it != r2at.end()) {
 							double aval = (*auto_it->second)->value;
@@ -1616,6 +1611,8 @@ MidiPatternEditor::redisplay_model ()
 							// Keep the automation iterator around for editing it
 							row[columns._automation[i]] = auto_it->second; // TODO not sure it is useful yet
 						}
+					} else {
+						row[columns.automation[i]] = undefined_str;
 					}
 					row[columns._automation_foreground_color[i]] = active_foreground_color;
 				} else {
