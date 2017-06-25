@@ -33,7 +33,10 @@ namespace ARDOUR {
 
 /**
  * Data structure holding the pattern of midi notes for the pattern editor.
- * Plus some goodies method to generate a pattern given a midi region.
+ * Plus some goodies method to generate a pattern given a midi region. The
+ * notion of track is used instead of column as this term is reserved to the
+ * gtk widget representing notes and automations. The term track shouldn't not
+ * be confused with the term track of the horizontal editor view.
  */
 class NotePattern : public Pattern {
 public:
@@ -55,19 +58,26 @@ public:
 	void inc_ntracks();
 	void dec_ntracks();
 
-	// Find the previous (resp. next) note of a given row on a given column
-	NoteTypePtr find_prev(uint32_t row, int col) const;
-	NoteTypePtr find_next(uint32_t row, int col) const;
+	// Find the previous (resp. next) note of a given row on a given track
+	// index.
+	// TODO: maybe we want to use uint16_t instead of int
+	NoteTypePtr find_prev(uint32_t row, int track_idx) const;
+	NoteTypePtr find_next(uint32_t row, int track_idx) const;
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
-	Evoral::Beats next_off(uint32_t row, int col) const;
+	Evoral::Beats next_off(uint32_t row, int track_idx) const;
 
-	// Number of columns of that midi track (determined by the number of
+	// Return true if the notes are displayable at this resolution. Basically
+	// if there are too many notes, unless its a pair (note off, note on)
+	// perfectly contiguous, it is not displayable.
+	bool is_displayable(uint32_t row, int track_idx) const;
+
+	// Number of tracks of that midi track (determined by the number of
 	// overlapping notes)
 	uint16_t ntracks;
 
-	// Minimum of number of columns required to display all notes
+	// Minimum of number of tracks required to display all notes
 	uint16_t nreqtracks;
 
 	// Map row index to on notes for each track
