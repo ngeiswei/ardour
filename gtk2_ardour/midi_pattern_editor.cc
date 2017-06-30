@@ -1494,7 +1494,9 @@ MidiPatternEditor::redisplay_model ()
 				 (row_bbt.beats == 1 ? bar_background_color : beat_background_color)
 				 : background_color);
 
-			// TODO: don't dismiss off-beat rows near the region boundaries
+			// TODO: don't dismiss off-beat rows near the region boundaries. Or
+			// maybe rather they should be dismissed if they stop exactly at
+			// the region boundary,
 
 			// Render midi notes pattern
 			size_t ntracks = np->ntracks;
@@ -1573,7 +1575,6 @@ MidiPatternEditor::redisplay_model ()
 			}
 
 			// Render automation pattern
-			// TODO: split between columns refering to region and track automation.
 			for (ColParamBimap::left_const_iterator cp_it = col2param.left.begin(); cp_it != col2param.left.end(); ++cp_it) {
 				size_t col_idx = cp_it->first;
 				ColAutoTrackBimap::left_const_iterator ca_it = col2autotrack.left.find(col_idx);
@@ -1698,7 +1699,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	bool is_del = text.empty();
 	bool is_off = text == note_off_str;
 	uint8_t ival = ParameterDescriptor::midi_note_num (text);
-	int row_index = get_row_index (path);
+	int row_idx = get_row_index (path);
 
 	// Abort if the new pitch is invalid
 	if (!is_off && 127 < ival)
@@ -1710,7 +1711,9 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	NoteTypePtr on_note = get_on_note(path);
 	NoteTypePtr off_note = get_off_note(path);
 
-	// TODO take care of ***
+	// Can't edit ***
+	if (not np->is_displayable(row_idx, edit_tracknum))
+		return;
 
 	if (on_note) {
 		if (is_del) {
@@ -1720,11 +1723,11 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// If there is an off note, update the length of the preceding note
 			// to match the next note or the end of the region.
 			if (off_note) {
-				NoteTypePtr prev_note = np->find_prev(row_index, edit_tracknum);
+				NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
 				if (prev_note) {
 					// Calculate the length of the previous note
 					Evoral::Beats start = prev_note->time();
-					Evoral::Beats end = np->next_off(row_index, edit_tracknum);
+					Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 					Evoral::Beats length = end - start;
 					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 				}
@@ -1736,7 +1739,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// If there is no off note, update the length of the preceding node
 			// to match the new off note (smart off note).
 			if (!off_note) {
-				NoteTypePtr prev_note = np->find_prev(row_index, edit_tracknum);
+				NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
 				if (prev_note) {
 					Evoral::Beats length = on_note->time() - prev_note->time();
 					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -1751,14 +1754,14 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// Update the length of the corresponding on note so the off note
 			// matches the next note or the end of the region.
 			Evoral::Beats start = off_note->time();
-			Evoral::Beats end = np->next_off(row_index, edit_tracknum);
+			Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 			Evoral::Beats length = end - start;
 			cmd->change (off_note, MidiModel::NoteDiffCommand::Length, length);
 		} else if (!is_off) {
 			// Replace off note by another (non-off) note. Calculate the start
 			// time and length of the new on note.
 			Evoral::Beats start = off_note->end_time();
-			Evoral::Beats end = np->next_off(row_index, edit_tracknum);
+			Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 			Evoral::Beats length = end - start;
 			// Build note using defaults
 			uint8_t chan = channel_spinner.get_value_as_int();
@@ -1769,20 +1772,20 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	} else {
 		if (!is_del) {
 			// Update the length the previous note to match the new note
-			NoteTypePtr prev_note = np->find_prev(row_index, edit_tracknum);
+			NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
 			int delay = delay_spinner.get_value_as_int();
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Evoral::Beats start = prev_note->time();
-				Evoral::Beats end = np->region_relative_beats_at_row(row_index, delay);
+				Evoral::Beats end = np->region_relative_beats_at_row(row_idx, delay);
 				Evoral::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
 			if (!is_off) {
 				// Create the new note using the defaults. Calculate the start
 				// and length of the new note
-				Evoral::Beats start = np->region_relative_beats_at_row(row_index, delay);
-				Evoral::Beats end = np->next_off(row_index, edit_tracknum);
+				Evoral::Beats start = np->region_relative_beats_at_row(row_idx, delay);
+				Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 				Evoral::Beats length = end - start;
 				uint8_t chan = channel_spinner.get_value_as_int();
 				uint8_t vel = velocity_spinner.get_value_as_int();
@@ -1805,6 +1808,10 @@ MidiPatternEditor::note_channel_edited (const std::string& path, const std::stri
 
 	NoteTypePtr note = get_on_note(path);
 	if (!note)
+		return;
+
+	// Can't edit ***
+	if (not np->is_displayable(get_row_index (path), edit_tracknum))
 		return;
 
 	int  ival;
@@ -1833,6 +1840,10 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 
 	NoteTypePtr note = get_on_note(path);
 	if (!note)
+		return;
+
+	// Can't edit ***
+	if (not np->is_displayable(get_row_index (path), edit_tracknum))
 		return;
 
 	// Save previous velocity
@@ -1871,7 +1882,11 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	char const * opname = _("change note delay");
 	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
-	int irow = get_row_index(path);
+	int row_idx = get_row_index(path);
+
+	// Can't edit ***
+	if (not np->is_displayable(row_idx, edit_tracknum))
+		return;
 
 	// Parse the edited delay
 	if (!text.empty() and sscanf (text.c_str(), "%d", &ival) != 1)
@@ -1885,7 +1900,7 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int idelta = ival - np->region_relative_delay_ticks(on_note->time(), irow);
+		int idelta = ival - np->region_relative_delay_ticks(on_note->time(), row_idx);
 		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
 		Evoral::Beats new_start = on_note->time() + relative_beats;
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
@@ -1903,7 +1918,7 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int idelta = ival - np->region_relative_delay_ticks(off_note->end_time(), irow);
+		int idelta = ival - np->region_relative_delay_ticks(off_note->end_time(), row_idx);
 		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
 		Evoral::Beats new_length = off_note->length() + relative_beats;
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
