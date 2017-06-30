@@ -1933,11 +1933,11 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	bool is_del = text.empty();
 	double nval;
 	bool is_changed = is_del ? true : (sscanf (text.c_str(), "%lg", &nval) == 1);
-	int irow = get_row_index (path);
+	int row_idx = get_row_index (path);
 	int delay = delay_spinner.get_value_as_int ();
-	Evoral::Beats row_beats = tap->beats_at_row(irow, delay);
-	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(irow, delay);
-	uint32_t row_frame = tap->frame_at_row(irow, delay);
+	Evoral::Beats row_beats = tap->beats_at_row(row_idx, delay);
+	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
+	uint32_t row_frame = tap->frame_at_row(row_idx, delay);
 
 	// Find the parameter to automate
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
@@ -1954,12 +1954,16 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	// Limit nval to its range
 	nval = limit (nval, actrl->lower(), actrl->upper ());
 
-	// TODO take care of ***
-
 	// Find the control iterator to change
 	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-	const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
+	AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+
+	// Can't edit ***
+	if (not ap->is_displayable(row_idx, param))
+		return;
+
+	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
 
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
@@ -1995,10 +1999,10 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
 		return;
 
-	int irow = get_row_index (path);
-	Evoral::Beats row_beats = tap->beats_at_row(irow, delay);
-	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(irow, delay);
-	uint32_t row_frame = tap->frame_at_row(irow, delay);
+	int row_idx = get_row_index (path);
+	Evoral::Beats row_beats = tap->beats_at_row(row_idx, delay);
+	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
+	uint32_t row_frame = tap->frame_at_row(row_idx, delay);
 
 	// Find the parameter to change delay
 	// TODO: this can probably be factorized
@@ -2014,10 +2018,15 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
 
 	// Find the control iterator to change
-	// TODO: this can probably be factorized
 	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-	const AutomationPattern::RowToAutomationIt& r2at = is_region_automation ? rap->automations[param] : tap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(irow);
+	AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+
+	// Can't edit ***
+	if (not ap->is_displayable(row_idx, param))
+		return;
+
+	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
 
 	// If no existing value, abort
 	if (auto_it == r2at.end())
