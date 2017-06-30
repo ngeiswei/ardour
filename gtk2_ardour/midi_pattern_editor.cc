@@ -67,19 +67,17 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Add keyboard shortcuts to edit notes and automations
-//
 // - [ ] Remember what notes are on which tracks
 //
 // - [ ] Keep the pattern centered where the cursor is after edition
 //
 // - [ ] Don't get the height of the Gtk widget minimize automatically
 //
+// - [ ] Add keyboard shortcuts to edit notes and automations
+//
 // - [ ] Support audio tracks and trim automation
 //
 // - [ ] Support multiple tracks and regions.
-//
-// - [ ] Create a dedicated Gtk widget instead of Gtk::TreeView.
 
 ///////////////////////
 // MidiPatternEditor //
