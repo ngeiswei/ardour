@@ -35,8 +35,8 @@ namespace ARDOUR {
  * Data structure holding the pattern of midi notes for the pattern editor.
  * Plus some goodies method to generate a pattern given a midi region. The
  * notion of track is used instead of column as this term is reserved to the
- * gtk widget representing notes and automations. The term track shouldn't not
- * be confused with the term track of the horizontal editor view.
+ * gtk widget representing notes and automations. The term track should not be
+ * confused with the term track of the horizontal editor view.
  */
 class NotePattern : public Pattern {
 public:
@@ -53,6 +53,20 @@ public:
 
 	// Build or rebuild the pattern (implement Pattern::update_pattern)
 	void update_pattern();
+
+	// Update notes_per_track. Distribute new notes across N tracks so that no
+	// overlapping notes can exist on the same track. Likewise modified notes
+	// are moved to a new track if overlapping cannot be avoided otherwise. A
+	// new note is placed on the first available track, ordered by vector
+	// index. A modified note attempt to remain on the same track, and
+	// otherwise placed in the first available track as if it were a new note.
+	//
+	// Since new tracks can be created if necessary, nreqtracks and ntracks are
+	// updated as well.
+	void update_notes_per_track();
+
+	// Update the mapping from row to on and off notes.
+	void update_row_to_notes();
 
 	// Increase and decrease the number of tracks
 	void inc_ntracks();
@@ -79,6 +93,10 @@ public:
 
 	// Minimum of number of tracks required to display all notes
 	uint16_t nreqtracks;
+
+	// Store the distribution of notes for each track. Makes sure that no
+	// overlapping notes are on the same track.
+	std::vector<ARDOUR::MidiModel::Notes> notes_per_track;
 
 	// Map row index to on notes for each track
 	std::vector<RowToNotes> on_notes;
