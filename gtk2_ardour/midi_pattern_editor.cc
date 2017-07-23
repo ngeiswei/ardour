@@ -1706,12 +1706,12 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	char const * opname = _("change note name");
 	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
-	NoteTypePtr on_note = get_on_note(path);
-	NoteTypePtr off_note = get_off_note(path);
-
 	// Can't edit ***
 	if (not np->is_displayable(row_idx, edit_tracknum))
 		return;
+
+	NoteTypePtr on_note = get_on_note(path);
+	NoteTypePtr off_note = get_off_note(path);
 
 	if (on_note) {
 		if (is_del) {
@@ -1762,7 +1762,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 			Evoral::Beats length = end - start;
 			// Build note using defaults
-			uint8_t chan = channel_spinner.get_value_as_int();
+			uint8_t chan = channel_spinner.get_value_as_int() - 1;
 			uint8_t vel = velocity_spinner.get_value_as_int();
 			NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
 			cmd->add (new_note);
@@ -1785,7 +1785,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 				Evoral::Beats start = np->region_relative_beats_at_row(row_idx, delay);
 				Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 				Evoral::Beats length = end - start;
-				uint8_t chan = channel_spinner.get_value_as_int();
+				uint8_t chan = channel_spinner.get_value_as_int() - 1;
 				uint8_t vel = velocity_spinner.get_value_as_int();
 				NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
 				cmd->add (new_note);

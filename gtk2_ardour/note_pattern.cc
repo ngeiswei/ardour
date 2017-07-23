@@ -55,6 +55,33 @@ void NotePattern::update_pattern()
 	update_row_to_notes();
 }
 
+void NotePattern::update_notes_per_track()
+{
+	// TODO replace clear by real update
+	notes_per_track.clear();
+	const MidiModel::Notes& notes = _midi_model->notes();
+	MidiModel::StrictNotes strict_notes(notes.begin(), notes.end());
+	for (MidiModel::StrictNotes::const_iterator note = strict_notes.begin();
+	     note != strict_notes.end(); ++note) {
+		int freetrack = -1;		// index of the first free track
+		for (int i = 0; i < (int)notes_per_track.size(); i++) {
+			if ((*notes_per_track[i].rbegin())->end_time() <= (*note)->time()) {
+				freetrack = i;
+				break;
+			}
+		}
+		// No free track found, create a new one.
+		if (freetrack < 0) {
+			freetrack = notes_per_track.size();
+			notes_per_track.push_back(MidiModel::Notes());
+		}
+		// Insert the note in the first free track
+		notes_per_track[freetrack].insert(*note);
+	}
+	nreqtracks = notes_per_track.size();
+	ntracks = std::max(nreqtracks, ntracks);
+}
+
 void NotePattern::update_row_to_notes()
 {
 	on_notes.clear();
@@ -90,33 +117,6 @@ void NotePattern::update_row_to_notes()
 			}
 		}
 	}
-}
-
-void NotePattern::update_notes_per_track()
-{
-	// TODO replace clear by real update
-	notes_per_track.clear();
-	const MidiModel::Notes& notes = _midi_model->notes();
-	MidiModel::StrictNotes strict_notes(notes.begin(), notes.end());
-	for (MidiModel::StrictNotes::const_iterator note = strict_notes.begin();
-	     note != strict_notes.end(); ++note) {
-		int freetrack = -1;		// index of the first free track
-		for (int i = 0; i < (int)notes_per_track.size(); i++) {
-			if ((*notes_per_track[i].rbegin())->end_time() <= (*note)->time()) {
-				freetrack = i;
-				break;
-			}
-		}
-		// No free track found, create a new one.
-		if (freetrack < 0) {
-			freetrack = notes_per_track.size();
-			notes_per_track.push_back(MidiModel::Notes());
-		}
-		// Insert the note in the first free track
-		notes_per_track[freetrack].insert(*note);
-	}
-	nreqtracks = notes_per_track.size();
-	ntracks = std::max(nreqtracks, ntracks);
 }
 
 void NotePattern::inc_ntracks()
