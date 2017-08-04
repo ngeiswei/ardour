@@ -54,7 +54,7 @@ public:
 	// Build or rebuild the pattern (implement Pattern::update_pattern)
 	void update_pattern();
 
-	// Update notes_per_track. Distribute new notes across N tracks so that no
+	// Update track_to_notes. Distribute new notes across N tracks so that no
 	// overlapping notes can exist on the same track. Likewise modified notes
 	// are moved to a new track if overlapping cannot be avoided otherwise. A
 	// new note is placed on the first available track, ordered by vector
@@ -63,7 +63,7 @@ public:
 	//
 	// Since new tracks can be created if necessary, nreqtracks and ntracks are
 	// updated as well.
-	void update_notes_per_track();
+	void update_track_to_notes();
 
 	// Update the mapping from row to on and off notes.
 	void update_row_to_notes();
@@ -96,7 +96,7 @@ public:
 
 	// Store the distribution of notes for each track. Makes sure that no
 	// overlapping notes are on the same track.
-	std::vector<ARDOUR::MidiModel::Notes> notes_per_track;
+	std::vector<ARDOUR::MidiModel::Notes> track_to_notes;
 
 	// Map row index to on notes for each track
 	std::vector<RowToNotes> on_notes;
@@ -108,6 +108,24 @@ public:
 private:
 	NoteTypePtr earliest(const RowToNotesRange& rng) const;
 	NoteTypePtr lattest(const RowToNotesRange& rng) const;
+
+	// Find track in track_to_notes containing a note with the same id, return
+	// the track index if found, -1 otherwise.
+	int find_eq_id(NoteTypePtr note) const;
+
+	// Find the note in track_to_notes[track_idx] containing the same id.
+	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(int track_idx, NoteTypePtr note) const;
+	ARDOUR::MidiModel::Notes::iterator find_eq_id(int track_idx, NoteTypePtr note);
+
+	// Erase note in given track with the id of the given note.
+	void erase(int track_idx, NoteTypePtr note);
+
+	// Check if a track is available to receive a note.
+	bool is_free(int track_idx, NoteTypePtr note) const;
+
+	// Find the first track ready of receive a note. Return the track index if
+	// found, -1 otherwise.
+	int find_free_track(NoteTypePtr note) const;
 
 	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
 };
