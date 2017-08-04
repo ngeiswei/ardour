@@ -1200,8 +1200,8 @@ Sequence<Time>::overlaps_unlocked (const NotePtr& note, const NotePtr& without) 
 		Time eb = (*i)->end_time();
 
 		if (((sb > sa) && (eb <= ea)) ||
-		    ((eb >= sa) && (eb <= ea)) ||
-		    ((sb > sa) && (sb <= ea)) ||
+		    ((eb > sa) && (eb <= ea)) ||
+		    ((sb > sa) && (sb < ea)) ||
 		    ((sa >= sb) && (sa <= eb) && (ea <= eb))) {
 			return true;
 		}
