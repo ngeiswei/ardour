@@ -51,34 +51,43 @@ NotePattern::NotePattern(ARDOUR::Session* session,
 void NotePattern::update_pattern()
 {
 	set_row_range();
-	update_notes_per_track();
+	update_track_to_notes();
 	update_row_to_notes();
 }
 
-void NotePattern::update_notes_per_track()
+void NotePattern::update_track_to_notes()
 {
-	// TODO replace clear by real update
-	notes_per_track.clear();
+	// Sort the notes with the StrictNotes order so that simulatenous notes can
+	// be dispatched according to some defined order.
 	const MidiModel::Notes& notes = _midi_model->notes();
 	MidiModel::StrictNotes strict_notes(notes.begin(), notes.end());
-	for (MidiModel::StrictNotes::const_iterator note = strict_notes.begin();
-	     note != strict_notes.end(); ++note) {
+
+	for (MidiModel::StrictNotes::const_iterator it = strict_notes.begin();
+	     it != strict_notes.end(); ++it) {
+		int track_idx = find_eq_id(*it);
 		int freetrack = -1;		// index of the first free track
-		for (int i = 0; i < (int)notes_per_track.size(); i++) {
-			if ((*notes_per_track[i].rbegin())->end_time() <= (*note)->time()) {
-				freetrack = i;
-				break;
+		if (-1 < track_idx) {
+			// The note is already in track_to_notes, remove it and check if it
+			// can be re-inserted in the same track.
+			erase(track_idx, *it);
+			if (is_free(track_idx, *it)) {
+				freetrack = track_idx;
 			}
 		}
+		// Find the first available track
+		if (freetrack < 0)
+			freetrack = find_free_track(*it);
 		// No free track found, create a new one.
 		if (freetrack < 0) {
-			freetrack = notes_per_track.size();
-			notes_per_track.push_back(MidiModel::Notes());
+			freetrack = track_to_notes.size();
+			track_to_notes.push_back(MidiModel::Notes());
 		}
 		// Insert the note in the first free track
-		notes_per_track[freetrack].insert(*note);
+		track_to_notes[freetrack].insert(*it);
 	}
-	nreqtracks = notes_per_track.size();
+
+	// Update nreqtracks and ntracks
+	nreqtracks = track_to_notes.size();
 	ntracks = std::max(nreqtracks, ntracks);
 }
 
@@ -90,8 +99,8 @@ void NotePattern::update_row_to_notes()
 	off_notes.resize(ntracks);
 
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
-		for (MidiModel::Notes::iterator inote = notes_per_track[itrack].begin();
-		     inote != notes_per_track[itrack].end(); ++inote) {
+		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin();
+		     inote != track_to_notes[itrack].end(); ++inote) {
 			Evoral::Beats on_time = (*inote)->time() + first_beats;
 			Evoral::Beats off_time = (*inote)->end_time() + first_beats;
 			uint32_t on_max_delay_row = row_at_beats_max_delay(on_time);
@@ -179,4 +188,55 @@ NotePattern::NoteTypePtr NotePattern::lattest(const RowToNotesRange& rng) const
 		if (!result || it->second->time() < result->time())
 			result = it->second;
 	return result;
+}
+
+int NotePattern::find_eq_id(NoteTypePtr note) const
+{
+	for (int i = 0; i < (int)track_to_notes.size(); i++)
+		if (find_eq_id(i, note) != track_to_notes[i].end())
+			return i;
+	return -1;
+}
+
+ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note) const
+{
+	Evoral::event_id_t id = note->id();
+	const ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
+	ARDOUR::MidiModel::Notes::const_iterator it = notes.begin();
+	for (; it != notes.end(); ++it)
+		if ((*it)->id() == id)
+			return it;
+	return notes.end();
+}
+
+ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note)
+{
+	Evoral::event_id_t id = note->id();
+	ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
+	ARDOUR::MidiModel::Notes::iterator it = notes.begin();
+	for (; it != notes.end(); ++it)
+		if ((*it)->id() == id)
+			return it;
+	return notes.end();
+}
+
+void NotePattern::erase(int track_idx, NoteTypePtr note)
+{
+	ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
+	notes.erase(find_eq_id(track_idx, note));
+}
+
+bool NotePattern::is_free(int track_idx, NoteTypePtr note) const
+{
+	const ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
+	// TODO: it should not be _midi_model but notes
+	return !_midi_model->overlaps(note, NoteTypePtr());
+}
+
+int NotePattern::find_free_track(NoteTypePtr note) const
+{
+	for (int i = 0; i < (int)track_to_notes.size(); i++)
+		if (is_free(i, note))
+			return i;
+	return -1;
 }
