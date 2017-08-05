@@ -62,6 +62,7 @@ void NotePattern::update_track_to_notes()
 	const MidiModel::Notes& notes = _midi_model->notes();
 	MidiModel::StrictNotes strict_notes(notes.begin(), notes.end());
 
+	// Add new notes and move existing notes
 	for (MidiModel::StrictNotes::const_iterator it = strict_notes.begin();
 	     it != strict_notes.end(); ++it) {
 		int track_idx = find_eq_id(*it);
@@ -69,7 +70,7 @@ void NotePattern::update_track_to_notes()
 		if (-1 < track_idx) {
 			// The note is already in track_to_notes, remove it and check if it
 			// can be re-inserted in the same track.
-			erase(track_idx, *it);
+			erase_eq_id(track_idx, *it);
 			if (is_free(track_idx, *it)) {
 				freetrack = track_idx;
 			}
@@ -84,6 +85,19 @@ void NotePattern::update_track_to_notes()
 		}
 		// Insert the note in the first free track
 		track_to_notes[freetrack].insert(*it);
+	}
+
+	// Remove missing notes
+	for (size_t track_idx = 0; track_idx < track_to_notes.size(); ++track_idx) {
+		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[track_idx];
+		ARDOUR::MidiModel::Notes::iterator track_notes_it = track_notes.begin();
+		for (; track_notes_it != track_notes.end();) {
+			ARDOUR::MidiModel::Notes::iterator notes_it = find_eq_id(notes, *track_notes_it);
+			if (notes_it == notes.end()) {
+				track_notes.erase(track_notes_it++);
+			} else
+				++track_notes_it;
+		}
 	}
 
 	// Update nreqtracks and ntracks
@@ -200,8 +214,17 @@ int NotePattern::find_eq_id(NoteTypePtr note) const
 
 ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note) const
 {
+	return find_eq_id(track_to_notes[track_idx], note);
+}
+
+ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note)
+{
+	return find_eq_id(track_to_notes[track_idx], note);
+}
+
+ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(const ARDOUR::MidiModel::Notes& notes, NoteTypePtr note) const
+{
 	Evoral::event_id_t id = note->id();
-	const ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
 	ARDOUR::MidiModel::Notes::const_iterator it = notes.begin();
 	for (; it != notes.end(); ++it)
 		if ((*it)->id() == id)
@@ -209,10 +232,9 @@ ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int track_idx, 
 	return notes.end();
 }
 
-ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note)
+ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note)
 {
 	Evoral::event_id_t id = note->id();
-	ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
 	ARDOUR::MidiModel::Notes::iterator it = notes.begin();
 	for (; it != notes.end(); ++it)
 		if ((*it)->id() == id)
@@ -220,17 +242,24 @@ ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int track_idx, NoteTy
 	return notes.end();
 }
 
-void NotePattern::erase(int track_idx, NoteTypePtr note)
+void NotePattern::erase_eq_id(int track_idx, NoteTypePtr note)
 {
-	ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
-	notes.erase(find_eq_id(track_idx, note));
+	erase_eq_id(track_to_notes[track_idx], note);
+}
+
+void NotePattern::erase_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note)
+{
+	notes.erase(find_eq_id(notes, note));
 }
 
 bool NotePattern::is_free(int track_idx, NoteTypePtr note) const
 {
 	const ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
-	// TODO: it should not be _midi_model but notes
-	return !_midi_model->overlaps(note, NoteTypePtr());
+	ARDOUR::MidiModel::Notes::iterator it = notes.begin();
+	for (; it != notes.end(); ++it)
+		if (overlap(*it, note))
+			return false;
+	return true;
 }
 
 int NotePattern::find_free_track(NoteTypePtr note) const
@@ -239,4 +268,17 @@ int NotePattern::find_free_track(NoteTypePtr note) const
 		if (is_free(i, note))
 			return i;
 	return -1;
+}
+
+bool NotePattern::overlap(NoteTypePtr a, NoteTypePtr b)
+{
+	Evoral::Beats sa = a->time();
+	Evoral::Beats ea  = a->end_time();
+	Evoral::Beats sb = b->time();
+	Evoral::Beats eb = b->end_time();
+
+	return (((sb > sa) && (eb <= ea)) ||
+	        ((eb > sa) && (eb <= ea)) ||
+	        ((sb > sa) && (sb < ea)) ||
+	        ((sa >= sb) && (sa <= eb) && (ea <= eb)));
 }

@@ -116,9 +116,17 @@ private:
 	// Find the note in track_to_notes[track_idx] containing the same id.
 	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(int track_idx, NoteTypePtr note) const;
 	ARDOUR::MidiModel::Notes::iterator find_eq_id(int track_idx, NoteTypePtr note);
+	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(const ARDOUR::MidiModel::Notes& notes, NoteTypePtr note) const;
+	ARDOUR::MidiModel::Notes::iterator find_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note);
 
 	// Erase note in given track with the id of the given note.
-	void erase(int track_idx, NoteTypePtr note);
+	void erase_eq_id(int track_idx, NoteTypePtr note);
+
+	// Erase note in given Notes with the id of the given note
+	void erase_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note);
+
+	// Erase pointer iterator from notes and return the next iterator
+	ARDOUR::MidiModel::Notes::iterator erase(ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
 	// Check if a track is available to receive a note.
 	bool is_free(int track_idx, NoteTypePtr note) const;
@@ -126,6 +134,8 @@ private:
 	// Find the first track ready of receive a note. Return the track index if
 	// found, -1 otherwise.
 	int find_free_track(NoteTypePtr note) const;
+
+	static bool overlap(NoteTypePtr a, NoteTypePtr b);
 
 	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
 };
