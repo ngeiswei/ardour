@@ -21,6 +21,7 @@
 
 #include <boost/bimap/bimap.hpp>
 
+#include <gtkmm/separator.h>
 #include <gtkmm/treeview.h>
 #include <gtkmm/table.h>
 #include <gtkmm/box.h>
@@ -33,7 +34,9 @@
 
 #include "ardour/session_handle.h"
 
-#include "ardour_dropdown.h"
+#include "widgets/ardour_button.h"
+#include "widgets/ardour_dropdown.h"
+
 #include "ardour_window.h"
 #include "editing.h"
 #include "midi_time_axis.h"
@@ -152,7 +155,7 @@ class MidiPatternEditor : public ArdourWindow
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
 	ColAutoTrackBimap col2autotrack;
 
-	ArdourButton                 automation_button;
+	ArdourWidgets::ArdourButton  automation_button;
 	Gtk::Menu                    subplugin_menu;
 	Gtk::Menu*                   automation_action_menu;
 	Gtk::Menu*                   controller_menu;
@@ -314,20 +317,20 @@ class MidiPatternEditor : public ArdourWindow
 	Gtkmm2ext::ActionMap         myactions;
 
 	// TODO: put this toolbar in its own class
-	ArdourDropdown               beats_per_row_selector;
+	ArdourWidgets::ArdourDropdown beats_per_row_selector;
 	std::vector<std::string>     beats_per_row_strings;
 	uint8_t                      rows_per_beat;
-	ArdourButton                 visible_note_button;
-	ArdourButton                 visible_channel_button;
-	ArdourButton                 visible_velocity_button;
-	ArdourButton                 visible_delay_button;
+	ArdourWidgets::ArdourButton  visible_note_button;
+	ArdourWidgets::ArdourButton  visible_channel_button;
+	ArdourWidgets::ArdourButton  visible_velocity_button;
+	ArdourWidgets::ArdourButton  visible_delay_button;
 	bool                         visible_note;
 	bool                         visible_channel;
 	bool                         visible_velocity;
 	bool                         visible_delay;
 	Gtk::VSeparator              rm_add_note_column_separator;
-	ArdourButton                 remove_note_column_button;
-	ArdourButton                 add_note_column_button;
+	ArdourWidgets::ArdourButton  remove_note_column_button;
+	ArdourWidgets::ArdourButton  add_note_column_button;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
