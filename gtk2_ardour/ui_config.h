@@ -95,7 +95,11 @@ public:
 	static std::string color_to_hex_string (Gtkmm2ext::Color c);
 	static std::string color_to_hex_string_no_alpha (Gtkmm2ext::Color c);
 
-	void  reset_dpi ();
+	// Like color but return the color encoded as string instead of
+	// ArdourCanvas::Color
+	std::string color_str (const std::string&, bool* failed = 0) const;
+
+	void reset_dpi ();
 	float get_ui_scale ();
 
 	sigc::signal<void, std::string> ParameterChanged;
