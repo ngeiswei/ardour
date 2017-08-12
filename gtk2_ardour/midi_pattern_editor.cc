@@ -48,7 +48,7 @@
 #include "ui_config.h"
 #include "midi_pattern_editor.h"
 #include "note_player.h"
-#include "tooltips.h"
+#include "widgets/tooltips.h"
 #include "axis_view.h"
 
 #include "pbd/i18n.h"

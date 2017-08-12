@@ -821,6 +821,15 @@ UIConfiguration::set_modifier (string const & name, SVAModifier svam)
 	ColorsChanged (); /* EMIT SIGNAL */
 }
 
+std::string
+UIConfiguration::color_str (const std::string& name, bool* failed) const
+{
+	std::stringstream ss;
+	ss << hex;
+	ss << "#" << std::setw (6) << setfill ('0') << (color (name) >> 8);
+	return ss.str();
+}
+
 void
 UIConfiguration::load_rc_file (bool themechange, bool allow_own)
 {
