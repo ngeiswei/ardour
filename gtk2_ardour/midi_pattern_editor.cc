@@ -67,8 +67,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Remember what notes are on which tracks
-//
 // - [ ] Keep the pattern centered where the cursor is after edition
 //
 // - [ ] Don't get the height of the Gtk widget minimize automatically
@@ -1766,8 +1764,12 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			uint8_t vel = velocity_spinner.get_value_as_int();
 			NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
 			cmd->add (new_note);
+			// Pre-emptively add the note in np to so that it knows in
+			// which track it is supposed to be.
+			np->add (edit_tracknum, new_note);
 		}
 	} else {
+		// Create a new on or off note in an empty cell
 		if (!is_del) {
 			// Update the length the previous note to match the new note
 			NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
@@ -1789,6 +1791,9 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 				uint8_t vel = velocity_spinner.get_value_as_int();
 				NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
 				cmd->add (new_note);
+				// Pre-emptively add the note in np to so that it knows in
+				// which track it is supposed to be.
+				np->add (edit_tracknum, new_note);
 			}
 		}
 	}

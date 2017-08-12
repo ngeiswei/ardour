@@ -87,11 +87,16 @@ public:
 	// perfectly contiguous, it is not displayable.
 	bool is_displayable(uint32_t row, int track_idx) const;
 
-	// Number of tracks of that midi track (determined by the number of
-	// overlapping notes)
+	// Add note in track_to_notes. This is used by the midi pattern editor so
+	// that the note pattern can know on which track idx a new note should be.
+	void add(int track_idx, NoteTypePtr note);
+
+	// Number of tracks of that midi track (initially determined by the number
+	// of overlapping notes)
 	uint16_t ntracks;
 
 	// Minimum of number of tracks required to display all notes
+	// (track_to_notes.size())
 	uint16_t nreqtracks;
 
 	// Store the distribution of notes for each track. Makes sure that no
