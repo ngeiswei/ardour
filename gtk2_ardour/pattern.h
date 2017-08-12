@@ -25,7 +25,7 @@
 #include "ardour/session_handle.h"
 #include "ardour/beats_frames_converter.h"
 
-#include "ardour_dropdown.h"
+#include "widgets/ardour_dropdown.h"
 #include "ardour_window.h"
 #include "editing.h"
 
