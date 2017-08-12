@@ -186,6 +186,18 @@ bool NotePattern::is_displayable(uint32_t row, int track_idx) const
 		    || i_off->second->end_time() == i_on->second->time());
 }
 
+void NotePattern::add(int track_idx, NoteTypePtr note)
+{
+	// Resize track_to_notes if necessary
+	if (nreqtracks <= track_idx) {
+		nreqtracks = track_idx + 1;
+		track_to_notes.resize(nreqtracks);
+	}
+
+	// Insert the note at track_idx
+	track_to_notes[track_idx].insert(note);
+}
+
 NotePattern::NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
 {
 	NoteTypePtr result;
