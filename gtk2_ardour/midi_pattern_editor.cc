@@ -67,8 +67,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Keep the pattern centered where the cursor is after edition
-//
 // - [ ] Don't get the height of the Gtk widget minimize automatically
 //
 // - [ ] Add keyboard shortcuts to edit notes and automations
@@ -1439,9 +1437,6 @@ MidiPatternEditor::add_note_column_press (GdkEventButton* ev)
 void
 MidiPatternEditor::redisplay_model ()
 {
-	view.set_model (Glib::RefPtr<Gtk::ListStore>(0));
-	model->clear ();
-
 	if (_session) {
 
 		np->set_rows_per_beat(rows_per_beat);
@@ -1470,9 +1465,14 @@ MidiPatternEditor::redisplay_model ()
 		std::string active_foreground_color = UIConfiguration::instance().color_str ("pattern editor: active foreground");
 		std::string passive_foreground_color = UIConfiguration::instance().color_str ("pattern editor: passive foreground");
 
-		// Generate each row
+		// Fill rows
+		TreeModel::Children::iterator row_it = model->children().begin();
 		for (uint32_t irow = 0; irow < nrows; irow++) {
-			row = *(model->append());
+			// Get existing row, or create one if it does exist
+			if (row_it == model->children().end())
+				row_it = model->append();
+			row = *row_it++;
+
 			Evoral::Beats row_beats = np->beats_at_row(irow);
 			Evoral::Beats row_relative_beats = np->region_relative_beats_at_row(irow);
 			uint32_t row_frame = np->frame_at_row(irow);
@@ -1629,6 +1629,10 @@ MidiPatternEditor::redisplay_model ()
 				}
 			}
 		}
+
+		// Remove unused rows
+		for (; row_it != model->children().end();)
+			row_it = model->erase(row_it);
 	}
 	view.set_model (model);
 
