@@ -19,6 +19,8 @@
 #include <cmath>
 #include <map>
 
+#include <boost/algorithm/string.hpp>
+
 #include <gtkmm/cellrenderercombo.h>
 
 #include "pbd/file_utils.h"
@@ -1516,6 +1518,10 @@ MidiPatternEditor::redisplay_model ()
 				row[columns._velocity_foreground_color[i]] = blank_foreground_color;
 				row[columns._delay_foreground_color[i]] = blank_foreground_color;
 
+				// Reset keeping track of the on and off notes
+				row[columns._off_note[i]] = NULL;
+				row[columns._on_note[i]] = NULL;
+
 				size_t off_notes_count = np->off_notes[i].count(irow);
 				size_t on_notes_count = np->on_notes[i].count(irow);
 
@@ -1696,13 +1702,14 @@ MidiPatternEditor::editing_canceled ()
 void
 MidiPatternEditor::note_edited (const std::string& path, const std::string& text)
 {
-	bool is_del = text.empty();
-	bool is_off = text == note_off_str;
-	uint8_t ival = ParameterDescriptor::midi_note_num (text);
+	std::string norm_text = boost::erase_all_copy(text, " ");
+	bool is_del = norm_text.empty();
+	bool is_off = !is_del and (norm_text[0] == note_off_str[0]);
+	uint8_t ival = ParameterDescriptor::midi_note_num (norm_text);
 	int row_idx = get_row_index (path);
 
 	// Abort if the new pitch is invalid
-	if (!is_off && 127 < ival)
+	if (!is_off && !is_del && 127 < ival)
 		return;
 
 	char const * opname = _("change note name");
@@ -1714,6 +1721,10 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 
 	NoteTypePtr on_note = get_on_note(path);
 	NoteTypePtr off_note = get_off_note(path);
+
+	int delay = delay_spinner.get_value_as_int();
+	uint8_t chan = channel_spinner.get_value_as_int() - 1;
+	uint8_t vel = velocity_spinner.get_value_as_int();
 
 	if (on_note) {
 		if (is_del) {
@@ -1764,8 +1775,6 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 			Evoral::Beats length = end - start;
 			// Build note using defaults
-			uint8_t chan = channel_spinner.get_value_as_int() - 1;
-			uint8_t vel = velocity_spinner.get_value_as_int();
 			NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
 			cmd->add (new_note);
 			// Pre-emptively add the note in np to so that it knows in
@@ -1775,25 +1784,38 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	} else {
 		// Create a new on or off note in an empty cell
 		if (!is_del) {
-			// Update the length the previous note to match the new note
+			// Fetch useful information for most cases
+			Evoral::Beats here = np->region_relative_beats_at_row(row_idx, delay);
 			NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
-			int delay = delay_spinner.get_value_as_int();
+			Evoral::Beats prev_start;
+			Evoral::Beats prev_end;
 			if (prev_note) {
-				// Calculate the length of the previous note
-				Evoral::Beats start = prev_note->time();
-				Evoral::Beats end = np->region_relative_beats_at_row(row_idx, delay);
-				Evoral::Beats length = end - start;
-				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
+				prev_start = prev_note->time();
+				prev_end = prev_note->end_time();
 			}
-			if (!is_off) {
+
+			if (is_off) {
+				// Update the length the previous note to match the new off
+				// note no matter what (smart off note).
+				if (prev_note) {
+					Evoral::Beats new_length = here - prev_start;
+					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, new_length);
+				}
+			} else {
+				// Only update the length the previous note if the new on note
+				// is shortening it.
+				if (prev_note) {
+					if (here <= prev_end) {
+						Evoral::Beats new_length = here - prev_start;
+						cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, new_length);
+					}
+				}
+
 				// Create the new note using the defaults. Calculate the start
 				// and length of the new note
-				Evoral::Beats start = np->region_relative_beats_at_row(row_idx, delay);
 				Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
-				Evoral::Beats length = end - start;
-				uint8_t chan = channel_spinner.get_value_as_int() - 1;
-				uint8_t vel = velocity_spinner.get_value_as_int();
-				NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
+				Evoral::Beats length = end - here;
+				NoteTypePtr new_note(new NoteType(chan, here, length, ival, vel));
 				cmd->add (new_note);
 				// Pre-emptively add the note in np to so that it knows in
 				// which track it is supposed to be.
