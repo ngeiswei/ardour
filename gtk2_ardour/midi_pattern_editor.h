@@ -383,6 +383,7 @@ class MidiPatternEditor : public ArdourWindow
 	// Display Pattern    //
 	////////////////////////
 
+	void resize_width();        // Resize to keep the width to the minimum
 	bool visible_note_press (GdkEventButton*);
 	bool visible_channel_press (GdkEventButton*);
 	bool visible_velocity_press (GdkEventButton*);

@@ -69,8 +69,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Don't get the height of the Gtk widget minimize automatically
-//
 // - [ ] Add keyboard shortcuts to edit notes and automations
 //
 // - [ ] Support audio tracks and trim automation
@@ -1270,14 +1268,22 @@ MidiPatternEditor::register_actions ()
 }
 
 void
+MidiPatternEditor::resize_width()
+{
+	int width, height;
+	get_size(width, height);
+	resize(1, height);
+}
+
+void
 MidiPatternEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(i*4 + NOTE_COLNUM)->set_visible(i < np->ntracks ? visible_note : false);
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
-	// Garanty that the window size is always kept to its minimum
-	resize(1, 1);
+	// Keep the window width is kept to its minimum
+	resize_width();
 }
 
 bool
@@ -1300,8 +1306,8 @@ MidiPatternEditor::redisplay_visible_channel()
 		view.get_column(i*4 + CHANNEL_COLNUM)->set_visible(i < np->ntracks ? visible_channel : false);
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
-	// Garanty that the window size is always kept to its minimum
-	resize(1, 1);
+	// Keep the window width is kept to its minimum
+	resize_width();
 }
 
 bool
@@ -1324,8 +1330,8 @@ MidiPatternEditor::redisplay_visible_velocity()
 		view.get_column(i*4 + VELOCITY_COLNUM)->set_visible(i < np->ntracks ? visible_velocity : false);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
-	// Garanty that the window size is always kept to its minimum
-	resize(1, 1);
+	// Keep the window width is kept to its minimum
+	resize_width();
 }
 
 bool
@@ -1349,8 +1355,8 @@ MidiPatternEditor::redisplay_visible_delay()
 	redisplay_visible_automation_delay ();
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
-	// Garanty that the window size is always kept to its minimum
-	resize(1, 1);
+	// Keep the window width is kept to its minimum
+	resize_width();
 }
 
 bool
@@ -1376,8 +1382,8 @@ MidiPatternEditor::redisplay_visible_automation()
 	}
 	redisplay_visible_automation_delay();
 
-	// Garanty that the window size is always kept to its minimum
-	resize(1, 1);
+	// Keep the window width is kept to its minimum
+	resize_width();
 }
 
 void
@@ -1389,8 +1395,8 @@ MidiPatternEditor::redisplay_visible_automation_delay()
 		view.get_column(col + 1)->set_visible(is_visible);
 	}
 
-	// Garanty that the window size is always kept to its minimum
-	resize(1, 1);
+	// Keep the window width is kept to its minimum
+	resize_width();
 }
 
 void
