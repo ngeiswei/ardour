@@ -69,7 +69,15 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Support default octave in note edition
+//
+// - [ ] Correctly calculate whether a note off must be placed at the end of the region
+//
+// - [ ] Update non-midi automation, see AutomationLink::connect_to_list
+//
 // - [ ] Add keyboard shortcuts to edit notes and automations
+//
+// - [ ] Have automation support in_write_pass(), etc
 //
 // - [ ] Support audio tracks and trim automation
 //
@@ -283,6 +291,15 @@ MidiPatternEditor::add_main_automation_column (const Evoral::Parameter& param)
 size_t
 MidiPatternEditor::add_midi_automation_column (const Evoral::Parameter& param)
 {
+	// If not in param2actrl, add it.
+	if (!param2actrl[param]) {
+		bool is_midi_automation = ARDOUR::parameter_is_midi ((AutomationType)param.type());
+		bool is_region_automation = is_midi_automation;
+		param2actrl[param] = is_midi_automation ? midi_model->automation_control(param, true) : route->automation_control(param, true); 
+		AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+		ap->insert(param2actrl[param]);
+	}
+
 	// Select the next available column
 	size_t column = select_available_automation_column ();
 	if (column == 0)
