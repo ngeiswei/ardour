@@ -46,11 +46,14 @@ public:
 	                  boost::shared_ptr<ARDOUR::Region> region,
 	                  const AutomationControlSet& automation_controls);
 
+	// Assign a control event to a row
+	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
+
 	// Build or rebuild the pattern (implement Pattern::update_pattern)
 	void update_pattern();
 
-	// Assign a control event to a row
-	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
+	// Add an automation control in the automation control set
+	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
