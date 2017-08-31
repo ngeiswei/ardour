@@ -2003,8 +2003,8 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
 
-	// Limit nval to its range
-	nval = limit (nval, actrl->lower(), actrl->upper ());
+	// Clamp nval to its range
+	nval = clamp (nval, actrl->lower(), actrl->upper ());
 
 	// Find the control iterator to change
 	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
@@ -2322,6 +2322,7 @@ MidiPatternEditor::key_press (GdkEventKey* ev)
 bool
 MidiPatternEditor::key_release (GdkEventKey* ev)
 {
+	return false;               // Silence the compiler
 }
 
 bool
