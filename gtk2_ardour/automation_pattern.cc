@@ -53,6 +53,11 @@ void AutomationPattern::update_pattern()
 	}
 }
 
+void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
+{
+	_automation_controls.insert(actrl);
+}
+
 bool AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
 {
 	return automations.find(param) == automations.end()
