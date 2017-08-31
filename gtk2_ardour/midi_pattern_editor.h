@@ -456,10 +456,10 @@ class MidiPatternEditor : public ArdourWindow
 	void beats_per_row_chosen (Editing::SnapType);
 
 	/**
-	 * Limit x to be within [l, u], that is return max(l, min(u, x))
+	 * Clamp x to be within [l, u], that is return max(l, min(u, x))
 	 */
 	template<typename Num>
-	Num limit(Num x, Num l, Num u)
+	Num clamp(Num x, Num l, Num u)
 	{
 		return std::max(l, std::min(u, x));
 	}
