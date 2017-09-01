@@ -430,11 +430,17 @@ class MidiPatternEditor : public ArdourWindow
 	void editing_started (Gtk::CellEditable*, const std::string& path, int);
 	void editing_canceled ();
 
+	// Get the pitch of a note given its textual description. If the octave
+	// number is missing then the default one is used.
+	uint8_t parse_pitch (std::string text) const;
+
+	// Midi note callbacks
 	void note_edited (const std::string&, const std::string&);
 	void note_channel_edited (const std::string&, const std::string&);
 	void note_velocity_edited (const std::string&, const std::string&);
 	void note_delay_edited (const std::string&, const std::string&);
 
+	// Automation callbacks
 	void automation_edited (const std::string&, const std::string&);
 	void automation_delay_edited (const std::string&, const std::string&);
 
@@ -465,7 +471,7 @@ class MidiPatternEditor : public ArdourWindow
 	}
 
 	// Make it up for the lack of C++11 support
-	template<typename T> std::string to_string(const T& v)
+	template<typename T> static std::string to_string(const T& v)
 	{
 		std::stringstream ss;
 		ss << v;

@@ -16,6 +16,7 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <cctype>
 #include <cmath>
 #include <map>
 
@@ -68,8 +69,6 @@ using Timecode::BBT_Time;
 //////////
 // TODO //
 //////////
-//
-// - [ ] Support default octave in note edition
 //
 // - [ ] Correctly calculate whether a note off must be placed at the end of the region
 //
@@ -1722,13 +1721,24 @@ MidiPatternEditor::editing_canceled ()
 	edit_tracknum = -1;
 }
 
+uint8_t
+MidiPatternEditor::parse_pitch (std::string text) const
+{
+	// Add default octave, if the octave digit is missing
+	if (!text.empty() && !std::isdigit(*text.rbegin()))
+		text += to_string(octave_spinner.get_value_as_int());
+
+	// Parse the note per se
+	return ParameterDescriptor::midi_note_num(text);
+}
+
 void
 MidiPatternEditor::note_edited (const std::string& path, const std::string& text)
 {
 	std::string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
 	bool is_off = !is_del and (norm_text[0] == note_off_str[0]);
-	uint8_t ival = ParameterDescriptor::midi_note_num (norm_text);
+	uint8_t ival = parse_pitch (norm_text);
 	int row_idx = get_row_index (path);
 
 	// Abort if the new pitch is invalid
