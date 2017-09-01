@@ -52,15 +52,15 @@ public:
 	virtual void update_pattern() = 0;
 
 	// Find the beats corresponding to the first row
-	Evoral::Beats find_first_row_beats();
+	Evoral::Beats find_start_row_beats();
 
-	// Find the beats corresponding to the last row
-	Evoral::Beats find_last_row_beats();
+	// Find the beats corresponding to the end row (not visible)
+	Evoral::Beats find_end_row_beats();
 
 	// Find the number of rows of the region
 	uint32_t find_nrows();
 
-	// Set first_row_beats, last_row_beats and nrows
+	// Set start_row_beats, end_row_beats and nrows
 	void set_row_range();
 
 	// Return the frame at the corresponding row index and delay in relative
@@ -106,12 +106,13 @@ public:
 	int64_t region_relative_delay_ticks(const Evoral::Beats& event_time, uint32_t irow);
 
 	// Return the minimum and maximum number ticks allowed for delay
-	int32_t delay_ticks_min();
-	int32_t delay_ticks_max();
+	int32_t delay_ticks_min() const;
+	int32_t delay_ticks_max() const;
 
-	// Beats corresponding to the region's first and last frame
-	Evoral::Beats first_beats;
-	Evoral::Beats last_beats;
+	// Beats corresponding to the region's start, end and length frames
+	Evoral::Beats start_beats;
+	Evoral::Beats end_beats;
+	Evoral::Beats length_beats;
 
 	// Number of rows per beat. 0 means one row per bar (TODO not fully
 	// supported).
@@ -120,9 +121,9 @@ public:
 	// Determined by the number of rows per beat
 	Evoral::Beats beats_per_row;
 
-	// Beats corresponding to the first and last row
-	Evoral::Beats first_row_beats;
-	Evoral::Beats last_row_beats;
+	// Beats corresponding to the start and end row
+	Evoral::Beats start_row_beats;
+	Evoral::Beats end_row_beats;
 
 	// Number of rows of that region (given the choosen resolution)
 	uint32_t nrows;
@@ -131,7 +132,10 @@ private:
 	uint32_t _ticks_per_row;		// number of ticks per rows
 	ARDOUR::Session* _session;
 	boost::shared_ptr<ARDOUR::Region> _region;
-	ARDOUR::BeatsFramesConverter _conv;	
+	ARDOUR::BeatsFramesConverter _conv;
+
+	// Make sure a given row is clamped to be in [0, nrows)
+	uint32_t clamp(double row) const;
 };
 
 #endif /* __ardour_gtk2_pattern_h_ */
