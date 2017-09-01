@@ -70,9 +70,9 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Correctly calculate whether a note off must be placed at the end of the region
-//
 // - [ ] Update non-midi automation, see AutomationLink::connect_to_list
+//
+// - [ ] Add tips for all spinners, and all that can have some
 //
 // - [ ] Add keyboard shortcuts to edit notes and automations
 //
@@ -1514,13 +1514,10 @@ MidiPatternEditor::redisplay_model ()
 				 (row_bbt.beats == 1 ? bar_background_color : beat_background_color)
 				 : background_color);
 
-			// TODO: don't dismiss off-beat rows near the region boundaries. Or
-			// maybe rather they should be dismissed if they stop exactly at
-			// the region boundary,
-
 			// Render midi notes pattern
 			size_t ntracks = np->ntracks;
 			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
+				// TODO: use Ardour's logger instead of stdout
 				std::cout << "Warning: Number of note tracks needed for "
 				          << "the pattern interface is too high, "
 				          << "some notes might be discarded" << std::endl;
@@ -1554,14 +1551,12 @@ MidiPatternEditor::redisplay_model ()
 					if (np->is_displayable(irow, i)) {
 						// Notes off
 						NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
-						if (i_off != np->off_notes[i].end()) {
+						if (i_off != np->off_notes[i].end() &&
+						    // Do not display off note exactly at the region end time
+						    i_off->second->end_time() != np->length_beats) {
 							NoteTypePtr note = i_off->second;
 							row[columns.note_name[i]] = note_off_str;
-							// row[columns.channel[i]] = to_string (note->channel() + 1);
-							// row[columns.velocity[i]] = to_string ((int)note->off_velocity());
 							row[columns._note_foreground_color[i]] = active_foreground_color;
-							// row[columns._channel_foreground_color[i]] = active_foreground_color;
-							// row[columns._velocity_foreground_color[i]] = active_foreground_color;
 							int64_t delay_ticks = np->region_relative_delay_ticks(note->end_time(), irow);
 							if (delay_ticks != 0) {
 								row[columns.delay[i]] = to_string (delay_ticks);
@@ -2559,23 +2554,26 @@ MidiPatternEditor::setup_toolbar ()
 	steps_spinner.show ();
 	toolbar.pack_start (steps_spinner, false, false);
 
-	// Editing row spinner
-	edrow_separator.show ();
-	toolbar.pack_start (edrow_separator, false, false);
-	edrow_label.show ();
-	toolbar.pack_start (edrow_label, false, false);
-	edrow_spinner.set_activates_default ();
-	edrow_spinner.show ();
-	toolbar.pack_start (edrow_spinner, false, false);
+	// Temporary hack for specifying the cursor of note editing, when keyboard
+	// short cut will be active.
+	//
+	// // Editing row spinner
+	// edrow_separator.show ();
+	// toolbar.pack_start (edrow_separator, false, false);
+	// edrow_label.show ();
+	// toolbar.pack_start (edrow_label, false, false);
+	// edrow_spinner.set_activates_default ();
+	// edrow_spinner.show ();
+	// toolbar.pack_start (edrow_spinner, false, false);
 
-	// Editing column spinner
-	edcol_separator.show ();
-	toolbar.pack_start (edcol_separator, false, false);
-	edcol_label.show ();
-	toolbar.pack_start (edcol_label, false, false);
-	edcol_spinner.set_activates_default ();
-	edcol_spinner.show ();
-	toolbar.pack_start (edcol_spinner, false, false);
+	// // Editing column spinner
+	// edcol_separator.show ();
+	// toolbar.pack_start (edcol_separator, false, false);
+	// edcol_label.show ();
+	// toolbar.pack_start (edcol_label, false, false);
+	// edcol_spinner.set_activates_default ();
+	// edcol_spinner.show ();
+	// toolbar.pack_start (edcol_spinner, false, false);
 
 	toolbar.show ();
 }
