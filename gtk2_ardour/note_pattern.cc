@@ -115,8 +115,8 @@ void NotePattern::update_row_to_notes()
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin();
 		     inote != track_to_notes[itrack].end(); ++inote) {
-			Evoral::Beats on_time = (*inote)->time() + first_beats;
-			Evoral::Beats off_time = (*inote)->end_time() + first_beats;
+			Evoral::Beats on_time = (*inote)->time() + start_beats;
+			Evoral::Beats off_time = (*inote)->end_time() + start_beats;
 			uint32_t on_max_delay_row = row_at_beats_max_delay(on_time);
 			uint32_t on_row = row_at_beats(on_time);
 			uint32_t off_min_delay_row = row_at_beats_min_delay(off_time);
@@ -124,7 +124,7 @@ void NotePattern::update_row_to_notes()
 
 			// TODO: make row assignement more intelligent. Given the possible
 			// rows for each on and off notes find an assignement that
-			// minimizes the number displayable rows. If however the number of
+			// maximizes the number displayable rows. If however the number of
 			// combinations to explore is too high fallback on the following
 			// cheap strategy.
 
@@ -172,7 +172,7 @@ NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int track_idx) con
 Evoral::Beats NotePattern::next_off(uint32_t row, int track_idx) const
 {
 	NoteTypePtr next_note = find_next(row, track_idx);
-	return next_note ? next_note->time() : last_beats;
+	return next_note ? next_note->time() : end_beats;
 }
 
 bool NotePattern::is_displayable(uint32_t row, int track_idx) const
