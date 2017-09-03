@@ -41,7 +41,6 @@ Pattern::Pattern(ARDOUR::Session* session,
 {
 	start_beats = _conv.from (_region->first_frame());
 	end_beats = _conv.from (_region->last_frame() + 1);
-	length_beats = end_beats - start_beats;
 }
 
 void Pattern::set_rows_per_beat(uint16_t rpb)

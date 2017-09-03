@@ -112,7 +112,6 @@ public:
 	// Beats corresponding to the region's start, end and length frames
 	Evoral::Beats start_beats;
 	Evoral::Beats end_beats;
-	Evoral::Beats length_beats;
 
 	// Number of rows per beat. 0 means one row per bar (TODO not fully
 	// supported).
