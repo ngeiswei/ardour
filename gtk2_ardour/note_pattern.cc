@@ -48,7 +48,7 @@ NotePattern::NotePattern(ARDOUR::Session* session,
 {
 }
 
-void NotePattern::update_pattern()
+void NotePattern::update()
 {
 	set_row_range();
 	update_track_to_notes();
