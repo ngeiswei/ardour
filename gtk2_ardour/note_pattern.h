@@ -51,8 +51,8 @@ public:
 	            boost::shared_ptr<ARDOUR::MidiRegion> region,
 	            boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
-	// Build or rebuild the pattern (implement Pattern::update_pattern)
-	void update_pattern();
+	// Build or rebuild the pattern (implement Pattern::update)
+	void update();
 
 	// Update track_to_notes. Distribute new notes across N tracks so that no
 	// overlapping notes can exist on the same track. Likewise modified notes
