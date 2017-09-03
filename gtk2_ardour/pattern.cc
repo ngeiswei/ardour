@@ -39,8 +39,6 @@ Pattern::Pattern(ARDOUR::Session* session,
 	: _session(session), _region(region),
 	  _conv(_session->tempo_map(), _region->position())
 {
-	start_beats = _conv.from (_region->first_frame());
-	end_beats = _conv.from (_region->last_frame() + 1);
 }
 
 void Pattern::set_rows_per_beat(uint16_t rpb)
@@ -68,6 +66,8 @@ uint32_t Pattern::find_nrows()
 
 void Pattern::set_row_range()
 {
+	start_beats = _conv.from (_region->first_frame());
+	end_beats = _conv.from (_region->last_frame() + 1);
 	start_row_beats = find_start_row_beats();
 	end_row_beats = find_end_row_beats();
 	nrows = find_nrows();
