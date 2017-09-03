@@ -1545,15 +1545,10 @@ MidiPatternEditor::redisplay_model ()
 				size_t on_notes_count = np->on_notes[i].count(irow);
 
 				if (on_notes_count > 0 || off_notes_count > 0) {
-					NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
-					NotePattern::RowToNotes::const_iterator i_on = np->on_notes[i].find(irow);
-
 					if (np->is_displayable(irow, i)) {
 						// Notes off
 						NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
-						if (i_off != np->off_notes[i].end() &&
-						    // Do not display off note exactly at the region end time
-						    i_off->second->end_time() != np->length_beats) {
+						if (i_off != np->off_notes[i].end()) {
 							NoteTypePtr note = i_off->second;
 							row[columns.note_name[i]] = note_off_str;
 							row[columns._note_foreground_color[i]] = active_foreground_color;
