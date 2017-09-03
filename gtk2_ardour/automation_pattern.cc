@@ -36,7 +36,7 @@ AutomationPattern::AutomationPattern(ARDOUR::Session* session,
 {
 }
 
-void AutomationPattern::update_pattern()
+void AutomationPattern::update()
 {
 	set_row_range();
 

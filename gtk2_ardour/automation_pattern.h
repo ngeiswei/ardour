@@ -50,7 +50,7 @@ public:
 	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
 
 	// Build or rebuild the pattern (implement Pattern::update_pattern)
-	void update_pattern();
+	void update();
 
 	// Add an automation control in the automation control set
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);

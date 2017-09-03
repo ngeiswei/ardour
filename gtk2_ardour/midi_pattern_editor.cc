@@ -70,9 +70,11 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Update non-midi automation, see AutomationLink::connect_to_list
+// - [ ] Update when region get moved or resized
 //
 // - [ ] Add tips for all spinners, and all that can have some
+//
+// - [ ] Update non-midi automation, see AutomationLink::connect_to_list
 //
 // - [ ] Add keyboard shortcuts to edit notes and automations
 //
@@ -1464,15 +1466,15 @@ MidiPatternEditor::redisplay_model ()
 	if (_session) {
 
 		np->set_rows_per_beat(rows_per_beat);
-		np->update_pattern();
+		np->update();
 		delay_spinner.get_adjustment()->set_lower(np->delay_ticks_min());
 		delay_spinner.get_adjustment()->set_upper(np->delay_ticks_max());
 
 		tap->set_rows_per_beat(rows_per_beat);
-		tap->update_pattern();
+		tap->update();
 
 		rap->set_rows_per_beat(rows_per_beat);
-		rap->update_pattern();
+		rap->update();
 
 		TreeModel::Row row;
 
@@ -1987,7 +1989,6 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	bool is_changed = is_del ? true : (sscanf (text.c_str(), "%lg", &nval) == 1);
 	int row_idx = get_row_index (path);
 	int delay = delay_spinner.get_value_as_int ();
-	Evoral::Beats row_beats = tap->beats_at_row(row_idx, delay);
 	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
 	uint32_t row_frame = tap->frame_at_row(row_idx, delay);
 
@@ -2052,7 +2053,6 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 		return;
 
 	int row_idx = get_row_index (path);
-	Evoral::Beats row_beats = tap->beats_at_row(row_idx, delay);
 	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
 	uint32_t row_frame = tap->frame_at_row(row_idx, delay);
 
@@ -2364,6 +2364,7 @@ bool
 MidiPatternEditor::scroll_event (GdkEventScroll* ev)
 {
 	// TODO change values if editing is active, otherwise scroll.
+	return false;               // Silence compiler
 }
 
 void

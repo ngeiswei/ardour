@@ -49,7 +49,7 @@ public:
 	void set_rows_per_beat(uint16_t rpb);
 
 	// Build or rebuild the pattern
-	virtual void update_pattern() = 0;
+	virtual void update() = 0;
 
 	// Find the beats corresponding to the first row
 	Evoral::Beats find_start_row_beats();
