@@ -127,17 +127,16 @@ void NotePattern::update_row_to_notes()
 			// maximizes the number displayable rows. If however the number of
 			// combinations to explore is too high fallback on the following
 			// cheap strategy.
-
 			if (on_row == off_row && on_row != off_min_delay_row) {
-				on_notes[itrack].insert(RowToNotes::value_type(on_row, *inote));
-				off_notes[itrack].insert(RowToNotes::value_type(off_min_delay_row, *inote));
+				off_row = off_min_delay_row;
 			} else if (on_row == off_row && on_max_delay_row != off_row) {
-				on_notes[itrack].insert(RowToNotes::value_type(on_max_delay_row, *inote));
-				off_notes[itrack].insert(RowToNotes::value_type(off_row, *inote));
-			} else {
-				on_notes[itrack].insert(RowToNotes::value_type(on_row, *inote));
-				off_notes[itrack].insert(RowToNotes::value_type(off_row, *inote));
+				on_row = on_max_delay_row;
 			}
+
+			on_notes[itrack].insert(RowToNotes::value_type(on_row, *inote));
+			// Do no display off notes occuring at the very end of the region
+			if (off_time < end_beats)
+				off_notes[itrack].insert(RowToNotes::value_type(off_row, *inote));
 		}
 	}
 }
