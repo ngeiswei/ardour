@@ -121,8 +121,10 @@ private:
 	// Find the note in track_to_notes[track_idx] containing the same id.
 	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(int track_idx, NoteTypePtr note) const;
 	ARDOUR::MidiModel::Notes::iterator find_eq_id(int track_idx, NoteTypePtr note);
-	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(const ARDOUR::MidiModel::Notes& notes, NoteTypePtr note) const;
-	ARDOUR::MidiModel::Notes::iterator find_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note);
+	template <typename NoteContainer>
+	typename NoteContainer::const_iterator find_eq_id(const NoteContainer& notes, NoteTypePtr note) const;
+	template <typename NoteContainer>
+	typename NoteContainer::iterator find_eq_id(NoteContainer& notes, NoteTypePtr note);
 
 	// Erase note in given track with the id of the given note.
 	void erase_eq_id(int track_idx, NoteTypePtr note);
@@ -144,5 +146,27 @@ private:
 
 	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
 };
+
+template<typename NoteContainer>
+typename NoteContainer::const_iterator NotePattern::find_eq_id(const NoteContainer& notes, NoteTypePtr note) const
+{
+	Evoral::event_id_t id = note->id();
+	typename NoteContainer::const_iterator it = notes.begin();
+	for (; it != notes.end(); ++it)
+		if ((*it)->id() == id)
+			return it;
+	return notes.end();
+}
+
+template <typename NoteContainer>
+typename NoteContainer::iterator NotePattern::find_eq_id(NoteContainer& notes, NoteTypePtr note)
+{
+	Evoral::event_id_t id = note->id();
+	typename NoteContainer::iterator it = notes.begin();
+	for (; it != notes.end(); ++it)
+		if ((*it)->id() == id)
+			return it;
+	return notes.end();
+}
 
 #endif /* __ardour_gtk2_note_pattern_h_ */

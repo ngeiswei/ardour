@@ -57,14 +57,20 @@ void NotePattern::update()
 
 void NotePattern::update_track_to_notes()
 {
-	// Sort the notes with the StrictNotes order so that simulatenous notes can
-	// be dispatched according to some defined order.
+	// Select visible notes within the region, and sort them with the
+	// StrictNotes order so that simulatenous notes can be dispatched according
+	// to some defined order.
 	const MidiModel::Notes& notes = _midi_model->notes();
-	MidiModel::StrictNotes strict_notes(notes.begin(), notes.end());
+	MidiModel::StrictNotes strict_notes;
+	Evoral::Beats end_time = start_beats + _conv.from (_region->length());
+	MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound(start_beats);
+	for (; it != notes.end() && (*it)->time() < end_time; ++it)
+		strict_notes.insert(*it);
 
 	// Add new notes and move existing notes
 	for (MidiModel::StrictNotes::const_iterator it = strict_notes.begin();
 	     it != strict_notes.end(); ++it) {
+
 		int track_idx = find_eq_id(*it);
 		int freetrack = -1;		// index of the first free track
 		if (-1 < track_idx) {
@@ -92,10 +98,10 @@ void NotePattern::update_track_to_notes()
 		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[track_idx];
 		ARDOUR::MidiModel::Notes::iterator track_notes_it = track_notes.begin();
 		for (; track_notes_it != track_notes.end();) {
-			ARDOUR::MidiModel::Notes::iterator notes_it = find_eq_id(notes, *track_notes_it);
-			if (notes_it == notes.end()) {
+			ARDOUR::MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
+			if (notes_it == strict_notes.end())
 				track_notes.erase(track_notes_it++);
-			} else
+			else
 				++track_notes_it;
 		}
 	}
@@ -115,8 +121,8 @@ void NotePattern::update_row_to_notes()
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin();
 		     inote != track_to_notes[itrack].end(); ++inote) {
-			Evoral::Beats on_time = (*inote)->time() + start_beats;
-			Evoral::Beats off_time = (*inote)->end_time() + start_beats;
+			Evoral::Beats on_time = (*inote)->time() + position_beats - start_beats;
+			Evoral::Beats off_time = (*inote)->end_time() + position_beats - start_beats;
 			uint32_t on_max_delay_row = row_at_beats_max_delay(on_time);
 			uint32_t on_row = row_at_beats(on_time);
 			uint32_t off_min_delay_row = row_at_beats_min_delay(off_time);
@@ -231,26 +237,6 @@ ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int track_idx, 
 ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note)
 {
 	return find_eq_id(track_to_notes[track_idx], note);
-}
-
-ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(const ARDOUR::MidiModel::Notes& notes, NoteTypePtr note) const
-{
-	Evoral::event_id_t id = note->id();
-	ARDOUR::MidiModel::Notes::const_iterator it = notes.begin();
-	for (; it != notes.end(); ++it)
-		if ((*it)->id() == id)
-			return it;
-	return notes.end();
-}
-
-ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note)
-{
-	Evoral::event_id_t id = note->id();
-	ARDOUR::MidiModel::Notes::iterator it = notes.begin();
-	for (; it != notes.end(); ++it)
-		if ((*it)->id() == id)
-			return it;
-	return notes.end();
 }
 
 void NotePattern::erase_eq_id(int track_idx, NoteTypePtr note)

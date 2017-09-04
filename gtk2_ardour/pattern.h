@@ -52,7 +52,7 @@ public:
 	virtual void update() = 0;
 
 	// Find the beats corresponding to the first row
-	Evoral::Beats find_start_row_beats();
+	Evoral::Beats find_position_row_beats();
 
 	// Find the beats corresponding to the end row (not visible)
 	Evoral::Beats find_end_row_beats();
@@ -60,7 +60,7 @@ public:
 	// Find the number of rows of the region
 	uint32_t find_nrows();
 
-	// Set start_row_beats, end_row_beats and nrows
+	// Set position_row_beats, end_row_beats and nrows
 	void set_row_range();
 
 	// Return the frame at the corresponding row index and delay in relative
@@ -71,7 +71,8 @@ public:
 	// ticks
 	Evoral::Beats beats_at_row(uint32_t irow, int32_t delay=0);
 
-	// Like beats_at_row but the beats is calculated in reference to the region
+	// Like beats_at_row but the beats is calculated in reference to the
+	// region's position
 	Evoral::Beats region_relative_beats_at_row(uint32_t irow, int32_t delay=0);
 
 	// Return the row index corresponding to the given beats, assuming the
@@ -109,7 +110,8 @@ public:
 	int32_t delay_ticks_min() const;
 	int32_t delay_ticks_max() const;
 
-	// Beats corresponding to the region's start, end and length frames
+	// Beats corresponding to the region's position, start from the source and end
+	Evoral::Beats position_beats;
 	Evoral::Beats start_beats;
 	Evoral::Beats end_beats;
 
@@ -120,14 +122,14 @@ public:
 	// Determined by the number of rows per beat
 	Evoral::Beats beats_per_row;
 
-	// Beats corresponding to the start and end row
-	Evoral::Beats start_row_beats;
+	// Beats corresponding to the location and end row
+	Evoral::Beats position_row_beats;
 	Evoral::Beats end_row_beats;
 
 	// Number of rows of that region (given the choosen resolution)
 	uint32_t nrows;
 
-private:
+protected:
 	uint32_t _ticks_per_row;		// number of ticks per rows
 	ARDOUR::Session* _session;
 	boost::shared_ptr<ARDOUR::Region> _region;

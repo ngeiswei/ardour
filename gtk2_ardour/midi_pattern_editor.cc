@@ -70,8 +70,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Update when region get moved or resized
-//
 // - [ ] Add tips for all spinners, and all that can have some
 //
 // - [ ] Update non-midi automation, see AutomationLink::connect_to_list
