@@ -194,7 +194,9 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 
 	midi_model->ContentsChanged.connect (content_connection, invalidator (*this),
 	                                     boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
-
+	region->RegionPropertyChanged.connect (content_connection, invalidator (*this),
+	                                       boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
+	
 	vbox.show ();
 
 	vbox.set_spacing (6);
