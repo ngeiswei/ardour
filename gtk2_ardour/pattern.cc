@@ -88,7 +88,7 @@ Evoral::Beats Pattern::beats_at_row(uint32_t irow, int32_t delay)
 
 Evoral::Beats Pattern::region_relative_beats_at_row(uint32_t irow, int32_t delay)
 {
-	return beats_at_row(irow, delay) - position_beats;
+	return beats_at_row(irow, delay) - position_beats + start_beats;
 }
 
 uint32_t Pattern::row_at_beats(Evoral::Beats beats)
@@ -135,7 +135,7 @@ int64_t Pattern::delay_ticks(framepos_t frame, uint32_t irow)
 
 int64_t Pattern::region_relative_delay_ticks(const Evoral::Beats& event_time, uint32_t irow)
 {
-	return delay_ticks(event_time + position_beats, irow);
+	return delay_ticks(event_time + position_beats - start_beats, irow);
 }
 
 int32_t Pattern::delay_ticks_min() const

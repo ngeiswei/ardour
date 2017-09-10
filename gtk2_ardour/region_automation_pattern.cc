@@ -39,8 +39,8 @@ uint32_t
 RegionAutomationPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	Evoral::Beats beats(event->when);
-	uint32_t row = row_at_beats(beats + position_beats);
+	uint32_t row = row_at_beats(beats + position_beats - start_beats);
 	if (automations[param].count(row) != 0)
-		row = row_at_beats_min_delay(beats + position_beats);
+		row = row_at_beats_min_delay(beats + position_beats - start_beats);
 	return row;
 }
