@@ -70,9 +70,13 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Add tips for all spinners, and all that can have some
+// - [ ] Update non-midi automation, see AutomationLine::connect_to_list
 //
-// - [ ] Update non-midi automation, see AutomationLink::connect_to_list
+// - [ ] Update automation menu when a processor is added or removed
+//
+// - [ ] Fix region automation beats when region start is not null
+//
+// - [ ] Add tips for all spinners, and all that can have some
 //
 // - [ ] Add keyboard shortcuts to edit notes and automations
 //
@@ -190,9 +194,9 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 
 	redisplay_model ();
 
-	midi_model->ContentsChanged.connect (content_connection, invalidator (*this),
+	midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
 	                                     boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
-	region->RegionPropertyChanged.connect (content_connection, invalidator (*this),
+	region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 	                                       boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
 	
 	vbox.show ();
