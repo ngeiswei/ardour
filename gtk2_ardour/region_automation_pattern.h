@@ -31,7 +31,7 @@ public:
 	                        const AutomationControlSet& automation_controls);
 
 	// Assign a control event to a row
-	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 };
 
 #endif /* __ardour_gtk2_region_automation_pattern_h_ */

@@ -69,6 +69,7 @@ void Pattern::set_row_range()
 	position_beats = _conv.from (_region->position());
 	start_beats = _conv.from (_region->start());
 	end_beats = _conv.from (_region->last_frame() + 1);
+	length_beats = end_beats - position_beats;
 	position_row_beats = find_position_row_beats();
 	end_row_beats = find_end_row_beats();
 	nrows = find_nrows();

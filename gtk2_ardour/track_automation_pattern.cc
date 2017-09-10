@@ -20,6 +20,7 @@
 #include <map>
 
 #include "track_automation_pattern.h"
+#include "ardour/region.h"
 
 using namespace std;
 using namespace ARDOUR;
@@ -36,9 +37,13 @@ TrackAutomationPattern::TrackAutomationPattern(ARDOUR::Session* session,
 }
 
 uint32_t
-TrackAutomationPattern::control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	framepos_t frame = event->when;
+
+	if (frame < _region->first_frame() || _region->last_frame() < frame)
+		return UNDEFINED_ROW;
+
 	uint32_t row = row_at_frame(frame);
 	if (automations[param].count(row) != 0)
 		row = row_at_frame_min_delay(frame);
