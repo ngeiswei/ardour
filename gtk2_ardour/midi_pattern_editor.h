@@ -194,6 +194,7 @@ class MidiPatternEditor : public ArdourWindow
 	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor, const Evoral::Parameter& what);
 
 	void build_param2actrl ();
+	void connect (const Evoral::Parameter&);
 
 	virtual void show_all_automation ();
 	bool has_pan_automation() const;

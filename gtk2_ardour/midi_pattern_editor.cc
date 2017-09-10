@@ -70,8 +70,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Update non-midi automation, see AutomationLine::connect_to_list
-//
 // - [ ] Update automation menu when a processor is added or removed
 //
 // - [ ] Add tips for all spinners, and all that can have some
@@ -2122,14 +2120,17 @@ MidiPatternEditor::build_param2actrl ()
 {
 	// Gain
 	param2actrl[Evoral::Parameter(GainAutomation)] =  route->gain_control();
+	connect(Evoral::Parameter(GainAutomation));
 
 	// Mute
 	param2actrl[Evoral::Parameter(MuteAutomation)] =  route->mute_control();
+	connect(Evoral::Parameter(MuteAutomation));
 
 	// Pan
 	set<Evoral::Parameter> const & pan_params = route->pannable()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
 		param2actrl[*p] = route->pannable()->automation_control(*p);
+		connect(*p);
 	}
 
 	// Midi
@@ -2141,8 +2142,17 @@ MidiPatternEditor::build_param2actrl ()
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			param2actrl[(*ii)->what] = boost::dynamic_pointer_cast<AutomationControl>((*i)->processor->control((*ii)->what));
+			connect((*ii)->what);
 		}
 	}
+}
+
+void
+MidiPatternEditor::connect (const Evoral::Parameter& param)
+{
+	boost::shared_ptr<AutomationList> alist = param2actrl[param]->alist();
+	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
 }
 
 void
