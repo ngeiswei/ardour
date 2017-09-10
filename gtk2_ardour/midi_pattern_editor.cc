@@ -74,8 +74,6 @@ using Timecode::BBT_Time;
 //
 // - [ ] Update automation menu when a processor is added or removed
 //
-// - [ ] Fix region automation beats when region start is not null
-//
 // - [ ] Add tips for all spinners, and all that can have some
 //
 // - [ ] Add keyboard shortcuts to edit notes and automations
