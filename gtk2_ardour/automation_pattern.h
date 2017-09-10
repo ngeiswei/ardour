@@ -47,7 +47,7 @@ public:
 	                  const AutomationControlSet& automation_controls);
 
 	// Assign a control event to a row
-	virtual uint32_t control_event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
+	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
 
 	// Build or rebuild the pattern (implement Pattern::update_pattern)
 	void update();
