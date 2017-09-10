@@ -43,6 +43,8 @@ public:
 	Pattern(ARDOUR::Session* session,
 	        boost::shared_ptr<ARDOUR::Region> region);
 
+	static const uint32_t UNDEFINED_ROW = -1;
+
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// see below.
@@ -110,10 +112,12 @@ public:
 	int32_t delay_ticks_min() const;
 	int32_t delay_ticks_max() const;
 
-	// Beats corresponding to the region's position, start from the source and end
+	// Beats corresponding to the region's position, start from the source, end
+	// and length in beats.
 	Evoral::Beats position_beats;
 	Evoral::Beats start_beats;
 	Evoral::Beats end_beats;
+	Evoral::Beats length_beats;
 
 	// Number of rows per beat. 0 means one row per bar (TODO not fully
 	// supported).
