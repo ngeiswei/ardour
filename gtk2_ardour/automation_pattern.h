@@ -44,7 +44,7 @@ public:
 
 	AutomationPattern(ARDOUR::Session* session,
 	                  boost::shared_ptr<ARDOUR::Region> region,
-	                  const AutomationControlSet& automation_controls);
+	                  const AutomationControlSet& automation_controls=AutomationControlSet());
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;

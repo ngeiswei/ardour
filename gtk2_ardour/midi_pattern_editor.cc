@@ -70,7 +70,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Update automation menu when a processor is added or removed
+// - [ ] Fix weird bug when adding track automation
 //
 // - [ ] Add tips for all spinners, and all that can have some
 //
@@ -178,8 +178,8 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	register_actions ();
 
 	setup_processor_menu_and_curves ();
-
 	build_param2actrl ();
+	build_pattern ();
 
 	setup_tooltips ();
 	setup_toolbar ();
@@ -575,17 +575,11 @@ MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 		}
 
 		if ((pan = find_processor_automation_node (processor, *i)) == 0) {
-
 			/* new item */
-
 			pan = new ProcessorAutomationNode (*i, mitem, *this);
-
 			rai->columns.push_back (pan);
-
 		} else {
-
 			pan->menu_item = mitem;
-
 		}
 
 		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::processor_menu_item_toggled), rai, pan));
@@ -652,6 +646,11 @@ MidiPatternEditor::build_automation_action_menu ()
 	/* Attach the plugin submenu. It may have previously been used elsewhere,
 	   so it was detached above
 	*/
+
+	// TODO could be optimized, no need to rebuild everything
+	setup_processor_menu_and_curves ();
+	build_param2actrl ();
+	update_automation_patterns ();
 
 	if (!subplugin_menu.items().empty()) {
 		items.push_back (SeparatorElem ());
@@ -2380,22 +2379,31 @@ MidiPatternEditor::scroll_event (GdkEventScroll* ev)
 }
 
 void
-MidiPatternEditor::setup_pattern ()
+MidiPatternEditor::build_pattern ()
 {
 	np = new NotePattern(_session, region, midi_model);
+	tap = new TrackAutomationPattern(_session, region);
+	rap = new RegionAutomationPattern(_session, region);
 
-	// Get automation controls
-	AutomationControlSet tacs, racs;
+	update_automation_patterns ();
+}
+
+void
+MidiPatternEditor::update_automation_patterns ()
+{
+	// Insert automation controls in the automation patterns
 	for (Parameter2AutomationControl::const_iterator it = param2actrl.begin(); it != param2actrl.end(); ++it) {
 		// Midi automation are attached to the region, not the track
 		if (ARDOUR::parameter_is_midi((AutomationType)it->first.type()))
-			racs.insert(it->second);
+			rap->insert(it->second);
 		else
-			tacs.insert(it->second);
+			tap->insert(it->second);
 	}
-	tap = new TrackAutomationPattern(_session, region, tacs);
-	rap = new RegionAutomationPattern(_session, region, racs);
+}
 
+void
+MidiPatternEditor::setup_pattern ()
+{
 	edit_tracknum = -1;
 
 	model = ListStore::create (columns);
