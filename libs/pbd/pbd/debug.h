@@ -67,8 +67,8 @@ namespace PBD {
 
 		/* See notes in ../debug.cc on why these are defined here */
 
-                LIBPBD_API extern DebugBits WavesMIDI;
-                LIBPBD_API extern DebugBits WavesAudio;
+		LIBPBD_API extern DebugBits WavesMIDI;
+		LIBPBD_API extern DebugBits WavesAudio;
 	}
 }
 
