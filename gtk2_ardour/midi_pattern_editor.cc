@@ -70,7 +70,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Fix weird bug when adding track automation
+// - [ ] Support undo
 //
 // - [ ] Add tips for all spinners, and all that can have some
 //
@@ -2021,7 +2021,7 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	if (auto_it == r2at.end()) {
 		if (!is_del) {
 			double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
-			alist->add (awhen, nval);
+			alist->editor_add (awhen, nval, false);
 		}
 		return;
 	}
