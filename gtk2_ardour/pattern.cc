@@ -19,7 +19,7 @@
 #include <cmath>
 #include <map>
 
-#include "ardour/beats_frames_converter.h"
+#include "ardour/beats_samples_converter.h"
 #include "ardour/session.h"
 #include "ardour/region.h"
 #include "ardour/tempo.h"
@@ -68,14 +68,14 @@ void Pattern::set_row_range()
 {
 	position_beats = _conv.from (_region->position());
 	start_beats = _conv.from (_region->start());
-	end_beats = _conv.from (_region->last_frame() + 1);
+	end_beats = _conv.from (_region->last_sample() + 1);
 	length_beats = end_beats - position_beats;
 	position_row_beats = find_position_row_beats();
 	end_row_beats = find_end_row_beats();
 	nrows = find_nrows();
 }
 
-framepos_t Pattern::frame_at_row(uint32_t irow, int32_t delay)
+samplepos_t Pattern::sample_at_row(uint32_t irow, int32_t delay)
 {
 	return _conv.to (beats_at_row(irow, delay));
 }
@@ -83,7 +83,7 @@ framepos_t Pattern::frame_at_row(uint32_t irow, int32_t delay)
 Evoral::Beats Pattern::beats_at_row(uint32_t irow, int32_t delay)
 {
 	Evoral::Beats result = position_row_beats + (irow*1.0) / rows_per_beat;
-	result += Evoral::Beats::relative_ticks(delay);
+	result += Evoral::Beats::ticks(delay);
 	return result;
 }
 
@@ -98,9 +98,9 @@ uint32_t Pattern::row_at_beats(Evoral::Beats beats)
 	return clamp((beats - position_row_beats + half_row).to_double() * rows_per_beat);
 }
 
-uint32_t Pattern::row_at_frame(framepos_t frame)
+uint32_t Pattern::row_at_sample(samplepos_t sample)
 {
-	return row_at_beats (_conv.from (frame));
+	return row_at_beats (_conv.from (sample));
 }
 
 uint32_t Pattern::row_at_beats_min_delay(Evoral::Beats beats)
@@ -109,9 +109,9 @@ uint32_t Pattern::row_at_beats_min_delay(Evoral::Beats beats)
 	return clamp((beats - position_row_beats + tpr_minus_1).to_double() * rows_per_beat);
 }
 
-uint32_t Pattern::row_at_frame_min_delay(framepos_t frame)
+uint32_t Pattern::row_at_sample_min_delay(samplepos_t sample)
 {
-	return row_at_beats_min_delay(_conv.from (frame));
+	return row_at_beats_min_delay(_conv.from (sample));
 }
 
 uint32_t Pattern::row_at_beats_max_delay(Evoral::Beats beats)
@@ -119,19 +119,19 @@ uint32_t Pattern::row_at_beats_max_delay(Evoral::Beats beats)
 	return clamp((beats - position_row_beats).to_double() * rows_per_beat);
 }
 
-uint32_t Pattern::row_at_frame_max_delay(framepos_t frame)
+uint32_t Pattern::row_at_sample_max_delay(samplepos_t sample)
 {
-	return row_at_beats_max_delay (_conv.from (frame));
+	return row_at_beats_max_delay (_conv.from (sample));
 }
 
 int64_t Pattern::delay_ticks(const Evoral::Beats& event_time, uint32_t irow)
 {
-	return (event_time - beats_at_row(irow)).to_relative_ticks();
+	return (event_time - beats_at_row(irow)).to_ticks();
 }
 
-int64_t Pattern::delay_ticks(framepos_t frame, uint32_t irow)
+int64_t Pattern::delay_ticks(samplepos_t sample, uint32_t irow)
 {
-	return delay_ticks(_conv.from (frame), irow);
+	return delay_ticks(_conv.from (sample), irow);
 }
 
 int64_t Pattern::region_relative_delay_ticks(const Evoral::Beats& event_time, uint32_t irow)
