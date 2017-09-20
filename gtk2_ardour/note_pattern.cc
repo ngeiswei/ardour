@@ -22,7 +22,7 @@
 #include "evoral/midi_util.h"
 #include "evoral/Note.hpp"
 
-#include "ardour/beats_frames_converter.h"
+#include "ardour/beats_samples_converter.h"
 #include "ardour/midi_model.h"
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
