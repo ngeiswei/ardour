@@ -70,7 +70,9 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Support undo
+// - [ ] Support undo (see AutomationTimeAxisView::add_automation_event and
+//       AutomationRegionView::add_automation_event), improve opname. Add
+//       shortcut key Ctrl+Z and Ctrl+Shift+Z.
 //
 // - [ ] Add tips for all spinners, and all that can have some
 //
