@@ -96,11 +96,6 @@ public:
 		return Beats(0, ticks);
 	}
 
-	/** Create from relative ticks at the standard PPQN. */
-	static Beats relative_ticks(int32_t relative_ticks) {
-		return Beats(relative_ticks / PPQN);
-	}
-
 	/** Create from ticks at a given rate.
 	 *
 	 * Note this can also be used to create from frames by setting ppqn to the
