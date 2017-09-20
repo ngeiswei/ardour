@@ -39,13 +39,13 @@ TrackAutomationPattern::TrackAutomationPattern(ARDOUR::Session* session,
 uint32_t
 TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	framepos_t frame = event->when;
+	samplepos_t sample = event->when;
 
-	if (frame < _region->first_frame() || _region->last_frame() < frame)
+	if (sample < _region->first_sample() || _region->last_sample() < sample)
 		return UNDEFINED_ROW;
 
-	uint32_t row = row_at_frame(frame);
+	uint32_t row = row_at_sample(sample);
 	if (automations[param].count(row) != 0)
-		row = row_at_frame_min_delay(frame);
+		row = row_at_sample_min_delay(sample);
 	return row;
 }

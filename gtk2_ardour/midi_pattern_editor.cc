@@ -30,7 +30,7 @@
 #include "evoral/Note.hpp"
 
 #include "ardour/amp.h"
-#include "ardour/beats_frames_converter.h"
+#include "ardour/beats_samples_converter.h"
 #include "ardour/midi_model.h"
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
@@ -1477,9 +1477,9 @@ MidiPatternEditor::redisplay_model ()
 
 		TreeModel::Row row;
 
-		// Make sure that midi and automation regions start at the same frame
-		assert (np->frame_at_row(0) == tap->frame_at_row(0));
-		assert (np->frame_at_row(0) == rap->frame_at_row(0));
+		// Make sure that midi and automation regions start at the same sample
+		assert (np->sample_at_row(0) == tap->sample_at_row(0));
+		assert (np->sample_at_row(0) == rap->sample_at_row(0));
 
 		uint32_t nrows = std::max(std::max(np->nrows, tap->nrows), rap->nrows);
 
@@ -1500,11 +1500,11 @@ MidiPatternEditor::redisplay_model ()
 
 			Evoral::Beats row_beats = np->beats_at_row(irow);
 			Evoral::Beats row_relative_beats = np->region_relative_beats_at_row(irow);
-			uint32_t row_frame = np->frame_at_row(irow);
+			uint32_t row_sample = np->sample_at_row(irow);
 
 			// Time
 			Timecode::BBT_Time row_bbt;
-			_session->bbt_time(row_frame, row_bbt);
+			_session->bbt_time(row_sample, row_bbt);
 			stringstream ss;
 			print_padded(ss, row_bbt);
 			row[columns.time] = ss.str();
@@ -1619,7 +1619,7 @@ MidiPatternEditor::redisplay_model ()
 							row[columns.automation[i]] = to_string (aval);
 							double awhen = (*auto_it->second)->when;
 							int64_t delay_ticks = is_region_automation ?
-								rap->region_relative_delay_ticks(Evoral::Beats(awhen), irow) : tap->delay_ticks((framepos_t)awhen, irow);
+								rap->region_relative_delay_ticks(Evoral::Beats(awhen), irow) : tap->delay_ticks((samplepos_t)awhen, irow);
 							if (delay_ticks != 0) {
 								row[columns.automation_delay[i]] = to_string (delay_ticks);
 								row[columns._automation_delay_foreground_color[i]] = active_foreground_color;
@@ -1640,7 +1640,7 @@ MidiPatternEditor::redisplay_model ()
 						// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 						// of the WriteLock in ControlList::erase and such, then eval can be used.
 						bool ok;
-						double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
+						double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
 						inter_auto_val = alist->rt_safe_eval(awhen, ok);
 					}
 					row[columns.automation[i]] = to_string (inter_auto_val);
@@ -1954,7 +1954,7 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 
 		// Change start time according to new delay
 		int idelta = ival - np->region_relative_delay_ticks(on_note->time(), row_idx);
-		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
+		Evoral::Beats relative_beats = Evoral::Beats::ticks(idelta);
 		Evoral::Beats new_start = on_note->time() + relative_beats;
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
 
@@ -1972,7 +1972,7 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
 		int idelta = ival - np->region_relative_delay_ticks(off_note->end_time(), row_idx);
-		Evoral::Beats relative_beats = Evoral::Beats::relative_ticks(idelta);
+		Evoral::Beats relative_beats = Evoral::Beats::ticks(idelta);
 		Evoral::Beats new_length = off_note->length() + relative_beats;
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
@@ -1989,7 +1989,7 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	int row_idx = get_row_index (path);
 	int delay = delay_spinner.get_value_as_int ();
 	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
-	uint32_t row_frame = tap->frame_at_row(row_idx, delay);
+	uint32_t row_sample = tap->sample_at_row(row_idx, delay);
 
 	// Find the parameter to automate
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
@@ -2020,7 +2020,7 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		if (!is_del) {
-			double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
+			double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
 			alist->editor_add (awhen, nval, false);
 		}
 		return;
@@ -2053,7 +2053,7 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 
 	int row_idx = get_row_index (path);
 	Evoral::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
-	uint32_t row_frame = tap->frame_at_row(row_idx, delay);
+	uint32_t row_sample = tap->sample_at_row(row_idx, delay);
 
 	// Find the parameter to change delay
 	// TODO: this can probably be factorized
@@ -2084,7 +2084,7 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 		return;
 
 	// Change existing delay
-	double awhen = is_region_automation ? row_relative_beats.to_double() : row_frame;
+	double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
 	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
 }
 

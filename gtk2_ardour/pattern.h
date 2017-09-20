@@ -23,7 +23,7 @@
 #include "evoral/Beats.hpp"
 
 #include "ardour/session_handle.h"
-#include "ardour/beats_frames_converter.h"
+#include "ardour/beats_samples_converter.h"
 
 #include "widgets/ardour_dropdown.h"
 #include "ardour_window.h"
@@ -65,9 +65,9 @@ public:
 	// Set position_row_beats, end_row_beats and nrows
 	void set_row_range();
 
-	// Return the frame at the corresponding row index and delay in relative
+	// Return the sample at the corresponding row index and delay in relative
 	// ticks
-	framepos_t frame_at_row(uint32_t irow, int32_t delay=0);
+	samplepos_t sample_at_row(uint32_t irow, int32_t delay=0);
 
 	// Return the beats at the corresponding row index and delay in relative
 	// ticks
@@ -82,28 +82,28 @@ public:
 	// is _ticks_per_row/2.
 	uint32_t row_at_beats(Evoral::Beats beats);
 
-	// Like row_at_beats but use frame instead of beats
-	uint32_t row_at_frame(framepos_t frame);
+	// Like row_at_beats but use sample instead of beats
+	uint32_t row_at_sample(samplepos_t sample);
 
 	// Return the row index assuming the beats is allowed to have the minimum
 	// negative delay (1 - _ticks_per_row).
 	uint32_t row_at_beats_min_delay(Evoral::Beats beats);
 
-	// Like row_at_beats_min_delay but use frame instead of beats
-	uint32_t row_at_frame_min_delay(framepos_t frame);
+	// Like row_at_beats_min_delay but use sample instead of beats
+	uint32_t row_at_sample_min_delay(samplepos_t sample);
 
 	// Return the row index assuming the beats is allowed to have the maximum
 	// positive delay (_ticks_per_row - 1).
 	uint32_t row_at_beats_max_delay(Evoral::Beats beats);
 
-	// Like row_at_beats_max_delay but use frame instead of beats
-	uint32_t row_at_frame_max_delay(framepos_t frame);
+	// Like row_at_beats_max_delay but use sample instead of beats
+	uint32_t row_at_sample_max_delay(samplepos_t sample);
 
 	// Return an event's delay in a certain row in ticks
 	int64_t delay_ticks(const Evoral::Beats& event_time, uint32_t irow);
 
-	// Like delay_ticks above but uses frame instead of beats
-	int64_t delay_ticks(framepos_t frame, uint32_t irow);
+	// Like delay_ticks above but uses sample instead of beats
+	int64_t delay_ticks(samplepos_t sample, uint32_t irow);
 
 	// Like delay_ticks but the event_time is relative to the region position
 	int64_t region_relative_delay_ticks(const Evoral::Beats& event_time, uint32_t irow);
@@ -137,7 +137,7 @@ protected:
 	uint32_t _ticks_per_row;		// number of ticks per rows
 	ARDOUR::Session* _session;
 	boost::shared_ptr<ARDOUR::Region> _region;
-	ARDOUR::BeatsFramesConverter _conv;
+	ARDOUR::BeatsSamplesConverter _conv;
 
 	// Make sure a given row is clamped to be in [0, nrows)
 	uint32_t clamp(double row) const;
