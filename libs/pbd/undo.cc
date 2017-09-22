@@ -40,7 +40,7 @@ UndoTransaction::UndoTransaction (const UndoTransaction& rhs)
 	: Command(rhs._name)
 	, _clearing(false)
 {
-        _timestamp = rhs._timestamp;
+	_timestamp = rhs._timestamp;
 	clear ();
 	actions.insert(actions.end(),rhs.actions.begin(),rhs.actions.end());
 }
@@ -129,35 +129,35 @@ UndoTransaction::undo ()
 void
 UndoTransaction::redo ()
 {
-        (*this)();
+	(*this)();
 }
 
 XMLNode &UndoTransaction::get_state()
 {
-    XMLNode *node = new XMLNode ("UndoTransaction");
-    node->set_property("tv-sec", (int64_t)_timestamp.tv_sec);
-    node->set_property("tv-usec", (int64_t)_timestamp.tv_usec);
-    node->set_property("name", _name);
+	XMLNode *node = new XMLNode ("UndoTransaction");
+	node->set_property("tv-sec", (int64_t)_timestamp.tv_sec);
+	node->set_property("tv-usec", (int64_t)_timestamp.tv_usec);
+	node->set_property("name", _name);
 
-    list<Command*>::iterator it;
-    for (it=actions.begin(); it!=actions.end(); it++)
-        node->add_child_nocopy((*it)->get_state());
+	list<Command*>::iterator it;
+	for (it=actions.begin(); it!=actions.end(); it++)
+		node->add_child_nocopy((*it)->get_state());
 
-    return *node;
+	return *node;
 }
 
 class UndoRedoSignaller {
 public:
-    UndoRedoSignaller (UndoHistory& uh)
-	    : _history (uh) {
-	    _history.BeginUndoRedo();
-    }
-    ~UndoRedoSignaller() {
-	    _history.EndUndoRedo();
-    }
+	UndoRedoSignaller (UndoHistory& uh)
+		: _history (uh) {
+		_history.BeginUndoRedo();
+	}
+	~UndoRedoSignaller() {
+		_history.EndUndoRedo();
+	}
 
 private:
-    UndoHistory& _history;
+	UndoHistory& _history;
 };
 
 UndoHistory::UndoHistory ()
@@ -311,9 +311,9 @@ void
 UndoHistory::clear_undo ()
 {
 	_clearing = true;
-        for (std::list<UndoTransaction*>::iterator i = UndoList.begin(); i != UndoList.end(); ++i) {
-                delete *i;
-        }
+	for (std::list<UndoTransaction*>::iterator i = UndoList.begin(); i != UndoList.end(); ++i) {
+		delete *i;
+	}
 	UndoList.clear ();
 	_clearing = false;
 
@@ -332,36 +332,36 @@ UndoHistory::clear ()
 XMLNode&
 UndoHistory::get_state (int32_t depth)
 {
-    XMLNode *node = new XMLNode ("UndoHistory");
+	XMLNode *node = new XMLNode ("UndoHistory");
 
-    if (depth == 0) {
+	if (depth == 0) {
 
-	    return (*node);
+		return (*node);
 
-    } else if (depth < 0) {
+	} else if (depth < 0) {
 
-	    /* everything */
+		/* everything */
 
-	    for (list<UndoTransaction*>::iterator it = UndoList.begin(); it != UndoList.end(); ++it) {
-		    node->add_child_nocopy((*it)->get_state());
-	    }
+		for (list<UndoTransaction*>::iterator it = UndoList.begin(); it != UndoList.end(); ++it) {
+			node->add_child_nocopy((*it)->get_state());
+		}
 
-    } else {
+	} else {
 
-	    /* just the last "depth" transactions */
+		/* just the last "depth" transactions */
 
-	    list<UndoTransaction*> in_order;
+		list<UndoTransaction*> in_order;
 
-	    for (list<UndoTransaction*>::reverse_iterator it = UndoList.rbegin(); it != UndoList.rend() && depth; ++it, depth--) {
-		    in_order.push_front (*it);
-	    }
+		for (list<UndoTransaction*>::reverse_iterator it = UndoList.rbegin(); it != UndoList.rend() && depth; ++it, depth--) {
+			in_order.push_front (*it);
+		}
 
-	    for (list<UndoTransaction*>::iterator it = in_order.begin(); it != in_order.end(); it++) {
-		    node->add_child_nocopy((*it)->get_state());
-	    }
-    }
+		for (list<UndoTransaction*>::iterator it = in_order.begin(); it != in_order.end(); it++) {
+			node->add_child_nocopy((*it)->get_state());
+		}
+	}
 
-    return *node;
+	return *node;
 }
 
 

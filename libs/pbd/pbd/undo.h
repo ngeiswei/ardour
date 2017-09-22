@@ -103,8 +103,8 @@ class LIBPBD_API UndoHistory : public PBD::ScopedConnectionList
 	   the full history, whichever is smaller.
 	*/
 
-        XMLNode &get_state(int32_t depth = 0);
-        void save_state();
+	XMLNode &get_state(int32_t depth = 0);
+	void save_state();
 
 	void set_depth (uint32_t);
 
