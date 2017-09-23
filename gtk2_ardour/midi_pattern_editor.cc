@@ -71,8 +71,9 @@ using Timecode::BBT_Time;
 //////////
 //
 // - [ ] Support undo (see AutomationTimeAxisView::add_automation_event and
-//       AutomationRegionView::add_automation_event), improve opname. Add
-//       shortcut key Ctrl+Z and Ctrl+Shift+Z.
+//       AutomationRegionView::add_automation_event), use midi_time_axis_view
+//       editor to not duplicate code. Improve opname. Add shortcut key Ctrl+Z
+//       and Ctrl+Shift+Z.
 //
 // - [ ] Add tips for all spinners, and all that can have some
 //
