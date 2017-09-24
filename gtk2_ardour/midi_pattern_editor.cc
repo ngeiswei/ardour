@@ -1739,9 +1739,6 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	if (!is_off && !is_del && 127 < ival)
 		return;
 
-	char const * opname = _("change note name");
-	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
-
 	// Can't edit ***
 	if (not np->is_displayable(row_idx, edit_tracknum))
 		return;
@@ -1753,9 +1750,13 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	uint8_t chan = channel_spinner.get_value_as_int() - 1;
 	uint8_t vel = velocity_spinner.get_value_as_int();
 
+	MidiModel::NoteDiffCommand* cmd = NULL;
+
 	if (on_note) {
 		if (is_del) {
 			// Delete on note and change
+			char const * opname = _("delete note");
+			cmd = midi_model->new_note_diff_command (opname);
 			cmd->remove (on_note);
 
 			// If there is an off note, update the length of the preceding note
@@ -1772,6 +1773,8 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			}
 		} else if (is_off) {
 			// Replace the on note by an off note, that is remove the on note
+			char const * opname = _("delete note");
+			cmd = midi_model->new_note_diff_command (opname);
 			cmd->remove (on_note);
 
 			// If there is no off note, update the length of the preceding node
@@ -1785,6 +1788,8 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			}
 		} else {
 			// Change the pitch of the on note
+			char const * opname = _("change note");
+			cmd = midi_model->new_note_diff_command (opname);
 			cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, ival);
 		}
 	} else if (off_note) {
@@ -1794,6 +1799,8 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			Evoral::Beats start = off_note->time();
 			Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 			Evoral::Beats length = end - start;
+			char const * opname = _("resize note");
+			cmd = midi_model->new_note_diff_command (opname);
 			cmd->change (off_note, MidiModel::NoteDiffCommand::Length, length);
 		} else if (!is_off) {
 			// Replace off note by another (non-off) note. Calculate the start
@@ -1803,6 +1810,8 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			Evoral::Beats length = end - start;
 			// Build note using defaults
 			NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
+			char const * opname = _("add note");
+			cmd = midi_model->new_note_diff_command (opname);
 			cmd->add (new_note);
 			// Pre-emptively add the note in np to so that it knows in
 			// which track it is supposed to be.
@@ -1826,9 +1835,13 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 				// note no matter what (smart off note).
 				if (prev_note) {
 					Evoral::Beats new_length = here - prev_start;
+					char const * opname = _("resize note");
+					cmd = midi_model->new_note_diff_command (opname);
 					cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, new_length);
 				}
 			} else {
+				char const * opname = _("add note");
+				cmd = midi_model->new_note_diff_command (opname);
 				// Only update the length the previous note if the new on note
 				// is shortening it.
 				if (prev_note) {
@@ -1852,7 +1865,8 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	}
 
 	// Apply note changes
-	apply_command (cmd);
+	if (cmd)
+		apply_command (cmd);
 }
 
 void
