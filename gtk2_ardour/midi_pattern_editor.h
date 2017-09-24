@@ -447,6 +447,7 @@ class MidiPatternEditor : public ArdourWindow
 	void automation_edited (const std::string&, const std::string&);
 	void automation_delay_edited (const std::string&, const std::string&);
 
+	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	/////////////////////////
