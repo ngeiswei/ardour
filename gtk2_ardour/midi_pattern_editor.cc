@@ -72,10 +72,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Support undo (see AutomationTimeAxisView::add_automation_event and
-//       AutomationRegionView::add_automation_event), use midi_time_axis_view
-//       editor to not duplicate code. Add shortcut key Ctrl+Z and
-//       Ctrl+Shift+Z.
+// - [ ] Add shortcut key Ctrl+Z and Ctrl+Shift+Z for undo
 //
 // - [ ] Add tips for all spinners, and all that can have some
 //
