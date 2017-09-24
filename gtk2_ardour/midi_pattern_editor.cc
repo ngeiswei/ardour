@@ -2036,18 +2036,16 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
 
+	// Save state for undo
+	XMLNode& before = alist->get_state ();
+
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		if (!is_del) {
-			XMLNode& before = alist->get_state();
 			double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
-			PublicEditor& editor = midi_time_axis_view->editor ();
 			if (alist->editor_add (awhen, nval, false)) {
 				XMLNode& after = alist->get_state ();
-				editor.begin_reversible_command (_("add automation event"));
-				_session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
-				editor.commit_reversible_command ();
-				_session->set_dirty ();
+				register_automation_undo (alist, _("add automation event"), before, after);
 			}
 		}
 		return;
@@ -2056,6 +2054,8 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	// Delete existing value
 	if (is_del) {
 		alist->erase (auto_it->second);
+		XMLNode& after = alist->get_state ();
+		register_automation_undo (alist, _("delete automation event"), before, after);
 		return;
 	}
 
@@ -2063,6 +2063,8 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	if (is_changed) {
 		double awhen = (*auto_it->second)->when;
 		alist->modify (auto_it->second, awhen, nval);
+		XMLNode& after = alist->get_state ();
+		register_automation_undo (alist, _("change automation event"), before, after);
 	}
 }
 
@@ -2111,8 +2113,21 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 		return;
 
 	// Change existing delay
+	XMLNode& before = alist->get_state ();
 	double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
 	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
+	XMLNode& after = alist->get_state ();
+	register_automation_undo (alist, _("change automation event delay"), before, after);
+}
+
+void
+MidiPatternEditor::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
+{
+	PublicEditor& editor = midi_time_axis_view->editor ();
+	editor.begin_reversible_command (opname);
+	_session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
+	editor.commit_reversible_command ();
+	_session->set_dirty ();
 }
 
 void
