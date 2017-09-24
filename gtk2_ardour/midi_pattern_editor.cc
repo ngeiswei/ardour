@@ -25,6 +25,7 @@
 #include <gtkmm/cellrenderercombo.h>
 
 #include "pbd/file_utils.h"
+#include "pbd/memento_command.h"
 
 #include "evoral/midi_util.h"
 #include "evoral/Note.hpp"
@@ -53,6 +54,7 @@
 #include "note_player.h"
 #include "widgets/tooltips.h"
 #include "axis_view.h"
+#include "editor.h"
 
 #include "pbd/i18n.h"
 
@@ -978,9 +980,9 @@ MidiPatternEditor::build_controller_menu ()
 }
 
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiPatternEditor::get_device_names()
+MidiPatternEditor::get_device_names ()
 {
-	return midi_time_axis_view->get_device_names();
+	return midi_time_axis_view->get_device_names ();
 }
 
 
@@ -2037,8 +2039,16 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		if (!is_del) {
+			XMLNode& before = alist->get_state();
 			double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
-			alist->editor_add (awhen, nval, false);
+			PublicEditor& editor = midi_time_axis_view->editor ();
+			if (alist->editor_add (awhen, nval, false)) {
+				XMLNode& after = alist->get_state ();
+				editor.begin_reversible_command (_("add automation event"));
+				_session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
+				editor.commit_reversible_command ();
+				_session->set_dirty ();
+			}
 		}
 		return;
 	}
