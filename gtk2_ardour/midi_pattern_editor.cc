@@ -72,13 +72,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Add shortcut key Ctrl+Z and Ctrl+Shift+Z for undo
-//
-// - [ ] Add tips for all spinners, and all that can have some
-//
 // - [ ] Add keyboard shortcuts to edit notes and automations
-//
-// - [ ] Have automation support in_write_pass(), etc
 //
 // - [ ] Support audio tracks and trim automation
 //
@@ -2673,11 +2667,20 @@ MidiPatternEditor::build_beats_per_row_menu ()
 void
 MidiPatternEditor::setup_tooltips ()
 {
-	set_tooltip (beats_per_row_selector, _("Beats Per Row"));
-	set_tooltip (visible_note_button, _("Toggle Note Visibility"));
-	set_tooltip (visible_channel_button, _("Toggle Channel Visibility"));
-	set_tooltip (visible_velocity_button, _("Toggle Velocity Visibility"));
-	set_tooltip (visible_delay_button, _("Toggle Delay Visibility"));
+	set_tooltip (beats_per_row_selector, _("Beats per row"));
+	set_tooltip (visible_note_button, _("Toggle note visibility"));
+	set_tooltip (visible_channel_button, _("Toggle channel visibility"));
+	set_tooltip (visible_velocity_button, _("Toggle velocity visibility"));
+	set_tooltip (visible_delay_button, _("Toggle delay visibility"));
+	set_tooltip (remove_note_column_button, _("Remove note column"));
+	set_tooltip (add_note_column_button, _("Add note column"));
+	set_tooltip (automation_button, _("MIDI Controllers and Automation"));
+	octave_spinner.set_tooltip_text (_("Default octave"));
+	channel_spinner.set_tooltip_text (_("Default channel"));
+	velocity_spinner.set_tooltip_text (_("Default velocity"));
+	delay_spinner.set_tooltip_text (_("Default delay"));
+	place_spinner.set_tooltip_text (_("Decimal place when step editing automation"));
+	steps_spinner.set_tooltip_text (_("Step size"));
 }
 
 void
