@@ -334,6 +334,8 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::VSeparator              rm_add_note_column_separator;
 	ArdourWidgets::ArdourButton  remove_note_column_button;
 	ArdourWidgets::ArdourButton  add_note_column_button;
+	Gtk::VSeparator              step_edit_separator;
+	ArdourWidgets::ArdourButton  step_edit_button;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
@@ -358,14 +360,6 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::Label                   steps_label;
 	Gtk::Adjustment              steps_adjustment;
 	Gtk::SpinButton              steps_spinner;
-	Gtk::VSeparator              edrow_separator;
-	Gtk::Label                   edrow_label;
-	Gtk::Adjustment              edrow_adjustment;
-	Gtk::SpinButton              edrow_spinner;
-	Gtk::VSeparator              edcol_separator;
-	Gtk::Label                   edcol_label;
-	Gtk::Adjustment              edcol_adjustment;
-	Gtk::SpinButton              edcol_spinner;
 
 	boost::shared_ptr<ARDOUR::MidiRegion> region;
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
@@ -401,6 +395,7 @@ class MidiPatternEditor : public ArdourWindow
 	void update_remove_note_column_button ();
 	bool remove_note_column_press (GdkEventButton* ev);
 	bool add_note_column_press (GdkEventButton* ev);
+	bool step_edit_press (GdkEventButton* ev);
 
 	void setup_tooltips ();
 	void setup_toolbar ();
