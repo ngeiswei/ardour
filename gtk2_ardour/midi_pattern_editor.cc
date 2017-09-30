@@ -141,12 +141,6 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, steps_label (_("Steps"))
 	, steps_adjustment (1, 0, 256, 1, 4)
 	, steps_spinner (steps_adjustment)
-	, edrow_label (_("Edit row"))
-	, edrow_adjustment (0, 0, 255, 1, 2)
-	, edrow_spinner (edrow_adjustment)
-	, edcol_label (_("Edit column"))
-	, edcol_adjustment (0, 0, 255, 1, 2)
-	, edcol_spinner (edcol_adjustment)
 	, region (reg)
 	, track (tr)
 	, midi_model (region->midi_source(0)->model())
@@ -1455,6 +1449,19 @@ MidiPatternEditor::add_note_column_press (GdkEventButton* ev)
 	return false;
 }
 
+bool
+MidiPatternEditor::step_edit_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	std::cout << "MidiPatternEditor::step_edit_press" << std::endl;
+
+	return false;
+}
+
 void
 MidiPatternEditor::redisplay_model ()
 {
@@ -2483,8 +2490,6 @@ MidiPatternEditor::setup_pattern ()
 void
 MidiPatternEditor::setup_toolbar ()
 {
-	uint32_t inactive_button_color = RGBA_TO_UINT(255, 255, 255, 64);
-	uint32_t active_button_color = RGBA_TO_UINT(168, 248, 48, 255);
 	toolbar.set_spacing (2);
 
 	// Add beats per row selection
@@ -2494,7 +2499,6 @@ MidiPatternEditor::setup_toolbar ()
 	// Add visible note button
 	visible_note_button.set_name ("visible note button");
 	visible_note_button.set_text (S_("Note|N"));
-	visible_note_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_note_button.show ();
 	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_note_press), false);
@@ -2503,7 +2507,6 @@ MidiPatternEditor::setup_toolbar ()
 	// Add visible channel button
 	visible_channel_button.set_name ("visible channel button");
 	visible_channel_button.set_text (S_("Channel|C"));
-	visible_channel_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_channel_button.show ();
 	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_channel_press), false);
@@ -2512,7 +2515,6 @@ MidiPatternEditor::setup_toolbar ()
 	// Add visible velocity button
 	visible_velocity_button.set_name ("visible velocity button");
 	visible_velocity_button.set_text (S_("Velocity|V"));
-	visible_velocity_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_velocity_button.show ();
 	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_velocity_press), false);
@@ -2521,7 +2523,6 @@ MidiPatternEditor::setup_toolbar ()
 	// Add visible delay button
 	visible_delay_button.set_name ("visible delay button");
 	visible_delay_button.set_text (S_("Delay|D"));
-	visible_delay_button.set_fixed_colors(active_button_color, inactive_button_color);
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_delay_button.show ();
 	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_delay_press), false);
@@ -2548,6 +2549,33 @@ MidiPatternEditor::setup_toolbar ()
 	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::add_note_column_press), false);
 	add_note_column_button.show ();
 	toolbar.pack_start (add_note_column_button, false, false);
+
+	// Step edit button
+	step_edit_separator.show ();
+	toolbar.pack_start (step_edit_separator, false, false);
+	step_edit_button.set_name ("step edit button");
+	step_edit_button.set_text (S_("Step Edit"));
+	step_edit_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::step_edit_press), false);
+	step_edit_button.show ();
+	toolbar.pack_start (step_edit_button, false, false);
+
+	// Steps spinner
+	steps_separator.show ();
+	toolbar.pack_start (steps_separator, false, false);
+	steps_label.show ();
+	toolbar.pack_start (steps_label, false, false);
+	steps_spinner.set_activates_default ();
+	steps_spinner.show ();
+	toolbar.pack_start (steps_spinner, false, false);
+
+	// Place spinner
+	place_separator.show ();
+	toolbar.pack_start (place_separator, false, false);
+	place_label.show ();
+	toolbar.pack_start (place_label, false, false);
+	place_spinner.set_activates_default ();
+	place_spinner.show ();
+	toolbar.pack_start (place_spinner, false, false);
 
 	// Octave spinner
 	octave_separator.show ();
@@ -2584,45 +2612,6 @@ MidiPatternEditor::setup_toolbar ()
 	delay_spinner.set_activates_default ();
 	delay_spinner.show ();
 	toolbar.pack_start (delay_spinner, false, false);
-
-	// Place spinner
-	place_separator.show ();
-	toolbar.pack_start (place_separator, false, false);
-	place_label.show ();
-	toolbar.pack_start (place_label, false, false);
-	place_spinner.set_activates_default ();
-	place_spinner.show ();
-	toolbar.pack_start (place_spinner, false, false);
-
-	// Steps spinner
-	steps_separator.show ();
-	toolbar.pack_start (steps_separator, false, false);
-	steps_label.show ();
-	toolbar.pack_start (steps_label, false, false);
-	steps_spinner.set_activates_default ();
-	steps_spinner.show ();
-	toolbar.pack_start (steps_spinner, false, false);
-
-	// Temporary hack for specifying the cursor of note editing, when keyboard
-	// short cut will be active.
-	//
-	// // Editing row spinner
-	// edrow_separator.show ();
-	// toolbar.pack_start (edrow_separator, false, false);
-	// edrow_label.show ();
-	// toolbar.pack_start (edrow_label, false, false);
-	// edrow_spinner.set_activates_default ();
-	// edrow_spinner.show ();
-	// toolbar.pack_start (edrow_spinner, false, false);
-
-	// // Editing column spinner
-	// edcol_separator.show ();
-	// toolbar.pack_start (edcol_separator, false, false);
-	// edcol_label.show ();
-	// toolbar.pack_start (edcol_label, false, false);
-	// edcol_spinner.set_activates_default ();
-	// edcol_spinner.show ();
-	// toolbar.pack_start (edcol_spinner, false, false);
 
 	toolbar.show ();
 }
