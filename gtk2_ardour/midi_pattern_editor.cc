@@ -123,6 +123,7 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, visible_channel (false)
 	, visible_velocity (false)
 	, visible_delay (false)
+	, step_edit (false)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -464,7 +465,6 @@ MidiPatternEditor::hide_processor_automations ()
 				visible_automation_columns.erase (column);
 				(*ii)->menu_item->set_active (false);
 			}
-
 		}
 	}
 }
@@ -1457,7 +1457,9 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 		return true;
 	}
 
-	std::cout << "MidiPatternEditor::step_edit_press" << std::endl;
+	step_edit = !step_edit;
+
+	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
 }
@@ -2568,15 +2570,6 @@ MidiPatternEditor::setup_toolbar ()
 	steps_spinner.show ();
 	toolbar.pack_start (steps_spinner, false, false);
 
-	// Place spinner
-	place_separator.show ();
-	toolbar.pack_start (place_separator, false, false);
-	place_label.show ();
-	toolbar.pack_start (place_label, false, false);
-	place_spinner.set_activates_default ();
-	place_spinner.show ();
-	toolbar.pack_start (place_spinner, false, false);
-
 	// Octave spinner
 	octave_separator.show ();
 	toolbar.pack_start (octave_separator, false, false);
@@ -2612,6 +2605,15 @@ MidiPatternEditor::setup_toolbar ()
 	delay_spinner.set_activates_default ();
 	delay_spinner.show ();
 	toolbar.pack_start (delay_spinner, false, false);
+
+	// Place spinner
+	place_separator.show ();
+	toolbar.pack_start (place_separator, false, false);
+	place_label.show ();
+	toolbar.pack_start (place_label, false, false);
+	place_spinner.set_activates_default ();
+	place_spinner.show ();
+	toolbar.pack_start (place_spinner, false, false);
 
 	toolbar.show ();
 }

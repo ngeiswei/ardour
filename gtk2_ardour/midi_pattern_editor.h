@@ -336,6 +336,7 @@ class MidiPatternEditor : public ArdourWindow
 	ArdourWidgets::ArdourButton  add_note_column_button;
 	Gtk::VSeparator              step_edit_separator;
 	ArdourWidgets::ArdourButton  step_edit_button;
+	bool                         step_edit;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
