@@ -313,7 +313,14 @@ class MidiPatternEditor : public ArdourWindow
 	Glib::RefPtr<Gtk::ListStore> model;
 	Gtk::TreeView                view;
 	Gtk::ScrolledWindow          scroller;
+	Gtk::TreeModel::Path         edit_path;
 	int                          edit_tracknum;
+	bool                         edit_note;
+	bool                         edit_note_channel;
+	bool                         edit_note_velocity;
+	bool                         edit_note_delay;
+	bool                         edit_automation;
+	bool                         edit_automation_delay;
 	Gtk::Table                   buttons;
 	Gtk::HBox                    toolbar;
 	Gtk::VBox                    vbox;
@@ -420,13 +427,24 @@ class MidiPatternEditor : public ArdourWindow
 	/////////////////////
 
 	int get_row_index (const std::string& path);
+	int get_row_index (const Gtk::TreeModel::Path& path);
 
 	// Get note from path and edit_column
 	NoteTypePtr get_on_note (const std::string& path);
+	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path);
 	NoteTypePtr get_off_note (const std::string& path);
+	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path);
 	NoteTypePtr get_note (const std::string& path); // on or off
+	NoteTypePtr get_note (const Gtk::TreeModel::Path& path); // on or off
 
+	void editing_note_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_note_velocity_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_note_delay_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_automation_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_automation_delay_started (Gtk::CellEditable*, const std::string& path, int);
 	void editing_started (Gtk::CellEditable*, const std::string& path, int);
+
 	void editing_canceled ();
 
 	// Get the pitch of a note given its textual description. If the octave
