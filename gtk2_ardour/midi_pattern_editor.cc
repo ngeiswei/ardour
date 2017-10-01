@@ -118,6 +118,13 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, mute_column (0)
 	, midi_time_axis_view(mtv)
 	, route(rou)
+	, edit_tracknum (-1)
+	, edit_note (false)
+	, edit_note_channel (false)
+	, edit_note_velocity (false)
+	, edit_note_delay (false)
+	, edit_automation (false)
+	, edit_automation_delay (false)
 	, myactions (X_("Tracking"))
 	, visible_note (true)
 	, visible_channel (false)
@@ -228,11 +235,11 @@ MidiPatternEditor::find_processor_automation_node (boost::shared_ptr<Processor> 
 	return 0;
 }
 
-Gtk::CheckMenuItem* MidiPatternEditor::automation_child_menu_item(const Evoral::Parameter& param)
+CheckMenuItem* MidiPatternEditor::automation_child_menu_item(const Evoral::Parameter& param)
 {
 	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find(param);
 	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find(param);
-	Gtk::CheckMenuItem* mitem = NULL;
+	CheckMenuItem* mitem = NULL;
 	if (cmm_it != _controller_menu_map.end())
 		mitem = cmm_it->second;
 	else if (ccmm_it != _channel_command_menu_map.end())
@@ -445,7 +452,7 @@ MidiPatternEditor::hide_midi_automations ()
 			continue;
 
 		Evoral::Parameter param = c2p_it->second;
-		Gtk::CheckMenuItem* mitem = automation_child_menu_item(param);
+		CheckMenuItem* mitem = automation_child_menu_item(param);
 
 		if (mitem)
 			to_remove.insert(column);
@@ -547,7 +554,7 @@ MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 	for (std::set<Evoral::Parameter>::const_iterator i = automatable.begin(); i != automatable.end(); ++i) {
 
 		ProcessorAutomationNode* pan = NULL;
-		Gtk::CheckMenuItem* mitem;
+		CheckMenuItem* mitem;
 
 		string name = processor->describe_parameter (*i);
 
@@ -556,7 +563,7 @@ MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 		}
 
 		items.push_back (CheckMenuElem (name));
-		mitem = dynamic_cast<Gtk::CheckMenuItem*> (&items.back());
+		mitem = dynamic_cast<CheckMenuItem*> (&items.back());
 
 		_subplugin_menu_map[*i] = mitem;
 
@@ -652,25 +659,25 @@ MidiPatternEditor::build_automation_action_menu ()
 
 	if (true) {
 		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (*this, &MidiPatternEditor::update_gain_column_visibility)));
-		gain_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
+		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		gain_automation_item->set_active (is_gain_visible());
 	}
 
 	if (false /*trim_track*/ /* TODO: support audio track */) {
 		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (*this, &MidiPatternEditor::update_trim_column_visibility)));
-		trim_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
+		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		trim_automation_item->set_active (false);
 	}
 
 	if (true /*mute_track*/) {
 		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (*this, &MidiPatternEditor::update_mute_column_visibility)));
-		mute_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
+		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		mute_automation_item->set_active (is_mute_visible());
 	}
 
 	if (true /*pan_tracks*/) {
 		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (*this, &MidiPatternEditor::update_pan_columns_visibility)));
-		pan_automation_item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
+		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		pan_automation_item->set_active (is_pan_visible());
 	}
 
@@ -772,7 +779,7 @@ MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 				bool visible = is_automation_visible(fully_qualified_param);
 
-				Gtk::CheckMenuItem* cmi = static_cast<Gtk::CheckMenuItem*>(&chn_items.back());
+				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
 				cmi->set_active (visible);
 			}
@@ -797,7 +804,7 @@ MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 				bool visible = is_automation_visible(fully_qualified_param);
 
-				Gtk::CheckMenuItem* cmi = static_cast<Gtk::CheckMenuItem*>(&items.back());
+				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&items.back());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
 				cmi->set_active (visible);
 
@@ -817,7 +824,7 @@ MidiPatternEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parame
 		if (selected_channels & (0x0001 << chn)) {
 
 			Evoral::Parameter fully_qualified_param (param.type(), chn, param.id());
-			Gtk::CheckMenuItem* menu = automation_child_menu_item (fully_qualified_param);
+			CheckMenuItem* menu = automation_child_menu_item (fully_qualified_param);
 
 			if (menu) {
 				menu->set_active (yn);
@@ -833,7 +840,7 @@ void
 MidiPatternEditor::update_automation_column_visibility (const Evoral::Parameter& param)
 {
 	// Find menu item associated to this parameter
-	Gtk::CheckMenuItem* mitem = automation_child_menu_item(param);
+	CheckMenuItem* mitem = automation_child_menu_item(param);
 	assert (mitem);
 	const bool showit = mitem->get_active();
 
@@ -994,7 +1001,7 @@ MidiPatternEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ct
 
 			bool visible = is_automation_visible(fully_qualified_param);
 
-			Gtk::CheckMenuItem* cmi = static_cast<Gtk::CheckMenuItem*>(&ctl_items.back());
+			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&ctl_items.back());
 			_controller_menu_map[fully_qualified_param] = cmi;
 			cmi->set_active (visible);
 
@@ -1042,7 +1049,7 @@ MidiPatternEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 
 			bool visible = is_automation_visible(fully_qualified_param);
 
-			Gtk::CheckMenuItem* cmi = static_cast<Gtk::CheckMenuItem*>(&chn_items.back());
+			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
 			_controller_menu_map[fully_qualified_param] = cmi;
 			cmi->set_active (visible);
 		}
@@ -1458,7 +1465,6 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 	}
 
 	step_edit = !step_edit;
-
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
@@ -1675,11 +1681,23 @@ MidiPatternEditor::redisplay_model ()
 int
 MidiPatternEditor::get_row_index(const std::string& path)
 {
-	return atoi(path);
+	return get_row_index (TreeModel::Path (path));
+}
+
+int
+MidiPatternEditor::get_row_index(const TreeModel::Path& path)
+{
+	return path.front();
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
 MidiPatternEditor::get_on_note(const std::string& path)
+{
+	return get_on_note(TreeModel::Path (path));
+}
+
+boost::shared_ptr<MidiPatternEditor::NoteType>
+MidiPatternEditor::get_on_note(const TreeModel::Path& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -1690,6 +1708,12 @@ MidiPatternEditor::get_on_note(const std::string& path)
 boost::shared_ptr<MidiPatternEditor::NoteType>
 MidiPatternEditor::get_off_note(const std::string& path)
 {
+	return get_off_note (TreeModel::Path (path));
+}
+
+boost::shared_ptr<MidiPatternEditor::NoteType>
+MidiPatternEditor::get_off_note(const TreeModel::Path& path)
+{
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
 		return NoteTypePtr();
@@ -1699,6 +1723,12 @@ MidiPatternEditor::get_off_note(const std::string& path)
 boost::shared_ptr<MidiPatternEditor::NoteType>
 MidiPatternEditor::get_note(const std::string& path)
 {
+	return get_note (TreeModel::Path (path));
+}
+
+boost::shared_ptr<MidiPatternEditor::NoteType>
+MidiPatternEditor::get_note(const TreeModel::Path& path)
+{
 	NoteTypePtr note = get_on_note(path);
 	if (!note)
 		note = get_off_note(path);
@@ -1706,15 +1736,65 @@ MidiPatternEditor::get_note(const std::string& path)
 }
 
 void
+MidiPatternEditor::editing_note_started (CellEditable* ed, const string& path, int tracknum)
+{
+	edit_note = true;
+	editing_started (ed, path, tracknum);
+}
+
+void
+MidiPatternEditor::editing_note_channel_started (CellEditable* ed, const string& path, int tracknum)
+{
+	edit_note_channel = true;
+	editing_started (ed, path, tracknum);
+}
+
+void
+MidiPatternEditor::editing_note_velocity_started (CellEditable* ed, const string& path, int tracknum)
+{
+	edit_note_velocity = true;
+	editing_started (ed, path, tracknum);
+}
+
+void
+MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& path, int tracknum)
+{
+	edit_note_delay = true;
+	editing_started (ed, path, tracknum);
+}
+
+void
+MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
+{
+	edit_automation = true;
+	editing_started (ed, path, tracknum);
+}
+
+void
+MidiPatternEditor::editing_automation_delay_started (CellEditable* ed, const string& path, int tracknum)
+{
+	edit_automation_delay = true;
+	editing_started (ed, path, tracknum);
+}
+
+void
 MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
 {
+	edit_path = TreePath (path);
 	edit_tracknum = tracknum;
 }
 
 void
 MidiPatternEditor::editing_canceled ()
 {
+	edit_path.clear ();
 	edit_tracknum = -1;
+	edit_note = false;
+	edit_note_channel = false;
+	edit_note_velocity = false;
+	edit_note_delay = false;
+	edit_automation = false;
+	edit_automation_delay = false;
 }
 
 uint8_t
@@ -1734,11 +1814,11 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	std::string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
 	bool is_off = !is_del and (norm_text[0] == note_off_str[0]);
-	uint8_t ival = parse_pitch (norm_text);
+	uint8_t pitch = parse_pitch (norm_text);
 	int row_idx = get_row_index (path);
 
 	// Abort if the new pitch is invalid
-	if (!is_off && !is_del && 127 < ival)
+	if (!is_off && !is_del && 127 < pitch)
 		return;
 
 	// Can't edit ***
@@ -1792,7 +1872,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			// Change the pitch of the on note
 			char const * opname = _("change note");
 			cmd = midi_model->new_note_diff_command (opname);
-			cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, ival);
+			cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
 		}
 	} else if (off_note) {
 		if (is_del) {
@@ -1811,7 +1891,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 			Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 			Evoral::Beats length = end - start;
 			// Build note using defaults
-			NoteTypePtr new_note(new NoteType(chan, start, length, ival, vel));
+			NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
 			char const * opname = _("add note");
 			cmd = midi_model->new_note_diff_command (opname);
 			cmd->add (new_note);
@@ -1857,7 +1937,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 				// and length of the new note
 				Evoral::Beats end = np->next_off(row_idx, edit_tracknum);
 				Evoral::Beats length = end - here;
-				NoteTypePtr new_note(new NoteType(chan, here, length, ival, vel));
+				NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 				cmd->add (new_note);
 				// Pre-emptively add the note in np to so that it knows in
 				// which track it is supposed to be.
@@ -1886,17 +1966,17 @@ MidiPatternEditor::note_channel_edited (const std::string& path, const std::stri
 	if (not np->is_displayable(get_row_index (path), edit_tracknum))
 		return;
 
-	int  ival;
+	int  channel;
 	char const * opname;
 
-	if (sscanf (text.c_str(), "%d", &ival) == 1 && 1 <= ival && ival <= 16
+	if (sscanf (text.c_str(), "%d", &channel) == 1 && 1 <= channel && channel <= 16
 	    // Correct ival for zero-based counting after scan
-	    && --ival != note->channel()) {
+	    && --channel != note->channel()) {
 		opname = _("change note channel");
 
 		// Define change command
 		MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
-		cmd->change (note, MidiModel::NoteDiffCommand::Channel, ival);
+		cmd->change (note, MidiModel::NoteDiffCommand::Channel, channel);
 
 		// Apply change command
 		apply_command (cmd);
@@ -1918,24 +1998,21 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 	if (not np->is_displayable(get_row_index (path), edit_tracknum))
 		return;
 
-	// Save previous velocity
-	int velocity = note->velocity();
-
-	int  ival;
+	int  velocity;
 	char const * opname;
 
 	// Parse the edited velocity
-	if (sscanf (text.c_str(), "%d", &ival) != 1)
+	if (sscanf (text.c_str(), "%d", &velocity) != 1)
 		return;
 
 	// Change if within acceptable boundaries and different than the previous
 	// velocity
-	if (0 <= ival && ival <= 127 && ival != velocity) {
+	if (0 <= velocity && velocity <= 127 && velocity != note->velocity()) {
 		opname = _("change note velocity");
 
 		// Define change command
 		MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
-		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, ival);
+		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, velocity);
 
 		// Apply change command
 		apply_command (cmd);
@@ -1950,7 +2027,7 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	if (!on_note && !off_note)
 		return;
 
-	int  ival = 0;
+	int  delay = 0;
 	char const * opname = _("change note delay");
 	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
@@ -1961,19 +2038,19 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 		return;
 
 	// Parse the edited delay
-	if (!text.empty() and sscanf (text.c_str(), "%d", &ival) != 1)
+	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1)
 		return;
 
 	// Check if within acceptable boundaries
-	if (ival < np->delay_ticks_min() || np->delay_ticks_max() < ival)
+	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
 		return;
 
 	if (on_note) {
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int idelta = ival - np->region_relative_delay_ticks(on_note->time(), row_idx);
-		Evoral::Beats relative_beats = Evoral::Beats::ticks(idelta);
+		int delta = delay - np->region_relative_delay_ticks(on_note->time(), row_idx);
+		Evoral::Beats relative_beats = Evoral::Beats::ticks(delta);
 		Evoral::Beats new_start = on_note->time() + relative_beats;
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
 
@@ -1990,8 +2067,8 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int idelta = ival - np->region_relative_delay_ticks(off_note->end_time(), row_idx);
-		Evoral::Beats relative_beats = Evoral::Beats::ticks(idelta);
+		int delta = delay - np->region_relative_delay_ticks(off_note->end_time(), row_idx);
+		Evoral::Beats relative_beats = Evoral::Beats::ticks(delta);
 		Evoral::Beats new_length = off_note->length() + relative_beats;
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
@@ -2199,8 +2276,8 @@ MidiPatternEditor::connect (const Evoral::Parameter& param)
 void
 MidiPatternEditor::setup_time_column()
 {
-	Gtk::TreeViewColumn* viewcolumn_time  = new Gtk::TreeViewColumn (_("Time"), columns.time);
-	Gtk::CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();		
+	TreeViewColumn* viewcolumn_time  = new TreeViewColumn (_("Time"), columns.time);
+	CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();		
 	viewcolumn_time->add_attribute(cellrenderer_time->property_cell_background (), columns._background_color);
 	view.append_column (*viewcolumn_time);
 }
@@ -2211,15 +2288,15 @@ MidiPatternEditor::setup_note_column (size_t i)
 	string note_str(_("Note"));
 
 	// TODO be careful of potential memory leaks
-	Gtk::TreeViewColumn* viewcolumn_note = new Gtk::TreeViewColumn (note_str.c_str(), columns.note_name[i]);
-	Gtk::CellRendererText* cellrenderer_note = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_note->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_note = new TreeViewColumn (note_str.c_str(), columns.note_name[i]);
+	CellRendererText* cellrenderer_note = dynamic_cast<CellRendererText*> (viewcolumn_note->get_first_cell_renderer ());
 
 	// Link to color attributes
 	viewcolumn_note->add_attribute(cellrenderer_note->property_cell_background (), columns._background_color);
 	viewcolumn_note->add_attribute(cellrenderer_note->property_foreground (), columns._note_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_started), i));
 	cellrenderer_note->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
 	cellrenderer_note->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_edited));
 	cellrenderer_note->property_editable() = true;
@@ -2233,15 +2310,15 @@ MidiPatternEditor::setup_note_channel_column (size_t i)
 	string ch_str(S_("Channel|Ch"));
 
 	// TODO be careful of potential memory leaks
-	Gtk::TreeViewColumn* viewcolumn_channel = new Gtk::TreeViewColumn (ch_str.c_str(), columns.channel[i]);
-	Gtk::CellRendererText* cellrenderer_channel = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_channel->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_channel = new TreeViewColumn (ch_str.c_str(), columns.channel[i]);
+	CellRendererText* cellrenderer_channel = dynamic_cast<CellRendererText*> (viewcolumn_channel->get_first_cell_renderer ());
 
 	// Link to color attribute
 	viewcolumn_channel->add_attribute(cellrenderer_channel->property_cell_background (), columns._background_color);
 	viewcolumn_channel->add_attribute(cellrenderer_channel->property_foreground (), columns._channel_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_channel_started), i));
 	cellrenderer_channel->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
 	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_channel_edited));
 	cellrenderer_channel->property_editable() = true;
@@ -2255,15 +2332,15 @@ MidiPatternEditor::setup_note_velocity_column (size_t i)
 	string vel_str(S_("Velocity|Vel"));
 
 	// TODO be careful of potential memory leaks
-	Gtk::TreeViewColumn* viewcolumn_velocity = new Gtk::TreeViewColumn (vel_str.c_str(), columns.velocity[i]);
-	Gtk::CellRendererText* cellrenderer_velocity = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_velocity->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_velocity = new TreeViewColumn (vel_str.c_str(), columns.velocity[i]);
+	CellRendererText* cellrenderer_velocity = dynamic_cast<CellRendererText*> (viewcolumn_velocity->get_first_cell_renderer ());
 
 	// Link to color attribute
 	viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_cell_background (), columns._background_color);
 	viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_foreground (), columns._velocity_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_velocity_started), i));
 	cellrenderer_velocity->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
 	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_velocity_edited));
 	cellrenderer_velocity->property_editable() = true;
@@ -2277,15 +2354,15 @@ MidiPatternEditor::setup_note_delay_column (size_t i)
 	string delay_str(_("Delay"));
 
 	// TODO be careful of potential memory leaks
-	Gtk::TreeViewColumn* viewcolumn_delay = new Gtk::TreeViewColumn (delay_str.c_str(), columns.delay[i]);
-	Gtk::CellRendererText* cellrenderer_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_delay->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_delay = new TreeViewColumn (delay_str.c_str(), columns.delay[i]);
+	CellRendererText* cellrenderer_delay = dynamic_cast<CellRendererText*> (viewcolumn_delay->get_first_cell_renderer ());
 
 	// Link to color attribute
 	viewcolumn_delay->add_attribute(cellrenderer_delay->property_cell_background (), columns._background_color);
 	viewcolumn_delay->add_attribute(cellrenderer_delay->property_foreground (), columns._delay_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_delay_started), i));
 	cellrenderer_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
 	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_delay_edited));
 	cellrenderer_delay->property_editable() = true;
@@ -2300,15 +2377,15 @@ MidiPatternEditor::setup_automation_column (size_t i)
 	ss_automation << "A" << i;
 
 	// TODO be careful of potential memory leaks
-	Gtk::TreeViewColumn* viewcolumn_automation = new Gtk::TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[i]);
-	Gtk::CellRendererText* cellrenderer_automation = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_automation = new TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[i]);
+	CellRendererText* cellrenderer_automation = dynamic_cast<CellRendererText*> (viewcolumn_automation->get_first_cell_renderer ());
 
 	// Link to color attributes
 	viewcolumn_automation->add_attribute(cellrenderer_automation->property_cell_background (), columns._background_color);
 	viewcolumn_automation->add_attribute(cellrenderer_automation->property_foreground (), columns._automation_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_automation_started), i));
 	cellrenderer_automation->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
 	cellrenderer_automation->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::automation_edited));
 	cellrenderer_automation->property_editable() = true;
@@ -2327,15 +2404,15 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 	ss_automation_delay << _("Delay");
 
 	// TODO be careful of potential memory leaks
-	Gtk::TreeViewColumn* viewcolumn_automation_delay = new Gtk::TreeViewColumn (_(ss_automation_delay.str().c_str()), columns.automation_delay[i]);
-	Gtk::CellRendererText* cellrenderer_automation_delay = dynamic_cast<Gtk::CellRendererText*> (viewcolumn_automation_delay->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_automation_delay = new TreeViewColumn (_(ss_automation_delay.str().c_str()), columns.automation_delay[i]);
+	CellRendererText* cellrenderer_automation_delay = dynamic_cast<CellRendererText*> (viewcolumn_automation_delay->get_first_cell_renderer ());
 
 	// Link to color attributes
 	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_cell_background (), columns._background_color);
 	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_foreground (), columns._automation_delay_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_started), i));
+	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_automation_delay_started), i));
 	cellrenderer_automation_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
 	cellrenderer_automation_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::automation_delay_edited));
 	cellrenderer_automation_delay->property_editable() = true;
@@ -2354,16 +2431,10 @@ MidiPatternEditor::key_press (GdkEventKey* ev)
 	int colnum;
 
 	switch (ev->keyval) {
-		// TODO: add space bar for edit mode. In this mode both keyboard keys
-		// mapping midi notes for note colunms and numerical values for
-		// automations can be used for editing. As well as scrolling, otherwise
-		// scrolling is used for scrolling.
 	case GDK_z:
-		std::cout << "Press z key!" << std::endl;
-		view.get_cursor (path, col);
-		colnum = GPOINTER_TO_UINT (col->get_data (X_("colnum")));
-		std::cout << "path = " << path << ", col = " << col
-		          << ", colnum = " << colnum << std::endl;
+		if (step_edit && 0 <= edit_tracknum) {
+			std::cout << "Press z key!" << std::endl;
+		}
 		break;
 	default:
 		break;
@@ -2446,8 +2517,6 @@ MidiPatternEditor::update_automation_patterns ()
 void
 MidiPatternEditor::setup_pattern ()
 {
-	edit_tracknum = -1;
-
 	model = ListStore::create (columns);
 	view.set_model (model);
 
