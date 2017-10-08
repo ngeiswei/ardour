@@ -311,16 +311,19 @@ class MidiPatternEditor : public ArdourWindow
 
 	MidiPatternModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
+	uint32_t                     nrows;
 	Gtk::TreeView                view;
 	Gtk::ScrolledWindow          scroller;
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_tracknum;
+	int                          edit_colnum;
 	bool                         edit_note;
 	bool                         edit_note_channel;
 	bool                         edit_note_velocity;
 	bool                         edit_note_delay;
 	bool                         edit_automation;
 	bool                         edit_automation_delay;
+	Gtk::CellEditable*           editing_editable;
 	Gtk::Table                   buttons;
 	Gtk::HBox                    toolbar;
 	Gtk::VBox                    vbox;
@@ -394,11 +397,17 @@ class MidiPatternEditor : public ArdourWindow
 	bool visible_velocity_press (GdkEventButton*);
 	bool visible_delay_press (GdkEventButton*);
 	void redisplay_visible_note ();
+	int note_colnum (int tracknum);
 	void redisplay_visible_channel ();
+	int note_channel_colnum (int tracknum);
 	void redisplay_visible_velocity ();
+	int note_velocity_colnum (int tracknum);
 	void redisplay_visible_delay ();
+	int note_delay_colnum (int tracknum);
 	void redisplay_visible_automation ();
+	int automation_colnum (int tracknum);
 	void redisplay_visible_automation_delay ();
+	int automation_delay_colnum (int tracknum);
 	void automation_click ();
 	void update_remove_note_column_button ();
 	bool remove_note_column_press (GdkEventButton* ev);
@@ -415,6 +424,12 @@ class MidiPatternEditor : public ArdourWindow
 	void setup_automation_column (size_t);
 	void setup_automation_delay_column (size_t);
 	bool key_press (GdkEventKey*);
+	bool step_editing_note_key_press (GdkEventKey*);
+	bool step_editing_note_channel_key_press (GdkEventKey*);
+	bool step_editing_note_velocity_key_press (GdkEventKey*);
+	bool step_editing_note_delay_key_press (GdkEventKey*);
+	bool step_editing_automation_key_press (GdkEventKey*);
+	bool step_editing_automation_delay_key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
 	bool button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
@@ -426,12 +441,14 @@ class MidiPatternEditor : public ArdourWindow
 	// Edit Pattern    //
 	/////////////////////
 
-	int get_row_index (const std::string& path);
-	int get_row_index (const Gtk::TreeModel::Path& path);
+	uint32_t get_row_index (const std::string& path);
+	uint32_t get_row_index (const Gtk::TreeModel::Path& path);
 
 	// Get note from path and edit_column
+	NoteTypePtr get_on_note (int row_idx);
 	NoteTypePtr get_on_note (const std::string& path);
 	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path);
+	NoteTypePtr get_off_note (int row_idx);
 	NoteTypePtr get_off_note (const std::string& path);
 	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path);
 	NoteTypePtr get_note (const std::string& path); // on or off
@@ -452,14 +469,17 @@ class MidiPatternEditor : public ArdourWindow
 	uint8_t parse_pitch (std::string text) const;
 
 	// Midi note callbacks
-	void note_edited (const std::string&, const std::string&);
-	void note_channel_edited (const std::string&, const std::string&);
-	void note_velocity_edited (const std::string&, const std::string&);
-	void note_delay_edited (const std::string&, const std::string&);
+	void note_edited (const std::string& path, const std::string& text);
+	void set_on_note (uint8_t pitch, int irow, int tracknum);
+	void set_off_note (int irow, int tracknum);
+	void delete_note (int irow, int tracknum);
+	void note_channel_edited (const std::string& path, const std::string& text);
+	void note_velocity_edited (const std::string& path, const std::string& text);
+	void note_delay_edited (const std::string& path, const std::string& text);
 
 	// Automation callbacks
-	void automation_edited (const std::string&, const std::string&);
-	void automation_delay_edited (const std::string&, const std::string&);
+	void automation_edited (const std::string& path, const std::string& text);
+	void automation_delay_edited (const std::string& path, const std::string& text);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
