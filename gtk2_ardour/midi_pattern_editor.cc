@@ -2575,54 +2575,65 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 	view.get_column(column)->set_visible (false);
 }
 
-bool
-MidiPatternEditor::key_press (GdkEventKey* ev)
+void
+MidiPatternEditor::move_cursor (int steps)
 {
-	return false;               // Silence the compiler
+	TreeModel::Path path = edit_path;
+	while (steps != 0) {
+		if (steps < 0) {
+			path.prev ();
+			steps++;
+		} else {
+			path.next ();
+			steps--;
+		}
+	}
+	if (get_row_index(path) < nrows) {
+		TreeViewColumn* col = view.get_column (edit_colnum);
+		if (editing_editable) {
+			editing_editable->editing_done ();
+		}
+		view.set_cursor (path, *col, true);
+	}
+}
+
+uint8_t
+MidiPatternEditor::pitch(int octave, uint8_t semitones)
+{
+	return (uint8_t)(octave + 1) * 12 + semitones;
 }
 
 bool
 MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+	int steps = steps_spinner.get_value_as_int();
+	int octave = octave_spinner.get_value_as_int();
+	int row_idx = get_row_index (edit_path);
 
 	switch (ev->keyval) {
 	case GDK_z:
-		if (0 < edit_tracknum) {
-			std::cout << "Press z key! edit_tracknum = " << edit_tracknum << std::endl;
-			// TODO
-		}
+		set_on_note(pitch(octave, 0), row_idx, edit_tracknum);
+		move_cursor(steps);
+		ret = true;
+		break;
+
+	case GDK_s:
+		set_on_note(pitch(octave, 1), row_idx, edit_tracknum);
+		move_cursor(steps);
 		ret = true;
 		break;
 
 	case GDK_Up:
 	case GDK_uparrow:
-		if (0 < edit_colnum) {
-			TreeModel::Path path = edit_path;
-			path.prev ();
-			TreeViewColumn* col = view.get_column (edit_colnum);
-			if (editing_editable) {
-				editing_editable->editing_done ();
-			}
-			view.set_cursor (path, *col, true);
-			ret = true;
-		}
+		move_cursor(-1);
+		ret = true;
 		break;
 
 	case GDK_Down:
 	case GDK_downarrow:
-		if (edit_colnum > 0) {
-			TreeModel::Path path = edit_path;
-			path.next ();
-			TreeViewColumn* col = view.get_column (edit_colnum);
-			if (get_row_index(path) < nrows) {
-				if (editing_editable) {
-					editing_editable->editing_done ();
-				}
-				view.set_cursor (path, *col, true);
-			}
-			ret = true;
-		}
+		move_cursor(1);
+		ret = true;
 		break;
 
 	default:
@@ -2665,6 +2676,12 @@ MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 	return ret;
+}
+
+bool
+MidiPatternEditor::key_press (GdkEventKey* ev)
+{
+	return false;               // Silence the compiler
 }
 
 bool
