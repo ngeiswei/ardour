@@ -423,13 +423,23 @@ class MidiPatternEditor : public ArdourWindow
 	void setup_note_delay_column (size_t);
 	void setup_automation_column (size_t);
 	void setup_automation_delay_column (size_t);
-	bool key_press (GdkEventKey*);
+
+	// Move the cursor steps rows downwards, or upwards if steps is
+	// negative. Called while editing.
+	void move_cursor (int steps);
+
+	// Calculate the midi note pitch given the octave and the number of
+	// semitones within this octave
+	static uint8_t pitch(int octave, uint8_t semitones);
+
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_note_channel_key_press (GdkEventKey*);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_automation_key_press (GdkEventKey*);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
+
+	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
 	bool button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
