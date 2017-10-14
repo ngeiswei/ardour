@@ -125,12 +125,7 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, nrows (0)
 	, edit_tracknum (-1)
 	, edit_colnum (-1)
-	, edit_note (false)
-	, edit_note_channel (false)
-	, edit_note_velocity (false)
-	, edit_note_delay (false)
-	, edit_automation (false)
-	, edit_automation_delay (false)
+	, editing_editable (NULL)
 	, myactions (X_("Tracking"))
 	, visible_note (true)
 	, visible_channel (false)
@@ -1515,6 +1510,16 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 void
 MidiPatternEditor::redisplay_model ()
 {
+	std::cout << "redisplay_model, edit_path = " << edit_path.to_string()
+	          << ", edit_tracknum = " << edit_tracknum
+	          << ", edit_colnum = " << edit_colnum
+	          << ", editing_editable = " << editing_editable << std::endl;
+
+	if (editing_editable)
+		return;
+
+	std::cout << "Here?" << std::endl;
+
 	if (_session) {
 
 		np->set_rows_per_beat(rows_per_beat);
@@ -1792,7 +1797,6 @@ MidiPatternEditor::get_note(const TreeModel::Path& path)
 void
 MidiPatternEditor::editing_note_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_note = true;
 	edit_colnum = note_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
@@ -1807,7 +1811,6 @@ MidiPatternEditor::editing_note_started (CellEditable* ed, const string& path, i
 void
 MidiPatternEditor::editing_note_channel_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_note_channel = true;
 	edit_colnum = note_channel_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
@@ -1822,7 +1825,6 @@ MidiPatternEditor::editing_note_channel_started (CellEditable* ed, const string&
 void
 MidiPatternEditor::editing_note_velocity_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_note_velocity = true;
 	edit_colnum = note_velocity_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
@@ -1837,7 +1839,6 @@ MidiPatternEditor::editing_note_velocity_started (CellEditable* ed, const string
 void
 MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_note_delay = true;
 	edit_colnum = note_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
@@ -1852,7 +1853,6 @@ MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& p
 void
 MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_automation = true;
 	edit_colnum = automation_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
@@ -1867,7 +1867,6 @@ MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& p
 void
 MidiPatternEditor::editing_automation_delay_started (CellEditable* ed, const string& path, int tracknum)
 {
-	edit_automation_delay = true;
 	edit_colnum = automation_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
@@ -1885,21 +1884,35 @@ MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tr
 	edit_path = TreePath (path);
 	edit_tracknum = tracknum;
 	editing_editable = ed;
+
+	std::cout << "editing_started, edit_path = " << edit_path.to_string()
+	          << ", edit_tracknum = " << edit_tracknum
+	          << ", edit_colnum = " << edit_colnum
+	          << ", editing_editable = " << editing_editable << std::endl;
+}
+
+void
+MidiPatternEditor::clear_editables ()
+{
+	std::cout << "clear_editables" << std::endl;
+
+	edit_path.clear ();
+	edit_tracknum = -1;
+	edit_colnum = -1;
+	editing_editable = NULL;
+
+	std::cout << "clear_editables, edit_path = " << edit_path.to_string()
+	          << ", edit_tracknum = " << edit_tracknum
+	          << ", edit_colnum = " << edit_colnum
+	          << ", editing_editable = " << editing_editable << std::endl;
+
+	redisplay_model ();
 }
 
 void
 MidiPatternEditor::editing_canceled ()
 {
-	edit_path.clear ();
-	edit_tracknum = -1;
-	edit_colnum = -1;
-	edit_note = false;
-	edit_note_channel = false;
-	edit_note_velocity = false;
-	edit_note_delay = false;
-	edit_automation = false;
-	edit_automation_delay = false;
-	editing_editable = NULL;
+	clear_editables ();
 }
 
 uint8_t
@@ -1924,16 +1937,20 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	int row_idx = get_row_index (path);
 
 	// Can't edit ***
-	if (not np->is_displayable(row_idx, edit_tracknum))
+	if (not np->is_displayable(row_idx, edit_tracknum)) {
+		clear_editables ();
 		return;
+	}
 
 	if (is_on) {
-		set_on_note(pitch, row_idx, edit_tracknum);
+		set_on_note (pitch, row_idx, edit_tracknum);
 	} else if (is_off) {
-		set_off_note(row_idx, edit_tracknum);
+		set_off_note (row_idx, edit_tracknum);
 	} else if (is_del) {
-		delete_note(row_idx, edit_tracknum);
+		delete_note (row_idx, edit_tracknum);
 	}
+
+	clear_editables ();
 }
 
 void
@@ -2578,8 +2595,11 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 void
 MidiPatternEditor::move_cursor (int steps)
 {
+	std::cout << "MidiPatternEditor::move_cursor steps = " << steps << std::endl;
 	TreeModel::Path path = edit_path;
+	std::cout << "MidiPatternEditor::move_cursor before loop" << std::endl;
 	while (steps != 0) {
+		std::cout << "MidiPatternEditor::move_cursor start loop steps = " << steps << std::endl;
 		if (steps < 0) {
 			path.prev ();
 			steps++;
@@ -2587,13 +2607,20 @@ MidiPatternEditor::move_cursor (int steps)
 			path.next ();
 			steps--;
 		}
+		std::cout << "MidiPatternEditor::move_cursor end loop steps = " << steps << std::endl;
 	}
+	std::cout << "MidiPatternEditor::move_cursor before get_row_index path = " << path.to_string() << std::endl;
 	if (get_row_index(path) < nrows) {
+		std::cout << "MidiPatternEditor::move_cursor after get_row_index path = " << path.to_string() << std::endl;
 		TreeViewColumn* col = view.get_column (edit_colnum);
-		if (editing_editable) {
-			editing_editable->editing_done ();
-		}
+		std::cout << "MidiPatternEditor::move_cursor after get column" << std::endl;
+		// if (editing_editable) {
+		// 	std::cout << "MidiPatternEditor::move_cursor before editing done" << std::endl;
+		// 	editing_editable->editing_done ();
+		// }
+		std::cout << "MidiPatternEditor::move_cursor before setting cursor" << std::endl;
 		view.set_cursor (path, *col, true);
+		std::cout << "MidiPatternEditor::move_cursor after setting cursor" << std::endl;
 	}
 }
 
@@ -2613,12 +2640,14 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 	case GDK_z:
+		std::cout << "step_editing_note_key_press: press z" << std::endl;
 		set_on_note(pitch(octave, 0), row_idx, edit_tracknum);
 		move_cursor(steps);
 		ret = true;
 		break;
 
 	case GDK_s:
+		std::cout << "step_editing_note_key_press: press s" << std::endl;
 		set_on_note(pitch(octave, 1), row_idx, edit_tracknum);
 		move_cursor(steps);
 		ret = true;
