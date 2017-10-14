@@ -38,12 +38,12 @@ RegionAutomationPattern::RegionAutomationPattern(ARDOUR::Session* session,
 uint32_t
 RegionAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	Evoral::Beats relative_beats(event->when);
+	Temporal::Beats relative_beats(event->when);
 
 	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats)
 		return UNDEFINED_ROW;
 
-	Evoral::Beats beats(relative_beats + position_beats - start_beats);
+	Temporal::Beats beats(relative_beats + position_beats - start_beats);
 	uint32_t row = row_at_beats(beats);
 	if (automations[param].count(row) != 0)
 		row = row_at_beats_min_delay(beats);
