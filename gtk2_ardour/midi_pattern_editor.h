@@ -317,12 +317,6 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_tracknum;
 	int                          edit_colnum;
-	bool                         edit_note;
-	bool                         edit_note_channel;
-	bool                         edit_note_velocity;
-	bool                         edit_note_delay;
-	bool                         edit_automation;
-	bool                         edit_automation_delay;
 	Gtk::CellEditable*           editing_editable;
 	Gtk::Table                   buttons;
 	Gtk::HBox                    toolbar;
@@ -424,6 +418,10 @@ class MidiPatternEditor : public ArdourWindow
 	void setup_automation_column (size_t);
 	void setup_automation_delay_column (size_t);
 
+	/////////////////////
+	// Edit Pattern    //
+	/////////////////////
+
 	// Move the cursor steps rows downwards, or upwards if steps is
 	// negative. Called while editing.
 	void move_cursor (int steps);
@@ -447,10 +445,6 @@ class MidiPatternEditor : public ArdourWindow
 	void setup_scroller ();
 	void redisplay_model ();
 
-	/////////////////////
-	// Edit Pattern    //
-	/////////////////////
-
 	uint32_t get_row_index (const std::string& path);
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path);
 
@@ -472,6 +466,7 @@ class MidiPatternEditor : public ArdourWindow
 	void editing_automation_delay_started (Gtk::CellEditable*, const std::string& path, int);
 	void editing_started (Gtk::CellEditable*, const std::string& path, int);
 
+	void clear_editables ();
 	void editing_canceled ();
 
 	// Get the pitch of a note given its textual description. If the octave
