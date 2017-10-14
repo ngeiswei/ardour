@@ -42,7 +42,7 @@ class NotePattern : public Pattern {
 public:
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
-	typedef Evoral::Note<Evoral::Beats> NoteType;
+	typedef Evoral::Note<Temporal::Beats> NoteType;
 	typedef boost::shared_ptr<NoteType> NoteTypePtr;
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
@@ -80,7 +80,7 @@ public:
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
-	Evoral::Beats next_off(uint32_t row, int track_idx) const;
+	Temporal::Beats next_off(uint32_t row, int track_idx) const;
 
 	// Return true if the notes are displayable at this resolution. Basically
 	// if there are too many notes, unless its a pair (note off, note on)

@@ -62,7 +62,7 @@ void NotePattern::update_track_to_notes()
 	// to some defined order.
 	const MidiModel::Notes& notes = _midi_model->notes();
 	MidiModel::StrictNotes strict_notes;
-	Evoral::Beats end_time = start_beats + _conv.from (_region->length());
+	Temporal::Beats end_time = start_beats + _conv.from (_region->length());
 	MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound(start_beats);
 	for (; it != notes.end() && (*it)->time() < end_time; ++it)
 		strict_notes.insert(*it);
@@ -121,8 +121,8 @@ void NotePattern::update_row_to_notes()
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin();
 		     inote != track_to_notes[itrack].end(); ++inote) {
-			Evoral::Beats on_time = (*inote)->time() + position_beats - start_beats;
-			Evoral::Beats off_time = (*inote)->end_time() + position_beats - start_beats;
+			Temporal::Beats on_time = (*inote)->time() + position_beats - start_beats;
+			Temporal::Beats off_time = (*inote)->end_time() + position_beats - start_beats;
 			uint32_t on_max_delay_row = row_at_beats_max_delay(on_time);
 			uint32_t on_row = row_at_beats(on_time);
 			uint32_t off_min_delay_row = row_at_beats_min_delay(off_time);
@@ -174,7 +174,7 @@ NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int track_idx) con
 	return it != r2n.end() ? earliest(r2n.equal_range(it->first)) : NoteTypePtr();
 }
 
-Evoral::Beats NotePattern::next_off(uint32_t row, int track_idx) const
+Temporal::Beats NotePattern::next_off(uint32_t row, int track_idx) const
 {
 	NoteTypePtr next_note = find_next(row, track_idx);
 	return next_note ? next_note->time() : end_beats;
@@ -269,10 +269,10 @@ int NotePattern::find_free_track(NoteTypePtr note) const
 
 bool NotePattern::overlap(NoteTypePtr a, NoteTypePtr b)
 {
-	Evoral::Beats sa = a->time();
-	Evoral::Beats ea  = a->end_time();
-	Evoral::Beats sb = b->time();
-	Evoral::Beats eb = b->end_time();
+	Temporal::Beats sa = a->time();
+	Temporal::Beats ea  = a->end_time();
+	Temporal::Beats sb = b->time();
+	Temporal::Beats eb = b->end_time();
 
 	return (((sb > sa) && (eb <= ea)) ||
 	        ((eb > sa) && (eb <= ea)) ||

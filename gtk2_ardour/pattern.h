@@ -19,8 +19,8 @@
 #ifndef __ardour_gtk2_pattern_h_
 #define __ardour_gtk2_pattern_h_
 
-#include "evoral/types.hpp"
-#include "evoral/Beats.hpp"
+#include "temporal/beats.h"
+#include "temporal/types.h"
 
 #include "ardour/session_handle.h"
 #include "ardour/beats_samples_converter.h"
@@ -54,10 +54,10 @@ public:
 	virtual void update() = 0;
 
 	// Find the beats corresponding to the first row
-	Evoral::Beats find_position_row_beats();
+	Temporal::Beats find_position_row_beats();
 
 	// Find the beats corresponding to the end row (not visible)
-	Evoral::Beats find_end_row_beats();
+	Temporal::Beats find_end_row_beats();
 
 	// Find the number of rows of the region
 	uint32_t find_nrows();
@@ -71,42 +71,42 @@ public:
 
 	// Return the beats at the corresponding row index and delay in relative
 	// ticks
-	Evoral::Beats beats_at_row(uint32_t irow, int32_t delay=0);
+	Temporal::Beats beats_at_row(uint32_t irow, int32_t delay=0);
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
-	Evoral::Beats region_relative_beats_at_row(uint32_t irow, int32_t delay=0);
+	Temporal::Beats region_relative_beats_at_row(uint32_t irow, int32_t delay=0);
 
 	// Return the row index corresponding to the given beats, assuming the
 	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
 	// is _ticks_per_row/2.
-	uint32_t row_at_beats(Evoral::Beats beats);
+	uint32_t row_at_beats(Temporal::Beats beats);
 
 	// Like row_at_beats but use sample instead of beats
 	uint32_t row_at_sample(samplepos_t sample);
 
 	// Return the row index assuming the beats is allowed to have the minimum
 	// negative delay (1 - _ticks_per_row).
-	uint32_t row_at_beats_min_delay(Evoral::Beats beats);
+	uint32_t row_at_beats_min_delay(Temporal::Beats beats);
 
 	// Like row_at_beats_min_delay but use sample instead of beats
 	uint32_t row_at_sample_min_delay(samplepos_t sample);
 
 	// Return the row index assuming the beats is allowed to have the maximum
 	// positive delay (_ticks_per_row - 1).
-	uint32_t row_at_beats_max_delay(Evoral::Beats beats);
+	uint32_t row_at_beats_max_delay(Temporal::Beats beats);
 
 	// Like row_at_beats_max_delay but use sample instead of beats
 	uint32_t row_at_sample_max_delay(samplepos_t sample);
 
 	// Return an event's delay in a certain row in ticks
-	int64_t delay_ticks(const Evoral::Beats& event_time, uint32_t irow);
+	int64_t delay_ticks(const Temporal::Beats& event_time, uint32_t irow);
 
 	// Like delay_ticks above but uses sample instead of beats
 	int64_t delay_ticks(samplepos_t sample, uint32_t irow);
 
 	// Like delay_ticks but the event_time is relative to the region position
-	int64_t region_relative_delay_ticks(const Evoral::Beats& event_time, uint32_t irow);
+	int64_t region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t irow);
 
 	// Return the minimum and maximum number ticks allowed for delay
 	int32_t delay_ticks_min() const;
@@ -114,21 +114,21 @@ public:
 
 	// Beats corresponding to the region's position, start from the source, end
 	// and length in beats.
-	Evoral::Beats position_beats;
-	Evoral::Beats start_beats;
-	Evoral::Beats end_beats;
-	Evoral::Beats length_beats;
+	Temporal::Beats position_beats;
+	Temporal::Beats start_beats;
+	Temporal::Beats end_beats;
+	Temporal::Beats length_beats;
 
 	// Number of rows per beat. 0 means one row per bar (TODO not fully
 	// supported).
 	uint8_t rows_per_beat;
 
 	// Determined by the number of rows per beat
-	Evoral::Beats beats_per_row;
+	Temporal::Beats beats_per_row;
 
 	// Beats corresponding to the location and end row
-	Evoral::Beats position_row_beats;
-	Evoral::Beats end_row_beats;
+	Temporal::Beats position_row_beats;
+	Temporal::Beats end_row_beats;
 
 	// Number of rows of that region (given the choosen resolution)
 	uint32_t nrows;
