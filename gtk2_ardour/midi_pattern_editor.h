@@ -93,7 +93,7 @@ bool is_key_in(const typename M::key_type& key, const M& map)
 class MidiPatternEditor : public ArdourWindow
 {
   public:
-	typedef Evoral::Note<Evoral::Beats> NoteType;
+	typedef Evoral::Note<Temporal::Beats> NoteType;
 
 	MidiPatternEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, boost::shared_ptr<ARDOUR::MidiRegion>, boost::shared_ptr<ARDOUR::MidiTrack>);
 	~MidiPatternEditor();
