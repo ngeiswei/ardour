@@ -309,7 +309,7 @@ namespace std {
 	struct numeric_limits<Temporal::Beats> {
 		static Temporal::Beats lowest() {
 			return Temporal::Beats(std::numeric_limits<int32_t>::min(),
-			                     std::numeric_limits<int32_t>::min());
+			                       std::numeric_limits<int32_t>::min());
 		}
 
 		/* We don't define min() since this has different behaviour for integral and floating point types,
@@ -318,7 +318,7 @@ namespace std {
 
 		static Temporal::Beats max() {
 			return Temporal::Beats(std::numeric_limits<int32_t>::max(),
-			                     std::numeric_limits<int32_t>::max());
+			                       std::numeric_limits<int32_t>::max());
 		}
 	};
 }
