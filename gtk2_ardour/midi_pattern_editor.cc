@@ -76,6 +76,8 @@ using Timecode::BBT_Time;
 //
 // - [ ] Add keyboard shortcuts to edit notes and automations
 //
+// - [ ] Play inserted note
+//
 // - [ ] Add wrap around (vertical and horizontal)
 //
 // - [ ] Support audio tracks and trim automation
