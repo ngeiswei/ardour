@@ -2577,7 +2577,7 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 }
 
 void
-MidiPatternEditor::move_cursor (int steps)
+MidiPatternEditor::vertical_move_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
 	wrap_around_move (path, steps);
@@ -2595,6 +2595,15 @@ void MidiPatternEditor::wrap_around_move (TreeModel::Path& path, int steps) cons
 		path[0] += nrows;
 }
 
+void
+MidiPatternEditor::horizontal_move_cursor (int steps, bool tab)
+{
+	TreeModel::Path path = edit_path;
+	wrap_around_move (path, steps);
+	TreeViewColumn* col = view.get_column (edit_colnum);
+	view.set_cursor (path, *col, true);
+}
+
 uint8_t
 MidiPatternEditor::pitch (uint8_t semitones, int octave)
 {
@@ -2605,34 +2614,140 @@ bool
 MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
-	int steps = steps_spinner.get_value_as_int();
 	int octave = octave_spinner.get_value_as_int();
 	int row_idx = get_row_index (edit_path);
 
 	switch (ev->keyval) {
-	case GDK_z:
-		std::cout << "step_editing_note_key_press: press z" << std::endl;
-		set_on_note(pitch (0, octave), row_idx, edit_tracknum);
-		move_cursor(steps);
-		ret = true;
+
+	// On notes
+	case GDK_z:                 // C
+		ret = step_editing_set_on_note (pitch (0, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_s:                 // C#
+		ret = step_editing_set_on_note (pitch (1, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_x:                 // D
+		ret = step_editing_set_on_note (pitch (2, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_d:                 // D#
+		ret = step_editing_set_on_note (pitch (3, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_c:                 // E
+		ret = step_editing_set_on_note (pitch (4, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_v:                 // F
+		ret = step_editing_set_on_note (pitch (5, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_g:                 // F#
+		ret = step_editing_set_on_note (pitch (6, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_b:                 // G
+		ret = step_editing_set_on_note (pitch (7, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_h:                 // G#
+		ret = step_editing_set_on_note (pitch (8, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_n:                 // A
+		ret = step_editing_set_on_note (pitch (9, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_j:                 // A#
+		ret = step_editing_set_on_note (pitch (10, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_m:                 // B
+		ret = step_editing_set_on_note (pitch (11, octave), row_idx, edit_tracknum);
+		break;
+	case GDK_q:                 // C+1
+	case GDK_comma:
+		ret = step_editing_set_on_note (pitch (0, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_2:                 // C#+1
+	case GDK_l:
+		ret = step_editing_set_on_note (pitch (1, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_w:                 // D+1
+		ret = step_editing_set_on_note (pitch (2, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_3:                 // D#+1
+		ret = step_editing_set_on_note (pitch (3, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_e:                 // E+1
+		ret = step_editing_set_on_note (pitch (4, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_r:                 // F+1
+		ret = step_editing_set_on_note (pitch (5, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_5:                 // F#+1
+		ret = step_editing_set_on_note (pitch (6, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_t:                 // G+1
+		ret = step_editing_set_on_note (pitch (7, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_6:                 // G#+1
+		ret = step_editing_set_on_note (pitch (8, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_y:                 // A+1
+		ret = step_editing_set_on_note (pitch (9, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_7:                 // A#+1
+		ret = step_editing_set_on_note (pitch (10, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_u:                 // B+1
+		ret = step_editing_set_on_note (pitch (11, octave + 1), row_idx, edit_tracknum);
+		break;
+	case GDK_i:                 // C+2
+		ret = step_editing_set_on_note (pitch (0, octave + 2), row_idx, edit_tracknum);
+		break;
+	case GDK_9:                 // C#+2
+		ret = step_editing_set_on_note (pitch (1, octave + 2), row_idx, edit_tracknum);
+		break;
+	case GDK_o:                 // D+2
+		ret = step_editing_set_on_note (pitch (2, octave + 2), row_idx, edit_tracknum);
+		break;
+	case GDK_0:                 // D#+2
+		ret = step_editing_set_on_note (pitch (3, octave + 2), row_idx, edit_tracknum);
+		break;
+	case GDK_p:                 // E+2
+		ret = step_editing_set_on_note (pitch (4, octave + 2), row_idx, edit_tracknum);
+		break;
+	case GDK_bracketleft:       // F+2
+		ret = step_editing_set_on_note (pitch (5, octave + 2), row_idx, edit_tracknum);
 		break;
 
-	case GDK_s:
-		std::cout << "step_editing_note_key_press: press s" << std::endl;
-		set_on_note(pitch (1, octave), row_idx, edit_tracknum);
-		move_cursor(steps);
-		ret = true;
+	// Off note
+	case GDK_equal:
+	case GDK_Caps_Lock:
+		ret = step_editing_set_off_note (row_idx, edit_tracknum);
 		break;
 
+	// Delete note
+	case GDK_BackSpace:
+	case GDK_Delete:
+		ret = step_editing_delete_note (row_idx, edit_tracknum);
+		break;
+
+	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
-		move_cursor(-1);
+		vertical_move_cursor(-1);
 		ret = true;
 		break;
-
 	case GDK_Down:
 	case GDK_downarrow:
-		move_cursor(1);
+		vertical_move_cursor(1);
+		ret = true;
+		break;
+	case GDK_Left:
+	case GDK_leftarrow:
+		horizontal_move_cursor(-1);
+		ret = true;
+		break;
+	case GDK_Right:
+	case GDK_rightarrow:
+		horizontal_move_cursor(1);
+		ret = true;
+		break;
+	case GDK_Tab:
+		horizontal_move_cursor(1, true);
 		ret = true;
 		break;
 
@@ -2641,6 +2756,30 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool MidiPatternEditor::step_editing_set_on_note (uint8_t pitch, int row_idx, int tracknum)
+{
+	set_on_note (pitch, row_idx, tracknum);
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+	return true;
+}
+
+bool MidiPatternEditor::step_editing_set_off_note (int row_idx, int tracknum)
+{
+	set_off_note (row_idx, tracknum);
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+	return true;
+}
+
+bool MidiPatternEditor::step_editing_delete_note (int row_idx, int tracknum)
+{
+	delete_note (row_idx, tracknum);
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+	return true;
 }
 
 bool
