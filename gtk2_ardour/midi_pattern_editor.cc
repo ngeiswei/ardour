@@ -1513,15 +1513,8 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 void
 MidiPatternEditor::redisplay_model ()
 {
-	std::cout << "redisplay_model, edit_path = " << edit_path.to_string()
-	          << ", edit_tracknum = " << edit_tracknum
-	          << ", edit_colnum = " << edit_colnum
-	          << ", editing_editable = " << editing_editable << std::endl;
-
 	if (editing_editable)
 		return;
-
-	std::cout << "Here?" << std::endl;
 
 	if (_session) {
 
@@ -1887,27 +1880,15 @@ MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tr
 	edit_path = TreePath (path);
 	edit_tracknum = tracknum;
 	editing_editable = ed;
-
-	std::cout << "editing_started, edit_path = " << edit_path.to_string()
-	          << ", edit_tracknum = " << edit_tracknum
-	          << ", edit_colnum = " << edit_colnum
-	          << ", editing_editable = " << editing_editable << std::endl;
 }
 
 void
 MidiPatternEditor::clear_editables ()
 {
-	std::cout << "clear_editables" << std::endl;
-
 	edit_path.clear ();
 	edit_tracknum = -1;
 	edit_colnum = -1;
 	editing_editable = NULL;
-
-	std::cout << "clear_editables, edit_path = " << edit_path.to_string()
-	          << ", edit_tracknum = " << edit_tracknum
-	          << ", edit_colnum = " << edit_colnum
-	          << ", editing_editable = " << editing_editable << std::endl;
 
 	redisplay_model ();
 }
