@@ -426,6 +426,9 @@ class MidiPatternEditor : public ArdourWindow
 	// negative. Called while editing.
 	void move_cursor (int steps);
 
+	// Move a path by s steps, wrapping around so that is remains [0, nrows).
+	void wrap_around_move (Gtk::TreeModel::Path& path, int s) const;
+
 	// Calculate the midi note pitch given the octave and the number of
 	// semitones within this octave
 	static uint8_t pitch(int octave, uint8_t semitones);
