@@ -2615,7 +2615,7 @@ void MidiPatternEditor::wrap_around_move (TreeModel::Path& path, int steps) cons
 }
 
 uint8_t
-MidiPatternEditor::pitch(int octave, uint8_t semitones)
+MidiPatternEditor::pitch (uint8_t semitones, int octave)
 {
 	return (uint8_t)(octave + 1) * 12 + semitones;
 }
@@ -2631,14 +2631,14 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	switch (ev->keyval) {
 	case GDK_z:
 		std::cout << "step_editing_note_key_press: press z" << std::endl;
-		set_on_note(pitch(octave, 0), row_idx, edit_tracknum);
+		set_on_note(pitch (0, octave), row_idx, edit_tracknum);
 		move_cursor(steps);
 		ret = true;
 		break;
 
 	case GDK_s:
 		std::cout << "step_editing_note_key_press: press s" << std::endl;
-		set_on_note(pitch(octave, 1), row_idx, edit_tracknum);
+		set_on_note(pitch (1, octave), row_idx, edit_tracknum);
 		move_cursor(steps);
 		ret = true;
 		break;

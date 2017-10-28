@@ -431,7 +431,7 @@ class MidiPatternEditor : public ArdourWindow
 
 	// Calculate the midi note pitch given the octave and the number of
 	// semitones within this octave
-	static uint8_t pitch(int octave, uint8_t semitones);
+	static uint8_t pitch (uint8_t semitones, int octave);
 
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_note_channel_key_press (GdkEventKey*);
