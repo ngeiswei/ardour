@@ -150,7 +150,8 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, place_adjustment (0, -5, 5, 1, 2)
 	, place_spinner (place_adjustment)
 	, steps_label (_("Steps"))
-	, steps_adjustment (1, 0, 256, 1, 4)
+	  // TODO set the boundaries to not be above the number of rows
+	, steps_adjustment (1, -255, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
 	, region (reg)
 	, track (tr)
@@ -2597,33 +2598,20 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 void
 MidiPatternEditor::move_cursor (int steps)
 {
-	std::cout << "MidiPatternEditor::move_cursor steps = " << steps << std::endl;
 	TreeModel::Path path = edit_path;
-	std::cout << "MidiPatternEditor::move_cursor before loop" << std::endl;
-	while (steps != 0) {
-		std::cout << "MidiPatternEditor::move_cursor start loop steps = " << steps << std::endl;
-		if (steps < 0) {
-			path.prev ();
-			steps++;
-		} else {
-			path.next ();
-			steps--;
-		}
-		std::cout << "MidiPatternEditor::move_cursor end loop steps = " << steps << std::endl;
-	}
-	std::cout << "MidiPatternEditor::move_cursor before get_row_index path = " << path.to_string() << std::endl;
-	if (get_row_index(path) < nrows) {
-		std::cout << "MidiPatternEditor::move_cursor after get_row_index path = " << path.to_string() << std::endl;
-		TreeViewColumn* col = view.get_column (edit_colnum);
-		std::cout << "MidiPatternEditor::move_cursor after get column" << std::endl;
-		// if (editing_editable) {
-		// 	std::cout << "MidiPatternEditor::move_cursor before editing done" << std::endl;
-		// 	editing_editable->editing_done ();
-		// }
-		std::cout << "MidiPatternEditor::move_cursor before setting cursor" << std::endl;
-		view.set_cursor (path, *col, true);
-		std::cout << "MidiPatternEditor::move_cursor after setting cursor" << std::endl;
-	}
+	wrap_around_move (path, steps);
+	TreeViewColumn* col = view.get_column (edit_colnum);
+	// if (editing_editable)
+	// 	editing_editable->editing_done ();
+	view.set_cursor (path, *col, true);
+}
+
+void MidiPatternEditor::wrap_around_move (TreeModel::Path& path, int steps) const
+{
+	path[0] += steps;
+	path[0] %= nrows;
+	if (path[0] < 0)
+		path[0] += nrows;
 }
 
 uint8_t
