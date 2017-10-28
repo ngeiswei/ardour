@@ -424,16 +424,24 @@ class MidiPatternEditor : public ArdourWindow
 
 	// Move the cursor steps rows downwards, or upwards if steps is
 	// negative. Called while editing.
-	void move_cursor (int steps);
+	void vertical_move_cursor (int steps);
 
 	// Move a path by s steps, wrapping around so that is remains [0, nrows).
 	void wrap_around_move (Gtk::TreeModel::Path& path, int s) const;
+
+	// Move the cursor steps columns rightwards, or leftwards if steps is
+	// negative.
+	void horizontal_move_cursor (int steps, bool tab=false);
 
 	// Calculate the midi note pitch given the octave and the number of
 	// semitones within this octave
 	static uint8_t pitch (uint8_t semitones, int octave);
 
 	bool step_editing_note_key_press (GdkEventKey*);
+	bool step_editing_set_on_note (uint8_t pitch, int row_idx, int tracknum);
+	bool step_editing_set_off_note (int row_idx, int tracknum);
+	bool step_editing_delete_note (int row_idx, int tracknum);
+
 	bool step_editing_note_channel_key_press (GdkEventKey*);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
