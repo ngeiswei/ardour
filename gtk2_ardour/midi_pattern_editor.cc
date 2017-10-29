@@ -2582,8 +2582,6 @@ MidiPatternEditor::vertical_move_cursor (int steps)
 	TreeModel::Path path = edit_path;
 	wrap_around_move (path, steps);
 	TreeViewColumn* col = view.get_column (edit_colnum);
-	// if (editing_editable)
-	// 	editing_editable->editing_done ();
 	view.set_cursor (path, *col, true);
 }
 
@@ -2598,9 +2596,28 @@ void MidiPatternEditor::wrap_around_move (TreeModel::Path& path, int steps) cons
 void
 MidiPatternEditor::horizontal_move_cursor (int steps, bool tab)
 {
+	// TODO support tab == true
+	int colnum = edit_colnum;
+	const int n_col = view.get_columns().size();
+	TreeViewColumn* col;
+
+	while (steps < 0) {
+		--colnum;
+		if (colnum < 1)
+			colnum = n_col - 1;
+		col = view.get_column (colnum);
+		if (col->get_visible ())
+			++steps;
+	}
+	while (0 < steps) {
+		++colnum;
+		if (n_col <= colnum)
+			colnum = 1;         // colnum 0 is time
+		col = view.get_column (colnum);
+		if (col->get_visible ())
+			--steps;
+	}
 	TreeModel::Path path = edit_path;
-	wrap_around_move (path, steps);
-	TreeViewColumn* col = view.get_column (edit_colnum);
 	view.set_cursor (path, *col, true);
 }
 
