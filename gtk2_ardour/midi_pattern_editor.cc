@@ -296,10 +296,8 @@ MidiPatternEditor::add_midi_automation_column (const Evoral::Parameter& param)
 {
 	// If not in param2actrl, add it.
 	if (!param2actrl[param]) {
-		bool is_midi_automation = ARDOUR::parameter_is_midi ((AutomationType)param.type());
-		bool is_region_automation = is_midi_automation;
-		param2actrl[param] = is_midi_automation ? midi_model->automation_control(param, true) : route->automation_control(param, true); 
-		AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+		param2actrl[param] = is_region_automation (param) ? midi_model->automation_control(param, true) : route->automation_control(param, true); 
+		AutomationPattern* ap = get_automation_pattern (param);
 		ap->insert(param2actrl[param]);
 	}
 
@@ -1649,8 +1647,7 @@ MidiPatternEditor::redisplay_model ()
 				ColAutoTrackBimap::left_const_iterator ca_it = col2autotrack.left.find(col_idx);
 				size_t i = ca_it->second;
 				const Evoral::Parameter& param = cp_it->second;
-				bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-				AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+				AutomationPattern* ap = get_automation_pattern (param);
 				const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 				size_t auto_count = r2at.count(irow);
 
@@ -1672,7 +1669,7 @@ MidiPatternEditor::redisplay_model ()
 							double aval = (*auto_it->second)->value;
 							row[columns.automation[i]] = to_string (aval);
 							double awhen = (*auto_it->second)->when;
-							int64_t delay_ticks = is_region_automation ?
+							int64_t delay_ticks = is_region_automation (param) ?
 								rap->region_relative_delay_ticks(Temporal::Beats(awhen), irow) : tap->delay_ticks((samplepos_t)awhen, irow);
 							if (delay_ticks != 0) {
 								row[columns.automation_delay[i]] = to_string (delay_ticks);
@@ -1694,7 +1691,7 @@ MidiPatternEditor::redisplay_model ()
 						// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 						// of the WriteLock in ControlList::erase and such, then eval can be used.
 						bool ok;
-						double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
+						double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 						inter_auto_val = alist->rt_safe_eval(awhen, ok);
 					}
 					row[columns.automation[i]] = to_string (inter_auto_val);
@@ -2120,17 +2117,25 @@ MidiPatternEditor::note_channel_edited (const std::string& path, const std::stri
 	if (not np->is_displayable(get_row_index (path), edit_tracknum))
 		return;
 
-	int  channel;
-	char const * opname;
+	int  ch;
+	if (sscanf (text.c_str(), "%d", &ch) == 1) {
+		ch--;  // Adjust for zero-based counting
+		set_note_channel(note, ch);
+	}
+}
 
-	if (sscanf (text.c_str(), "%d", &channel) == 1 && 1 <= channel && channel <= 16
-	    // Correct ival for zero-based counting after scan
-	    && --channel != note->channel()) {
-		opname = _("change note channel");
+void
+MidiPatternEditor::set_note_channel (NoteTypePtr note, int ch)
+{
+	if (!note)
+		return;
+
+	if (0 <= ch && ch < 16 && ch != note->channel()) {
+		char const* opname = _("change note channel");
 
 		// Define change command
 		MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
-		cmd->change (note, MidiModel::NoteDiffCommand::Channel, channel);
+		cmd->change (note, MidiModel::NoteDiffCommand::Channel, ch);
 
 		// Apply change command
 		apply_command (cmd);
@@ -2152,21 +2157,28 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 	if (not np->is_displayable(get_row_index (path), edit_tracknum))
 		return;
 
-	int  velocity;
-	char const * opname;
-
+	int  vel;
 	// Parse the edited velocity
-	if (sscanf (text.c_str(), "%d", &velocity) != 1)
+	if (sscanf (text.c_str(), "%d", &vel) != 1)
+		return;
+
+	set_note_velocity (note, vel);
+}
+
+void
+MidiPatternEditor::set_note_velocity (NoteTypePtr note, int vel)
+{
+	if (!note)
 		return;
 
 	// Change if within acceptable boundaries and different than the previous
 	// velocity
-	if (0 <= velocity && velocity <= 127 && velocity != note->velocity()) {
-		opname = _("change note velocity");
+	if (0 <= vel && vel <= 127 && vel != note->velocity()) {
+		char const* opname = _("change note velocity");
 
 		// Define change command
 		MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
-		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, velocity);
+		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, vel);
 
 		// Apply change command
 		apply_command (cmd);
@@ -2176,15 +2188,6 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 void
 MidiPatternEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
-	NoteTypePtr on_note = get_on_note(path);
-	NoteTypePtr off_note = get_off_note(path);
-	if (!on_note && !off_note)
-		return;
-
-	int  delay = 0;
-	char const * opname = _("change note delay");
-	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
-
 	int row_idx = get_row_index(path);
 
 	// Can't edit ***
@@ -2192,8 +2195,23 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 		return;
 
 	// Parse the edited delay
+	int delay;
 	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1)
 		return;
+
+	set_note_delay (delay, row_idx, edit_tracknum);
+}
+
+void
+MidiPatternEditor::set_note_delay (int delay, int row_idx, int tracknum)
+{
+	NoteTypePtr on_note = get_on_note(row_idx);
+	NoteTypePtr off_note = get_off_note(row_idx);
+	if (!on_note && !off_note)
+		return;
+
+	char const* opname = _("change note delay");
+	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
 	// Check if within acceptable boundaries
 	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
@@ -2230,39 +2248,76 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	apply_command (cmd);
 }
 
+bool MidiPatternEditor::is_region_automation (const Evoral::Parameter& param) const
+{
+	return ARDOUR::parameter_is_midi((AutomationType)param.type());
+}
+
+Evoral::Parameter MidiPatternEditor::get_parameter (int tracknum)
+{
+	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(tracknum);
+	if (ac_it == col2autotrack.right.end())
+		return Evoral::Parameter();
+	size_t edited_colnum = ac_it->second;
+	ColParamBimap::left_const_iterator it = col2param.left.find(edited_colnum);
+	if (it == col2param.left.end())
+		return Evoral::Parameter();
+	const Evoral::Parameter& param = it->second;
+	return param;
+}
+
+boost::shared_ptr<AutomationList> MidiPatternEditor::get_alist (const Evoral::Parameter& param)
+{
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
+	boost::shared_ptr<AutomationList> alist = actrl->alist();
+	return alist;
+}
+
+AutomationPattern* MidiPatternEditor::get_automation_pattern (const Evoral::Parameter& param)
+{
+	return is_region_automation (param) ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+}
+
 void
 MidiPatternEditor::automation_edited (const std::string& path, const std::string& text)
 {
 	bool is_del = text.empty();
 	double nval;
-	bool is_changed = is_del ? true : (sscanf (text.c_str(), "%lg", &nval) == 1);
+	if (!is_del and sscanf (text.c_str(), "%lg", &nval) != 1)
+		return;
+
 	int row_idx = get_row_index (path);
+
+	// Can't edit ***
+	Evoral::Parameter param = get_parameter (edit_tracknum);
+	AutomationPattern* ap = get_automation_pattern (param);
+	if (not ap->is_displayable(row_idx, param))
+		return;
+
+	if (is_del)
+		delete_automation (row_idx, edit_tracknum);
+	else
+		set_automation (nval, row_idx, edit_tracknum);
+}
+
+void
+MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
+{
+	// TODO do not change the delay if it is already set
 	int delay = delay_spinner.get_value_as_int ();
 	Temporal::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
 	uint32_t row_sample = tap->sample_at_row(row_idx, delay);
 
 	// Find the parameter to automate
-	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
-	if (ac_it == col2autotrack.right.end())
-		return;
-	size_t edited_colnum = ac_it->second;
-	ColParamBimap::left_const_iterator it = col2param.left.find(edited_colnum);
-	if (it == col2param.left.end())
-		return;
-	const Evoral::Parameter& param = it->second;
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
-	boost::shared_ptr<AutomationList> alist = actrl->alist();
+	Evoral::Parameter param = get_parameter (edit_tracknum);
+	boost::shared_ptr<AutomationList> alist = get_alist (param);
 
 	// Clamp nval to its range
-	nval = clamp (nval, actrl->lower(), actrl->upper ());
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
+	val = clamp (val, actrl->lower(), actrl->upper ());
 
 	// Find the control iterator to change
-	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-	AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
-
-	// Can't edit ***
-	if (not ap->is_displayable(row_idx, param))
-		return;
+	AutomationPattern* ap = get_automation_pattern (param);
 
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
@@ -2272,31 +2327,39 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
-		if (!is_del) {
-			double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
-			if (alist->editor_add (awhen, nval, false)) {
-				XMLNode& after = alist->get_state ();
-				register_automation_undo (alist, _("add automation event"), before, after);
-			}
+		double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+		if (alist->editor_add (awhen, val, false)) {
+			XMLNode& after = alist->get_state ();
+			register_automation_undo (alist, _("add automation event"), before, after);
 		}
 		return;
 	}
 
-	// Delete existing value
-	if (is_del) {
-		alist->erase (auto_it->second);
-		XMLNode& after = alist->get_state ();
-		register_automation_undo (alist, _("delete automation event"), before, after);
-		return;
-	}
-
 	// Change existing value
-	if (is_changed) {
-		double awhen = (*auto_it->second)->when;
-		alist->modify (auto_it->second, awhen, nval);
-		XMLNode& after = alist->get_state ();
-		register_automation_undo (alist, _("change automation event"), before, after);
-	}
+	double awhen = (*auto_it->second)->when;
+	alist->modify (auto_it->second, awhen, val);
+	XMLNode& after = alist->get_state ();
+	register_automation_undo (alist, _("change automation event"), before, after);
+}
+
+void
+MidiPatternEditor::delete_automation(int row_idx, int tracknum)
+{
+	Evoral::Parameter param = get_parameter (edit_tracknum);
+	boost::shared_ptr<AutomationList> alist = get_alist (param);
+
+	// Find the control iterator to change
+	AutomationPattern* ap = get_automation_pattern (param);
+
+	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
+
+	// Save state for undo
+	XMLNode& before = alist->get_state ();
+
+	alist->erase (auto_it->second);
+	XMLNode& after = alist->get_state ();
+	register_automation_undo (alist, _("delete automation event"), before, after);
 }
 
 void
@@ -2312,29 +2375,32 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 		return;
 
 	int row_idx = get_row_index (path);
+
+	// Can't edit ***
+	Evoral::Parameter param = get_parameter (edit_tracknum);
+	AutomationPattern* ap = get_automation_pattern (param);
+	if (not ap->is_displayable(row_idx, param))
+		return;
+
+	set_automation_delay (delay, row_idx, edit_tracknum);
+}
+
+void
+MidiPatternEditor::set_automation_delay (int delay, int row_idx, int tracknum)
+{
+	// Check if within acceptable boundaries
+	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
+		return;
+
 	Temporal::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
 	uint32_t row_sample = tap->sample_at_row(row_idx, delay);
 
 	// Find the parameter to change delay
-	// TODO: this can probably be factorized
-	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(edit_tracknum);
-	if (ac_it == col2autotrack.right.end())
-		return;
-	size_t edited_colnum = ac_it->second;
-	ColParamBimap::left_const_iterator it = col2param.left.find(edited_colnum);
-	if (it == col2param.left.end())
-		return;
-	const Evoral::Parameter& param = it->second;
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
-	boost::shared_ptr<AutomationList> alist = actrl->alist();
+	Evoral::Parameter param = get_parameter (edit_tracknum);
+	boost::shared_ptr<AutomationList> alist = get_alist (param);
 
 	// Find the control iterator to change
-	bool is_region_automation = ARDOUR::parameter_is_midi((AutomationType)param.type());
-	AutomationPattern* ap = is_region_automation ? (AutomationPattern*)rap : (AutomationPattern*)tap;
-
-	// Can't edit ***
-	if (not ap->is_displayable(row_idx, param))
-		return;
+	AutomationPattern* ap = get_automation_pattern (param);
 
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
@@ -2345,7 +2411,7 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 
 	// Change existing delay
 	XMLNode& before = alist->get_state ();
-	double awhen = is_region_automation ? row_relative_beats.to_double() : row_sample;
+	double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
 	XMLNode& after = alist->get_state ();
 	register_automation_undo (alist, _("change automation event delay"), before, after);
@@ -2627,6 +2693,41 @@ MidiPatternEditor::pitch (uint8_t semitones, int octave)
 	return (uint8_t)(octave + 1) * 12 + semitones;
 }
 
+bool MidiPatternEditor::move_cursor_key_press (GdkEventKey* ev)
+{
+	bool ret = false;
+
+	switch (ev->keyval) {
+
+	case GDK_Up:
+	case GDK_uparrow:
+		vertical_move_cursor(-1);
+		ret = true;
+		break;
+	case GDK_Down:
+	case GDK_downarrow:
+		vertical_move_cursor(1);
+		ret = true;
+		break;
+	case GDK_Left:
+	case GDK_leftarrow:
+		horizontal_move_cursor(-1);
+		ret = true;
+		break;
+	case GDK_Right:
+	case GDK_rightarrow:
+		horizontal_move_cursor(1);
+		ret = true;
+		break;
+	case GDK_Tab:
+		horizontal_move_cursor(1, true);
+		ret = true;
+		break;
+	}
+
+	return ret;
+}
+
 bool
 MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
@@ -2637,6 +2738,7 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	switch (ev->keyval) {
 
 	// On notes
+	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
 		ret = step_editing_set_on_note (pitch (0, octave), row_idx, edit_tracknum);
 		break;
@@ -2745,27 +2847,14 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
-		vertical_move_cursor(-1);
-		ret = true;
-		break;
 	case GDK_Down:
 	case GDK_downarrow:
-		vertical_move_cursor(1);
-		ret = true;
-		break;
 	case GDK_Left:
 	case GDK_leftarrow:
-		horizontal_move_cursor(-1);
-		ret = true;
-		break;
 	case GDK_Right:
 	case GDK_rightarrow:
-		horizontal_move_cursor(1);
-		ret = true;
-		break;
 	case GDK_Tab:
-		horizontal_move_cursor(1, true);
-		ret = true;
+		ret = move_cursor_key_press (ev);
 		break;
 
 	default:
@@ -2803,6 +2892,26 @@ bool
 MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+
+	switch (ev->keyval) {
+
+	// Cursor movements
+	case GDK_Up:
+	case GDK_uparrow:
+	case GDK_Down:
+	case GDK_downarrow:
+	case GDK_Left:
+	case GDK_leftarrow:
+	case GDK_Right:
+	case GDK_rightarrow:
+	case GDK_Tab:
+		ret = move_cursor_key_press (ev);
+		break;
+
+	default:
+		break;
+	}
+
 	return ret;
 }
 
@@ -2810,6 +2919,26 @@ bool
 MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+
+	switch (ev->keyval) {
+
+	// Cursor movements
+	case GDK_Up:
+	case GDK_uparrow:
+	case GDK_Down:
+	case GDK_downarrow:
+	case GDK_Left:
+	case GDK_leftarrow:
+	case GDK_Right:
+	case GDK_rightarrow:
+	case GDK_Tab:
+		ret = move_cursor_key_press (ev);
+		break;
+
+	default:
+		break;
+	}
+
 	return ret;
 }
 
@@ -2817,6 +2946,26 @@ bool
 MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+
+	switch (ev->keyval) {
+
+	// Cursor movements
+	case GDK_Up:
+	case GDK_uparrow:
+	case GDK_Down:
+	case GDK_downarrow:
+	case GDK_Left:
+	case GDK_leftarrow:
+	case GDK_Right:
+	case GDK_rightarrow:
+	case GDK_Tab:
+		ret = move_cursor_key_press (ev);
+		break;
+
+	default:
+		break;
+	}
+
 	return ret;
 }
 
@@ -2824,6 +2973,26 @@ bool
 MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+
+	switch (ev->keyval) {
+
+	// Cursor movements
+	case GDK_Up:
+	case GDK_uparrow:
+	case GDK_Down:
+	case GDK_downarrow:
+	case GDK_Left:
+	case GDK_leftarrow:
+	case GDK_Right:
+	case GDK_rightarrow:
+	case GDK_Tab:
+		ret = move_cursor_key_press (ev);
+		break;
+
+	default:
+		break;
+	}
+
 	return ret;
 }
 
@@ -2831,6 +3000,26 @@ bool
 MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+
+	switch (ev->keyval) {
+
+	// Cursor movements
+	case GDK_Up:
+	case GDK_uparrow:
+	case GDK_Down:
+	case GDK_downarrow:
+	case GDK_Left:
+	case GDK_leftarrow:
+	case GDK_Right:
+	case GDK_rightarrow:
+	case GDK_Tab:
+		ret = move_cursor_key_press (ev);
+		break;
+
+	default:
+		break;
+	}
+
 	return ret;
 }
 
@@ -2904,7 +3093,7 @@ MidiPatternEditor::update_automation_patterns ()
 	// Insert automation controls in the automation patterns
 	for (Parameter2AutomationControl::const_iterator it = param2actrl.begin(); it != param2actrl.end(); ++it) {
 		// Midi automation are attached to the region, not the track
-		if (ARDOUR::parameter_is_midi((AutomationType)it->first.type()))
+		if (is_region_automation (it->first))
 			rap->insert(it->second);
 		else
 			tap->insert(it->second);

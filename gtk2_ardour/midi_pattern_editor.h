@@ -437,6 +437,8 @@ class MidiPatternEditor : public ArdourWindow
 	// semitones within this octave
 	static uint8_t pitch (uint8_t semitones, int octave);
 
+	bool move_cursor_key_press (GdkEventKey* ev);
+
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch, int row_idx, int tracknum);
 	bool step_editing_set_off_note (int row_idx, int tracknum);
@@ -490,12 +492,22 @@ class MidiPatternEditor : public ArdourWindow
 	void set_off_note (int irow, int tracknum);
 	void delete_note (int irow, int tracknum);
 	void note_channel_edited (const std::string& path, const std::string& text);
+	void set_note_channel (NoteTypePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
+	void set_note_velocity (NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
+	void set_note_delay (int delay, int row_idx, int tracknum);
 
 	// Automation callbacks
+	bool is_region_automation (const Evoral::Parameter& param) const;
+	Evoral::Parameter get_parameter (int automation_tracknum);
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
+	AutomationPattern* get_automation_pattern (const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
+	void set_automation (double val, int irow, int automation_tracknum);
+	void delete_automation (int irow, int automation_tracknum);
 	void automation_delay_edited (const std::string& path, const std::string& text);
+	void set_automation_delay (int delay, int irow, int automation_tracknum);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
