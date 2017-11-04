@@ -1511,6 +1511,9 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 void
 MidiPatternEditor::redisplay_model ()
 {
+	std::cout << "MidiPatternEditor::redisplay_model editing_editable = "
+	          << editing_editable << std::endl;
+
 	if (editing_editable)
 		return;
 
@@ -1846,12 +1849,15 @@ MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& p
 void
 MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
 {
+	std::cout << "MidiPatternEditor::editing_automation_started ed = " << ed << ", path = " << path << ", tracknum = " << tracknum << std::endl;
 	edit_colnum = automation_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
 	if (ed && step_edit) {
+		std::cout << "MidiPatternEditor::editing_automation_started ed = " << ed << ", step_edit = " << step_edit << std::endl;
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
+			std::cout << "MidiPatternEditor::editing_automation_started e = " << e << std::endl;
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_automation_key_press), false);
 		}
 	}
@@ -1893,6 +1899,7 @@ MidiPatternEditor::clear_editables ()
 void
 MidiPatternEditor::editing_canceled ()
 {
+	std::cout << "MidiPatternEditor::editing_canceled" << std::endl;
 	clear_editables ();
 }
 
@@ -2268,6 +2275,8 @@ Evoral::Parameter MidiPatternEditor::get_parameter (int tracknum)
 
 boost::shared_ptr<AutomationList> MidiPatternEditor::get_alist (const Evoral::Parameter& param)
 {
+	if (!param)
+		return NULL;
 	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
 	return alist;
@@ -2275,6 +2284,8 @@ boost::shared_ptr<AutomationList> MidiPatternEditor::get_alist (const Evoral::Pa
 
 AutomationPattern* MidiPatternEditor::get_automation_pattern (const Evoral::Parameter& param)
 {
+	if (!param)
+		return NULL;
 	return is_region_automation (param) ? (AutomationPattern*)rap : (AutomationPattern*)tap;
 }
 
@@ -2291,7 +2302,7 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	AutomationPattern* ap = get_automation_pattern (param);
-	if (not ap->is_displayable(row_idx, param))
+	if (!ap || not ap->is_displayable(row_idx, param))
 		return;
 
 	if (is_del)
@@ -2311,10 +2322,12 @@ MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	if (!alist)
+		return;
 
 	// Clamp nval to its range
 	boost::shared_ptr<ARDOUR::AutomationControl> actrl = param2actrl[param];
-	val = clamp (val, actrl->lower(), actrl->upper ());
+	val = clamp (val, actrl->lower (), actrl->upper ());
 
 	// Find the control iterator to change
 	AutomationPattern* ap = get_automation_pattern (param);
@@ -2347,6 +2360,8 @@ MidiPatternEditor::delete_automation(int row_idx, int tracknum)
 {
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	if (!alist)
+		return;
 
 	// Find the control iterator to change
 	AutomationPattern* ap = get_automation_pattern (param);
@@ -2379,7 +2394,7 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	AutomationPattern* ap = get_automation_pattern (param);
-	if (not ap->is_displayable(row_idx, param))
+	if (!ap || !ap->is_displayable(row_idx, param))
 		return;
 
 	set_automation_delay (delay, row_idx, edit_tracknum);
@@ -2398,6 +2413,8 @@ MidiPatternEditor::set_automation_delay (int delay, int row_idx, int tracknum)
 	// Find the parameter to change delay
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	if (!alist)
+		return;
 
 	// Find the control iterator to change
 	AutomationPattern* ap = get_automation_pattern (param);
