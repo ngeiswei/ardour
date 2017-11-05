@@ -1511,9 +1511,6 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 void
 MidiPatternEditor::redisplay_model ()
 {
-	std::cout << "MidiPatternEditor::redisplay_model editing_editable = "
-	          << editing_editable << std::endl;
-
 	if (editing_editable)
 		return;
 
@@ -1849,15 +1846,12 @@ MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& p
 void
 MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
 {
-	std::cout << "MidiPatternEditor::editing_automation_started ed = " << ed << ", path = " << path << ", tracknum = " << tracknum << std::endl;
 	edit_colnum = automation_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
 	if (ed && step_edit) {
-		std::cout << "MidiPatternEditor::editing_automation_started ed = " << ed << ", step_edit = " << step_edit << std::endl;
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			std::cout << "MidiPatternEditor::editing_automation_started e = " << e << std::endl;
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_automation_key_press), false);
 		}
 	}
@@ -1899,7 +1893,6 @@ MidiPatternEditor::clear_editables ()
 void
 MidiPatternEditor::editing_canceled ()
 {
-	std::cout << "MidiPatternEditor::editing_canceled" << std::endl;
 	clear_editables ();
 }
 
@@ -2112,23 +2105,26 @@ MidiPatternEditor::delete_note (int row_idx, int tracknum)
 void
 MidiPatternEditor::note_channel_edited (const std::string& path, const std::string& text)
 {
-	if (text.empty()) {
+	int row_idx = get_row_index (path);
+	NoteTypePtr note = get_on_note(path);
+	if (text.empty() || !note) {
+		clear_editables ();
 		return;
 	}
 
-	NoteTypePtr note = get_on_note(path);
-	if (!note)
-		return;
-
 	// Can't edit ***
-	if (not np->is_displayable(get_row_index (path), edit_tracknum))
+	if (!np->is_displayable(row_idx, edit_tracknum)) {
+		clear_editables ();
 		return;
+	}
 
 	int  ch;
 	if (sscanf (text.c_str(), "%d", &ch) == 1) {
 		ch--;  // Adjust for zero-based counting
 		set_note_channel(note, ch);
 	}
+
+	clear_editables ();
 }
 
 void
@@ -2152,24 +2148,26 @@ MidiPatternEditor::set_note_channel (NoteTypePtr note, int ch)
 void
 MidiPatternEditor::note_velocity_edited (const std::string& path, const std::string& text)
 {
-	if (text.empty()) {
+	int row_idx = get_row_index (path);
+	NoteTypePtr note = get_on_note(path);
+	if (text.empty() || !note) {
+		clear_editables ();
 		return;
 	}
 
-	NoteTypePtr note = get_on_note(path);
-	if (!note)
-		return;
-
 	// Can't edit ***
-	if (not np->is_displayable(get_row_index (path), edit_tracknum))
+	if (!np->is_displayable(row_idx, edit_tracknum)) {
+		clear_editables ();
 		return;
+	}
 
 	int  vel;
-	// Parse the edited velocity
-	if (sscanf (text.c_str(), "%d", &vel) != 1)
-		return;
+	// Parse the edited velocity and set the note velocity
+	if (sscanf (text.c_str(), "%d", &vel) == 1) {
+		set_note_velocity (note, vel);
+	}
 
-	set_note_velocity (note, vel);
+	clear_editables ();
 }
 
 void
@@ -2198,15 +2196,18 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	int row_idx = get_row_index(path);
 
 	// Can't edit ***
-	if (not np->is_displayable(row_idx, edit_tracknum))
+	if (!np->is_displayable(row_idx, edit_tracknum)) {
+		clear_editables ();
 		return;
+	}
 
-	// Parse the edited delay
+	// Parse the edited delay and set note delay
 	int delay;
-	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1)
-		return;
+	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) == 1) {
+		set_note_delay (delay, row_idx, edit_tracknum);
+	}
 
-	set_note_delay (delay, row_idx, edit_tracknum);
+	clear_editables ();
 }
 
 void
@@ -2294,31 +2295,32 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 {
 	bool is_del = text.empty();
 	double nval;
-	if (!is_del and sscanf (text.c_str(), "%lg", &nval) != 1)
+	if (!is_del and sscanf (text.c_str(), "%lg", &nval) != 1) {
+		clear_editables ();
 		return;
+	}
 
 	int row_idx = get_row_index (path);
 
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	AutomationPattern* ap = get_automation_pattern (param);
-	if (!ap || not ap->is_displayable(row_idx, param))
+	if (!ap || not ap->is_displayable(row_idx, param)) {
+		clear_editables ();
 		return;
+	}
 
 	if (is_del)
 		delete_automation (row_idx, edit_tracknum);
 	else
 		set_automation (nval, row_idx, edit_tracknum);
+
+	clear_editables ();
 }
 
 void
 MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
 {
-	// TODO do not change the delay if it is already set
-	int delay = delay_spinner.get_value_as_int ();
-	Temporal::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
-	uint32_t row_sample = tap->sample_at_row(row_idx, delay);
-
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
@@ -2340,6 +2342,9 @@ MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
 
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
+		int delay = delay_spinner.get_value_as_int ();
+		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(row_idx, delay);
+		uint32_t row_sample = ap->sample_at_row(row_idx, delay);
 		double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		if (alist->editor_add (awhen, val, false)) {
 			XMLNode& after = alist->get_state ();
@@ -2382,22 +2387,30 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 {
 	int delay = 0;
 	// Parse the edited delay
-	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1)
+	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1) {
+		clear_editables ();
 		return;
+	}
 
 	// Check if within acceptable boundaries
-	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
+	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay) {
+		clear_editables ();
 		return;
+	}
 
 	int row_idx = get_row_index (path);
 
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	AutomationPattern* ap = get_automation_pattern (param);
-	if (!ap || !ap->is_displayable(row_idx, param))
+	if (!ap || !ap->is_displayable(row_idx, param)) {
+		clear_editables ();
 		return;
+	}
 
 	set_automation_delay (delay, row_idx, edit_tracknum);
+
+	clear_editables ();
 }
 
 void
