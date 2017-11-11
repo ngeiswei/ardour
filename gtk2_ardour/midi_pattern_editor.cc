@@ -146,12 +146,12 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, delay_label (_("Delay"))
 	, delay_adjustment (0, 0, 0, 1, 4)
 	, delay_spinner (delay_adjustment)
-	, place_label (_("Place"))
-	, place_adjustment (0, -5, 5, 1, 2)
-	, place_spinner (place_adjustment)
+	, position_label (_("Position"))
+	, position_adjustment (0, -5, 5, 1, 2)
+	, position_spinner (position_adjustment)
 	, steps_label (_("Steps"))
 	  // TODO set the boundaries to not be above the number of rows
-	, steps_adjustment (1, -255, 255, 1, 4)
+	, steps_adjustment (4, -255, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
 	, region (reg)
 	, track (tr)
@@ -2758,6 +2758,36 @@ bool MidiPatternEditor::move_cursor_key_press (GdkEventKey* ev)
 	return ret;
 }
 
+int
+MidiPatternEditor::digit_key_press (GdkEventKey* ev)
+{
+	switch (ev->keyval) {
+	// Num keys
+	case GDK_0:
+		return 0;
+	case GDK_1:
+		return 1;
+	case GDK_2:
+		return 2;
+	case GDK_3:
+		return 3;
+	case GDK_4:
+		return 4;
+	case GDK_5:
+		return 5;
+	case GDK_6:
+		return 6;
+	case GDK_7:
+		return 7;
+	case GDK_8:
+		return 8;
+	case GDK_9:
+		return 9;
+	default:
+		return -1;
+	}
+}
+
 bool
 MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
@@ -2922,8 +2952,26 @@ bool
 MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+	int row_idx = get_row_index (edit_path);
+
+	std::cout << "MidiPatternEditor::step_editing_note_channel_key_press ret = "
+	          << ret << ", row_idx = " << row_idx;
 
 	switch (ev->keyval) {
+
+	// Num keys
+	case GDK_0:
+	case GDK_1:
+	case GDK_2:
+	case GDK_3:
+	case GDK_4:
+	case GDK_5:
+	case GDK_6:
+	case GDK_7:
+	case GDK_8:
+	case GDK_9:
+		ret = step_editing_set_note_channel (digit_key_press (ev), row_idx, edit_tracknum);
+		break;
 
 	// Cursor movements
 	case GDK_Up:
@@ -2943,6 +2991,21 @@ MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool
+MidiPatternEditor::step_editing_set_note_channel (int digit, int row_idx, int tracknum)
+{
+	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(row_idx);
+	if (note) {
+		int ch = note->channel();
+		int position = position_spinner.get_value_as_int();
+		int new_ch = change_digit (ch, digit, position);
+		set_note_velocity (note, new_ch);
+	}
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+	return true;
 }
 
 bool
@@ -3291,14 +3354,14 @@ MidiPatternEditor::setup_toolbar ()
 	delay_spinner.show ();
 	toolbar.pack_start (delay_spinner, false, false);
 
-	// Place spinner
-	place_separator.show ();
-	toolbar.pack_start (place_separator, false, false);
-	place_label.show ();
-	toolbar.pack_start (place_label, false, false);
-	place_spinner.set_activates_default ();
-	place_spinner.show ();
-	toolbar.pack_start (place_spinner, false, false);
+	// Position spinner
+	position_separator.show ();
+	toolbar.pack_start (position_separator, false, false);
+	position_label.show ();
+	toolbar.pack_start (position_label, false, false);
+	position_spinner.set_activates_default ();
+	position_spinner.show ();
+	toolbar.pack_start (position_spinner, false, false);
 
 	toolbar.show ();
 }
@@ -3355,7 +3418,7 @@ MidiPatternEditor::setup_tooltips ()
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
 	delay_spinner.set_tooltip_text (_("Default delay"));
-	place_spinner.set_tooltip_text (_("Decimal place when step editing automation"));
+	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)"));
 	steps_spinner.set_tooltip_text (_("Step size"));
 }
 
