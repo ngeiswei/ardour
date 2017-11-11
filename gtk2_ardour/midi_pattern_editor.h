@@ -19,6 +19,8 @@
 #ifndef __ardour_gtk2_midi_editor_h_
 #define __ardour_gtk2_midi_editor_h_
 
+#include <cmath>
+
 #include <boost/bimap/bimap.hpp>
 
 #include <gtkmm/separator.h>
@@ -357,10 +359,10 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::Label                   delay_label;
 	Gtk::Adjustment              delay_adjustment;
 	Gtk::SpinButton              delay_spinner;	
-	Gtk::VSeparator              place_separator;
-	Gtk::Label                   place_label;
-	Gtk::Adjustment              place_adjustment;
-	Gtk::SpinButton              place_spinner;
+	Gtk::VSeparator              position_separator;
+	Gtk::Label                   position_label;
+	Gtk::Adjustment              position_adjustment;
+	Gtk::SpinButton              position_spinner;
 	Gtk::VSeparator              steps_separator;
 	Gtk::Label                   steps_label;
 	Gtk::Adjustment              steps_adjustment;
@@ -438,6 +440,7 @@ class MidiPatternEditor : public ArdourWindow
 	static uint8_t pitch (uint8_t semitones, int octave);
 
 	bool move_cursor_key_press (GdkEventKey* ev);
+	int digit_key_press (GdkEventKey* ev);
 
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch, int row_idx, int tracknum);
@@ -445,6 +448,7 @@ class MidiPatternEditor : public ArdourWindow
 	bool step_editing_delete_note (int row_idx, int tracknum);
 
 	bool step_editing_note_channel_key_press (GdkEventKey*);
+	bool step_editing_set_note_channel (int digit, int row_idx, int tracknum);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_automation_key_press (GdkEventKey*);
@@ -529,11 +533,115 @@ class MidiPatternEditor : public ArdourWindow
 
 	/**
 	 * Clamp x to be within [l, u], that is return max(l, min(u, x))
+	 *
+	 * TODO: can probably use automation_controller.cc clamp function
 	 */
 	template<typename Num>
 	Num clamp(Num x, Num l, Num u)
 	{
 		return std::max(l, std::min(u, x));
+	}
+
+	/**
+	 * For instance
+	 *
+	 * place_value (digit=2, position=3) = 2000
+	 * place_value (digit=5, position=2) = 500
+	 * place_value (digit=1, position=0) = 1
+	 * place_value (digit=7, position=-1) = 0.7
+	 */
+	template <typename Num> Num
+	place_value (int digit, int position, int base=10)
+	{
+		return digit * std::pow((Num)base, (Num)(position - 1));
+	}
+
+	/**
+	 * Set to null the digit from val at the given position. For instance
+	 *
+	 * set_null (val=100, position=2) = 0
+	 */
+	template <typename Num> Num
+	set_null (Num val, int position, int base=10)
+	{
+		Num pv = place_value<Num> (get_digit (val, position, base), position, base);
+		return val - (val < 0 ? -pv : pv);
+	}
+
+	/**
+	 * Given a value, a digit and position, replace the digit of that value at
+	 * the given position by the given digit. For instance
+	 *
+	 * change_digit (val=100, digit=5, position=-2) = 100.05
+	 * change_digit (val=100, digit=5, position=-1) = 100.5
+	 * change_digit (val=100, digit=5, position=0) = 105
+	 * change_digit (val=100, digit=5, position=1) = 150
+	 * change_digit (val=100, digit=5, position=2) = 500
+	 * change_digit (val=100, digit=5, position=3) = 5100
+	 */
+	template <typename Num>
+	Num change_digit (Num val, int digit, int position, int base=10)
+	{
+#if 0
+		std::string val_str = num_to_string (val, base);
+		change_digit (val_str, digit, position, base);
+		return string_to_num (val_str, base);
+#else
+		return set_null (val, position, base)
+			+ place_value<Num> (get_digit (val, position, base), position, base);
+#endif
+	}
+	// change_digit (const std::string& val, int digit, int position, int base=10)
+	// {
+	// 	pad (val, position)
+	// 	locate (val
+	// }
+
+	/**
+	 * Get the digit from val at position. For instance
+	 *
+	 * get_digit (val=600, position=2) = 6
+	 * get_digit (val=12.43, position=-1) = 4
+	 */
+	template <typename Num> int
+	get_digit (Num val, int position, int base=10)
+	{
+		val /= place_value<Num> (1, position, base);
+		return (int)impl_floor(val) % base; // TODO does it work for negative numbers?
+	}
+
+	// perfect solution proposed by Xi Ruoyao
+	union U
+	{
+		double value;
+		uint64_t word;
+	};
+
+	double
+	impl_floor (double x)
+	{
+		int64_t i0, j0;
+		union U u;
+
+		u.value = x;
+		i0 = u.word;
+		j0 = ((i0>>52)&0x7ff)-0x3ff;
+		if(j0<52) {
+			if(j0<0) {        /* raise inexact if x != 0 */
+				if(i0>=0) {i0=0;}
+				else if((i0&0x7fffffffffffffffl)!=0)
+				{ i0=0xbff0000000000000l;}
+			} else {
+				uint64_t i = (0x000fffffffffffffl)>>j0;
+				if((i0&i)==0) return x; /* x is integral */
+				if(i0<0) i0 += (0x0010000000000000l)>>j0;
+				i0 &= (~i);
+			}
+			u.word = i0;
+			x = u.value;
+		} else if (j0==0x400)
+			return x+x;        /* inf or NaN */
+		return x;
 	}
 
 	// Make it up for the lack of C++11 support
