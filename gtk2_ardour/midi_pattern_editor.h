@@ -22,6 +22,7 @@
 #include <cmath>
 
 #include <boost/bimap/bimap.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <gtkmm/separator.h>
 #include <gtkmm/treeview.h>
@@ -542,31 +543,57 @@ class MidiPatternEditor : public ArdourWindow
 		return std::max(l, std::min(u, x));
 	}
 
-	/**
-	 * For instance
-	 *
-	 * place_value (digit=2, position=3) = 2000
-	 * place_value (digit=5, position=2) = 500
-	 * place_value (digit=1, position=0) = 1
-	 * place_value (digit=7, position=-1) = 0.7
-	 */
-	template <typename Num> Num
-	place_value (int digit, int position, int base=10)
+	template<typename Num>
+	static std::string num_to_string(Num n, int base=10)
 	{
-		return digit * std::pow((Num)base, (Num)(position - 1));
+		std::stringstream ss;
+		ss << n;
+		return ss.str();
 	}
 
-	/**
-	 * Set to null the digit from val at the given position. For instance
-	 *
-	 * set_null (val=100, position=2) = 0
-	 */
-	template <typename Num> Num
-	set_null (Num val, int position, int base=10)
+	template<typename Num>
+	static Num string_to_num(const std::string& str, int base=10)
 	{
-		Num pv = place_value<Num> (get_digit (val, position, base), position, base);
-		return val - (val < 0 ? -pv : pv);
+		return boost::lexical_cast<Num>(str);
 	}
+
+	static char digit_to_char(int digit, int base=10);
+	static int char_to_digit(char c, int base=10);
+
+	/**
+	 * Given a string representing a number, find a pair l, u representing the
+	 * position range [l, u] of that number. For instance
+	 *
+	 * position_range ("123.0") = <-1, 2>
+	 * position_range ("123") = <0, 2>
+	 * position_range ("0123") = <0, 3>
+	 */
+	static std::pair<int, int> position_range (const std::string& str);
+
+	/**
+	 * Given the string corresponding to a number and a position in the
+	 * numerical system, pad the string so that it contains extra zeros so that
+	 * the string covers the position. For instance
+	 *
+	 * pad ("123", -1) = "123.0"
+	 * pad ("123", 0) = "123"
+	 * pad ("123", 3) = "0123"
+	 */
+	static std::string pad (const std::string& str, int position);
+
+	/**
+	 * Given the string corresponding to a number and a position in the
+	 * numerical system, return the location of the character in the string
+	 * corresponding to the given position. Return npos if undefined. For
+	 * instance
+	 *
+	 * locate ("123.15", -1) = 4
+	 * locate ("123.1", -1) = 4
+	 * locate ("123", 0) = 2
+	 * locate ("0123", 3) = 0
+	 * locate ("0123", 4) = npos
+	 */
+	static size_t locate (const std::string& str, int position);
 
 	/**
 	 * Given a value, a digit and position, replace the digit of that value at
@@ -582,66 +609,15 @@ class MidiPatternEditor : public ArdourWindow
 	template <typename Num>
 	Num change_digit (Num val, int digit, int position, int base=10)
 	{
-#if 0
-		std::string val_str = num_to_string (val, base);
-		change_digit (val_str, digit, position, base);
-		return string_to_num (val_str, base);
-#else
-		return set_null (val, position, base)
-			+ place_value<Num> (get_digit (val, position, base), position, base);
-#endif
+		std::string val_str = change_digit (num_to_string (val, base), digit, position, base);
+		return string_to_num<Num> (val_str, base);
 	}
-	// change_digit (const std::string& val, int digit, int position, int base=10)
-	// {
-	// 	pad (val, position)
-	// 	locate (val
-	// }
-
-	/**
-	 * Get the digit from val at position. For instance
-	 *
-	 * get_digit (val=600, position=2) = 6
-	 * get_digit (val=12.43, position=-1) = 4
-	 */
-	template <typename Num> int
-	get_digit (Num val, int position, int base=10)
+	static std::string change_digit (const std::string& val_str, int digit, int position, int base=10)
 	{
-		val /= place_value<Num> (1, position, base);
-		return (int)impl_floor(val) % base; // TODO does it work for negative numbers?
-	}
-
-	// perfect solution proposed by Xi Ruoyao
-	union U
-	{
-		double value;
-		uint64_t word;
-	};
-
-	double
-	impl_floor (double x)
-	{
-		int64_t i0, j0;
-		union U u;
-
-		u.value = x;
-		i0 = u.word;
-		j0 = ((i0>>52)&0x7ff)-0x3ff;
-		if(j0<52) {
-			if(j0<0) {        /* raise inexact if x != 0 */
-				if(i0>=0) {i0=0;}
-				else if((i0&0x7fffffffffffffffl)!=0)
-				{ i0=0xbff0000000000000l;}
-			} else {
-				uint64_t i = (0x000fffffffffffffl)>>j0;
-				if((i0&i)==0) return x; /* x is integral */
-				if(i0<0) i0 += (0x0010000000000000l)>>j0;
-				i0 &= (~i);
-			}
-			u.word = i0;
-			x = u.value;
-		} else if (j0==0x400)
-			return x+x;        /* inf or NaN */
-		return x;
+		std::string padded_val_str = pad (val_str, position);
+		size_t str_pos = locate (padded_val_str, position);
+		padded_val_str[str_pos] = digit_to_char(digit);
+		return padded_val_str;
 	}
 
 	// Make it up for the lack of C++11 support
