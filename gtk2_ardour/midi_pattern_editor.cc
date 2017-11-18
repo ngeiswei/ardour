@@ -2954,9 +2954,6 @@ MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 	bool ret = false;
 	int row_idx = get_row_index (edit_path);
 
-	std::cout << "MidiPatternEditor::step_editing_note_channel_key_press ret = "
-	          << ret << ", row_idx = " << row_idx;
-
 	switch (ev->keyval) {
 
 	// Num keys
@@ -3000,8 +2997,8 @@ MidiPatternEditor::step_editing_set_note_channel (int digit, int row_idx, int tr
 	if (note) {
 		int ch = note->channel();
 		int position = position_spinner.get_value_as_int();
-		int new_ch = change_digit (ch, digit, position);
-		set_note_velocity (note, new_ch);
+		int new_ch = change_digit (ch + 1, digit, position);
+		set_note_channel (note, new_ch - 1);
 	}
 	int steps = steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
@@ -3564,4 +3561,58 @@ MidiPatternEditor::beats_per_row_chosen (SnapType type)
 	if (ract && ract->get_active()) {
 		set_beats_per_row_to (type);
 	}
+}
+
+char MidiPatternEditor::digit_to_char(int digit, int base)
+{
+	return num_to_string(digit, base)[0];
+}
+
+int MidiPatternEditor::char_to_digit(char c, int base)
+{
+	std::string s;
+	s.push_back(c);
+	return string_to_num<int>(std::string(0, c));
+}
+
+std::pair<int, int>
+MidiPatternEditor::position_range (const std::string& str)
+{
+	size_t sepos = str.find('.'); // TODO support other locals
+	int l = 0, u = 0;
+	if (sepos == std::string::npos) {
+		u = (int)str.size() - 1;
+	} else {
+		l = (int)sepos - (int)str.size() + 1;
+		u = (int)sepos - 1;
+	}
+	return std::pair<int, int>(l, u);
+}
+
+std::string
+MidiPatternEditor::pad (const std::string& str, int position)
+{
+	std::pair<int, int> pr = position_range (str);
+	if (position < pr.first) {
+		int diff = pr.first - position;
+		return str + (pr.first == 0 ? "." : "") + std::string(diff, '0');
+	}
+	if (pr.second < position) {
+		int diff = position - pr.second;
+		return std::string(diff, '0') + str;
+	}
+	return str;
+}
+
+size_t MidiPatternEditor::locate (const std::string& str, int position)
+{
+	std::pair<int, int> pr = position_range (str);
+	if (pr.first <= position and position <= pr.second) {
+		if (0 <= position) {
+			return pr.second - position;
+		} else {
+			return str.size() + pr.first - position - 1;
+		}
+	}
+	return std::string::npos;
 }
