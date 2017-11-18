@@ -451,6 +451,7 @@ class MidiPatternEditor : public ArdourWindow
 	bool step_editing_note_channel_key_press (GdkEventKey*);
 	bool step_editing_set_note_channel (int digit, int row_idx, int tracknum);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
+	bool step_editing_set_note_velocity (int digit, int row_idx, int tracknum);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_automation_key_press (GdkEventKey*);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
