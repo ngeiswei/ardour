@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015-2016 Nil Geisweiller
+    Copyright (C) 2015-2017 Nil Geisweiller
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3009,8 +3009,23 @@ bool
 MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
+	int row_idx = get_row_index (edit_path);
 
 	switch (ev->keyval) {
+
+	// Num keys
+	case GDK_0:
+	case GDK_1:
+	case GDK_2:
+	case GDK_3:
+	case GDK_4:
+	case GDK_5:
+	case GDK_6:
+	case GDK_7:
+	case GDK_8:
+	case GDK_9:
+		ret = step_editing_set_note_velocity (digit_key_press (ev), row_idx, edit_tracknum);
+		break;
 
 	// Cursor movements
 	case GDK_Up:
@@ -3030,6 +3045,21 @@ MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool
+MidiPatternEditor::step_editing_set_note_velocity (int digit, int row_idx, int tracknum)
+{
+	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(row_idx);
+	if (note) {
+		int vel = note->velocity();
+		int position = position_spinner.get_value_as_int();
+		int new_vel = change_digit (vel, digit, position);
+		set_note_velocity (note, new_vel);
+	}
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+	return true;
 }
 
 bool
