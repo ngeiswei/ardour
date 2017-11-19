@@ -125,6 +125,7 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	, midi_time_axis_view(mtv)
 	, route (rou)
 	, nrows (0)
+	, edit_rowidx (-1)
 	, edit_tracknum (-1)
 	, edit_colnum (-1)
 	, editing_editable (NULL)
@@ -1731,9 +1732,9 @@ MidiPatternEditor::get_row_index(const TreeModel::Path& path)
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_on_note(int row_idx)
+MidiPatternEditor::get_on_note(int rowidx)
 {
-	return get_on_note(TreeModel::Path (1U, row_idx));
+	return get_on_note(TreeModel::Path (1U, rowidx));
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
@@ -1752,9 +1753,9 @@ MidiPatternEditor::get_on_note(const TreeModel::Path& path)
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_off_note(int row_idx)
+MidiPatternEditor::get_off_note(int rowidx)
 {
-	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)row_idx));
+	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowidx));
 }
 
 boost::shared_ptr<MidiPatternEditor::NoteType>
@@ -1875,6 +1876,7 @@ void
 MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_path = TreePath (path);
+	edit_rowidx = get_row_index (edit_path);
 	edit_tracknum = tracknum;
 	editing_editable = ed;
 }
@@ -1883,6 +1885,7 @@ void
 MidiPatternEditor::clear_editables ()
 {
 	edit_path.clear ();
+	edit_rowidx = -1;
 	edit_tracknum = -1;
 	edit_colnum = -1;
 	editing_editable = NULL;
@@ -1915,34 +1918,33 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 	bool is_off = !is_del and (norm_text[0] == note_off_str[0]);
 	uint8_t pitch = parse_pitch (norm_text);
 	bool is_on = pitch <= 127;
-	int row_idx = get_row_index (path);
 
 	// Can't edit ***
-	if (not np->is_displayable(row_idx, edit_tracknum)) {
+	if (not np->is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
 
 	if (is_on) {
-		set_on_note (pitch, row_idx, edit_tracknum);
+		set_on_note (pitch, edit_rowidx, edit_tracknum);
 	} else if (is_off) {
-		set_off_note (row_idx, edit_tracknum);
+		set_off_note (edit_rowidx, edit_tracknum);
 	} else if (is_del) {
-		delete_note (row_idx, edit_tracknum);
+		delete_note (edit_rowidx, edit_tracknum);
 	}
 
 	clear_editables ();
 }
 
 void
-MidiPatternEditor::set_on_note (uint8_t pitch, int row_idx, int tracknum)
+MidiPatternEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
 	// Abort if the new pitch is invalid
 	if (127 < pitch)
 		return;
 
-	NoteTypePtr on_note = get_on_note(row_idx);
-	NoteTypePtr off_note = get_off_note(row_idx);
+	NoteTypePtr on_note = get_on_note(rowidx);
+	NoteTypePtr off_note = get_off_note(rowidx);
 
 	int delay = delay_spinner.get_value_as_int();
 	uint8_t chan = channel_spinner.get_value_as_int() - 1;
@@ -1959,7 +1961,7 @@ MidiPatternEditor::set_on_note (uint8_t pitch, int row_idx, int tracknum)
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time();
-		Temporal::Beats end = np->next_off(row_idx, edit_tracknum);
+		Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
 		NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
@@ -1972,8 +1974,8 @@ MidiPatternEditor::set_on_note (uint8_t pitch, int row_idx, int tracknum)
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = np->region_relative_beats_at_row(row_idx, delay);
-		NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
+		Temporal::Beats here = np->region_relative_beats_at_row(rowidx, delay);
+		NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1994,7 +1996,7 @@ MidiPatternEditor::set_on_note (uint8_t pitch, int row_idx, int tracknum)
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = np->next_off(row_idx, edit_tracknum);
+		Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 		cmd->add (new_note);
@@ -2009,10 +2011,10 @@ MidiPatternEditor::set_on_note (uint8_t pitch, int row_idx, int tracknum)
 }
 
 void
-MidiPatternEditor::set_off_note (int row_idx, int tracknum)
+MidiPatternEditor::set_off_note (int rowidx, int tracknum)
 {
-	NoteTypePtr on_note = get_on_note(row_idx);
-	NoteTypePtr off_note = get_off_note(row_idx);
+	NoteTypePtr on_note = get_on_note(rowidx);
+	NoteTypePtr off_note = get_off_note(rowidx);
 
 	int delay = delay_spinner.get_value_as_int();
 
@@ -2027,7 +2029,7 @@ MidiPatternEditor::set_off_note (int row_idx, int tracknum)
 		// If there is no off note, update the length of the preceding node
 		// to match the new off note (smart off note).
 		if (!off_note) {
-			NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
+			NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
 			if (prev_note) {
 				Temporal::Beats length = on_note->time() - prev_note->time();
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -2036,8 +2038,8 @@ MidiPatternEditor::set_off_note (int row_idx, int tracknum)
 	} else {
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = np->region_relative_beats_at_row(row_idx, delay);
-		NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
+		Temporal::Beats here = np->region_relative_beats_at_row(rowidx, delay);
+		NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2061,10 +2063,10 @@ MidiPatternEditor::set_off_note (int row_idx, int tracknum)
 }
 
 void
-MidiPatternEditor::delete_note (int row_idx, int tracknum)
+MidiPatternEditor::delete_note (int rowidx, int tracknum)
 {
-	NoteTypePtr on_note = get_on_note(row_idx);
-	NoteTypePtr off_note = get_off_note(row_idx);
+	NoteTypePtr on_note = get_on_note(rowidx);
+	NoteTypePtr off_note = get_off_note(rowidx);
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
@@ -2077,11 +2079,11 @@ MidiPatternEditor::delete_note (int row_idx, int tracknum)
 		// If there is an off note, update the length of the preceding note
 		// to match the next note or the end of the region.
 		if (off_note) {
-			NoteTypePtr prev_note = np->find_prev(row_idx, edit_tracknum);
+			NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Temporal::Beats start = prev_note->time();
-				Temporal::Beats end = np->next_off(row_idx, edit_tracknum);
+				Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
 				Temporal::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
@@ -2090,7 +2092,7 @@ MidiPatternEditor::delete_note (int row_idx, int tracknum)
 		// Update the length of the corresponding on note so the off note
 		// matches the next note or the end of the region.
 		Temporal::Beats start = off_note->time();
-		Temporal::Beats end = np->next_off(row_idx, edit_tracknum);
+		Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
 		cmd = midi_model->new_note_diff_command (opname);
@@ -2105,7 +2107,6 @@ MidiPatternEditor::delete_note (int row_idx, int tracknum)
 void
 MidiPatternEditor::note_channel_edited (const std::string& path, const std::string& text)
 {
-	int row_idx = get_row_index (path);
 	NoteTypePtr note = get_on_note(path);
 	if (text.empty() || !note) {
 		clear_editables ();
@@ -2113,7 +2114,7 @@ MidiPatternEditor::note_channel_edited (const std::string& path, const std::stri
 	}
 
 	// Can't edit ***
-	if (!np->is_displayable(row_idx, edit_tracknum)) {
+	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -2148,7 +2149,6 @@ MidiPatternEditor::set_note_channel (NoteTypePtr note, int ch)
 void
 MidiPatternEditor::note_velocity_edited (const std::string& path, const std::string& text)
 {
-	int row_idx = get_row_index (path);
 	NoteTypePtr note = get_on_note(path);
 	if (text.empty() || !note) {
 		clear_editables ();
@@ -2156,7 +2156,7 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 	}
 
 	// Can't edit ***
-	if (!np->is_displayable(row_idx, edit_tracknum)) {
+	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -2193,10 +2193,8 @@ MidiPatternEditor::set_note_velocity (NoteTypePtr note, int vel)
 void
 MidiPatternEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
-	int row_idx = get_row_index(path);
-
 	// Can't edit ***
-	if (!np->is_displayable(row_idx, edit_tracknum)) {
+	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -2204,17 +2202,17 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 	// Parse the edited delay and set note delay
 	int delay;
 	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) == 1) {
-		set_note_delay (delay, row_idx, edit_tracknum);
+		set_note_delay (delay, edit_rowidx, edit_tracknum);
 	}
 
 	clear_editables ();
 }
 
 void
-MidiPatternEditor::set_note_delay (int delay, int row_idx, int tracknum)
+MidiPatternEditor::set_note_delay (int delay, int rowidx, int tracknum)
 {
-	NoteTypePtr on_note = get_on_note(row_idx);
-	NoteTypePtr off_note = get_off_note(row_idx);
+	NoteTypePtr on_note = get_on_note(rowidx);
+	NoteTypePtr off_note = get_off_note(rowidx);
 	if (!on_note && !off_note)
 		return;
 
@@ -2229,7 +2227,7 @@ MidiPatternEditor::set_note_delay (int delay, int row_idx, int tracknum)
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int delta = delay - np->region_relative_delay_ticks(on_note->time(), row_idx);
+		int delta = delay - np->region_relative_delay_ticks(on_note->time(), rowidx);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_start = on_note->time() + relative_beats;
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
@@ -2247,7 +2245,7 @@ MidiPatternEditor::set_note_delay (int delay, int row_idx, int tracknum)
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int delta = delay - np->region_relative_delay_ticks(off_note->end_time(), row_idx);
+		int delta = delay - np->region_relative_delay_ticks(off_note->end_time(), rowidx);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_length = off_note->length() + relative_beats;
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
@@ -2300,26 +2298,24 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 		return;
 	}
 
-	int row_idx = get_row_index (path);
-
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	AutomationPattern* ap = get_automation_pattern (param);
-	if (!ap || not ap->is_displayable(row_idx, param)) {
+	if (!ap || not ap->is_displayable(edit_rowidx, param)) {
 		clear_editables ();
 		return;
 	}
 
 	if (is_del)
-		delete_automation (row_idx, edit_tracknum);
+		delete_automation (edit_rowidx, edit_tracknum);
 	else
-		set_automation (nval, row_idx, edit_tracknum);
+		set_automation (nval, edit_rowidx, edit_tracknum);
 
 	clear_editables ();
 }
 
 void
-MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
+MidiPatternEditor::set_automation (double val, int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (edit_tracknum);
@@ -2335,7 +2331,7 @@ MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
 	AutomationPattern* ap = get_automation_pattern (param);
 
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
 
 	// Save state for undo
 	XMLNode& before = alist->get_state ();
@@ -2343,8 +2339,8 @@ MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		int delay = delay_spinner.get_value_as_int ();
-		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(row_idx, delay);
-		uint32_t row_sample = ap->sample_at_row(row_idx, delay);
+		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(rowidx, delay);
+		uint32_t row_sample = ap->sample_at_row(rowidx, delay);
 		double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		if (alist->editor_add (awhen, val, false)) {
 			XMLNode& after = alist->get_state ();
@@ -2361,7 +2357,7 @@ MidiPatternEditor::set_automation (double val, int row_idx, int tracknum)
 }
 
 void
-MidiPatternEditor::delete_automation(int row_idx, int tracknum)
+MidiPatternEditor::delete_automation(int rowidx, int tracknum)
 {
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
@@ -2372,7 +2368,7 @@ MidiPatternEditor::delete_automation(int row_idx, int tracknum)
 	AutomationPattern* ap = get_automation_pattern (param);
 
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
 
 	// Save state for undo
 	XMLNode& before = alist->get_state ();
@@ -2398,30 +2394,28 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 		return;
 	}
 
-	int row_idx = get_row_index (path);
-
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_tracknum);
 	AutomationPattern* ap = get_automation_pattern (param);
-	if (!ap || !ap->is_displayable(row_idx, param)) {
+	if (!ap || !ap->is_displayable(edit_rowidx, param)) {
 		clear_editables ();
 		return;
 	}
 
-	set_automation_delay (delay, row_idx, edit_tracknum);
+	set_automation_delay (delay, edit_rowidx, edit_tracknum);
 
 	clear_editables ();
 }
 
 void
-MidiPatternEditor::set_automation_delay (int delay, int row_idx, int tracknum)
+MidiPatternEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 {
 	// Check if within acceptable boundaries
 	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
 		return;
 
-	Temporal::Beats row_relative_beats = tap->region_relative_beats_at_row(row_idx, delay);
-	uint32_t row_sample = tap->sample_at_row(row_idx, delay);
+	Temporal::Beats row_relative_beats = tap->region_relative_beats_at_row(rowidx, delay);
+	uint32_t row_sample = tap->sample_at_row(rowidx, delay);
 
 	// Find the parameter to change delay
 	Evoral::Parameter param = get_parameter (edit_tracknum);
@@ -2433,7 +2427,7 @@ MidiPatternEditor::set_automation_delay (int delay, int row_idx, int tracknum)
 	AutomationPattern* ap = get_automation_pattern (param);
 
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(row_idx);
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
 
 	// If no existing value, abort
 	if (auto_it == r2at.end())
@@ -2464,6 +2458,7 @@ MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
 	midi_model->apply_command (_session, cmd);
 
 	// reset edit info, since we're done
+	// TODO: is this really necessary since clear_editables does that
 	edit_tracknum = -1;
 }
 
@@ -2793,115 +2788,114 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 	int octave = octave_spinner.get_value_as_int();
-	int row_idx = get_row_index (edit_path);
 
 	switch (ev->keyval) {
 
 	// On notes
 	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
-		ret = step_editing_set_on_note (pitch (0, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (0, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_s:                 // C#
-		ret = step_editing_set_on_note (pitch (1, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (1, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_x:                 // D
-		ret = step_editing_set_on_note (pitch (2, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (2, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_d:                 // D#
-		ret = step_editing_set_on_note (pitch (3, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (3, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_c:                 // E
-		ret = step_editing_set_on_note (pitch (4, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (4, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_v:                 // F
-		ret = step_editing_set_on_note (pitch (5, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (5, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_g:                 // F#
-		ret = step_editing_set_on_note (pitch (6, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (6, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_b:                 // G
-		ret = step_editing_set_on_note (pitch (7, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (7, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_h:                 // G#
-		ret = step_editing_set_on_note (pitch (8, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (8, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_n:                 // A
-		ret = step_editing_set_on_note (pitch (9, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (9, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_j:                 // A#
-		ret = step_editing_set_on_note (pitch (10, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (10, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_m:                 // B
-		ret = step_editing_set_on_note (pitch (11, octave), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (11, octave), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_q:                 // C+1
 	case GDK_comma:
-		ret = step_editing_set_on_note (pitch (0, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (0, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_2:                 // C#+1
 	case GDK_l:
-		ret = step_editing_set_on_note (pitch (1, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (1, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_w:                 // D+1
-		ret = step_editing_set_on_note (pitch (2, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (2, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_3:                 // D#+1
-		ret = step_editing_set_on_note (pitch (3, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (3, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_e:                 // E+1
-		ret = step_editing_set_on_note (pitch (4, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (4, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_r:                 // F+1
-		ret = step_editing_set_on_note (pitch (5, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (5, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_5:                 // F#+1
-		ret = step_editing_set_on_note (pitch (6, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (6, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_t:                 // G+1
-		ret = step_editing_set_on_note (pitch (7, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (7, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_6:                 // G#+1
-		ret = step_editing_set_on_note (pitch (8, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (8, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_y:                 // A+1
-		ret = step_editing_set_on_note (pitch (9, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (9, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_7:                 // A#+1
-		ret = step_editing_set_on_note (pitch (10, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (10, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_u:                 // B+1
-		ret = step_editing_set_on_note (pitch (11, octave + 1), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (11, octave + 1), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_i:                 // C+2
-		ret = step_editing_set_on_note (pitch (0, octave + 2), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (0, octave + 2), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_9:                 // C#+2
-		ret = step_editing_set_on_note (pitch (1, octave + 2), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (1, octave + 2), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_o:                 // D+2
-		ret = step_editing_set_on_note (pitch (2, octave + 2), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (2, octave + 2), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_0:                 // D#+2
-		ret = step_editing_set_on_note (pitch (3, octave + 2), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (3, octave + 2), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_p:                 // E+2
-		ret = step_editing_set_on_note (pitch (4, octave + 2), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (4, octave + 2), edit_rowidx, edit_tracknum);
 		break;
 	case GDK_bracketleft:       // F+2
-		ret = step_editing_set_on_note (pitch (5, octave + 2), row_idx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch (5, octave + 2), edit_rowidx, edit_tracknum);
 		break;
 
 	// Off note
 	case GDK_equal:
 	case GDK_Caps_Lock:
-		ret = step_editing_set_off_note (row_idx, edit_tracknum);
+		ret = step_editing_set_off_note (edit_rowidx, edit_tracknum);
 		break;
 
 	// Delete note
 	case GDK_BackSpace:
 	case GDK_Delete:
-		ret = step_editing_delete_note (row_idx, edit_tracknum);
+		ret = step_editing_delete_note (edit_rowidx, edit_tracknum);
 		break;
 
 	// Cursor movements
@@ -2924,25 +2918,25 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	return ret;
 }
 
-bool MidiPatternEditor::step_editing_set_on_note (uint8_t pitch, int row_idx, int tracknum)
+bool MidiPatternEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
-	set_on_note (pitch, row_idx, tracknum);
+	set_on_note (pitch, rowidx, tracknum);
 	int steps = steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
 
-bool MidiPatternEditor::step_editing_set_off_note (int row_idx, int tracknum)
+bool MidiPatternEditor::step_editing_set_off_note (int rowidx, int tracknum)
 {
-	set_off_note (row_idx, tracknum);
+	set_off_note (rowidx, tracknum);
 	int steps = steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
 
-bool MidiPatternEditor::step_editing_delete_note (int row_idx, int tracknum)
+bool MidiPatternEditor::step_editing_delete_note (int rowidx, int tracknum)
 {
-	delete_note (row_idx, tracknum);
+	delete_note (rowidx, tracknum);
 	int steps = steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
@@ -2952,7 +2946,6 @@ bool
 MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
-	int row_idx = get_row_index (edit_path);
 
 	switch (ev->keyval) {
 
@@ -2967,7 +2960,7 @@ MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_7:
 	case GDK_8:
 	case GDK_9:
-		ret = step_editing_set_note_channel (digit_key_press (ev), row_idx, edit_tracknum);
+		ret = step_editing_set_note_channel (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
 	// Cursor movements
@@ -2991,9 +2984,9 @@ MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_note_channel (int digit, int row_idx, int tracknum)
+MidiPatternEditor::step_editing_set_note_channel (int digit, int rowidx, int tracknum)
 {
-	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(row_idx);
+	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int ch = note->channel();
 		int position = position_spinner.get_value_as_int();
@@ -3009,7 +3002,6 @@ bool
 MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
-	int row_idx = get_row_index (edit_path);
 
 	switch (ev->keyval) {
 
@@ -3024,7 +3016,7 @@ MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_7:
 	case GDK_8:
 	case GDK_9:
-		ret = step_editing_set_note_velocity (digit_key_press (ev), row_idx, edit_tracknum);
+		ret = step_editing_set_note_velocity (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
 	// Cursor movements
@@ -3048,9 +3040,9 @@ MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_note_velocity (int digit, int row_idx, int tracknum)
+MidiPatternEditor::step_editing_set_note_velocity (int digit, int rowidx, int tracknum)
 {
-	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(row_idx);
+	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int vel = note->velocity();
 		int position = position_spinner.get_value_as_int();
@@ -3069,6 +3061,20 @@ MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 
+	// Num keys
+	case GDK_0:
+	case GDK_1:
+	case GDK_2:
+	case GDK_3:
+	case GDK_4:
+	case GDK_5:
+	case GDK_6:
+	case GDK_7:
+	case GDK_8:
+	case GDK_9:
+		ret = step_editing_set_note_delay (digit_key_press (ev), edit_rowidx, edit_tracknum);
+		break;
+
 	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
@@ -3087,6 +3093,32 @@ MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool
+MidiPatternEditor::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
+{
+	int position = position_spinner.get_value_as_int();
+	int steps = steps_spinner.get_value_as_int();
+	NoteTypePtr on_note = get_on_note(rowidx);
+	NoteTypePtr off_note = get_off_note(rowidx);
+	if (!on_note && !off_note) {
+		vertical_move_cursor (steps);
+		return true;
+	}
+
+	// Fetch delay
+	int old_delay = on_note ? np->region_relative_delay_ticks(on_note->time(), edit_rowidx)
+		: np->region_relative_delay_ticks(off_note->end_time(), edit_rowidx);
+
+	// Update delay
+	int new_delay = change_digit (old_delay, digit, position);
+	set_note_delay (new_delay, edit_rowidx, edit_tracknum);
+
+	// Move the cursor
+	vertical_move_cursor (steps);
+
+	return true;
 }
 
 bool
