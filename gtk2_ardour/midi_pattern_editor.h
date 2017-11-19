@@ -496,9 +496,9 @@ class MidiPatternEditor : public ArdourWindow
 
 	// Midi note callbacks
 	void note_edited (const std::string& path, const std::string& text);
-	void set_on_note (uint8_t pitch, int irow, int tracknum);
-	void set_off_note (int irow, int tracknum);
-	void delete_note (int irow, int tracknum);
+	void set_on_note (uint8_t pitch, int rowidx, int tracknum);
+	void set_off_note (int rowidx, int tracknum);
+	void delete_note (int rowidx, int tracknum);
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel (NoteTypePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
@@ -512,10 +512,10 @@ class MidiPatternEditor : public ArdourWindow
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
 	AutomationPattern* get_automation_pattern (const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
-	void set_automation (double val, int irow, int automation_tracknum);
-	void delete_automation (int irow, int automation_tracknum);
+	void set_automation (double val, int rowidx, int automation_tracknum);
+	void delete_automation (int rowidx, int automation_tracknum);
 	void automation_delay_edited (const std::string& path, const std::string& text);
-	void set_automation_delay (int delay, int irow, int automation_tracknum);
+	void set_automation_delay (int delay, int rowidx, int automation_tracknum);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
