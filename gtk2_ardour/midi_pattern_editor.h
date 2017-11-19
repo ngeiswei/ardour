@@ -318,6 +318,7 @@ class MidiPatternEditor : public ArdourWindow
 	Gtk::TreeView                view;
 	Gtk::ScrolledWindow          scroller;
 	Gtk::TreeModel::Path         edit_path;
+	int                          edit_rowidx;
 	int                          edit_tracknum;
 	int                          edit_colnum;
 	Gtk::CellEditable*           editing_editable;
@@ -444,15 +445,16 @@ class MidiPatternEditor : public ArdourWindow
 	int digit_key_press (GdkEventKey* ev);
 
 	bool step_editing_note_key_press (GdkEventKey*);
-	bool step_editing_set_on_note (uint8_t pitch, int row_idx, int tracknum);
-	bool step_editing_set_off_note (int row_idx, int tracknum);
-	bool step_editing_delete_note (int row_idx, int tracknum);
+	bool step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum);
+	bool step_editing_set_off_note (int rowidx, int tracknum);
+	bool step_editing_delete_note (int rowidx, int tracknum);
 
 	bool step_editing_note_channel_key_press (GdkEventKey*);
-	bool step_editing_set_note_channel (int digit, int row_idx, int tracknum);
+	bool step_editing_set_note_channel (int digit, int rowidx, int tracknum);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
-	bool step_editing_set_note_velocity (int digit, int row_idx, int tracknum);
+	bool step_editing_set_note_velocity (int digit, int rowidx, int tracknum);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
+	bool step_editing_set_note_delay (int digit, int rowidx, int tracknum);
 	bool step_editing_automation_key_press (GdkEventKey*);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
 
@@ -468,10 +470,10 @@ class MidiPatternEditor : public ArdourWindow
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path);
 
 	// Get note from path and edit_column
-	NoteTypePtr get_on_note (int row_idx);
+	NoteTypePtr get_on_note (int rowidx);
 	NoteTypePtr get_on_note (const std::string& path);
 	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path);
-	NoteTypePtr get_off_note (int row_idx);
+	NoteTypePtr get_off_note (int rowidx);
 	NoteTypePtr get_off_note (const std::string& path);
 	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path);
 	NoteTypePtr get_note (const std::string& path); // on or off
@@ -502,7 +504,7 @@ class MidiPatternEditor : public ArdourWindow
 	void note_velocity_edited (const std::string& path, const std::string& text);
 	void set_note_velocity (NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
-	void set_note_delay (int delay, int row_idx, int tracknum);
+	void set_note_delay (int delay, int rowidx, int tracknum);
 
 	// Automation callbacks
 	bool is_region_automation (const Evoral::Parameter& param) const;
