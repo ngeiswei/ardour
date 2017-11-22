@@ -456,7 +456,9 @@ class MidiPatternEditor : public ArdourWindow
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_set_note_delay (int digit, int rowidx, int tracknum);
 	bool step_editing_automation_key_press (GdkEventKey*);
+	bool step_editing_set_automation (int digit, int rowidx, int tracknum);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
+	bool step_editing_set_automation_delay (int digit, int rowidx, int tracknum);
 
 	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
@@ -512,9 +514,11 @@ class MidiPatternEditor : public ArdourWindow
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
 	AutomationPattern* get_automation_pattern (const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
+	std::pair<double, bool> get_automation_value (int rowidx, int tracknum); // return zero if undefined!
 	void set_automation (double val, int rowidx, int automation_tracknum);
 	void delete_automation (int rowidx, int automation_tracknum);
 	void automation_delay_edited (const std::string& path, const std::string& text);
+	std::pair<int, bool> get_automation_delay (int rowidx, int tracknum); // return zero if undefined!
 	void set_automation_delay (int delay, int rowidx, int automation_tracknum);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);

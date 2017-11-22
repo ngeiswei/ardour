@@ -2314,11 +2314,29 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 	clear_editables ();
 }
 
+std::pair<double, bool>
+MidiPatternEditor::get_automation_value (int rowidx, int tracknum)
+{
+	// Find the parameter to automate
+	Evoral::Parameter param = get_parameter (tracknum);
+	AutomationPattern* ap = get_automation_pattern (param);
+	if (!ap)
+		return std::make_pair(0.0, false);
+
+	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
+	if (auto_it != r2at.end()) {
+		double aval = (*auto_it->second)->value;
+		return std::make_pair(aval, true);
+	}
+	return std::make_pair(0.0, false);
+}
+
 void
 MidiPatternEditor::set_automation (double val, int rowidx, int tracknum)
 {
 	// Find the parameter to automate
-	Evoral::Parameter param = get_parameter (edit_tracknum);
+	Evoral::Parameter param = get_parameter (tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
 	if (!alist)
 		return;
@@ -2359,7 +2377,7 @@ MidiPatternEditor::set_automation (double val, int rowidx, int tracknum)
 void
 MidiPatternEditor::delete_automation(int rowidx, int tracknum)
 {
-	Evoral::Parameter param = get_parameter (edit_tracknum);
+	Evoral::Parameter param = get_parameter (tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
 	if (!alist)
 		return;
@@ -2405,6 +2423,26 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 	set_automation_delay (delay, edit_rowidx, edit_tracknum);
 
 	clear_editables ();
+}
+
+std::pair<int, bool>
+MidiPatternEditor::get_automation_delay (int rowidx, int tracknum)
+{
+	// Find the parameter to automate
+	Evoral::Parameter param = get_parameter (tracknum);
+	AutomationPattern* ap = get_automation_pattern (param);
+	if (!ap)
+		return std::make_pair(0, false);
+
+	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
+	if (auto_it != r2at.end()) {
+		double awhen = (*auto_it->second)->when;
+		int delay_ticks = is_region_automation (param) ?
+			rap->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : tap->delay_ticks((samplepos_t)awhen, rowidx);
+		return std::make_pair(delay_ticks, true);
+	}
+	return std::make_pair(0, false);
 }
 
 void
@@ -2993,6 +3031,7 @@ MidiPatternEditor::step_editing_set_note_channel (int digit, int rowidx, int tra
 		int new_ch = change_digit (ch + 1, digit, position);
 		set_note_channel (note, new_ch - 1);
 	}
+
 	int steps = steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
@@ -3128,6 +3167,20 @@ MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 
+	// Num keys
+	case GDK_0:
+	case GDK_1:
+	case GDK_2:
+	case GDK_3:
+	case GDK_4:
+	case GDK_5:
+	case GDK_6:
+	case GDK_7:
+	case GDK_8:
+	case GDK_9:
+		ret = step_editing_set_automation (digit_key_press (ev), edit_rowidx, edit_tracknum);
+		break;
+
 	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
@@ -3149,11 +3202,42 @@ MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
 }
 
 bool
+MidiPatternEditor::step_editing_set_automation (int digit, int rowidx, int tracknum)
+{
+	std::pair<double, bool> val_def = get_automation_value(rowidx, tracknum);
+
+	// Set new value
+	int position = position_spinner.get_value_as_int();
+	double nval = change_digit (val_def.first, digit, position);
+	set_automation (nval, rowidx, tracknum);
+
+	// Move cursor
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+
+	return true;
+}
+
+bool
 MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
 	switch (ev->keyval) {
+
+	// Num keys
+	case GDK_0:
+	case GDK_1:
+	case GDK_2:
+	case GDK_3:
+	case GDK_4:
+	case GDK_5:
+	case GDK_6:
+	case GDK_7:
+	case GDK_8:
+	case GDK_9:
+		ret = step_editing_set_automation_delay (digit_key_press (ev), edit_rowidx, edit_tracknum);
+		break;
 
 	// Cursor movements
 	case GDK_Up:
@@ -3173,6 +3257,25 @@ MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool
+MidiPatternEditor::step_editing_set_automation_delay (int digit, int rowidx, int tracknum)
+{
+	std::pair<int, bool> val_def = get_automation_delay (rowidx, tracknum);
+
+	// Set new value
+	if (val_def.second) {
+		int position = position_spinner.get_value_as_int();
+		int nval = change_digit (val_def.first, digit, position);
+		set_automation_delay (nval, rowidx, tracknum);
+	}
+
+	// Move cursor
+	int steps = steps_spinner.get_value_as_int();
+	vertical_move_cursor (steps);
+
+	return true;
 }
 
 bool
