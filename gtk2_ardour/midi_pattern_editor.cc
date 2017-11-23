@@ -74,11 +74,7 @@ using Timecode::BBT_Time;
 //
 // - [ ] Fix bug about deleting notes
 //
-// - [ ] Add keyboard shortcuts to edit notes and automations
-//
 // - [ ] Play inserted note
-//
-// - [ ] Add wrap around (vertical and horizontal)
 //
 // - [ ] Support audio tracks and trim automation
 //
