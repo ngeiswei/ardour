@@ -72,8 +72,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Fix bug about deleting notes
-//
 // - [ ] Play inserted note
 //
 // - [ ] Support audio tracks and trim automation
