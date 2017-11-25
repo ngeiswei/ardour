@@ -67,6 +67,19 @@ void NotePattern::update_track_to_notes()
 	for (; it != notes.end() && (*it)->time() < end_time; ++it)
 		strict_notes.insert(*it);
 
+	// Remove missing notes
+	for (size_t track_idx = 0; track_idx < track_to_notes.size(); ++track_idx) {
+		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[track_idx];
+		ARDOUR::MidiModel::Notes::iterator track_notes_it = track_notes.begin();
+		for (; track_notes_it != track_notes.end();) {
+			ARDOUR::MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
+			if (notes_it == strict_notes.end())
+				track_notes.erase(track_notes_it++);
+			else
+				++track_notes_it;
+		}
+	}
+
 	// Add new notes and move existing notes
 	for (MidiModel::StrictNotes::const_iterator it = strict_notes.begin();
 	     it != strict_notes.end(); ++it) {
@@ -91,19 +104,6 @@ void NotePattern::update_track_to_notes()
 		}
 		// Insert the note in the first free track
 		track_to_notes[freetrack].insert(*it);
-	}
-
-	// Remove missing notes
-	for (size_t track_idx = 0; track_idx < track_to_notes.size(); ++track_idx) {
-		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[track_idx];
-		ARDOUR::MidiModel::Notes::iterator track_notes_it = track_notes.begin();
-		for (; track_notes_it != track_notes.end();) {
-			ARDOUR::MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
-			if (notes_it == strict_notes.end())
-				track_notes.erase(track_notes_it++);
-			else
-				++track_notes_it;
-		}
 	}
 
 	// Update nreqtracks and ntracks
