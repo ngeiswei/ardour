@@ -443,6 +443,7 @@ class MidiPatternEditor : public ArdourWindow
 
 	bool move_cursor_key_press (GdkEventKey* ev);
 	int digit_key_press (GdkEventKey* ev);
+	uint8_t pitch_key_press (GdkEventKey* ev);
 
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum);
@@ -507,6 +508,10 @@ class MidiPatternEditor : public ArdourWindow
 	void set_note_velocity (NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
 	void set_note_delay (int delay, int rowidx, int tracknum);
+
+	// Play note
+	void play_note(uint8_t pitch);
+	void release_note(uint8_t pitch);
 
 	// Automation callbacks
 	bool is_region_automation (const Evoral::Parameter& param) const;
