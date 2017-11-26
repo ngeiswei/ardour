@@ -2248,6 +2248,27 @@ MidiPatternEditor::set_note_delay (int delay, int rowidx, int tracknum)
 	apply_command (cmd);
 }
 
+void MidiPatternEditor::play_note(uint8_t pitch)
+{
+	uint8_t event[3];
+	uint8_t chan = channel_spinner.get_value_as_int() - 1;
+	uint8_t vel = velocity_spinner.get_value_as_int();
+	event[0] = (MIDI_CMD_NOTE_ON | chan);
+	event[1] = pitch;
+	event[2] = vel;
+	track->write_immediate_event (3, event);
+}
+
+void MidiPatternEditor::release_note(uint8_t pitch)
+{
+	uint8_t event[3];
+	uint8_t chan = channel_spinner.get_value_as_int() - 1;
+	event[0] = (MIDI_CMD_NOTE_OFF | chan);
+	event[1] = pitch;
+	event[2] = 0;
+	track->write_immediate_event (3, event);
+}
+
 bool MidiPatternEditor::is_region_automation (const Evoral::Parameter& param) const
 {
 	return ARDOUR::parameter_is_midi((AutomationType)param.type());
@@ -2815,107 +2836,122 @@ MidiPatternEditor::digit_key_press (GdkEventKey* ev)
 	}
 }
 
+uint8_t
+MidiPatternEditor::pitch_key_press (GdkEventKey* ev)
+{
+	int octave = octave_spinner.get_value_as_int();
+
+	switch (ev->keyval) {
+	case GDK_z:                 // C
+		return pitch (0, octave);
+	case GDK_s:                 // C#
+		return pitch (1, octave);
+	case GDK_x:                 // D
+		return pitch (2, octave);
+	case GDK_d:                 // D#
+		return pitch (3, octave);
+	case GDK_c:                 // E
+		return pitch (4, octave);
+	case GDK_v:                 // F
+		return pitch (5, octave);
+	case GDK_g:                 // F#
+		return pitch (6, octave);
+	case GDK_b:                 // G
+		return pitch (7, octave);
+	case GDK_h:                 // G#
+		return pitch (8, octave);
+	case GDK_n:                 // A
+		return pitch (9, octave);
+	case GDK_j:                 // A#
+		return pitch (10, octave);
+	case GDK_m:                 // B
+		return pitch (11, octave);
+	case GDK_q:                 // C+1
+	case GDK_comma:
+		return pitch (0, octave + 1);
+	case GDK_2:                 // C#+1
+	case GDK_l:
+		return pitch (1, octave + 1);
+	case GDK_w:                 // D+1
+		return pitch (2, octave + 1);
+	case GDK_3:                 // D#+1
+		return pitch (3, octave + 1);
+		break;
+	case GDK_e:                 // E+1
+		return pitch (4, octave + 1);
+	case GDK_r:                 // F+1
+		return pitch (5, octave + 1);
+	case GDK_5:                 // F#+1
+		return pitch (6, octave + 1);
+	case GDK_t:                 // G+1
+		return pitch (7, octave + 1);
+	case GDK_6:                 // G#+1
+		return pitch (8, octave + 1);
+	case GDK_y:                 // A+1
+		return pitch (9, octave + 1);
+	case GDK_7:                 // A#+1
+		return pitch (10, octave + 1);
+	case GDK_u:                 // B+1
+		return pitch (11, octave + 1);
+	case GDK_i:                 // C+2
+		return pitch (0, octave + 2);
+	case GDK_9:                 // C#+2
+		return pitch (1, octave + 2);
+	case GDK_o:                 // D+2
+		return pitch (2, octave + 2);
+	case GDK_0:                 // D#+2
+		return pitch (3, octave + 2);
+	case GDK_p:                 // E+2
+		return pitch (4, octave + 2);
+	case GDK_bracketleft:       // F+2
+		return pitch (5, octave + 2);
+	default:
+		return -1;
+	}
+}
+
 bool
 MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
-	int octave = octave_spinner.get_value_as_int();
 
 	switch (ev->keyval) {
 
 	// On notes
 	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
-		ret = step_editing_set_on_note (pitch (0, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_s:                 // C#
-		ret = step_editing_set_on_note (pitch (1, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_x:                 // D
-		ret = step_editing_set_on_note (pitch (2, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_d:                 // D#
-		ret = step_editing_set_on_note (pitch (3, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_c:                 // E
-		ret = step_editing_set_on_note (pitch (4, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_v:                 // F
-		ret = step_editing_set_on_note (pitch (5, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_g:                 // F#
-		ret = step_editing_set_on_note (pitch (6, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_b:                 // G
-		ret = step_editing_set_on_note (pitch (7, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_h:                 // G#
-		ret = step_editing_set_on_note (pitch (8, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_n:                 // A
-		ret = step_editing_set_on_note (pitch (9, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_j:                 // A#
-		ret = step_editing_set_on_note (pitch (10, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_m:                 // B
-		ret = step_editing_set_on_note (pitch (11, octave), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_q:                 // C+1
 	case GDK_comma:
-		ret = step_editing_set_on_note (pitch (0, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_2:                 // C#+1
 	case GDK_l:
-		ret = step_editing_set_on_note (pitch (1, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_w:                 // D+1
-		ret = step_editing_set_on_note (pitch (2, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_3:                 // D#+1
-		ret = step_editing_set_on_note (pitch (3, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_e:                 // E+1
-		ret = step_editing_set_on_note (pitch (4, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_r:                 // F+1
-		ret = step_editing_set_on_note (pitch (5, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_5:                 // F#+1
-		ret = step_editing_set_on_note (pitch (6, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_t:                 // G+1
-		ret = step_editing_set_on_note (pitch (7, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_6:                 // G#+1
-		ret = step_editing_set_on_note (pitch (8, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_y:                 // A+1
-		ret = step_editing_set_on_note (pitch (9, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_7:                 // A#+1
-		ret = step_editing_set_on_note (pitch (10, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_u:                 // B+1
-		ret = step_editing_set_on_note (pitch (11, octave + 1), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_i:                 // C+2
-		ret = step_editing_set_on_note (pitch (0, octave + 2), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_9:                 // C#+2
-		ret = step_editing_set_on_note (pitch (1, octave + 2), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_o:                 // D+2
-		ret = step_editing_set_on_note (pitch (2, octave + 2), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_0:                 // D#+2
-		ret = step_editing_set_on_note (pitch (3, octave + 2), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_p:                 // E+2
-		ret = step_editing_set_on_note (pitch (4, octave + 2), edit_rowidx, edit_tracknum);
-		break;
 	case GDK_bracketleft:       // F+2
-		ret = step_editing_set_on_note (pitch (5, octave + 2), edit_rowidx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
 	// Off note
@@ -2952,6 +2988,7 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 
 bool MidiPatternEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
+	play_note(pitch);
 	set_on_note (pitch, rowidx, tracknum);
 	int steps = steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
