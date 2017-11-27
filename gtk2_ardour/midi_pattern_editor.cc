@@ -2837,7 +2837,7 @@ MidiPatternEditor::digit_key_press (GdkEventKey* ev)
 }
 
 uint8_t
-MidiPatternEditor::pitch_key_press (GdkEventKey* ev)
+MidiPatternEditor::pitch_key (GdkEventKey* ev)
 {
 	int octave = octave_spinner.get_value_as_int();
 
@@ -2951,7 +2951,7 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_0:                 // D#+2
 	case GDK_p:                 // E+2
 	case GDK_bracketleft:       // F+2
-		ret = step_editing_set_on_note (pitch_key_press (ev), edit_rowidx, edit_tracknum);
+		ret = step_editing_set_on_note (pitch_key (ev), edit_rowidx, edit_tracknum);
 		break;
 
 	// Off note
@@ -3318,7 +3318,49 @@ MidiPatternEditor::key_press (GdkEventKey* ev)
 bool
 MidiPatternEditor::key_release (GdkEventKey* ev)
 {
-	return false;               // Silence the compiler
+	bool ret = false;
+
+	switch (ev->keyval) {
+	// On notes
+	// TODO add nearby key cases to ignore them
+	case GDK_z:                 // C
+	case GDK_s:                 // C#
+	case GDK_x:                 // D
+	case GDK_d:                 // D#
+	case GDK_c:                 // E
+	case GDK_v:                 // F
+	case GDK_g:                 // F#
+	case GDK_b:                 // G
+	case GDK_h:                 // G#
+	case GDK_n:                 // A
+	case GDK_j:                 // A#
+	case GDK_m:                 // B
+	case GDK_q:                 // C+1
+	case GDK_comma:
+	case GDK_2:                 // C#+1
+	case GDK_l:
+	case GDK_w:                 // D+1
+	case GDK_3:                 // D#+1
+	case GDK_e:                 // E+1
+	case GDK_r:                 // F+1
+	case GDK_5:                 // F#+1
+	case GDK_t:                 // G+1
+	case GDK_6:                 // G#+1
+	case GDK_y:                 // A+1
+	case GDK_7:                 // A#+1
+	case GDK_u:                 // B+1
+	case GDK_i:                 // C+2
+	case GDK_9:                 // C#+2
+	case GDK_o:                 // D+2
+	case GDK_0:                 // D#+2
+	case GDK_p:                 // E+2
+	case GDK_bracketleft:       // F+2
+		release_note (pitch_key (ev));
+		ret = true;
+		break;
+	}
+
+	return ret;               // Silence the compiler
 }
 
 bool
