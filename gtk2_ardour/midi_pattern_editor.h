@@ -443,7 +443,7 @@ class MidiPatternEditor : public ArdourWindow
 
 	bool move_cursor_key_press (GdkEventKey* ev);
 	int digit_key_press (GdkEventKey* ev);
-	uint8_t pitch_key_press (GdkEventKey* ev);
+	uint8_t pitch_key (GdkEventKey* ev);
 
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum);
