@@ -74,7 +74,9 @@ using Timecode::BBT_Time;
 //
 // - [ ] Fix when delay goes outside of the region range
 //
-// - [ ] Play other notes
+// - [ ] Support ardour shortcut such as playing the song, etc
+//
+// - [ ] Make the non-editing cursor visible
 //
 // - [ ] Support audio tracks and trim automation
 //
@@ -3357,7 +3359,52 @@ MidiPatternEditor::step_editing_set_automation_delay (int digit, int rowidx, int
 bool
 MidiPatternEditor::key_press (GdkEventKey* ev)
 {
-	return false;               // Silence the compiler
+	bool ret = false;
+
+	switch (ev->keyval) {
+	// On notes
+	// TODO add nearby key cases to ignore them
+	case GDK_z:                 // C
+	case GDK_s:                 // C#
+	case GDK_x:                 // D
+	case GDK_d:                 // D#
+	case GDK_c:                 // E
+	case GDK_v:                 // F
+	case GDK_g:                 // F#
+	case GDK_b:                 // G
+	case GDK_h:                 // G#
+	case GDK_n:                 // A
+	case GDK_j:                 // A#
+	case GDK_m:                 // B
+	case GDK_q:                 // C+1
+	case GDK_comma:
+	case GDK_2:                 // C#+1
+	case GDK_l:
+	case GDK_w:                 // D+1
+	case GDK_period:
+	case GDK_3:                 // D#+1
+	case GDK_semicolon:
+	case GDK_e:                 // E+1
+	case GDK_slash:
+	case GDK_r:                 // F+1
+	case GDK_5:                 // F#+1
+	case GDK_t:                 // G+1
+	case GDK_6:                 // G#+1
+	case GDK_y:                 // A+1
+	case GDK_7:                 // A#+1
+	case GDK_u:                 // B+1
+	case GDK_i:                 // C+2
+	case GDK_9:                 // C#+2
+	case GDK_o:                 // D+2
+	case GDK_0:                 // D#+2
+	case GDK_p:                 // E+2
+	case GDK_bracketleft:       // F+2
+		play_note (pitch_key (ev));
+		ret = true;
+		break;
+	}
+
+	return ret;
 }
 
 bool
@@ -3408,7 +3455,7 @@ MidiPatternEditor::key_release (GdkEventKey* ev)
 		break;
 	}
 
-	return ret;               // Silence the compiler
+	return ret;
 }
 
 bool
