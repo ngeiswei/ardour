@@ -72,7 +72,9 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Play inserted note
+// - [ ] Fix when delay goes outside of the region range
+//
+// - [ ] Play other notes
 //
 // - [ ] Support audio tracks and trim automation
 //
@@ -2873,11 +2875,14 @@ MidiPatternEditor::pitch_key (GdkEventKey* ev)
 	case GDK_l:
 		return pitch (1, octave + 1);
 	case GDK_w:                 // D+1
+	case GDK_period:
 		return pitch (2, octave + 1);
 	case GDK_3:                 // D#+1
+	case GDK_semicolon:
 		return pitch (3, octave + 1);
 		break;
 	case GDK_e:                 // E+1
+	case GDK_slash:
 		return pitch (4, octave + 1);
 	case GDK_r:                 // F+1
 		return pitch (5, octave + 1);
@@ -2936,8 +2941,11 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_2:                 // C#+1
 	case GDK_l:
 	case GDK_w:                 // D+1
+	case GDK_period:
 	case GDK_3:                 // D#+1
+	case GDK_semicolon:
 	case GDK_e:                 // E+1
+	case GDK_slash:
 	case GDK_r:                 // F+1
 	case GDK_5:                 // F#+1
 	case GDK_t:                 // G+1
@@ -3145,6 +3153,16 @@ MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 		ret = step_editing_set_note_delay (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
+	// Minus
+	case GDK_minus:
+		ret = step_editing_set_note_delay (-1, edit_rowidx, edit_tracknum);
+		break;
+
+	// Plus
+	case GDK_plus:
+		ret = step_editing_set_note_delay (100, edit_rowidx, edit_tracknum);
+		break;
+
 	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
@@ -3182,7 +3200,15 @@ MidiPatternEditor::step_editing_set_note_delay (int digit, int rowidx, int track
 		: np->region_relative_delay_ticks(off_note->end_time(), edit_rowidx);
 
 	// Update delay
-	int new_delay = change_digit (old_delay, digit, position);
+	int new_delay;
+	if (0 <= digit && digit < 100)
+		new_delay = change_digit (old_delay, digit, position);
+	else if ((digit < 0 && 0 < old_delay) || (100 <= digit && old_delay < 0))
+		// It means either - or + has been pressed, so change the sign if necessary
+		new_delay = -old_delay;
+	else
+		new_delay = old_delay;
+
 	set_note_delay (new_delay, edit_rowidx, edit_tracknum);
 
 	// Move the cursor
@@ -3212,6 +3238,16 @@ MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
 		ret = step_editing_set_automation (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
+	// Minus
+	case GDK_minus:
+		ret = step_editing_set_automation (-1, edit_rowidx, edit_tracknum);
+		break;
+
+	// Plus
+	case GDK_plus:
+		ret = step_editing_set_automation (100, edit_rowidx, edit_tracknum);
+		break;
+
 	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
@@ -3236,10 +3272,19 @@ bool
 MidiPatternEditor::step_editing_set_automation (int digit, int rowidx, int tracknum)
 {
 	std::pair<double, bool> val_def = get_automation_value(rowidx, tracknum);
+	double oval = val_def.first;
 
 	// Set new value
 	int position = position_spinner.get_value_as_int();
-	double nval = change_digit (val_def.first, digit, position);
+	double nval;
+	if (0 <= digit && digit < 100)
+		nval = change_digit (oval, digit, position);
+	else if ((digit < 0 && 0 < oval) || (100 <= digit && oval < 0))
+		// It means either - or + has been pressed, so change the sign if necessary
+		nval = -oval;
+	else
+		nval = oval;
+
 	set_automation (nval, rowidx, tracknum);
 
 	// Move cursor
@@ -3340,8 +3385,11 @@ MidiPatternEditor::key_release (GdkEventKey* ev)
 	case GDK_2:                 // C#+1
 	case GDK_l:
 	case GDK_w:                 // D+1
+	case GDK_period:
 	case GDK_3:                 // D#+1
+	case GDK_semicolon:
 	case GDK_e:                 // E+1
+	case GDK_slash:
 	case GDK_r:                 // F+1
 	case GDK_5:                 // F#+1
 	case GDK_t:                 // G+1
@@ -3466,7 +3514,7 @@ MidiPatternEditor::setup_pattern ()
 	view.set_headers_visible (true);
 	view.set_rules_hint (true);
 	view.set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
-	view.get_selection()->set_mode (SELECTION_MULTIPLE);
+	view.get_selection()->set_mode (SELECTION_NONE);
 	view.set_enable_search(false);
 
 	view.show ();
