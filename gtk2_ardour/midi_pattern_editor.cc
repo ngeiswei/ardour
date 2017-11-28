@@ -78,6 +78,10 @@ using Timecode::BBT_Time;
 //
 // - [ ] Make the non-editing cursor visible
 //
+// - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
+//
+// - [ ] Add copy/move, etc notes
+//
 // - [ ] Support audio tracks and trim automation
 //
 // - [ ] Support multiple tracks and regions.
