@@ -72,6 +72,8 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Fix access menu
+//
 // - [ ] Fix when delay goes outside of the region range
 //
 // - [ ] Support ardour shortcut such as playing the song, etc
@@ -2851,70 +2853,105 @@ MidiPatternEditor::pitch_key (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 	case GDK_z:                 // C
+	case GDK_Z:
 		return pitch (0, octave);
 	case GDK_s:                 // C#
+	case GDK_S:
 		return pitch (1, octave);
 	case GDK_x:                 // D
+	case GDK_X:
 		return pitch (2, octave);
 	case GDK_d:                 // D#
+	case GDK_D:
 		return pitch (3, octave);
 	case GDK_c:                 // E
+	case GDK_C:
 		return pitch (4, octave);
 	case GDK_v:                 // F
+	case GDK_V:
 		return pitch (5, octave);
 	case GDK_g:                 // F#
+	case GDK_G:
 		return pitch (6, octave);
 	case GDK_b:                 // G
+	case GDK_B:
 		return pitch (7, octave);
 	case GDK_h:                 // G#
+	case GDK_H:
 		return pitch (8, octave);
 	case GDK_n:                 // A
+	case GDK_N:
 		return pitch (9, octave);
 	case GDK_j:                 // A#
+	case GDK_J:
 		return pitch (10, octave);
 	case GDK_m:                 // B
+	case GDK_M:
 		return pitch (11, octave);
 	case GDK_q:                 // C+1
+	case GDK_Q:
 	case GDK_comma:
+	case GDK_less:
 		return pitch (0, octave + 1);
 	case GDK_2:                 // C#+1
+	case GDK_at:
 	case GDK_l:
+	case GDK_L:
 		return pitch (1, octave + 1);
 	case GDK_w:                 // D+1
+	case GDK_W:
 	case GDK_period:
+	case GDK_greater:
 		return pitch (2, octave + 1);
 	case GDK_3:                 // D#+1
+	case GDK_numbersign:
 	case GDK_semicolon:
+	case GDK_colon:
 		return pitch (3, octave + 1);
 		break;
 	case GDK_e:                 // E+1
+	case GDK_E:
 	case GDK_slash:
+	case GDK_question:
 		return pitch (4, octave + 1);
 	case GDK_r:                 // F+1
+	case GDK_R:
 		return pitch (5, octave + 1);
 	case GDK_5:                 // F#+1
+	case GDK_percent:
 		return pitch (6, octave + 1);
 	case GDK_t:                 // G+1
+	case GDK_T:
 		return pitch (7, octave + 1);
 	case GDK_6:                 // G#+1
+	case GDK_caret:
 		return pitch (8, octave + 1);
 	case GDK_y:                 // A+1
+	case GDK_Y:
 		return pitch (9, octave + 1);
 	case GDK_7:                 // A#+1
+	case GDK_ampersand:
 		return pitch (10, octave + 1);
 	case GDK_u:                 // B+1
+	case GDK_U:
 		return pitch (11, octave + 1);
 	case GDK_i:                 // C+2
+	case GDK_I:
 		return pitch (0, octave + 2);
 	case GDK_9:                 // C#+2
+	case GDK_parenleft:
 		return pitch (1, octave + 2);
 	case GDK_o:                 // D+2
+	case GDK_O:
 		return pitch (2, octave + 2);
 	case GDK_0:                 // D#+2
+	case GDK_parenright:
 		return pitch (3, octave + 2);
 	case GDK_p:                 // E+2
+	case GDK_P:
 		return pitch (4, octave + 2);
 	case GDK_bracketleft:       // F+2
+	case GDK_braceleft:
 		return pitch (5, octave + 2);
 	default:
 		return -1;
@@ -2931,40 +2968,75 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	// On notes
 	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
+	case GDK_Z:
 	case GDK_s:                 // C#
+	case GDK_S:
 	case GDK_x:                 // D
+	case GDK_X:
 	case GDK_d:                 // D#
+	case GDK_D:
 	case GDK_c:                 // E
+	case GDK_C:
 	case GDK_v:                 // F
+	case GDK_V:
 	case GDK_g:                 // F#
+	case GDK_G:
 	case GDK_b:                 // G
+	case GDK_B:
 	case GDK_h:                 // G#
+	case GDK_H:
 	case GDK_n:                 // A
+	case GDK_N:
 	case GDK_j:                 // A#
+	case GDK_J:
 	case GDK_m:                 // B
+	case GDK_M:
 	case GDK_q:                 // C+1
+	case GDK_Q:
 	case GDK_comma:
+	case GDK_less:
 	case GDK_2:                 // C#+1
+	case GDK_at:
 	case GDK_l:
+	case GDK_L:
 	case GDK_w:                 // D+1
+	case GDK_W:
 	case GDK_period:
+	case GDK_greater:
 	case GDK_3:                 // D#+1
+	case GDK_numbersign:
 	case GDK_semicolon:
+	case GDK_colon:
 	case GDK_e:                 // E+1
+	case GDK_E:
 	case GDK_slash:
+	case GDK_question:
 	case GDK_r:                 // F+1
+	case GDK_R:
 	case GDK_5:                 // F#+1
+	case GDK_percent:
 	case GDK_t:                 // G+1
+	case GDK_T:
 	case GDK_6:                 // G#+1
+	case GDK_caret:
 	case GDK_y:                 // A+1
+	case GDK_Y:
 	case GDK_7:                 // A#+1
+	case GDK_ampersand:
 	case GDK_u:                 // B+1
+	case GDK_U:
 	case GDK_i:                 // C+2
+	case GDK_I:
 	case GDK_9:                 // C#+2
+	case GDK_parenleft:
 	case GDK_o:                 // D+2
+	case GDK_O:
 	case GDK_0:                 // D#+2
+	case GDK_parenright:
 	case GDK_p:                 // E+2
+	case GDK_P:
 	case GDK_bracketleft:       // F+2
+	case GDK_braceleft:
 		ret = step_editing_set_on_note (pitch_key (ev), edit_rowidx, edit_tracknum);
 		break;
 
@@ -2992,6 +3064,27 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 		ret = move_cursor_key_press (ev);
 		break;
+
+	// Other key not passed to the default entry handler
+	case GDK_a:
+	case GDK_A:
+	case GDK_f:
+	case GDK_F:
+	case GDK_k:
+	case GDK_K:
+	case GDK_apostrophe:
+	case GDK_quotedbl:
+	case GDK_1:
+	case GDK_exclam:
+	case GDK_4:
+	case GDK_dollar:
+	case GDK_8:
+	case GDK_asterisk:
+	case GDK_minus:
+	case GDK_underscore:
+	case GDK_bracketright:
+	case GDK_braceright:
+		ret = true;
 
 	default:
 		break;
@@ -3418,42 +3511,76 @@ MidiPatternEditor::key_release (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 	// On notes
-	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
+	case GDK_Z:
 	case GDK_s:                 // C#
+	case GDK_S:
 	case GDK_x:                 // D
+	case GDK_X:
 	case GDK_d:                 // D#
+	case GDK_D:
 	case GDK_c:                 // E
+	case GDK_C:
 	case GDK_v:                 // F
+	case GDK_V:
 	case GDK_g:                 // F#
+	case GDK_G:
 	case GDK_b:                 // G
+	case GDK_B:
 	case GDK_h:                 // G#
+	case GDK_H:
 	case GDK_n:                 // A
+	case GDK_N:
 	case GDK_j:                 // A#
+	case GDK_J:
 	case GDK_m:                 // B
+	case GDK_M:
 	case GDK_q:                 // C+1
+	case GDK_Q:
 	case GDK_comma:
+	case GDK_less:
 	case GDK_2:                 // C#+1
+	case GDK_at:
 	case GDK_l:
+	case GDK_L:
 	case GDK_w:                 // D+1
+	case GDK_W:
 	case GDK_period:
+	case GDK_greater:
 	case GDK_3:                 // D#+1
+	case GDK_numbersign:
 	case GDK_semicolon:
+	case GDK_colon:
 	case GDK_e:                 // E+1
+	case GDK_E:
 	case GDK_slash:
+	case GDK_question:
 	case GDK_r:                 // F+1
+	case GDK_R:
 	case GDK_5:                 // F#+1
+	case GDK_percent:
 	case GDK_t:                 // G+1
+	case GDK_T:
 	case GDK_6:                 // G#+1
+	case GDK_caret:
 	case GDK_y:                 // A+1
+	case GDK_Y:
 	case GDK_7:                 // A#+1
+	case GDK_ampersand:
 	case GDK_u:                 // B+1
+	case GDK_U:
 	case GDK_i:                 // C+2
+	case GDK_I:
 	case GDK_9:                 // C#+2
+	case GDK_parenleft:
 	case GDK_o:                 // D+2
+	case GDK_O:
 	case GDK_0:                 // D#+2
+	case GDK_parenright:
 	case GDK_p:                 // E+2
+	case GDK_P:
 	case GDK_bracketleft:       // F+2
+	case GDK_braceleft:
 		release_note (pitch_key (ev));
 		ret = true;
 		break;
