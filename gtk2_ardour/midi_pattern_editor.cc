@@ -72,6 +72,10 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Support tab in horizontal_move_cursor
+//
+// - [ ] Use Ardour's logger instead of stdout
+//
 // - [ ] Fix access menu
 //
 // - [ ] Fix when delay goes outside of the region range
@@ -2822,24 +2826,34 @@ MidiPatternEditor::digit_key_press (GdkEventKey* ev)
 	switch (ev->keyval) {
 	// Num keys
 	case GDK_0:
+	case GDK_parenright:
 		return 0;
 	case GDK_1:
+	case GDK_exclam:
 		return 1;
 	case GDK_2:
+	case GDK_at:
 		return 2;
 	case GDK_3:
+	case GDK_numbersign:
 		return 3;
 	case GDK_4:
+	case GDK_dollar:
 		return 4;
 	case GDK_5:
+	case GDK_percent:
 		return 5;
 	case GDK_6:
+	case GDK_caret:
 		return 6;
 	case GDK_7:
+	case GDK_ampersand:
 		return 7;
 	case GDK_8:
+	case GDK_asterisk:
 		return 8;
 	case GDK_9:
+	case GDK_parenleft:
 		return 9;
 	default:
 		return -1;
@@ -2966,7 +2980,6 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	switch (ev->keyval) {
 
 	// On notes
-	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
 	case GDK_Z:
 	case GDK_s:                 // C#
@@ -3042,6 +3055,7 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 
 	// Off note
 	case GDK_equal:
+	case GDK_plus:
 	case GDK_Caps_Lock:
 		ret = step_editing_set_off_note (edit_rowidx, edit_tracknum);
 		break;
@@ -3127,15 +3141,25 @@ MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 
 	// Num keys
 	case GDK_0:
+	case GDK_parenright:
 	case GDK_1:
+	case GDK_exclam:
 	case GDK_2:
+	case GDK_at:
 	case GDK_3:
+	case GDK_numbersign:
 	case GDK_4:
+	case GDK_dollar:
 	case GDK_5:
+	case GDK_percent:
 	case GDK_6:
+	case GDK_caret:
 	case GDK_7:
+	case GDK_ampersand:
 	case GDK_8:
+	case GDK_asterisk:
 	case GDK_9:
+	case GDK_parenleft:
 		ret = step_editing_set_note_channel (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
@@ -3184,15 +3208,25 @@ MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 
 	// Num keys
 	case GDK_0:
+	case GDK_parenright:
 	case GDK_1:
+	case GDK_exclam:
 	case GDK_2:
+	case GDK_at:
 	case GDK_3:
+	case GDK_numbersign:
 	case GDK_4:
+	case GDK_dollar:
 	case GDK_5:
+	case GDK_percent:
 	case GDK_6:
+	case GDK_caret:
 	case GDK_7:
+	case GDK_ampersand:
 	case GDK_8:
+	case GDK_asterisk:
 	case GDK_9:
+	case GDK_parenleft:
 		ret = step_editing_set_note_velocity (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
@@ -3240,25 +3274,37 @@ MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 
 	// Num keys
 	case GDK_0:
+	case GDK_parenright:
 	case GDK_1:
+	case GDK_exclam:
 	case GDK_2:
+	case GDK_at:
 	case GDK_3:
+	case GDK_numbersign:
 	case GDK_4:
+	case GDK_dollar:
 	case GDK_5:
+	case GDK_percent:
 	case GDK_6:
+	case GDK_caret:
 	case GDK_7:
+	case GDK_ampersand:
 	case GDK_8:
+	case GDK_asterisk:
 	case GDK_9:
+	case GDK_parenleft:
 		ret = step_editing_set_note_delay (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
 	// Minus
 	case GDK_minus:
+	case GDK_underscore:
 		ret = step_editing_set_note_delay (-1, edit_rowidx, edit_tracknum);
 		break;
 
 	// Plus
 	case GDK_plus:
+	case GDK_equal:
 		ret = step_editing_set_note_delay (100, edit_rowidx, edit_tracknum);
 		break;
 
@@ -3325,25 +3371,37 @@ MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
 
 	// Num keys
 	case GDK_0:
+	case GDK_parenright:
 	case GDK_1:
+	case GDK_exclam:
 	case GDK_2:
+	case GDK_at:
 	case GDK_3:
+	case GDK_numbersign:
 	case GDK_4:
+	case GDK_dollar:
 	case GDK_5:
+	case GDK_percent:
 	case GDK_6:
+	case GDK_caret:
 	case GDK_7:
+	case GDK_ampersand:
 	case GDK_8:
+	case GDK_asterisk:
 	case GDK_9:
+	case GDK_parenleft:
 		ret = step_editing_set_automation (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
 	// Minus
 	case GDK_minus:
+	case GDK_underscore:
 		ret = step_editing_set_automation (-1, edit_rowidx, edit_tracknum);
 		break;
 
 	// Plus
 	case GDK_plus:
+	case GDK_equal:
 		ret = step_editing_set_automation (100, edit_rowidx, edit_tracknum);
 		break;
 
@@ -3402,15 +3460,25 @@ MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 
 	// Num keys
 	case GDK_0:
+	case GDK_parenright:
 	case GDK_1:
+	case GDK_exclam:
 	case GDK_2:
+	case GDK_at:
 	case GDK_3:
+	case GDK_numbersign:
 	case GDK_4:
+	case GDK_dollar:
 	case GDK_5:
+	case GDK_percent:
 	case GDK_6:
+	case GDK_caret:
 	case GDK_7:
+	case GDK_ampersand:
 	case GDK_8:
+	case GDK_asterisk:
 	case GDK_9:
+	case GDK_parenleft:
 		ret = step_editing_set_automation_delay (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
@@ -3460,42 +3528,76 @@ MidiPatternEditor::key_press (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 	// On notes
-	// TODO add nearby key cases to ignore them
 	case GDK_z:                 // C
+	case GDK_Z:
 	case GDK_s:                 // C#
+	case GDK_S:
 	case GDK_x:                 // D
+	case GDK_X:
 	case GDK_d:                 // D#
+	case GDK_D:
 	case GDK_c:                 // E
+	case GDK_C:
 	case GDK_v:                 // F
+	case GDK_V:
 	case GDK_g:                 // F#
+	case GDK_G:
 	case GDK_b:                 // G
+	case GDK_B:
 	case GDK_h:                 // G#
+	case GDK_H:
 	case GDK_n:                 // A
+	case GDK_N:
 	case GDK_j:                 // A#
+	case GDK_J:
 	case GDK_m:                 // B
+	case GDK_M:
 	case GDK_q:                 // C+1
+	case GDK_Q:
 	case GDK_comma:
+	case GDK_less:
 	case GDK_2:                 // C#+1
+	case GDK_at:
 	case GDK_l:
+	case GDK_L:
 	case GDK_w:                 // D+1
+	case GDK_W:
 	case GDK_period:
+	case GDK_greater:
 	case GDK_3:                 // D#+1
+	case GDK_numbersign:
 	case GDK_semicolon:
+	case GDK_colon:
 	case GDK_e:                 // E+1
+	case GDK_E:
 	case GDK_slash:
+	case GDK_question:
 	case GDK_r:                 // F+1
+	case GDK_R:
 	case GDK_5:                 // F#+1
+	case GDK_percent:
 	case GDK_t:                 // G+1
+	case GDK_T:
 	case GDK_6:                 // G#+1
+	case GDK_caret:
 	case GDK_y:                 // A+1
+	case GDK_Y:
 	case GDK_7:                 // A#+1
+	case GDK_ampersand:
 	case GDK_u:                 // B+1
+	case GDK_U:
 	case GDK_i:                 // C+2
+	case GDK_I:
 	case GDK_9:                 // C#+2
+	case GDK_parenleft:
 	case GDK_o:                 // D+2
+	case GDK_O:
 	case GDK_0:                 // D#+2
+	case GDK_parenright:
 	case GDK_p:                 // E+2
+	case GDK_P:
 	case GDK_bracketleft:       // F+2
+	case GDK_braceleft:
 		play_note (pitch_key (ev));
 		ret = true;
 		break;
