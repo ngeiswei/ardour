@@ -74,6 +74,8 @@ using Timecode::BBT_Time;
 //
 // - [ ] Support tab in horizontal_move_cursor
 //
+// - [ ] Add shortcut for parameters, steps, etc
+//
 // - [ ] Use Ardour's logger instead of stdout
 //
 // - [ ] Fix access menu
