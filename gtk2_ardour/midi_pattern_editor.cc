@@ -72,7 +72,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Support tab in horizontal_move_cursor
+// - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 //
 // - [ ] Add shortcut for parameters, steps, etc
 //
