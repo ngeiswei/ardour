@@ -50,7 +50,7 @@
 #include "gtkmm2ext/rgb_macros.h"
 
 #include "ui_config.h"
-#include "midi_pattern_editor.h"
+#include "midi_tracker_editor.h"
 #include "note_player.h"
 #include "widgets/tooltips.h"
 #include "axis_view.h"
@@ -95,7 +95,7 @@ using Timecode::BBT_Time;
 // - [ ] Support multiple tracks and regions.
 
 ///////////////////////
-// MidiPatternEditor //
+// MidiTrackerEditor //
 ///////////////////////
 
 static const gchar *_beats_per_row_strings[] = {
@@ -123,10 +123,10 @@ static const gchar *_beats_per_row_strings[] = {
 
 #define COMBO_TRIANGLE_WIDTH 25
 
-const std::string MidiPatternEditor::note_off_str = "===";
-const std::string MidiPatternEditor::undefined_str = "***";
+const std::string MidiTrackerEditor::note_off_str = "===";
+const std::string MidiTrackerEditor::undefined_str = "***";
 
-MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, boost::shared_ptr<MidiRegion> reg, boost::shared_ptr<MidiTrack> tr)
+MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, boost::shared_ptr<MidiRegion> reg, boost::shared_ptr<MidiTrack> tr)
 	: ArdourWindow (reg->name())
 	, automation_action_menu(0)
 	, controller_menu (0)
@@ -204,9 +204,9 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	redisplay_model ();
 
 	midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                     boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
+	                                     boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
 	region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-	                                       boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
+	                                       boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
 	
 	vbox.show ();
 
@@ -219,7 +219,7 @@ MidiPatternEditor::MidiPatternEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	set_size_request (-1, 400);
 }
 
-MidiPatternEditor::~MidiPatternEditor ()
+MidiTrackerEditor::~MidiTrackerEditor ()
 {
 	delete np;
 	delete tap;
@@ -232,8 +232,8 @@ MidiPatternEditor::~MidiPatternEditor ()
 // Automation //
 ////////////////
 
-MidiPatternEditor::ProcessorAutomationNode*
-MidiPatternEditor::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter what)
+MidiTrackerEditor::ProcessorAutomationNode*
+MidiTrackerEditor::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter what)
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 
@@ -250,7 +250,7 @@ MidiPatternEditor::find_processor_automation_node (boost::shared_ptr<Processor> 
 	return 0;
 }
 
-CheckMenuItem* MidiPatternEditor::automation_child_menu_item(const Evoral::Parameter& param)
+CheckMenuItem* MidiTrackerEditor::automation_child_menu_item(const Evoral::Parameter& param)
 {
 	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find(param);
 	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find(param);
@@ -263,12 +263,12 @@ CheckMenuItem* MidiPatternEditor::automation_child_menu_item(const Evoral::Param
 }
 
 bool
-MidiPatternEditor::is_pan_type (const Evoral::Parameter& param) const {
+MidiTrackerEditor::is_pan_type (const Evoral::Parameter& param) const {
 	return _pan_param_types.find((ARDOUR::AutomationType)param.type()) != _pan_param_types.end();
 }
 
 size_t
-MidiPatternEditor::select_available_automation_column ()
+MidiTrackerEditor::select_available_automation_column ()
 {
 	// Find the next available column
 	if (available_automation_columns.empty()) {
@@ -283,7 +283,7 @@ MidiPatternEditor::select_available_automation_column ()
 }
 
 size_t
-MidiPatternEditor::add_main_automation_column (const Evoral::Parameter& param)
+MidiTrackerEditor::add_main_automation_column (const Evoral::Parameter& param)
 {
 	// Select the next available column
 	size_t column = select_available_automation_column ();
@@ -303,7 +303,7 @@ MidiPatternEditor::add_main_automation_column (const Evoral::Parameter& param)
 }
 
 size_t
-MidiPatternEditor::add_midi_automation_column (const Evoral::Parameter& param)
+MidiTrackerEditor::add_midi_automation_column (const Evoral::Parameter& param)
 {
 	// If not in param2actrl, add it.
 	if (!param2actrl[param]) {
@@ -331,7 +331,7 @@ MidiPatternEditor::add_midi_automation_column (const Evoral::Parameter& param)
  * parameter.
  */
 void
-MidiPatternEditor::add_processor_automation_column (boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
+MidiTrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
 {
 	ProcessorAutomationNode* pan;
 
@@ -364,7 +364,7 @@ MidiPatternEditor::add_processor_automation_column (boost::shared_ptr<Processor>
 }
 
 void
-MidiPatternEditor::show_all_processor_automations ()
+MidiTrackerEditor::show_all_processor_automations ()
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
@@ -389,7 +389,7 @@ MidiPatternEditor::show_all_processor_automations ()
 // TODO: this menu needs to be persistent between sessions. Should also be
 // fixed for the track/piano roll view.
 void
-MidiPatternEditor::show_all_automation ()
+MidiTrackerEditor::show_all_automation ()
 {
 	show_all_main_automations ();
 	show_existing_midi_automations ();
@@ -399,7 +399,7 @@ MidiPatternEditor::show_all_automation ()
 }
 
 void
-MidiPatternEditor::show_existing_midi_automations ()
+MidiTrackerEditor::show_existing_midi_automations ()
 {
 	const set<Evoral::Parameter> params = midi_track()->midi_playlist()->contained_automation();
 	for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
@@ -416,7 +416,7 @@ MidiPatternEditor::show_existing_midi_automations ()
 }
 
 void
-MidiPatternEditor::show_existing_processor_automations ()
+MidiTrackerEditor::show_existing_processor_automations ()
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
@@ -444,7 +444,7 @@ MidiPatternEditor::show_existing_processor_automations ()
 }
 
 void
-MidiPatternEditor::show_existing_automation ()
+MidiTrackerEditor::show_existing_automation ()
 {
 	show_existing_main_automations ();
 	show_existing_midi_automations ();
@@ -454,7 +454,7 @@ MidiPatternEditor::show_existing_automation ()
 }
 
 void
-MidiPatternEditor::hide_midi_automations ()
+MidiTrackerEditor::hide_midi_automations ()
 {
 	std::set<size_t> to_remove;
 	for (std::set<size_t>::iterator it = visible_automation_columns.begin();
@@ -476,7 +476,7 @@ MidiPatternEditor::hide_midi_automations ()
 }
 
 void
-MidiPatternEditor::hide_processor_automations ()
+MidiTrackerEditor::hide_processor_automations ()
 {
 	for (list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
@@ -490,7 +490,7 @@ MidiPatternEditor::hide_processor_automations ()
 }
 
 void
-MidiPatternEditor::hide_all_automation ()
+MidiTrackerEditor::hide_all_automation ()
 {
 	hide_main_automations ();
 	hide_midi_automations ();
@@ -503,15 +503,15 @@ MidiPatternEditor::hide_all_automation ()
  *  display automation curves for any parameters which have data.
  */
 void
-MidiPatternEditor::setup_processor_menu_and_curves ()
+MidiTrackerEditor::setup_processor_menu_and_curves ()
 {
 	_subplugin_menu_map.clear ();
 	subplugin_menu.items().clear ();
-	route->foreach_processor (sigc::mem_fun (*this, &MidiPatternEditor::add_processor_to_subplugin_menu));
+	route->foreach_processor (sigc::mem_fun (*this, &MidiTrackerEditor::add_processor_to_subplugin_menu));
 }
 
 void
-MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
+MidiTrackerEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
 {
 	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
 
@@ -592,7 +592,7 @@ MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 			pan->menu_item = mitem;
 		}
 
-		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::processor_menu_item_toggled), rai, pan));
+		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::processor_menu_item_toggled), rai, pan));
 	}
 
 	if (items.size() == 0) {
@@ -610,7 +610,7 @@ MidiPatternEditor::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proc
 }
 
 void
-MidiPatternEditor::processor_menu_item_toggled (MidiPatternEditor::ProcessorAutomationInfo* rai, MidiPatternEditor::ProcessorAutomationNode* pan)
+MidiTrackerEditor::processor_menu_item_toggled (MidiTrackerEditor::ProcessorAutomationInfo* rai, MidiTrackerEditor::ProcessorAutomationNode* pan)
 {
 	const bool showit = pan->menu_item->get_active();
 
@@ -627,7 +627,7 @@ MidiPatternEditor::processor_menu_item_toggled (MidiPatternEditor::ProcessorAuto
 }
 
 void
-MidiPatternEditor::build_automation_action_menu ()
+MidiTrackerEditor::build_automation_action_menu ()
 {
 	using namespace Menu_Helpers;
 
@@ -645,13 +645,13 @@ MidiPatternEditor::build_automation_action_menu ()
 	automation_action_menu->set_name ("ArdourContextMenu");
 
 	items.push_back (MenuElem (_("Show All Automation"),
-	                           sigc::mem_fun (*this, &MidiPatternEditor::show_all_automation)));
+	                           sigc::mem_fun (*this, &MidiTrackerEditor::show_all_automation)));
 
 	items.push_back (MenuElem (_("Show Existing Automation"),
-	                           sigc::mem_fun (*this, &MidiPatternEditor::show_existing_automation)));
+	                           sigc::mem_fun (*this, &MidiTrackerEditor::show_existing_automation)));
 
 	items.push_back (MenuElem (_("Hide All Automation"),
-	                           sigc::mem_fun (*this, &MidiPatternEditor::hide_all_automation)));
+	                           sigc::mem_fun (*this, &MidiTrackerEditor::hide_all_automation)));
 
 	/* Attach the plugin submenu. It may have previously been used elsewhere,
 	   so it was detached above
@@ -671,25 +671,25 @@ MidiPatternEditor::build_automation_action_menu ()
 	/* Add any route automation */
 
 	if (true) {
-		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (*this, &MidiPatternEditor::update_gain_column_visibility)));
+		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (*this, &MidiTrackerEditor::update_gain_column_visibility)));
 		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		gain_automation_item->set_active (is_gain_visible());
 	}
 
 	if (false /*trim_track*/ /* TODO: support audio track */) {
-		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (*this, &MidiPatternEditor::update_trim_column_visibility)));
+		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (*this, &MidiTrackerEditor::update_trim_column_visibility)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		trim_automation_item->set_active (false);
 	}
 
 	if (true /*mute_track*/) {
-		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (*this, &MidiPatternEditor::update_mute_column_visibility)));
+		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (*this, &MidiTrackerEditor::update_mute_column_visibility)));
 		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		mute_automation_item->set_active (is_mute_visible());
 	}
 
 	if (true /*pan_tracks*/) {
-		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (*this, &MidiPatternEditor::update_pan_columns_visibility)));
+		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (*this, &MidiTrackerEditor::update_pan_columns_visibility)));
 		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		pan_automation_item->set_active (is_pan_visible());
 	}
@@ -738,7 +738,7 @@ MidiPatternEditor::build_automation_action_menu ()
 }
 
 void
-MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
+MidiTrackerEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
                                                   const string&           label,
                                                   AutomationType          auto_type,
                                                   uint8_t                 cmd)
@@ -772,11 +772,11 @@ MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		chn_items.push_back (
 			MenuElem (_("Hide all channels"),
-			          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
 			                      false, param_without_channel)));
 		chn_items.push_back (
 			MenuElem (_("Show all channels"),
-			          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
 			                      true, param_without_channel)));
 
 		for (uint8_t chn = 0; chn < 16; chn++) {
@@ -787,7 +787,7 @@ MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-					               sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
 				bool visible = is_automation_visible(fully_qualified_param);
@@ -812,7 +812,7 @@ MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				items.push_back (
 					CheckMenuElem (label,
-					               sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
 				bool visible = is_automation_visible(fully_qualified_param);
@@ -829,7 +829,7 @@ MidiPatternEditor::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 }
 
 void
-MidiPatternEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
+MidiTrackerEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
 {
 	const uint16_t selected_channels = midi_track()->get_playback_channel_mask();
 
@@ -850,7 +850,7 @@ MidiPatternEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parame
  *  Will add column if necessary.
  */
 void
-MidiPatternEditor::update_automation_column_visibility (const Evoral::Parameter& param)
+MidiTrackerEditor::update_automation_column_visibility (const Evoral::Parameter& param)
 {
 	// Find menu item associated to this parameter
 	CheckMenuItem* mitem = automation_child_menu_item(param);
@@ -876,7 +876,7 @@ MidiPatternEditor::update_automation_column_visibility (const Evoral::Parameter&
 }
 
 void
-MidiPatternEditor::build_controller_menu ()
+MidiTrackerEditor::build_controller_menu ()
 {
 	using namespace Menu_Helpers;
 
@@ -985,7 +985,7 @@ MidiPatternEditor::build_controller_menu ()
 }
 
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiPatternEditor::get_device_names ()
+MidiTrackerEditor::get_device_names ()
 {
 	return midi_time_axis_view->get_device_names ();
 }
@@ -993,7 +993,7 @@ MidiPatternEditor::get_device_names ()
 
 /** Add a single menu item for a controller on one channel. */
 void
-MidiPatternEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
+MidiTrackerEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
                                                       int                     ctl,
                                                       const std::string&      name)
 {
@@ -1008,7 +1008,7 @@ MidiPatternEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ct
 				CheckMenuElem (
 					string_compose ("<b>%1</b>: %2 [%3]", ctl, name, int (chn + 1)),
 					sigc::bind (
-						sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
+						sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
 						fully_qualified_param)));
 			dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
 
@@ -1026,7 +1026,7 @@ MidiPatternEditor::add_single_channel_controller_item(Menu_Helpers::MenuList& ct
 
 /** Add a submenu with 1 item per channel for a controller on many channels. */
 void
-MidiPatternEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
+MidiTrackerEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
                                                      int                     ctl,
                                                      const std::string&      name)
 {
@@ -1042,11 +1042,11 @@ MidiPatternEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 	Evoral::Parameter param_without_channel (MidiCCAutomation, 0, ctl);
 	chn_items.push_back (
 		MenuElem (_("Hide all channels"),
-		          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
 		                      false, param_without_channel)));
 	chn_items.push_back (
 		MenuElem (_("Show all channels"),
-		          sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::change_all_channel_tracks_visibility),
 		                      true, param_without_channel)));
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -1057,7 +1057,7 @@ MidiPatternEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
 			chn_items.push_back (
 				CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-				               sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::update_automation_column_visibility),
+				               sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::update_automation_column_visibility),
 				                           fully_qualified_param)));
 
 			bool visible = is_automation_visible(fully_qualified_param);
@@ -1075,7 +1075,7 @@ MidiPatternEditor::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl
 }
 
 bool
-MidiPatternEditor::is_automation_visible(const Evoral::Parameter& param) const
+MidiTrackerEditor::is_automation_visible(const Evoral::Parameter& param) const
 {
 	ColParamBimap::right_const_iterator it = col2param.right.find(param);
 	return it != col2param.right.end() &&
@@ -1083,21 +1083,21 @@ MidiPatternEditor::is_automation_visible(const Evoral::Parameter& param) const
 }
 
 bool
-MidiPatternEditor::is_gain_visible() const
+MidiTrackerEditor::is_gain_visible() const
 {
 	return visible_automation_columns.find(gain_column)
 		!= visible_automation_columns.end();
 };
 
 bool
-MidiPatternEditor::is_mute_visible() const
+MidiTrackerEditor::is_mute_visible() const
 {
 	return visible_automation_columns.find(mute_column)
 		!= visible_automation_columns.end();
 };
 
 bool
-MidiPatternEditor::is_pan_visible() const
+MidiTrackerEditor::is_pan_visible() const
 {
 	bool visible = not pan_columns.empty();
 	for (std::vector<size_t>::const_iterator it = pan_columns.begin(); it != pan_columns.end(); ++it) {
@@ -1109,7 +1109,7 @@ MidiPatternEditor::is_pan_visible() const
 };
 
 void
-MidiPatternEditor::update_gain_column_visibility ()
+MidiTrackerEditor::update_gain_column_visibility ()
 {
 	const bool showit = gain_automation_item->get_active();
 
@@ -1130,7 +1130,7 @@ MidiPatternEditor::update_gain_column_visibility ()
 }
 
 void
-MidiPatternEditor::update_trim_column_visibility ()
+MidiTrackerEditor::update_trim_column_visibility ()
 {
 	// bool const showit = trim_automation_item->get_active();
 
@@ -1146,7 +1146,7 @@ MidiPatternEditor::update_trim_column_visibility ()
 }
 
 void
-MidiPatternEditor::update_mute_column_visibility ()
+MidiTrackerEditor::update_mute_column_visibility ()
 {
 	const bool showit = mute_automation_item->get_active();
 
@@ -1167,7 +1167,7 @@ MidiPatternEditor::update_mute_column_visibility ()
 }
 
 void
-MidiPatternEditor::update_pan_columns_visibility ()
+MidiTrackerEditor::update_pan_columns_visibility ()
 {
 	const bool showit = pan_automation_item->get_active();
 
@@ -1194,7 +1194,7 @@ MidiPatternEditor::update_pan_columns_visibility ()
 }
 
 void
-MidiPatternEditor::show_all_main_automations ()
+MidiTrackerEditor::show_all_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (true);
@@ -1210,7 +1210,7 @@ MidiPatternEditor::show_all_main_automations ()
 }
 
 bool
-MidiPatternEditor::has_pan_automation() const
+MidiTrackerEditor::has_pan_automation() const
 {
 	for (std::set<AutomationType>::const_iterator it = _pan_param_types.begin();
 	     it != _pan_param_types.end(); ++it) {
@@ -1222,7 +1222,7 @@ MidiPatternEditor::has_pan_automation() const
 }
 
 void
-MidiPatternEditor::show_existing_main_automations ()
+MidiTrackerEditor::show_existing_main_automations ()
 {
 	// Gain
 	bool gain_visible = param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
@@ -1248,7 +1248,7 @@ MidiPatternEditor::show_existing_main_automations ()
 }
 
 void
-MidiPatternEditor::hide_main_automations ()
+MidiTrackerEditor::hide_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (false);
@@ -1268,34 +1268,34 @@ MidiPatternEditor::hide_main_automations ()
 /////////////////////////
 
 void
-MidiPatternEditor::register_actions ()
+MidiTrackerEditor::register_actions ()
 {
 	Glib::RefPtr<ActionGroup> beats_per_row_actions = myactions.create_action_group (X_("BeatsPerRow"));
 	RadioAction::Group beats_per_row_choice_group;
 
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-onetwentyeighths"), _("Beats Per Row to One Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv128)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixtyfourths"), _("Beats Per Row to Sixty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv64)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv32)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv28)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv24)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv20)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv16)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv14)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv12)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv10)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv8)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv7)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv6)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv5)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv4)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv3)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeatDiv2)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBeat)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"), (sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_chosen), Editing::SnapToBar)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-onetwentyeighths"), _("Beats Per Row to One Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv128)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixtyfourths"), _("Beats Per Row to Sixty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv64)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv32)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv28)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv24)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv20)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv16)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv14)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv12)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv10)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv8)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv7)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv6)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv5)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv4)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv3)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv2)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeat)));
+	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBar)));
 }
 
 void
-MidiPatternEditor::resize_width()
+MidiTrackerEditor::resize_width()
 {
 	int width, height;
 	get_size(width, height);
@@ -1303,7 +1303,7 @@ MidiPatternEditor::resize_width()
 }
 
 void
-MidiPatternEditor::redisplay_visible_note()
+MidiTrackerEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_colnum(i))->set_visible(i < np->ntracks ? visible_note : false);
@@ -1314,13 +1314,13 @@ MidiPatternEditor::redisplay_visible_note()
 }
 
 int
-MidiPatternEditor::note_colnum(int tracknum)
+MidiTrackerEditor::note_colnum(int tracknum)
 {
 	return tracknum*4 + NOTE_COLNUM;
 }
 
 bool
-MidiPatternEditor::visible_note_press(GdkEventButton* ev)
+MidiTrackerEditor::visible_note_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1333,7 +1333,7 @@ MidiPatternEditor::visible_note_press(GdkEventButton* ev)
 }
 
 void
-MidiPatternEditor::redisplay_visible_channel()
+MidiTrackerEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_channel_colnum(i))->set_visible(i < np->ntracks ? visible_channel : false);
@@ -1344,13 +1344,13 @@ MidiPatternEditor::redisplay_visible_channel()
 }
 
 int
-MidiPatternEditor::note_channel_colnum(int tracknum)
+MidiTrackerEditor::note_channel_colnum(int tracknum)
 {
 	return tracknum*4 + CHANNEL_COLNUM;
 }
 
 bool
-MidiPatternEditor::visible_channel_press(GdkEventButton* ev)
+MidiTrackerEditor::visible_channel_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1363,7 +1363,7 @@ MidiPatternEditor::visible_channel_press(GdkEventButton* ev)
 }
 
 void
-MidiPatternEditor::redisplay_visible_velocity()
+MidiTrackerEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_velocity_colnum(i))->set_visible(i < np->ntracks ? visible_velocity : false);
@@ -1374,13 +1374,13 @@ MidiPatternEditor::redisplay_visible_velocity()
 }
 
 int
-MidiPatternEditor::note_velocity_colnum(int tracknum)
+MidiTrackerEditor::note_velocity_colnum(int tracknum)
 {
 	return tracknum*4 + VELOCITY_COLNUM;
 }
 
 bool
-MidiPatternEditor::visible_velocity_press(GdkEventButton* ev)
+MidiTrackerEditor::visible_velocity_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1393,7 +1393,7 @@ MidiPatternEditor::visible_velocity_press(GdkEventButton* ev)
 }
 
 void
-MidiPatternEditor::redisplay_visible_delay()
+MidiTrackerEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_delay_colnum(i))->set_visible(i < np->ntracks ? visible_delay : false);
@@ -1405,13 +1405,13 @@ MidiPatternEditor::redisplay_visible_delay()
 }
 
 int
-MidiPatternEditor::note_delay_colnum(int tracknum)
+MidiTrackerEditor::note_delay_colnum(int tracknum)
 {
 	return tracknum*4 + DELAY_COLNUM;
 }
 
 bool
-MidiPatternEditor::visible_delay_press(GdkEventButton* ev)
+MidiTrackerEditor::visible_delay_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1424,7 +1424,7 @@ MidiPatternEditor::visible_delay_press(GdkEventButton* ev)
 }
 
 void
-MidiPatternEditor::redisplay_visible_automation()
+MidiTrackerEditor::redisplay_visible_automation()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_colnum(i);
@@ -1438,13 +1438,13 @@ MidiPatternEditor::redisplay_visible_automation()
 }
 
 int
-MidiPatternEditor::automation_colnum(int tracknum)
+MidiTrackerEditor::automation_colnum(int tracknum)
 {
 	return automation_col_offset + 2 * tracknum;
 }
 
 void
-MidiPatternEditor::redisplay_visible_automation_delay()
+MidiTrackerEditor::redisplay_visible_automation_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_delay_colnum(i);
@@ -1457,26 +1457,26 @@ MidiPatternEditor::redisplay_visible_automation_delay()
 }
 
 int
-MidiPatternEditor::automation_delay_colnum(int tracknum)
+MidiTrackerEditor::automation_delay_colnum(int tracknum)
 {
 	return automation_col_offset + 2 * tracknum + 1;
 }
 
 void
-MidiPatternEditor::automation_click ()
+MidiTrackerEditor::automation_click ()
 {
 	build_automation_action_menu ();
 	automation_action_menu->popup (1, gtk_get_current_event_time());
 }
 
 void
-MidiPatternEditor::update_remove_note_column_button ()
+MidiTrackerEditor::update_remove_note_column_button ()
 {
 	remove_note_column_button.set_sensitive (np->nreqtracks < np->ntracks);
 }
 
 bool
-MidiPatternEditor::remove_note_column_press(GdkEventButton* ev)
+MidiTrackerEditor::remove_note_column_press(GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1491,7 +1491,7 @@ MidiPatternEditor::remove_note_column_press(GdkEventButton* ev)
 }
 
 bool
-MidiPatternEditor::add_note_column_press (GdkEventButton* ev)
+MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1506,7 +1506,7 @@ MidiPatternEditor::add_note_column_press (GdkEventButton* ev)
 }
 
 bool
-MidiPatternEditor::step_edit_press (GdkEventButton* ev)
+MidiTrackerEditor::step_edit_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -1520,7 +1520,7 @@ MidiPatternEditor::step_edit_press (GdkEventButton* ev)
 }
 
 void
-MidiPatternEditor::redisplay_model ()
+MidiTrackerEditor::redisplay_model ()
 {
 	if (editing_editable)
 		return;
@@ -1546,12 +1546,12 @@ MidiPatternEditor::redisplay_model ()
 
 		nrows = std::max(std::max(np->nrows, tap->nrows), rap->nrows);
 
-		std::string beat_background_color = UIConfiguration::instance().color_str ("pattern editor: beat background");
-		std::string bar_background_color = UIConfiguration::instance().color_str ("pattern editor: bar background");
-		std::string background_color = UIConfiguration::instance().color_str ("pattern editor: background");
-		std::string blank_foreground_color = UIConfiguration::instance().color_str ("pattern editor: blank foreground");
-		std::string active_foreground_color = UIConfiguration::instance().color_str ("pattern editor: active foreground");
-		std::string passive_foreground_color = UIConfiguration::instance().color_str ("pattern editor: passive foreground");
+		std::string beat_background_color = UIConfiguration::instance().color_str ("tracker editor: beat background");
+		std::string bar_background_color = UIConfiguration::instance().color_str ("tracker editor: bar background");
+		std::string background_color = UIConfiguration::instance().color_str ("tracker editor: background");
+		std::string blank_foreground_color = UIConfiguration::instance().color_str ("tracker editor: blank foreground");
+		std::string active_foreground_color = UIConfiguration::instance().color_str ("tracker editor: active foreground");
+		std::string passive_foreground_color = UIConfiguration::instance().color_str ("tracker editor: passive foreground");
 
 		// Fill rows
 		TreeModel::Children::iterator row_it = model->children().begin();
@@ -1583,7 +1583,7 @@ MidiPatternEditor::redisplay_model ()
 			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
 				// TODO: use Ardour's logger instead of stdout
 				std::cout << "Warning: Number of note tracks needed for "
-				          << "the pattern interface is too high, "
+				          << "the tracker interface is too high, "
 				          << "some notes might be discarded" << std::endl;
 				ntracks = MAX_NUMBER_OF_NOTE_TRACKS;
 			}
@@ -1663,7 +1663,7 @@ MidiPatternEditor::redisplay_model ()
 				size_t auto_count = r2at.count(irow);
 
 				if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS) {
-					std::cout << "Warning: Number of automation tracks needed for the pattern interface is too high, some automations might be discarded" << std::endl;
+					std::cout << "Warning: Number of automation tracks needed for the tracker interface is too high, some automations might be discarded" << std::endl;
 					continue;
 				}
 
@@ -1730,31 +1730,31 @@ MidiPatternEditor::redisplay_model ()
 /////////////////////
 
 uint32_t
-MidiPatternEditor::get_row_index(const std::string& path)
+MidiTrackerEditor::get_row_index(const std::string& path)
 {
 	return get_row_index (TreeModel::Path (path));
 }
 
 uint32_t
-MidiPatternEditor::get_row_index(const TreeModel::Path& path)
+MidiTrackerEditor::get_row_index(const TreeModel::Path& path)
 {
 	return path.front();
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_on_note(int rowidx)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_on_note(int rowidx)
 {
 	return get_on_note(TreeModel::Path (1U, rowidx));
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_on_note(const std::string& path)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_on_note(const std::string& path)
 {
 	return get_on_note(TreeModel::Path (path));
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_on_note(const TreeModel::Path& path)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_on_note(const TreeModel::Path& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -1762,20 +1762,20 @@ MidiPatternEditor::get_on_note(const TreeModel::Path& path)
 	return (*iter)[columns._on_note[edit_tracknum]];
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_off_note(int rowidx)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_off_note(int rowidx)
 {
 	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowidx));
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_off_note(const std::string& path)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_off_note(const std::string& path)
 {
 	return get_off_note (TreeModel::Path (path));
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_off_note(const TreeModel::Path& path)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_off_note(const TreeModel::Path& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -1783,14 +1783,14 @@ MidiPatternEditor::get_off_note(const TreeModel::Path& path)
 	return (*iter)[columns._off_note[edit_tracknum]];
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_note(const std::string& path)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_note(const std::string& path)
 {
 	return get_note (TreeModel::Path (path));
 }
 
-boost::shared_ptr<MidiPatternEditor::NoteType>
-MidiPatternEditor::get_note(const TreeModel::Path& path)
+boost::shared_ptr<MidiTrackerEditor::NoteType>
+MidiTrackerEditor::get_note(const TreeModel::Path& path)
 {
 	NoteTypePtr note = get_on_note(path);
 	if (!note)
@@ -1799,7 +1799,7 @@ MidiPatternEditor::get_note(const TreeModel::Path& path)
 }
 
 void
-MidiPatternEditor::editing_note_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_note_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -1807,13 +1807,13 @@ MidiPatternEditor::editing_note_started (CellEditable* ed, const string& path, i
 	if (ed && step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_note_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_key_press), false);
 		}
 	}
 }
 
 void
-MidiPatternEditor::editing_note_channel_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_note_channel_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_channel_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -1821,13 +1821,13 @@ MidiPatternEditor::editing_note_channel_started (CellEditable* ed, const string&
 	if (ed && step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_note_channel_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_channel_key_press), false);
 		}
 	}
 }
 
 void
-MidiPatternEditor::editing_note_velocity_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_note_velocity_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_velocity_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -1835,13 +1835,13 @@ MidiPatternEditor::editing_note_velocity_started (CellEditable* ed, const string
 	if (ed && step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_note_velocity_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_velocity_key_press), false);
 		}
 	}
 }
 
 void
-MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_note_delay_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -1849,13 +1849,13 @@ MidiPatternEditor::editing_note_delay_started (CellEditable* ed, const string& p
 	if (ed && step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_note_delay_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_delay_key_press), false);
 		}
 	}
 }
 
 void
-MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = automation_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -1863,13 +1863,13 @@ MidiPatternEditor::editing_automation_started (CellEditable* ed, const string& p
 	if (ed && step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_automation_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_automation_key_press), false);
 		}
 	}
 }
 
 void
-MidiPatternEditor::editing_automation_delay_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_automation_delay_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = automation_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -1877,13 +1877,13 @@ MidiPatternEditor::editing_automation_delay_started (CellEditable* ed, const str
 	if (ed && step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::step_editing_automation_delay_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_automation_delay_key_press), false);
 		}
 	}
 }
 
 void
-MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
+MidiTrackerEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_path = TreePath (path);
 	edit_rowidx = get_row_index (edit_path);
@@ -1892,7 +1892,7 @@ MidiPatternEditor::editing_started (CellEditable* ed, const string& path, int tr
 }
 
 void
-MidiPatternEditor::clear_editables ()
+MidiTrackerEditor::clear_editables ()
 {
 	edit_path.clear ();
 	edit_rowidx = -1;
@@ -1904,13 +1904,13 @@ MidiPatternEditor::clear_editables ()
 }
 
 void
-MidiPatternEditor::editing_canceled ()
+MidiTrackerEditor::editing_canceled ()
 {
 	clear_editables ();
 }
 
 uint8_t
-MidiPatternEditor::parse_pitch (std::string text) const
+MidiTrackerEditor::parse_pitch (std::string text) const
 {
 	// Add default octave, if the octave digit is missing
 	if (!text.empty() && !std::isdigit(*text.rbegin()))
@@ -1921,7 +1921,7 @@ MidiPatternEditor::parse_pitch (std::string text) const
 }
 
 void
-MidiPatternEditor::note_edited (const std::string& path, const std::string& text)
+MidiTrackerEditor::note_edited (const std::string& path, const std::string& text)
 {
 	std::string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
@@ -1947,7 +1947,7 @@ MidiPatternEditor::note_edited (const std::string& path, const std::string& text
 }
 
 void
-MidiPatternEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
+MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
 	// Abort if the new pitch is invalid
 	if (127 < pitch)
@@ -2021,7 +2021,7 @@ MidiPatternEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::set_off_note (int rowidx, int tracknum)
+MidiTrackerEditor::set_off_note (int rowidx, int tracknum)
 {
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
@@ -2073,7 +2073,7 @@ MidiPatternEditor::set_off_note (int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::delete_note (int rowidx, int tracknum)
+MidiTrackerEditor::delete_note (int rowidx, int tracknum)
 {
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
@@ -2115,7 +2115,7 @@ MidiPatternEditor::delete_note (int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::note_channel_edited (const std::string& path, const std::string& text)
+MidiTrackerEditor::note_channel_edited (const std::string& path, const std::string& text)
 {
 	NoteTypePtr note = get_on_note(path);
 	if (text.empty() || !note) {
@@ -2139,7 +2139,7 @@ MidiPatternEditor::note_channel_edited (const std::string& path, const std::stri
 }
 
 void
-MidiPatternEditor::set_note_channel (NoteTypePtr note, int ch)
+MidiTrackerEditor::set_note_channel (NoteTypePtr note, int ch)
 {
 	if (!note)
 		return;
@@ -2157,7 +2157,7 @@ MidiPatternEditor::set_note_channel (NoteTypePtr note, int ch)
 }
 
 void
-MidiPatternEditor::note_velocity_edited (const std::string& path, const std::string& text)
+MidiTrackerEditor::note_velocity_edited (const std::string& path, const std::string& text)
 {
 	NoteTypePtr note = get_on_note(path);
 	if (text.empty() || !note) {
@@ -2181,7 +2181,7 @@ MidiPatternEditor::note_velocity_edited (const std::string& path, const std::str
 }
 
 void
-MidiPatternEditor::set_note_velocity (NoteTypePtr note, int vel)
+MidiTrackerEditor::set_note_velocity (NoteTypePtr note, int vel)
 {
 	if (!note)
 		return;
@@ -2201,7 +2201,7 @@ MidiPatternEditor::set_note_velocity (NoteTypePtr note, int vel)
 }
 
 void
-MidiPatternEditor::note_delay_edited (const std::string& path, const std::string& text)
+MidiTrackerEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
 	// Can't edit ***
 	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
@@ -2219,7 +2219,7 @@ MidiPatternEditor::note_delay_edited (const std::string& path, const std::string
 }
 
 void
-MidiPatternEditor::set_note_delay (int delay, int rowidx, int tracknum)
+MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 {
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
@@ -2264,7 +2264,7 @@ MidiPatternEditor::set_note_delay (int delay, int rowidx, int tracknum)
 	apply_command (cmd);
 }
 
-void MidiPatternEditor::play_note(uint8_t pitch)
+void MidiTrackerEditor::play_note(uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = channel_spinner.get_value_as_int() - 1;
@@ -2275,7 +2275,7 @@ void MidiPatternEditor::play_note(uint8_t pitch)
 	track->write_immediate_event (3, event);
 }
 
-void MidiPatternEditor::release_note(uint8_t pitch)
+void MidiTrackerEditor::release_note(uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = channel_spinner.get_value_as_int() - 1;
@@ -2285,12 +2285,12 @@ void MidiPatternEditor::release_note(uint8_t pitch)
 	track->write_immediate_event (3, event);
 }
 
-bool MidiPatternEditor::is_region_automation (const Evoral::Parameter& param) const
+bool MidiTrackerEditor::is_region_automation (const Evoral::Parameter& param) const
 {
 	return ARDOUR::parameter_is_midi((AutomationType)param.type());
 }
 
-Evoral::Parameter MidiPatternEditor::get_parameter (int tracknum)
+Evoral::Parameter MidiTrackerEditor::get_parameter (int tracknum)
 {
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(tracknum);
 	if (ac_it == col2autotrack.right.end())
@@ -2303,7 +2303,7 @@ Evoral::Parameter MidiPatternEditor::get_parameter (int tracknum)
 	return param;
 }
 
-boost::shared_ptr<AutomationList> MidiPatternEditor::get_alist (const Evoral::Parameter& param)
+boost::shared_ptr<AutomationList> MidiTrackerEditor::get_alist (const Evoral::Parameter& param)
 {
 	if (!param)
 		return NULL;
@@ -2312,7 +2312,7 @@ boost::shared_ptr<AutomationList> MidiPatternEditor::get_alist (const Evoral::Pa
 	return alist;
 }
 
-AutomationPattern* MidiPatternEditor::get_automation_pattern (const Evoral::Parameter& param)
+AutomationPattern* MidiTrackerEditor::get_automation_pattern (const Evoral::Parameter& param)
 {
 	if (!param)
 		return NULL;
@@ -2320,7 +2320,7 @@ AutomationPattern* MidiPatternEditor::get_automation_pattern (const Evoral::Para
 }
 
 void
-MidiPatternEditor::automation_edited (const std::string& path, const std::string& text)
+MidiTrackerEditor::automation_edited (const std::string& path, const std::string& text)
 {
 	bool is_del = text.empty();
 	double nval;
@@ -2346,7 +2346,7 @@ MidiPatternEditor::automation_edited (const std::string& path, const std::string
 }
 
 std::pair<double, bool>
-MidiPatternEditor::get_automation_value (int rowidx, int tracknum)
+MidiTrackerEditor::get_automation_value (int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (tracknum);
@@ -2364,7 +2364,7 @@ MidiPatternEditor::get_automation_value (int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::set_automation (double val, int rowidx, int tracknum)
+MidiTrackerEditor::set_automation (double val, int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (tracknum);
@@ -2406,7 +2406,7 @@ MidiPatternEditor::set_automation (double val, int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::delete_automation(int rowidx, int tracknum)
+MidiTrackerEditor::delete_automation(int rowidx, int tracknum)
 {
 	Evoral::Parameter param = get_parameter (tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
@@ -2428,7 +2428,7 @@ MidiPatternEditor::delete_automation(int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::automation_delay_edited (const std::string& path, const std::string& text)
+MidiTrackerEditor::automation_delay_edited (const std::string& path, const std::string& text)
 {
 	int delay = 0;
 	// Parse the edited delay
@@ -2457,7 +2457,7 @@ MidiPatternEditor::automation_delay_edited (const std::string& path, const std::
 }
 
 std::pair<int, bool>
-MidiPatternEditor::get_automation_delay (int rowidx, int tracknum)
+MidiTrackerEditor::get_automation_delay (int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (tracknum);
@@ -2477,7 +2477,7 @@ MidiPatternEditor::get_automation_delay (int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::set_automation_delay (int delay, int rowidx, int tracknum)
+MidiTrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 {
 	// Check if within acceptable boundaries
 	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
@@ -2511,7 +2511,7 @@ MidiPatternEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 }
 
 void
-MidiPatternEditor::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
+MidiTrackerEditor::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
 {
 	PublicEditor& editor = midi_time_axis_view->editor ();
 	editor.begin_reversible_command (opname);
@@ -2521,7 +2521,7 @@ MidiPatternEditor::register_automation_undo (boost::shared_ptr<AutomationList> a
 }
 
 void
-MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
+MidiTrackerEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
 	midi_model->apply_command (_session, cmd);
@@ -2536,19 +2536,19 @@ MidiPatternEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
 /////////////////////////
 
 bool
-MidiPatternEditor::is_midi_track () const
+MidiTrackerEditor::is_midi_track () const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route) != 0;
 }
 
 boost::shared_ptr<MidiTrack>
-MidiPatternEditor::midi_track() const
+MidiTrackerEditor::midi_track() const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route);
 }
 
 void
-MidiPatternEditor::build_param2actrl ()
+MidiTrackerEditor::build_param2actrl ()
 {
 	// Gain
 	param2actrl[Evoral::Parameter(GainAutomation)] =  route->gain_control();
@@ -2580,15 +2580,15 @@ MidiPatternEditor::build_param2actrl ()
 }
 
 void
-MidiPatternEditor::connect (const Evoral::Parameter& param)
+MidiTrackerEditor::connect (const Evoral::Parameter& param)
 {
 	boost::shared_ptr<AutomationList> alist = param2actrl[param]->alist();
-	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
-	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiPatternEditor::redisplay_model, this), gui_context());
+	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
 }
 
 void
-MidiPatternEditor::setup_time_column()
+MidiTrackerEditor::setup_time_column()
 {
 	TreeViewColumn* viewcolumn_time  = new TreeViewColumn (_("Time"), columns.time);
 	CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();		
@@ -2597,7 +2597,7 @@ MidiPatternEditor::setup_time_column()
 }
 
 void
-MidiPatternEditor::setup_note_column (size_t i)
+MidiTrackerEditor::setup_note_column (size_t i)
 {
 	string note_str(_("Note"));
 
@@ -2610,16 +2610,16 @@ MidiPatternEditor::setup_note_column (size_t i)
 	viewcolumn_note->add_attribute(cellrenderer_note->property_foreground (), columns._note_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_started), i));
-	cellrenderer_note->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_note->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_edited));
+	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_started), i));
+	cellrenderer_note->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
+	cellrenderer_note->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_edited));
 	cellrenderer_note->property_editable() = true;
 
 	view.append_column (*viewcolumn_note);
 }
 
 void
-MidiPatternEditor::setup_note_channel_column (size_t i)
+MidiTrackerEditor::setup_note_channel_column (size_t i)
 {
 	string ch_str(S_("Channel|Ch"));
 
@@ -2632,16 +2632,16 @@ MidiPatternEditor::setup_note_channel_column (size_t i)
 	viewcolumn_channel->add_attribute(cellrenderer_channel->property_foreground (), columns._channel_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_channel_started), i));
-	cellrenderer_channel->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_channel_edited));
+	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_channel_started), i));
+	cellrenderer_channel->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
+	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_channel_edited));
 	cellrenderer_channel->property_editable() = true;
 
 	view.append_column (*viewcolumn_channel);
 }
 
 void
-MidiPatternEditor::setup_note_velocity_column (size_t i)
+MidiTrackerEditor::setup_note_velocity_column (size_t i)
 {
 	string vel_str(S_("Velocity|Vel"));
 
@@ -2654,16 +2654,16 @@ MidiPatternEditor::setup_note_velocity_column (size_t i)
 	viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_foreground (), columns._velocity_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_velocity_started), i));
-	cellrenderer_velocity->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_velocity_edited));
+	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_velocity_started), i));
+	cellrenderer_velocity->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
+	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_velocity_edited));
 	cellrenderer_velocity->property_editable() = true;
 
 	view.append_column (*viewcolumn_velocity);
 }
 
 void
-MidiPatternEditor::setup_note_delay_column (size_t i)
+MidiTrackerEditor::setup_note_delay_column (size_t i)
 {
 	string delay_str(_("Delay"));
 
@@ -2676,16 +2676,16 @@ MidiPatternEditor::setup_note_delay_column (size_t i)
 	viewcolumn_delay->add_attribute(cellrenderer_delay->property_foreground (), columns._delay_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_note_delay_started), i));
-	cellrenderer_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::note_delay_edited));
+	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_delay_started), i));
+	cellrenderer_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
+	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_delay_edited));
 	cellrenderer_delay->property_editable() = true;
 
 	view.append_column (*viewcolumn_delay);
 }
 
 void
-MidiPatternEditor::setup_automation_column (size_t i)
+MidiTrackerEditor::setup_automation_column (size_t i)
 {
 	stringstream ss_automation;
 	ss_automation << "A" << i;
@@ -2699,9 +2699,9 @@ MidiPatternEditor::setup_automation_column (size_t i)
 	viewcolumn_automation->add_attribute(cellrenderer_automation->property_foreground (), columns._automation_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_automation_started), i));
-	cellrenderer_automation->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_automation->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::automation_edited));
+	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_automation_started), i));
+	cellrenderer_automation->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
+	cellrenderer_automation->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::automation_edited));
 	cellrenderer_automation->property_editable() = true;
 
 	size_t column = view.get_columns().size();
@@ -2712,7 +2712,7 @@ MidiPatternEditor::setup_automation_column (size_t i)
 }
 
 void
-MidiPatternEditor::setup_automation_delay_column (size_t i)
+MidiTrackerEditor::setup_automation_delay_column (size_t i)
 {
 	stringstream ss_automation_delay;
 	ss_automation_delay << _("Delay");
@@ -2726,9 +2726,9 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_foreground (), columns._automation_delay_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiPatternEditor::editing_automation_delay_started), i));
-	cellrenderer_automation_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiPatternEditor::editing_canceled));
-	cellrenderer_automation_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiPatternEditor::automation_delay_edited));
+	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_automation_delay_started), i));
+	cellrenderer_automation_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
+	cellrenderer_automation_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::automation_delay_edited));
 	cellrenderer_automation_delay->property_editable() = true;
 
 	size_t column = view.get_columns().size();
@@ -2737,7 +2737,7 @@ MidiPatternEditor::setup_automation_delay_column (size_t i)
 }
 
 void
-MidiPatternEditor::vertical_move_cursor (int steps)
+MidiTrackerEditor::vertical_move_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
 	wrap_around_move (path, steps);
@@ -2745,7 +2745,7 @@ MidiPatternEditor::vertical_move_cursor (int steps)
 	view.set_cursor (path, *col, true);
 }
 
-void MidiPatternEditor::wrap_around_move (TreeModel::Path& path, int steps) const
+void MidiTrackerEditor::wrap_around_move (TreeModel::Path& path, int steps) const
 {
 	path[0] += steps;
 	path[0] %= nrows;
@@ -2754,7 +2754,7 @@ void MidiPatternEditor::wrap_around_move (TreeModel::Path& path, int steps) cons
 }
 
 void
-MidiPatternEditor::horizontal_move_cursor (int steps, bool tab)
+MidiTrackerEditor::horizontal_move_cursor (int steps, bool tab)
 {
 	// TODO support tab == true
 	int colnum = edit_colnum;
@@ -2782,12 +2782,12 @@ MidiPatternEditor::horizontal_move_cursor (int steps, bool tab)
 }
 
 uint8_t
-MidiPatternEditor::pitch (uint8_t semitones, int octave)
+MidiTrackerEditor::pitch (uint8_t semitones, int octave)
 {
 	return (uint8_t)(octave + 1) * 12 + semitones;
 }
 
-bool MidiPatternEditor::move_cursor_key_press (GdkEventKey* ev)
+bool MidiTrackerEditor::move_cursor_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2823,7 +2823,7 @@ bool MidiPatternEditor::move_cursor_key_press (GdkEventKey* ev)
 }
 
 int
-MidiPatternEditor::digit_key_press (GdkEventKey* ev)
+MidiTrackerEditor::digit_key_press (GdkEventKey* ev)
 {
 	switch (ev->keyval) {
 	// Num keys
@@ -2863,7 +2863,7 @@ MidiPatternEditor::digit_key_press (GdkEventKey* ev)
 }
 
 uint8_t
-MidiPatternEditor::pitch_key (GdkEventKey* ev)
+MidiTrackerEditor::pitch_key (GdkEventKey* ev)
 {
 	int octave = octave_spinner.get_value_as_int();
 
@@ -2975,7 +2975,7 @@ MidiPatternEditor::pitch_key (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
+MidiTrackerEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3109,7 +3109,7 @@ MidiPatternEditor::step_editing_note_key_press (GdkEventKey* ev)
 	return ret;
 }
 
-bool MidiPatternEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum)
+bool MidiTrackerEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
 	play_note(pitch);
 	set_on_note (pitch, rowidx, tracknum);
@@ -3118,7 +3118,7 @@ bool MidiPatternEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int
 	return true;
 }
 
-bool MidiPatternEditor::step_editing_set_off_note (int rowidx, int tracknum)
+bool MidiTrackerEditor::step_editing_set_off_note (int rowidx, int tracknum)
 {
 	set_off_note (rowidx, tracknum);
 	int steps = steps_spinner.get_value_as_int();
@@ -3126,7 +3126,7 @@ bool MidiPatternEditor::step_editing_set_off_note (int rowidx, int tracknum)
 	return true;
 }
 
-bool MidiPatternEditor::step_editing_delete_note (int rowidx, int tracknum)
+bool MidiTrackerEditor::step_editing_delete_note (int rowidx, int tracknum)
 {
 	delete_note (rowidx, tracknum);
 	int steps = steps_spinner.get_value_as_int();
@@ -3135,7 +3135,7 @@ bool MidiPatternEditor::step_editing_delete_note (int rowidx, int tracknum)
 }
 
 bool
-MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
+MidiTrackerEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3186,9 +3186,9 @@ MidiPatternEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_note_channel (int digit, int rowidx, int tracknum)
+MidiTrackerEditor::step_editing_set_note_channel (int digit, int rowidx, int tracknum)
 {
-	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(rowidx);
+	boost::shared_ptr<MidiTrackerEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int ch = note->channel();
 		int position = position_spinner.get_value_as_int();
@@ -3202,7 +3202,7 @@ MidiPatternEditor::step_editing_set_note_channel (int digit, int rowidx, int tra
 }
 
 bool
-MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
+MidiTrackerEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3253,9 +3253,9 @@ MidiPatternEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_note_velocity (int digit, int rowidx, int tracknum)
+MidiTrackerEditor::step_editing_set_note_velocity (int digit, int rowidx, int tracknum)
 {
-	boost::shared_ptr<MidiPatternEditor::NoteType> note = get_on_note(rowidx);
+	boost::shared_ptr<MidiTrackerEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int vel = note->velocity();
 		int position = position_spinner.get_value_as_int();
@@ -3268,7 +3268,7 @@ MidiPatternEditor::step_editing_set_note_velocity (int digit, int rowidx, int tr
 }
 
 bool
-MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
+MidiTrackerEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3331,7 +3331,7 @@ MidiPatternEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
+MidiTrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
 {
 	int position = position_spinner.get_value_as_int();
 	int steps = steps_spinner.get_value_as_int();
@@ -3365,7 +3365,7 @@ MidiPatternEditor::step_editing_set_note_delay (int digit, int rowidx, int track
 }
 
 bool
-MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
+MidiTrackerEditor::step_editing_automation_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3428,7 +3428,7 @@ MidiPatternEditor::step_editing_automation_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_automation (int digit, int rowidx, int tracknum)
+MidiTrackerEditor::step_editing_set_automation (int digit, int rowidx, int tracknum)
 {
 	std::pair<double, bool> val_def = get_automation_value(rowidx, tracknum);
 	double oval = val_def.first;
@@ -3454,7 +3454,7 @@ MidiPatternEditor::step_editing_set_automation (int digit, int rowidx, int track
 }
 
 bool
-MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
+MidiTrackerEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3505,7 +3505,7 @@ MidiPatternEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::step_editing_set_automation_delay (int digit, int rowidx, int tracknum)
+MidiTrackerEditor::step_editing_set_automation_delay (int digit, int rowidx, int tracknum)
 {
 	std::pair<int, bool> val_def = get_automation_delay (rowidx, tracknum);
 
@@ -3524,7 +3524,7 @@ MidiPatternEditor::step_editing_set_automation_delay (int digit, int rowidx, int
 }
 
 bool
-MidiPatternEditor::key_press (GdkEventKey* ev)
+MidiTrackerEditor::key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3609,7 +3609,7 @@ MidiPatternEditor::key_press (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::key_release (GdkEventKey* ev)
+MidiTrackerEditor::key_release (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3694,7 +3694,7 @@ MidiPatternEditor::key_release (GdkEventKey* ev)
 }
 
 bool
-MidiPatternEditor::button_event (GdkEventButton* ev)
+MidiTrackerEditor::button_event (GdkEventButton* ev)
 {
 	// TODO: understand why get_path_at_pos does not work
 	// if (ev->button == 1) {
@@ -3729,14 +3729,14 @@ MidiPatternEditor::button_event (GdkEventButton* ev)
 }
 
 bool
-MidiPatternEditor::scroll_event (GdkEventScroll* ev)
+MidiTrackerEditor::scroll_event (GdkEventScroll* ev)
 {
 	// TODO change values if editing is active, otherwise scroll.
 	return false;               // Silence compiler
 }
 
 void
-MidiPatternEditor::build_pattern ()
+MidiTrackerEditor::build_pattern ()
 {
 	np = new NotePattern(_session, region, midi_model);
 	tap = new TrackAutomationPattern(_session, region);
@@ -3746,7 +3746,7 @@ MidiPatternEditor::build_pattern ()
 }
 
 void
-MidiPatternEditor::update_automation_patterns ()
+MidiTrackerEditor::update_automation_patterns ()
 {
 	// Insert automation controls in the automation patterns
 	for (Parameter2AutomationControl::const_iterator it = param2actrl.begin(); it != param2actrl.end(); ++it) {
@@ -3759,7 +3759,7 @@ MidiPatternEditor::update_automation_patterns ()
 }
 
 void
-MidiPatternEditor::setup_pattern ()
+MidiTrackerEditor::setup_pattern ()
 {
 	model = ListStore::create (columns);
 	view.set_model (model);
@@ -3783,15 +3783,15 @@ MidiPatternEditor::setup_pattern ()
 	}
 
 	// Connect to key press events
-	view.signal_key_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_press), false);
-	view.signal_key_release_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::key_release), false);
+	view.signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::key_press), false);
+	view.signal_key_release_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::key_release), false);
 
 	// Connect to mouse button events
 	//
 	// Disabled for now because it doesn't work as expected
 	//
-	// view.signal_button_press_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::button_event), false);
-	// view.signal_scroll_event().connect (sigc::mem_fun (*this, &MidiPatternEditor::scroll_event), false);
+	// view.signal_button_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::button_event), false);
+	// view.signal_scroll_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::scroll_event), false);
 
 	view.set_headers_visible (true);
 	view.set_rules_hint (true);
@@ -3803,7 +3803,7 @@ MidiPatternEditor::setup_pattern ()
 }
 
 void
-MidiPatternEditor::setup_toolbar ()
+MidiTrackerEditor::setup_toolbar ()
 {
 	toolbar.set_spacing (2);
 
@@ -3816,7 +3816,7 @@ MidiPatternEditor::setup_toolbar ()
 	visible_note_button.set_text (S_("Note|N"));
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_note_button.show ();
-	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_note_press), false);
+	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_note_press), false);
 	toolbar.pack_start (visible_note_button, false, false);
 
 	// Add visible channel button
@@ -3824,7 +3824,7 @@ MidiPatternEditor::setup_toolbar ()
 	visible_channel_button.set_text (S_("Channel|C"));
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_channel_button.show ();
-	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_channel_press), false);
+	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_channel_press), false);
 	toolbar.pack_start (visible_channel_button, false, false);
 
 	// Add visible velocity button
@@ -3832,7 +3832,7 @@ MidiPatternEditor::setup_toolbar ()
 	visible_velocity_button.set_text (S_("Velocity|V"));
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_velocity_button.show ();
-	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_velocity_press), false);
+	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_velocity_press), false);
 	toolbar.pack_start (visible_velocity_button, false, false);
 
 	// Add visible delay button
@@ -3840,13 +3840,13 @@ MidiPatternEditor::setup_toolbar ()
 	visible_delay_button.set_text (S_("Delay|D"));
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_delay_button.show ();
-	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::visible_delay_press), false);
+	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_delay_press), false);
 	toolbar.pack_start (visible_delay_button, false, false);
 
 	// Add automation button
 	automation_button.set_name ("automation button");
 	automation_button.set_text (S_("Automation|A"));
-	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiPatternEditor::automation_click));
+	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackerEditor::automation_click));
 	automation_button.show ();
 	toolbar.pack_start (automation_button, false, false);
 
@@ -3855,13 +3855,13 @@ MidiPatternEditor::setup_toolbar ()
 	toolbar.pack_start (rm_add_note_column_separator, false, false);
 	remove_note_column_button.set_name ("remove note column");
 	remove_note_column_button.set_text (S_("Remove|-"));
-	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::remove_note_column_press), false);
+	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::remove_note_column_press), false);
 	remove_note_column_button.show ();
 	remove_note_column_button.set_sensitive (false);
 	toolbar.pack_start (remove_note_column_button, false, false);
 	add_note_column_button.set_name ("add note column");
 	add_note_column_button.set_text (S_("Add|+"));
-	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::add_note_column_press), false);
+	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::add_note_column_press), false);
 	add_note_column_button.show ();
 	toolbar.pack_start (add_note_column_button, false, false);
 
@@ -3870,7 +3870,7 @@ MidiPatternEditor::setup_toolbar ()
 	toolbar.pack_start (step_edit_separator, false, false);
 	step_edit_button.set_name ("step edit button");
 	step_edit_button.set_text (S_("Step Edit"));
-	step_edit_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiPatternEditor::step_edit_press), false);
+	step_edit_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::step_edit_press), false);
 	step_edit_button.show ();
 	toolbar.pack_start (step_edit_button, false, false);
 
@@ -3932,7 +3932,7 @@ MidiPatternEditor::setup_toolbar ()
 }
 
 void
-MidiPatternEditor::setup_scroller ()
+MidiTrackerEditor::setup_scroller ()
 {
 	scroller.add (view);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
@@ -3940,36 +3940,36 @@ MidiPatternEditor::setup_scroller ()
 }
 
 void
-MidiPatternEditor::build_beats_per_row_menu ()
+MidiTrackerEditor::build_beats_per_row_menu ()
 {
 	using namespace Menu_Helpers;
 
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv128 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv128)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv64 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv64)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv32 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv32)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv28 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv28)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv24 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv24)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv20 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv20)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv16 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv16)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv14 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv14)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv12 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv12)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv10 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv10)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv8 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv8)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv7 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv7)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv6 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv6)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv5 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv5)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv4 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv4)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv3 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv3)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv2 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv2)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeat - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBeat)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv128 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv128)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv64 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv64)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv32 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv32)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv28 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv28)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv24 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv24)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv20 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv20)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv16 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv16)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv14 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv14)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv12 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv12)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv10 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv10)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv8 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv8)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv7 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv7)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv6 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv6)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv5 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv5)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv4 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv4)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv3 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv3)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv2 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv2)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeat - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeat)));
 	// TODO SnapToBar is not yet supported
-	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBar - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiPatternEditor::beats_per_row_selection_done), (SnapType) SnapToBar)));
+	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBar - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBar)));
 
 	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings, COMBO_TRIANGLE_WIDTH, 2);
 }
 
 void
-MidiPatternEditor::setup_tooltips ()
+MidiTrackerEditor::setup_tooltips ()
 {
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
 	set_tooltip (visible_note_button, _("Toggle note visibility"));
@@ -3988,7 +3988,7 @@ MidiPatternEditor::setup_tooltips ()
 }
 
 void
-MidiPatternEditor::set_beats_per_row_to (SnapType st)
+MidiTrackerEditor::set_beats_per_row_to (SnapType st)
 {
 	unsigned int snap_ind = (int)st - (int)SnapToBeatDiv128;
 
@@ -4027,7 +4027,7 @@ MidiPatternEditor::set_beats_per_row_to (SnapType st)
 }
 
 void
-MidiPatternEditor::beats_per_row_selection_done (SnapType snaptype)
+MidiTrackerEditor::beats_per_row_selection_done (SnapType snaptype)
 {
 	RefPtr<RadioAction> ract = beats_per_row_action (snaptype);
 	if (ract) {
@@ -4036,7 +4036,7 @@ MidiPatternEditor::beats_per_row_selection_done (SnapType snaptype)
 }
 
 RefPtr<RadioAction>
-MidiPatternEditor::beats_per_row_action (SnapType type)
+MidiTrackerEditor::beats_per_row_action (SnapType type)
 {
 	const char* action = 0;
 	RefPtr<Action> act;
@@ -4111,13 +4111,13 @@ MidiPatternEditor::beats_per_row_action (SnapType type)
 		return ract;
 
 	} else  {
-		error << string_compose (_("programming error: %1"), "MidiPatternEditor::beats_per_row_chosen could not find action to match type.") << endmsg;
+		error << string_compose (_("programming error: %1"), "MidiTrackerEditor::beats_per_row_chosen could not find action to match type.") << endmsg;
 		return RefPtr<RadioAction>();
 	}
 }
 
 void
-MidiPatternEditor::beats_per_row_chosen (SnapType type)
+MidiTrackerEditor::beats_per_row_chosen (SnapType type)
 {
 	/* this is driven by a toggle on a radio group, and so is invoked twice,
 	   once for the item that became inactive and once for the one that became
@@ -4131,12 +4131,12 @@ MidiPatternEditor::beats_per_row_chosen (SnapType type)
 	}
 }
 
-char MidiPatternEditor::digit_to_char(int digit, int base)
+char MidiTrackerEditor::digit_to_char(int digit, int base)
 {
 	return num_to_string(digit, base)[0];
 }
 
-int MidiPatternEditor::char_to_digit(char c, int base)
+int MidiTrackerEditor::char_to_digit(char c, int base)
 {
 	std::string s;
 	s.push_back(c);
@@ -4144,7 +4144,7 @@ int MidiPatternEditor::char_to_digit(char c, int base)
 }
 
 std::pair<int, int>
-MidiPatternEditor::position_range (const std::string& str)
+MidiTrackerEditor::position_range (const std::string& str)
 {
 	size_t sepos = str.find('.'); // TODO support other locals
 	int l = 0, u = 0;
@@ -4158,7 +4158,7 @@ MidiPatternEditor::position_range (const std::string& str)
 }
 
 std::string
-MidiPatternEditor::pad (const std::string& str, int position)
+MidiTrackerEditor::pad (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
 	if (position < pr.first) {
@@ -4172,7 +4172,7 @@ MidiPatternEditor::pad (const std::string& str, int position)
 	return str;
 }
 
-size_t MidiPatternEditor::locate (const std::string& str, int position)
+size_t MidiTrackerEditor::locate (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
 	if (pr.first <= position and position <= pr.second) {
