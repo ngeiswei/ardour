@@ -73,10 +73,10 @@ class AutomationTimeAxisView;
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
-// Maximum number of note columns in the midi pattern editor
+// Maximum number of note columns in the midi tracker editor
 #define MAX_NUMBER_OF_NOTE_TRACKS 64
 
-// Maximum number of automation columns in the midi pattern editor
+// Maximum number of automation columns in the midi tracker editor
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS 64
 
 // Test if element is in container
@@ -93,13 +93,13 @@ bool is_key_in(const typename M::key_type& key, const M& map)
 	return map.find(key) != map.end();
 }
 
-class MidiPatternEditor : public ArdourWindow
+class MidiTrackerEditor : public ArdourWindow
 {
   public:
 	typedef Evoral::Note<Temporal::Beats> NoteType;
 
-	MidiPatternEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, boost::shared_ptr<ARDOUR::MidiRegion>, boost::shared_ptr<ARDOUR::MidiTrack>);
-	~MidiPatternEditor();
+	MidiTrackerEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, boost::shared_ptr<ARDOUR::MidiRegion>, boost::shared_ptr<ARDOUR::MidiTrack>);
+	~MidiTrackerEditor();
 
   private:
 
@@ -112,9 +112,9 @@ class MidiPatternEditor : public ArdourWindow
 		Gtk::CheckMenuItem*                       menu_item;
 		// corresponding column index. If set to 0 then undetermined yet
 		size_t                                    column;
-		MidiPatternEditor&                        parent;
+		MidiTrackerEditor&                        parent;
 
-		ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem, MidiPatternEditor& p)
+		ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem, MidiTrackerEditor& p)
 		    : what (w), menu_item (mitem), column(0), parent (p) {}
 
 	    ~ProcessorAutomationNode ();
@@ -208,7 +208,7 @@ class MidiPatternEditor : public ArdourWindow
 
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
-	void processor_menu_item_toggled (MidiPatternEditor::ProcessorAutomationInfo*, MidiPatternEditor::ProcessorAutomationNode*);
+	void processor_menu_item_toggled (MidiTrackerEditor::ProcessorAutomationInfo*, MidiTrackerEditor::ProcessorAutomationNode*);
 	void build_automation_action_menu ();
 	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, ARDOUR::AutomationType auto_type, uint8_t cmd);
 	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
@@ -250,8 +250,8 @@ class MidiPatternEditor : public ArdourWindow
 
 	typedef boost::shared_ptr<NoteType> NoteTypePtr;
 
-	struct MidiPatternModelColumns : public Gtk::TreeModel::ColumnRecord {
-		MidiPatternModelColumns()
+	struct MidiTrackerModelColumns : public Gtk::TreeModel::ColumnRecord {
+		MidiTrackerModelColumns()
 		{
 			// The background color differs when the row is on beats and
 			// bars. This is to keep track of it.
@@ -312,7 +312,7 @@ class MidiPatternEditor : public ArdourWindow
 	MidiTimeAxisView* midi_time_axis_view;
 	boost::shared_ptr<ARDOUR::Route> route;
 
-	MidiPatternModelColumns      columns;
+	MidiTrackerModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 	uint32_t                     nrows;
 	Gtk::TreeView                view;
@@ -641,4 +641,4 @@ class MidiPatternEditor : public ArdourWindow
 	}
 };
 
-#endif /* __ardour_gtk2_midi_pattern_editor_h_ */
+#endif /* __ardour_gtk2_midi_tracker_editor_h_ */
