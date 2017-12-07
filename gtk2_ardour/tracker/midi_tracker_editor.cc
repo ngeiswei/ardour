@@ -78,8 +78,6 @@ using Timecode::BBT_Time;
 //
 // - [ ] Use Ardour's logger instead of stdout
 //
-// - [ ] Fix access menu
-//
 // - [ ] Fix when delay goes outside of the region range
 //
 // - [ ] Support ardour shortcut such as playing the song, etc
