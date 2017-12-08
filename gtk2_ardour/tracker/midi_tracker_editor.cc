@@ -72,25 +72,27 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
+// - [ ] Add cursor movement when Step Edit isn't enabled
+//
+// - [ ] Fix delay in automation to remain within the region
 //
 // - [ ] Add shortcut for parameters, steps, etc
 //
-// - [ ] Use Ardour's logger instead of stdout
+// - [ ] Make the non-editing cursor visible
 //
-// - [ ] Fix when delay goes outside of the region range
+// - [ ] Add copy/move, etc notes
+//
+// - [ ] Use Ardour's logger instead of stdout
 //
 // - [ ] Support ardour shortcut such as playing the song, etc
 //
-// - [ ] Make the non-editing cursor visible
-//
 // - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
-//
-// - [ ] Add copy/move, etc notes
 //
 // - [ ] Support audio tracks and trim automation
 //
 // - [ ] Support multiple tracks and regions.
+//
+// - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 
 ///////////////////////
 // MidiTrackerEditor //
@@ -2238,6 +2240,11 @@ MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 		int delta = delay - np->region_relative_delay_ticks(on_note->time(), rowidx);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_start = on_note->time() + relative_beats;
+		// Make sure the new_start is still within the visible region
+		if (new_start < np->start_beats) {
+			new_start = np->start_beats;
+			relative_beats = new_start - on_note->time();
+		}
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
 
 		// Adjust length so that the end time doesn't change
@@ -2256,6 +2263,12 @@ MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 		int delta = delay - np->region_relative_delay_ticks(off_note->end_time(), rowidx);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_length = off_note->length() + relative_beats;
+		// Make sure the off note is after the on note
+		if (new_length < Temporal::Beats::ticks(1))
+			new_length = Temporal::Beats::ticks(1);
+		// Make sure the off note doesn't go beyong the limit of the region
+		if (np->end_beats < off_note->time() + new_length)
+			new_length = np->end_beats - off_note->time();
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
 
