@@ -55,6 +55,7 @@
 #include "widgets/tooltips.h"
 #include "axis_view.h"
 #include "editor.h"
+#include "midi_region_view.h"
 
 #include "pbd/i18n.h"
 
@@ -122,8 +123,8 @@ static const gchar *_beats_per_row_strings[] = {
 const std::string MidiTrackerEditor::note_off_str = "===";
 const std::string MidiTrackerEditor::undefined_str = "***";
 
-MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, boost::shared_ptr<MidiRegion> reg, boost::shared_ptr<MidiTrack> tr)
-	: ArdourWindow (reg->name())
+MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, MidiRegionView* mrv)
+	: ArdourWindow (mrv->midi_region()->name())
 	, automation_action_menu(0)
 	, controller_menu (0)
 	, gain_column (0)
@@ -160,14 +161,14 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	  // TODO set the boundaries to not be above the number of rows
 	, steps_adjustment (4, -255, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
-	, region (reg)
-	, track (tr)
+	, region (mrv->midi_region())
+	, track (mrv->midi_view()->midi_track())
 	, midi_model (region->midi_source(0)->model())
 
 {
 	/* We do not handle nested sources/regions. Caller should have tackled this */
 
-	if (reg->max_source_level() > 0) {
+	if (region->max_source_level() > 0) {
 		throw failed_constructor();
 	}
 
