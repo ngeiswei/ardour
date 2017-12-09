@@ -608,6 +608,22 @@ class MidiTrackerEditor : public ArdourWindow
 	static size_t locate (const std::string& str, int position);
 
 	/**
+	 * Like change_digit but also changes the sign, if digit is negative then
+	 * return a negative val, if base <= digit then return a positive val.
+	 */
+	template <typename Num>
+	Num change_digit_or_sign (Num val, int digit, int position, int base=10)
+	{
+		if (0 <= digit && digit < base)
+			return change_digit (val, digit, position);
+
+		if ((digit < 0 && 0 < val) || (base <= digit && val < 0))
+			return -val;
+
+		return val;;
+	}
+
+	/**
 	 * Given a value, a digit and position, replace the digit of that value at
 	 * the given position by the given digit. For instance
 	 *
