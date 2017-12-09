@@ -72,10 +72,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Add cursor movement when Step Edit isn't enabled
-//
-// - [ ] Fix delay in automation to remain within the region
-//
 // - [ ] Add shortcut for parameters, steps, etc
 //
 // - [ ] Make the non-editing cursor visible
@@ -2515,7 +2511,9 @@ MidiTrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 
 	// Change existing delay
 	XMLNode& before = alist->get_state ();
-	double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+	double awhen = is_region_automation (param) ?
+		(row_relative_beats < ap->start_beats ? ap->start_beats : row_relative_beats).to_double()
+		: row_sample;
 	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
 	XMLNode& after = alist->get_state ();
 	register_automation_undo (alist, _("change automation event delay"), before, after);
@@ -3358,15 +3356,7 @@ MidiTrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int track
 		: np->region_relative_delay_ticks(off_note->end_time(), edit_rowidx);
 
 	// Update delay
-	int new_delay;
-	if (0 <= digit && digit < 100)
-		new_delay = change_digit (old_delay, digit, position);
-	else if ((digit < 0 && 0 < old_delay) || (100 <= digit && old_delay < 0))
-		// It means either - or + has been pressed, so change the sign if necessary
-		new_delay = -old_delay;
-	else
-		new_delay = old_delay;
-
+	int new_delay = change_digit_or_sign(old_delay, digit, position);
 	set_note_delay (new_delay, edit_rowidx, edit_tracknum);
 
 	// Move the cursor
@@ -3446,15 +3436,7 @@ MidiTrackerEditor::step_editing_set_automation (int digit, int rowidx, int track
 
 	// Set new value
 	int position = position_spinner.get_value_as_int();
-	double nval;
-	if (0 <= digit && digit < 100)
-		nval = change_digit (oval, digit, position);
-	else if ((digit < 0 && 0 < oval) || (100 <= digit && oval < 0))
-		// It means either - or + has been pressed, so change the sign if necessary
-		nval = -oval;
-	else
-		nval = oval;
-
+	double nval = change_digit_or_sign (oval, digit, position);
 	set_automation (nval, rowidx, tracknum);
 
 	// Move cursor
@@ -3495,6 +3477,18 @@ MidiTrackerEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 		ret = step_editing_set_automation_delay (digit_key_press (ev), edit_rowidx, edit_tracknum);
 		break;
 
+	// Minus
+	case GDK_minus:
+	case GDK_underscore:
+		ret = step_editing_set_automation_delay (-1, edit_rowidx, edit_tracknum);
+		break;
+
+	// Plus
+	case GDK_plus:
+	case GDK_equal:
+		ret = step_editing_set_automation_delay (100, edit_rowidx, edit_tracknum);
+		break;
+
 	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
@@ -3519,12 +3513,13 @@ bool
 MidiTrackerEditor::step_editing_set_automation_delay (int digit, int rowidx, int tracknum)
 {
 	std::pair<int, bool> val_def = get_automation_delay (rowidx, tracknum);
+	int old_delay = val_def.first;
 
 	// Set new value
 	if (val_def.second) {
 		int position = position_spinner.get_value_as_int();
-		int nval = change_digit (val_def.first, digit, position);
-		set_automation_delay (nval, rowidx, tracknum);
+		int new_delay = change_digit_or_sign (old_delay, digit, position);
+		set_automation_delay (new_delay, rowidx, tracknum);
 	}
 
 	// Move cursor
