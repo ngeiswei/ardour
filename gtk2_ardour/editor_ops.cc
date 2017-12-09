@@ -3051,6 +3051,10 @@ Editor::show_midi_list_editor ()
 void
 Editor::show_midi_tracker_editor ()
 {
+	// if (_session) {
+	// 	// TODO
+	// 	get_regions_from_selection_and_entered ();
+	// }
 	selection->foreach_midi_regionview (&MidiRegionView::show_tracker_editor);
 }
 

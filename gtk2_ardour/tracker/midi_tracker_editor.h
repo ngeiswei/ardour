@@ -98,7 +98,7 @@ class MidiTrackerEditor : public ArdourWindow
   public:
 	typedef Evoral::Note<Temporal::Beats> NoteType;
 
-	MidiTrackerEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, boost::shared_ptr<ARDOUR::MidiRegion>, boost::shared_ptr<ARDOUR::MidiTrack>);
+	MidiTrackerEditor(ARDOUR::Session*, MidiTimeAxisView*, boost::shared_ptr<ARDOUR::Route>, MidiRegionView*);
 	~MidiTrackerEditor();
 
   private:
