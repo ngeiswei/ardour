@@ -302,7 +302,6 @@ public:
 	void velocity_edit ();
 
 	void show_list_editor ();
-	void show_tracker_editor ();
 
 	typedef std::set<NoteBase*> Selection;
 	Selection const & selection () const {
