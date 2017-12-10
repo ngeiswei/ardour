@@ -848,16 +848,6 @@ MidiRegionView::show_list_editor ()
 	_list_editor->present ();
 }
 
-void
-MidiRegionView::show_tracker_editor ()
-{
-	if (!_tracker_editor) {
-		MidiTimeAxisView* const mtv  = dynamic_cast<MidiTimeAxisView*>(&trackview);
-		_tracker_editor = new MidiTrackerEditor (trackview.session(), mtv, mtv->_route, this);
-	}
-	_tracker_editor->present ();
-}
-
 /** Add a note to the model, and the view, at a canvas (click) coordinate.
  * \param t time in samples relative to the position of the region
  * \param y vertical position in pixels

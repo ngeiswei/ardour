@@ -128,6 +128,8 @@
 #include "utils.h"
 #include "vca_time_axis.h"
 
+#include "tracker/midi_tracker_editor.h"
+
 #include "pbd/i18n.h"
 
 using namespace std;
@@ -2941,11 +2943,11 @@ Editor::show_midi_list_editor ()
 void
 Editor::show_midi_tracker_editor ()
 {
-	// if (_session) {
-	// 	// TODO
-	// 	get_regions_from_selection_and_entered ();
-	// }
-	selection->foreach_midi_regionview (&MidiRegionView::show_tracker_editor);
+	if (_session) {
+		RegionSelection rs = get_regions_from_selection_and_entered ();
+		MidiTrackerEditor* tracker_editor = new MidiTrackerEditor (_session, rs);
+		tracker_editor->present ();
+	}
 }
 
 void
