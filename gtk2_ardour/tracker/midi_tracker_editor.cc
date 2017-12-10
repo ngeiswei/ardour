@@ -123,14 +123,14 @@ static const gchar *_beats_per_row_strings[] = {
 const std::string MidiTrackerEditor::note_off_str = "===";
 const std::string MidiTrackerEditor::undefined_str = "***";
 
-MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv, boost::shared_ptr<ARDOUR::Route> rou, MidiRegionView* mrv)
-	: ArdourWindow (mrv->midi_region()->name())
+MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
+	: ArdourWindow (dynamic_cast<MidiRegionView*>(rs.front())->midi_region()->name())
 	, automation_action_menu(0)
 	, controller_menu (0)
 	, gain_column (0)
 	, mute_column (0)
-	, midi_time_axis_view(mtv)
-	, route (rou)
+	, midi_time_axis_view(dynamic_cast<MidiRegionView*>(rs.front())->midi_view())
+	, route (midi_time_axis_view->_route)
 	, nrows (0)
 	, edit_rowidx (-1)
 	, edit_tracknum (-1)
@@ -161,8 +161,8 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, MidiTimeAxisView* mtv,
 	  // TODO set the boundaries to not be above the number of rows
 	, steps_adjustment (4, -255, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
-	, region (mrv->midi_region())
-	, track (mrv->midi_view()->midi_track())
+	, region (dynamic_cast<MidiRegionView*>(rs.front())->midi_region())
+	, track (dynamic_cast<MidiRegionView*>(rs.front())->midi_view()->midi_track())
 	, midi_model (region->midi_source(0)->model())
 
 {
