@@ -160,7 +160,7 @@ gtk2_ardour_sources = [
         'midi_cut_buffer.cc',
         'midi_export_dialog.cc',
         'midi_list_editor.cc',
-        'tracker/pattern.cc',
+        'tracker/base_pattern.cc',
         'tracker/note_pattern.cc',
         'tracker/automation_pattern.cc',
         'tracker/track_automation_pattern.cc',
