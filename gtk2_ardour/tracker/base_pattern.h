@@ -1,5 +1,5 @@
 /*
-    Copyleft (C) 2016 Nil Geisweiller
+    Copyright (C) 2016-2017 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_pattern_h_
-#define __ardour_gtk2_pattern_h_
+#ifndef __ardour_gtk2_tracker_base_pattern_h_
+#define __ardour_gtk2_tracker_base_pattern_h_
 
 #include "temporal/beats.h"
 #include "temporal/types.h"
@@ -143,4 +143,4 @@ protected:
 	uint32_t clamp(double row) const;
 };
 
-#endif /* __ardour_gtk2_pattern_h_ */
+#endif /* __ardour_gtk2_tracker_base_pattern_h_ */
