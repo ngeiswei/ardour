@@ -20,7 +20,9 @@
 #define __ardour_gtk2_tracker_note_pattern_h_
 
 #include "evoral/types.hpp"
+#include "evoral/Note.hpp"
 #include "ardour/session_handle.h"
+#include "ardour/midi_model.h"
 
 #include "base_pattern.h"
 
@@ -48,8 +50,7 @@ public:
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
 	NotePattern(ARDOUR::Session* session,
-	            boost::shared_ptr<ARDOUR::MidiRegion> region,
-	            boost::shared_ptr<ARDOUR::MidiModel> midi_model);
+	            boost::shared_ptr<ARDOUR::MidiRegion> region);
 
 	// Build or rebuild the pattern (implement BasePattern::update)
 	void update();

@@ -40,11 +40,10 @@ using Timecode::BBT_Time;
 /////////////////
 
 NotePattern::NotePattern(ARDOUR::Session* session,
-                         boost::shared_ptr<ARDOUR::MidiRegion> region,
-                         boost::shared_ptr<ARDOUR::MidiModel> midi_model)
+                         boost::shared_ptr<ARDOUR::MidiRegion> region)
 	: BasePattern(session, region),
 	  ntracks(0), nreqtracks(0),
-	  _midi_model(midi_model)
+	  _midi_model(region->midi_source(0)->model())
 {
 }
 

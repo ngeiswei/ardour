@@ -3745,7 +3745,7 @@ MidiTrackerEditor::scroll_event (GdkEventScroll* ev)
 void
 MidiTrackerEditor::build_pattern ()
 {
-	np = new NotePattern(_session, region, midi_model);
+	np = new NotePattern(_session, region);
 	tap = new TrackAutomationPattern(_session, region);
 	rap = new RegionAutomationPattern(_session, region);
 
