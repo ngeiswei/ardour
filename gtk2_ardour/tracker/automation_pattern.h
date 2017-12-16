@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015 Nil Geisweiller
+    Copyright (C) 2015-2017 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_automation_pattern_h_
-#define __ardour_gtk2_automation_pattern_h_
+#ifndef __ardour_gtk2_tracker_automation_pattern_h_
+#define __ardour_gtk2_tracker_automation_pattern_h_
 
 #include <set>
 
@@ -66,4 +66,4 @@ private:
 	AutomationControlSet _automation_controls;
 };
 
-#endif /* __ardour_gtk2_automation_pattern_h_ */
+#endif /* __ardour_gtk2_tracker_automation_pattern_h_ */
