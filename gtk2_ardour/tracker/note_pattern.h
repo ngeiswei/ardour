@@ -1,5 +1,5 @@
 /*
-    Copyleft (C) 2015 Nil Geisweiller
+    Copyright (C) 2015-2017 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_note_pattern_h_
-#define __ardour_gtk2_note_pattern_h_
+#ifndef __ardour_gtk2_tracker_note_pattern_h_
+#define __ardour_gtk2_tracker_note_pattern_h_
 
 #include "evoral/types.hpp"
 #include "ardour/session_handle.h"
@@ -169,4 +169,4 @@ typename NoteContainer::iterator NotePattern::find_eq_id(NoteContainer& notes, N
 	return notes.end();
 }
 
-#endif /* __ardour_gtk2_note_pattern_h_ */
+#endif /* __ardour_gtk2_tracker_note_pattern_h_ */
