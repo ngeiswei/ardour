@@ -23,7 +23,7 @@
 
 #include "ardour/automation_control.h"
 
-#include "pattern.h"
+#include "base_pattern.h"
 
 namespace ARDOUR {
 	class Session;
@@ -37,7 +37,7 @@ typedef std::set<boost::shared_ptr<ARDOUR::AutomationControl> > AutomationContro
 /**
  * Data structure holding the automation list pattern.
  */
-class AutomationPattern : public Pattern {
+class AutomationPattern : public BasePattern {
 public:
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
@@ -49,7 +49,7 @@ public:
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
 
-	// Build or rebuild the pattern (implement Pattern::update_pattern)
+	// Build or rebuild the pattern (implement BasePattern::update_pattern)
 	void update();
 
 	// Add an automation control in the automation control set

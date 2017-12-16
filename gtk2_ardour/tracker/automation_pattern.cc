@@ -32,7 +32,7 @@ using Timecode::BBT_Time;
 AutomationPattern::AutomationPattern(ARDOUR::Session* session,
                                      boost::shared_ptr<ARDOUR::Region> region,
                                      const AutomationControlSet& auto_ctrls)
-	: Pattern(session, region), _automation_controls(auto_ctrls)
+	: BasePattern(session, region), _automation_controls(auto_ctrls)
 {
 }
 
