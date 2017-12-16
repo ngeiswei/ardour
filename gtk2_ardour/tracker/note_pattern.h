@@ -22,7 +22,7 @@
 #include "evoral/types.hpp"
 #include "ardour/session_handle.h"
 
-#include "pattern.h"
+#include "base_pattern.h"
 
 namespace ARDOUR {
 	class MidiRegion;
@@ -38,7 +38,7 @@ namespace ARDOUR {
  * gtk widget representing notes and automations. The term track should not be
  * confused with the term track of the horizontal editor view.
  */
-class NotePattern : public Pattern {
+class NotePattern : public BasePattern {
 public:
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
@@ -51,7 +51,7 @@ public:
 	            boost::shared_ptr<ARDOUR::MidiRegion> region,
 	            boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
-	// Build or rebuild the pattern (implement Pattern::update)
+	// Build or rebuild the pattern (implement BasePattern::update)
 	void update();
 
 	// Update track_to_notes. Distribute new notes across N tracks so that no
