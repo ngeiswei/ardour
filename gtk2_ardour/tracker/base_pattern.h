@@ -38,10 +38,10 @@ namespace ARDOUR {
  * Shared methods for storing and handling data for the midi, audio and
  * automation pattern editor.
  */
-class Pattern {
+class BasePattern {
 public:
-	Pattern(ARDOUR::Session* session,
-	        boost::shared_ptr<ARDOUR::Region> region);
+	BasePattern(ARDOUR::Session* session,
+	            boost::shared_ptr<ARDOUR::Region> region);
 
 	static const uint32_t UNDEFINED_ROW = -1;
 
