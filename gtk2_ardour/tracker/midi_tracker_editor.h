@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015-2016 Nil Geisweiller
+    Copyright (C) 2015-2017 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_midi_editor_h_
-#define __ardour_gtk2_midi_editor_h_
+#ifndef __ardour_gtk2_midi_tracker_editor_h_
+#define __ardour_gtk2_midi_tracker_editor_h_
 
 #include <cmath>
 
@@ -657,4 +657,4 @@ class MidiTrackerEditor : public ArdourWindow
 	}
 };
 
-#endif /* __ardour_gtk2_midi_tracker_editor_h_ */
+#endif /* __ardour_gtk2_tracker_midi_tracker_editor_h_ */
