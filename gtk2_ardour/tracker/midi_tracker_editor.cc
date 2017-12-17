@@ -218,9 +218,7 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 
 MidiTrackerEditor::~MidiTrackerEditor ()
 {
-	delete np;
-	delete tap;
-	delete rap;
+	delete mtp;
 	delete automation_action_menu;
 	delete controller_menu;
 }
@@ -1303,7 +1301,7 @@ void
 MidiTrackerEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_colnum(i))->set_visible(i < np->ntracks ? visible_note : false);
+		view.get_column(note_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_note : false);
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Keep the window width is kept to its minimum
@@ -1333,7 +1331,7 @@ void
 MidiTrackerEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_channel_colnum(i))->set_visible(i < np->ntracks ? visible_channel : false);
+		view.get_column(note_channel_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_channel : false);
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Keep the window width is kept to its minimum
@@ -1363,7 +1361,7 @@ void
 MidiTrackerEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_velocity_colnum(i))->set_visible(i < np->ntracks ? visible_velocity : false);
+		view.get_column(note_velocity_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_velocity : false);
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// Keep the window width is kept to its minimum
@@ -1393,7 +1391,7 @@ void
 MidiTrackerEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_delay_colnum(i))->set_visible(i < np->ntracks ? visible_delay : false);
+		view.get_column(note_delay_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_delay : false);
 	redisplay_visible_automation_delay ();
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
@@ -1469,7 +1467,7 @@ MidiTrackerEditor::automation_click ()
 void
 MidiTrackerEditor::update_remove_note_column_button ()
 {
-	remove_note_column_button.set_sensitive (np->nreqtracks < np->ntracks);
+	remove_note_column_button.set_sensitive (mtp->np.nreqtracks < mtp->np.ntracks);
 }
 
 bool
@@ -1480,7 +1478,7 @@ MidiTrackerEditor::remove_note_column_press(GdkEventButton* ev)
 		return true;
 	}
 
-	np->dec_ntracks ();
+	mtp->np.dec_ntracks ();
 	redisplay_model ();
 	update_remove_note_column_button ();
 
@@ -1495,7 +1493,7 @@ MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
 		return true;
 	}
 
-	np->inc_ntracks ();
+	mtp->np.inc_ntracks ();
 	redisplay_model ();
 	update_remove_note_column_button ();
 
@@ -1524,24 +1522,15 @@ MidiTrackerEditor::redisplay_model ()
 
 	if (_session) {
 
-		np->set_rows_per_beat(rows_per_beat);
-		np->update();
-		delay_spinner.get_adjustment()->set_lower(np->delay_ticks_min());
-		delay_spinner.get_adjustment()->set_upper(np->delay_ticks_max());
+		mtp->set_rows_per_beat(rows_per_beat);
+		mtp->update();
 
-		tap->set_rows_per_beat(rows_per_beat);
-		tap->update();
-
-		rap->set_rows_per_beat(rows_per_beat);
-		rap->update();
+		delay_spinner.get_adjustment()->set_lower(mtp->delay_ticks_min());
+		delay_spinner.get_adjustment()->set_upper(mtp->delay_ticks_max());
 
 		TreeModel::Row row;
 
-		// Make sure that midi and automation regions start at the same sample
-		assert (np->sample_at_row(0) == tap->sample_at_row(0));
-		assert (np->sample_at_row(0) == rap->sample_at_row(0));
-
-		nrows = std::max(std::max(np->nrows, tap->nrows), rap->nrows);
+		nrows = mtp->nrows;
 
 		std::string beat_background_color = UIConfiguration::instance().color_str ("tracker editor: beat background");
 		std::string bar_background_color = UIConfiguration::instance().color_str ("tracker editor: bar background");
@@ -1558,9 +1547,9 @@ MidiTrackerEditor::redisplay_model ()
 				row_it = model->append();
 			row = *row_it++;
 
-			Temporal::Beats row_beats = np->beats_at_row(irow);
-			Temporal::Beats row_relative_beats = np->region_relative_beats_at_row(irow);
-			uint32_t row_sample = np->sample_at_row(irow);
+			Temporal::Beats row_beats = mtp->beats_at_row(irow);
+			Temporal::Beats row_relative_beats = mtp->region_relative_beats_at_row(irow);
+			uint32_t row_sample = mtp->sample_at_row(irow);
 
 			// Time
 			Timecode::BBT_Time row_bbt;
@@ -1576,7 +1565,7 @@ MidiTrackerEditor::redisplay_model ()
 				 : background_color);
 
 			// Render midi notes pattern
-			size_t ntracks = np->ntracks;
+			size_t ntracks = mtp->np.ntracks;
 			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
 				// TODO: use Ardour's logger instead of stdout
 				std::cout << "Warning: Number of note tracks needed for "
@@ -1602,18 +1591,18 @@ MidiTrackerEditor::redisplay_model ()
 				row[columns._off_note[i]] = NULL;
 				row[columns._on_note[i]] = NULL;
 
-				size_t off_notes_count = np->off_notes[i].count(irow);
-				size_t on_notes_count = np->on_notes[i].count(irow);
+				size_t off_notes_count = mtp->np.off_notes[i].count(irow);
+				size_t on_notes_count = mtp->np.on_notes[i].count(irow);
 
 				if (on_notes_count > 0 || off_notes_count > 0) {
-					if (np->is_displayable(irow, i)) {
+					if (mtp->np.is_displayable(irow, i)) {
 						// Notes off
-						NotePattern::RowToNotes::const_iterator i_off = np->off_notes[i].find(irow);
-						if (i_off != np->off_notes[i].end()) {
+						NotePattern::RowToNotes::const_iterator i_off = mtp->np.off_notes[i].find(irow);
+						if (i_off != mtp->np.off_notes[i].end()) {
 							NoteTypePtr note = i_off->second;
 							row[columns.note_name[i]] = note_off_str;
 							row[columns._note_foreground_color[i]] = active_foreground_color;
-							int64_t delay_ticks = np->region_relative_delay_ticks(note->end_time(), irow);
+							int64_t delay_ticks = mtp->region_relative_delay_ticks(note->end_time(), irow);
 							if (delay_ticks != 0) {
 								row[columns.delay[i]] = to_string (delay_ticks);
 								row[columns._delay_foreground_color[i]] = active_foreground_color;
@@ -1623,8 +1612,8 @@ MidiTrackerEditor::redisplay_model ()
 						}
 
 						// Notes on
-						NotePattern::RowToNotes::const_iterator i_on = np->on_notes[i].find(irow);
-						if (i_on != np->on_notes[i].end()) {
+						NotePattern::RowToNotes::const_iterator i_on = mtp->np.on_notes[i].find(irow);
+						if (i_on != mtp->np.on_notes[i].end()) {
 							NoteTypePtr note = i_on->second;
 							row[columns.channel[i]] = to_string (note->channel() + 1);
 							row[columns.note_name[i]] = ParameterDescriptor::midi_note_name (note->note());
@@ -1633,7 +1622,7 @@ MidiTrackerEditor::redisplay_model ()
 							row[columns._channel_foreground_color[i]] = active_foreground_color;
 							row[columns._velocity_foreground_color[i]] = active_foreground_color;
 
-							int64_t delay_ticks = np->region_relative_delay_ticks(note->time(), irow);
+							int64_t delay_ticks = mtp->region_relative_delay_ticks(note->time(), irow);
 							if (delay_ticks != 0) {
 								row[columns.delay[i]] = to_string (delay_ticks);
 								row[columns._delay_foreground_color[i]] = active_foreground_color;
@@ -1678,7 +1667,7 @@ MidiTrackerEditor::redisplay_model ()
 							row[columns.automation[i]] = to_string (aval);
 							double awhen = (*auto_it->second)->when;
 							int64_t delay_ticks = is_region_automation (param) ?
-								rap->region_relative_delay_ticks(Temporal::Beats(awhen), irow) : tap->delay_ticks((samplepos_t)awhen, irow);
+								mtp->region_relative_delay_ticks(Temporal::Beats(awhen), irow) : mtp->delay_ticks((samplepos_t)awhen, irow);
 							if (delay_ticks != 0) {
 								row[columns.automation_delay[i]] = to_string (delay_ticks);
 								row[columns._automation_delay_foreground_color[i]] = active_foreground_color;
@@ -1927,7 +1916,7 @@ MidiTrackerEditor::note_edited (const std::string& path, const std::string& text
 	bool is_on = pitch <= 127;
 
 	// Can't edit ***
-	if (not np->is_displayable(edit_rowidx, edit_tracknum)) {
+	if (not mtp->np.is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -1968,7 +1957,7 @@ MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time();
-		Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
+		Temporal::Beats end = mtp->np.next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
 		NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
@@ -1977,12 +1966,12 @@ MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
-		np->add (edit_tracknum, new_note);
+		mtp->np.add (edit_tracknum, new_note);
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = np->region_relative_beats_at_row(rowidx, delay);
-		NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
+		Temporal::Beats here = mtp->region_relative_beats_at_row(rowidx, delay);
+		NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_tracknum);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2003,13 +1992,13 @@ MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
+		Temporal::Beats end = mtp->np.next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
-		np->add (edit_tracknum, new_note);
+		mtp->np.add (edit_tracknum, new_note);
 	}
 
 	// Apply note changes
@@ -2036,7 +2025,7 @@ MidiTrackerEditor::set_off_note (int rowidx, int tracknum)
 		// If there is no off note, update the length of the preceding node
 		// to match the new off note (smart off note).
 		if (!off_note) {
-			NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
+			NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_tracknum);
 			if (prev_note) {
 				Temporal::Beats length = on_note->time() - prev_note->time();
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -2045,8 +2034,8 @@ MidiTrackerEditor::set_off_note (int rowidx, int tracknum)
 	} else {
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = np->region_relative_beats_at_row(rowidx, delay);
-		NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
+		Temporal::Beats here = mtp->region_relative_beats_at_row(rowidx, delay);
+		NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_tracknum);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2086,11 +2075,11 @@ MidiTrackerEditor::delete_note (int rowidx, int tracknum)
 		// If there is an off note, update the length of the preceding note
 		// to match the next note or the end of the region.
 		if (off_note) {
-			NoteTypePtr prev_note = np->find_prev(rowidx, edit_tracknum);
+			NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_tracknum);
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Temporal::Beats start = prev_note->time();
-				Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
+				Temporal::Beats end = mtp->np.next_off(rowidx, edit_tracknum);
 				Temporal::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
@@ -2099,7 +2088,7 @@ MidiTrackerEditor::delete_note (int rowidx, int tracknum)
 		// Update the length of the corresponding on note so the off note
 		// matches the next note or the end of the region.
 		Temporal::Beats start = off_note->time();
-		Temporal::Beats end = np->next_off(rowidx, edit_tracknum);
+		Temporal::Beats end = mtp->np.next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
 		cmd = midi_model->new_note_diff_command (opname);
@@ -2121,7 +2110,7 @@ MidiTrackerEditor::note_channel_edited (const std::string& path, const std::stri
 	}
 
 	// Can't edit ***
-	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
+	if (!mtp->np.is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -2163,7 +2152,7 @@ MidiTrackerEditor::note_velocity_edited (const std::string& path, const std::str
 	}
 
 	// Can't edit ***
-	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
+	if (!mtp->np.is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -2201,7 +2190,7 @@ void
 MidiTrackerEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
 	// Can't edit ***
-	if (!np->is_displayable(edit_rowidx, edit_tracknum)) {
+	if (!mtp->np.is_displayable(edit_rowidx, edit_tracknum)) {
 		clear_editables ();
 		return;
 	}
@@ -2227,19 +2216,19 @@ MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 	MidiModel::NoteDiffCommand* cmd = midi_model->new_note_diff_command (opname);
 
 	// Check if within acceptable boundaries
-	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
+	if (delay < mtp->delay_ticks_min() || mtp->delay_ticks_max() < delay)
 		return;
 
 	if (on_note) {
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int delta = delay - np->region_relative_delay_ticks(on_note->time(), rowidx);
+		int delta = delay - mtp->region_relative_delay_ticks(on_note->time(), rowidx);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_start = on_note->time() + relative_beats;
 		// Make sure the new_start is still within the visible region
-		if (new_start < np->start_beats) {
-			new_start = np->start_beats;
+		if (new_start < mtp->start_beats) {
+			new_start = mtp->start_beats;
 			relative_beats = new_start - on_note->time();
 		}
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
@@ -2257,15 +2246,15 @@ MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int delta = delay - np->region_relative_delay_ticks(off_note->end_time(), rowidx);
+		int delta = delay - mtp->region_relative_delay_ticks(off_note->end_time(), rowidx);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_length = off_note->length() + relative_beats;
 		// Make sure the off note is after the on note
 		if (new_length < Temporal::Beats::ticks(1))
 			new_length = Temporal::Beats::ticks(1);
 		// Make sure the off note doesn't go beyong the limit of the region
-		if (np->end_beats < off_note->time() + new_length)
-			new_length = np->end_beats - off_note->time();
+		if (mtp->end_beats < off_note->time() + new_length)
+			new_length = mtp->end_beats - off_note->time();
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
 
@@ -2324,7 +2313,7 @@ AutomationPattern* MidiTrackerEditor::get_automation_pattern (const Evoral::Para
 {
 	if (!param)
 		return NULL;
-	return is_region_automation (param) ? (AutomationPattern*)rap : (AutomationPattern*)tap;
+	return is_region_automation (param) ? (AutomationPattern*)&(mtp->rap) : (AutomationPattern*)&(mtp->tap);
 }
 
 void
@@ -2446,7 +2435,7 @@ MidiTrackerEditor::automation_delay_edited (const std::string& path, const std::
 	}
 
 	// Check if within acceptable boundaries
-	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay) {
+	if (delay < mtp->delay_ticks_min() || mtp->delay_ticks_max() < delay) {
 		clear_editables ();
 		return;
 	}
@@ -2478,7 +2467,7 @@ MidiTrackerEditor::get_automation_delay (int rowidx, int tracknum)
 	if (auto_it != r2at.end()) {
 		double awhen = (*auto_it->second)->when;
 		int delay_ticks = is_region_automation (param) ?
-			rap->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : tap->delay_ticks((samplepos_t)awhen, rowidx);
+			mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
 		return std::make_pair(delay_ticks, true);
 	}
 	return std::make_pair(0, false);
@@ -2488,11 +2477,11 @@ void
 MidiTrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 {
 	// Check if within acceptable boundaries
-	if (delay < np->delay_ticks_min() || np->delay_ticks_max() < delay)
+	if (delay < mtp->delay_ticks_min() || mtp->delay_ticks_max() < delay)
 		return;
 
-	Temporal::Beats row_relative_beats = tap->region_relative_beats_at_row(rowidx, delay);
-	uint32_t row_sample = tap->sample_at_row(rowidx, delay);
+	Temporal::Beats row_relative_beats = mtp->region_relative_beats_at_row(rowidx, delay);
+	uint32_t row_sample = mtp->sample_at_row(rowidx, delay);
 
 	// Find the parameter to change delay
 	Evoral::Parameter param = get_parameter (edit_tracknum);
@@ -3353,8 +3342,8 @@ MidiTrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int track
 	}
 
 	// Fetch delay
-	int old_delay = on_note ? np->region_relative_delay_ticks(on_note->time(), edit_rowidx)
-		: np->region_relative_delay_ticks(off_note->end_time(), edit_rowidx);
+	int old_delay = on_note ? mtp->region_relative_delay_ticks(on_note->time(), edit_rowidx)
+		: mtp->region_relative_delay_ticks(off_note->end_time(), edit_rowidx);
 
 	// Update delay
 	int new_delay = change_digit_or_sign(old_delay, digit, position);
@@ -3745,9 +3734,7 @@ MidiTrackerEditor::scroll_event (GdkEventScroll* ev)
 void
 MidiTrackerEditor::build_pattern ()
 {
-	np = new NotePattern(_session, region);
-	tap = new TrackAutomationPattern(_session, region);
-	rap = new RegionAutomationPattern(_session, region);
+	mtp = new MidiTrackPattern(_session, region);
 
 	update_automation_patterns ();
 }
@@ -3759,9 +3746,9 @@ MidiTrackerEditor::update_automation_patterns ()
 	for (Parameter2AutomationControl::const_iterator it = param2actrl.begin(); it != param2actrl.end(); ++it) {
 		// Midi automation are attached to the region, not the track
 		if (is_region_automation (it->first))
-			rap->insert(it->second);
+			mtp->rap.insert(it->second);
 		else
-			tap->insert(it->second);
+			mtp->tap.insert(it->second);
 	}
 }
 
