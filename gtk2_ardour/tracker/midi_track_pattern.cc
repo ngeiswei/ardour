@@ -22,8 +22,37 @@
 
 MidiTrackPattern::MidiTrackPattern (ARDOUR::Session* session,
                                     boost::shared_ptr<ARDOUR::MidiRegion> region)
-	: np(session, region)
+	: BasePattern(session, region)
+	, np(session, region)
 	, rap(session, region)
 	, tap(session, region)
 {
+}
+
+MidiTrackPattern::~MidiTrackPattern ()
+{
+}
+
+void MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
+{
+	np.set_rows_per_beat(rpb);
+	rap.set_rows_per_beat(rpb);
+	tap.set_rows_per_beat(rpb);
+
+	// Make sure that midi and automation regions start at the same sample
+	assert (sample_at_row(0) == np.sample_at_row(0));
+	assert (sample_at_row(0) == rap.sample_at_row(0));
+	assert (sample_at_row(0) == tap.sample_at_row(0));
+
+	// Make sure all patterns have the same number of rows
+	assert (nrows == np.nrows);
+	assert (nrows == tap.nrows);
+	assert (nrows == tap.nrows);
+}
+
+void MidiTrackPattern::update()
+{
+	np.update();
+	rap.update();
+	tap.update();
 }
