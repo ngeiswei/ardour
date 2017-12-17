@@ -28,14 +28,31 @@
  * of a given track, with possibly multiple regions, possibly overlapping, as
  * long as they all come from the same track.
  */
-class MidiTrackPattern {            // TODO: maybe inherit from BasePattern
+class MidiTrackPattern : public BasePattern {
 public:
 	MidiTrackPattern (ARDOUR::Session* session,
 	                  boost::shared_ptr<ARDOUR::MidiRegion> region);
+	virtual ~MidiTrackPattern ();
 
 	NotePattern np;
 	RegionAutomationPattern rap;
 	TrackAutomationPattern tap;
+
+	// TODO attempt to move MidiTrackerEditor::param2actrl + its ctor here
+	// TODO attempt to move MidiTrackerEditor::update_automation_patterns here
+	// TODO attempt to move MidiTrackerEditor::get_automation_pattern here
+	// TODO attempt to move that sort of code here:
+	// int delay_ticks = is_region_automation (param) ?
+	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
+
+
+	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
+	// supported). After changing that you probably need to update the pattern,
+	// see below.
+	void set_rows_per_beat(uint16_t rpb);
+
+	// Build or rebuild note and automation pattern
+	void update();
 };
 
 #endif /* __ardour_gtk2_tracker_track_pattern_h_ */
