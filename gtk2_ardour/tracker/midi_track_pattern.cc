@@ -35,9 +35,18 @@ MidiTrackPattern::~MidiTrackPattern ()
 
 void MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
 {
+	BasePattern::set_rows_per_beat(rpb);
 	np.set_rows_per_beat(rpb);
 	rap.set_rows_per_beat(rpb);
 	tap.set_rows_per_beat(rpb);
+}
+
+void MidiTrackPattern::set_row_range()
+{
+	BasePattern::set_row_range();
+	np.set_row_range();
+	rap.set_row_range();
+	tap.set_row_range();
 
 	// Make sure that midi and automation regions start at the same sample
 	assert (sample_at_row(0) == np.sample_at_row(0));
@@ -46,12 +55,13 @@ void MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
 
 	// Make sure all patterns have the same number of rows
 	assert (nrows == np.nrows);
-	assert (nrows == tap.nrows);
+	assert (nrows == rap.nrows);
 	assert (nrows == tap.nrows);
 }
 
 void MidiTrackPattern::update()
 {
+	set_row_range();
 	np.update();
 	rap.update();
 	tap.update();
