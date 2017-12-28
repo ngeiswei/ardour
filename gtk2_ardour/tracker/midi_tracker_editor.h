@@ -43,6 +43,7 @@
 #include "ardour_window.h"
 #include "editing.h"
 #include "midi_time_axis.h"
+#include "region_selection.h"
 
 #include "midi_track_pattern.h"
 
@@ -129,6 +130,12 @@ class MidiTrackerEditor : public ArdourWindow
 
 	    ~ProcessorAutomationInfo ();
 	};
+
+	// List of selected region considered at the creation of this class
+	RegionSelection region_selection;
+
+	// Reference to the unique editor
+	PublicEditor& public_editor;
 
 	/** Information about all automatable processor parameters that apply to
 	 *  this route.  The Amp processor is not included in this list.

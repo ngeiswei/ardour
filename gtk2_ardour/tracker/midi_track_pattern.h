@@ -51,6 +51,9 @@ public:
 	// see below.
 	void set_rows_per_beat(uint16_t rpb);
 
+	// Set position_row_beats, end_row_beats and nrows
+	void set_row_range();
+
 	// Build or rebuild note and automation pattern
 	void update();
 };
