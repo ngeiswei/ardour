@@ -125,6 +125,8 @@ const std::string MidiTrackerEditor::undefined_str = "***";
 
 MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	: ArdourWindow (dynamic_cast<MidiRegionView*>(rs.front())->midi_region()->name())
+	, region_selection(rs)
+	, public_editor(dynamic_cast<MidiRegionView*>(rs.front())->midi_view ()->editor ())
 	, automation_action_menu(0)
 	, controller_menu (0)
 	, gain_column (0)
@@ -166,6 +168,15 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	, midi_model (region->midi_source(0)->model())
 
 {
+	// check unicity of route as well
+	for (RegionSelection::const_iterator it = region_selection.begin();
+	     it != region_selection.end(); ++it) {
+		MidiTimeAxisView* mtav = dynamic_cast<MidiRegionView*>(*it)->midi_view();
+		std::cout << "&public_editor = " << &public_editor << std::endl;
+		std::cout << "&(mtav->editor())  = " << &(mtav->editor()) << std::endl;
+		std::cout << "mtav->_route.get()  = " << mtav->_route.get() << std::endl;
+	}
+
 	/* We do not handle nested sources/regions. Caller should have tackled this */
 
 	if (region->max_source_level() > 0) {
@@ -870,6 +881,8 @@ MidiTrackerEditor::update_automation_column_visibility (const Evoral::Parameter&
 	redisplay_model ();
 }
 
+// TODO: take the track in argument because likely the device names differ per
+// track
 void
 MidiTrackerEditor::build_controller_menu ()
 {
@@ -982,6 +995,8 @@ MidiTrackerEditor::build_controller_menu ()
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
 MidiTrackerEditor::get_device_names ()
 {
+	// TODO: check whether the device names are per track and upgrade this
+	// function to take the track in input
 	return midi_time_axis_view->get_device_names ();
 }
 
@@ -2512,10 +2527,9 @@ MidiTrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 void
 MidiTrackerEditor::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
 {
-	PublicEditor& editor = midi_time_axis_view->editor ();
-	editor.begin_reversible_command (opname);
+	public_editor.begin_reversible_command (opname);
 	_session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
-	editor.commit_reversible_command ();
+	public_editor.commit_reversible_command ();
 	_session->set_dirty ();
 }
 
