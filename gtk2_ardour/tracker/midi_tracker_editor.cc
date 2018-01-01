@@ -73,6 +73,8 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Wrap the whole code in a Tracker namespace
+//
 // - [ ] Add shortcut for parameters, steps, etc
 //
 // - [ ] Make the non-editing cursor visible
@@ -95,31 +97,6 @@ using Timecode::BBT_Time;
 // MidiTrackerEditor //
 ///////////////////////
 
-static const gchar *_beats_per_row_strings[] = {
-	N_("Beats/128"),
-	N_("Beats/64"),
-	N_("Beats/32"),
-	N_("Beats/28"),
-	N_("Beats/24"),
-	N_("Beats/20"),
-	N_("Beats/16"),
-	N_("Beats/14"),
-	N_("Beats/12"),
-	N_("Beats/10"),
-	N_("Beats/8"),
-	N_("Beats/7"),
-	N_("Beats/6"),
-	N_("Beats/5"),
-	N_("Beats/4"),
-	N_("Beats/3"),
-	N_("Beats/2"),
-	N_("Beats"),
-	N_("Bars"),
-	0
-};
-
-#define COMBO_TRIANGLE_WIDTH 25
-
 const std::string MidiTrackerEditor::note_off_str = "===";
 const std::string MidiTrackerEditor::undefined_str = "***";
 
@@ -138,42 +115,23 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	, edit_tracknum (-1)
 	, edit_colnum (-1)
 	, editing_editable (NULL)
-	, myactions (X_("Tracking"))
+	, main_toolbar (*this)
+	, midi_track_toolbars (rs.size())
 	, visible_note (true)
 	, visible_channel (false)
 	, visible_velocity (false)
 	, visible_delay (false)
-	, step_edit (false)
-	, octave_label (_("Octave"))
-	, octave_adjustment (4, -1, 9, 1, 2)
-	, octave_spinner (octave_adjustment)
-	, channel_label (S_("Channel|Ch"))
-	, channel_adjustment (1, 1, 16, 1, 4)
-	, channel_spinner (channel_adjustment)
-	, velocity_label (S_("Velocity|Vel"))
-	, velocity_adjustment (64, 0, 127, 1, 4)
-	, velocity_spinner (velocity_adjustment)
-	, delay_label (_("Delay"))
-	, delay_adjustment (0, 0, 0, 1, 4)
-	, delay_spinner (delay_adjustment)
-	, position_label (_("Position"))
-	, position_adjustment (0, -5, 5, 1, 2)
-	, position_spinner (position_adjustment)
-	, steps_label (_("Steps"))
-	  // TODO set the boundaries to not be above the number of rows
-	, steps_adjustment (4, -255, 255, 1, 4)
-	, steps_spinner (steps_adjustment)
 	, region (dynamic_cast<MidiRegionView*>(rs.front())->midi_region())
 	, track (dynamic_cast<MidiRegionView*>(rs.front())->midi_view()->midi_track())
 	, midi_model (region->midi_source(0)->model())
 
 {
-	// check unicity of route as well
 	for (RegionSelection::const_iterator it = region_selection.begin();
 	     it != region_selection.end(); ++it) {
 		MidiTimeAxisView* mtav = dynamic_cast<MidiRegionView*>(*it)->midi_view();
 		std::cout << "&public_editor = " << &public_editor << std::endl;
 		std::cout << "&(mtav->editor())  = " << &(mtav->editor()) << std::endl;
+		// As observed route is different per track
 		std::cout << "mtav->_route.get()  = " << mtav->_route.get() << std::endl;
 	}
 
@@ -192,22 +150,14 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	_pan_param_types.insert(PanFrontBackAutomation);
 	_pan_param_types.insert(PanLFEAutomation);
 
-	// Beats per row combo
-	beats_per_row_strings =  I18N (_beats_per_row_strings);
-	build_beats_per_row_menu ();
-
-	register_actions ();
-
 	setup_processor_menu_and_curves ();
 	build_param2actrl ();
 	build_pattern ();
 
-	setup_tooltips ();
-	setup_toolbar ();
 	setup_pattern ();
 	setup_scroller ();
-
-	set_beats_per_row_to (SnapToBeatDiv4);
+	setup_toolbars ();
+	setup_tooltips ();
 
 	redisplay_model ();
 
@@ -215,12 +165,16 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	                                     boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
 	region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 	                                       boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
-	
+
 	vbox.show ();
 
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
-	vbox.pack_start (toolbar, false, false);
+	vbox.pack_start (main_toolbar, false, false);
+	for (std::vector<Gtk::HBox>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it) {
+		std::cout << "vbox.pack_start [" << &(*it) << "]" << std::endl;
+		vbox.pack_start (*it, false, false);
+	}
 	vbox.pack_start (scroller, true, true);
 
 	add (vbox);
@@ -1278,33 +1232,6 @@ MidiTrackerEditor::hide_main_automations ()
 /////////////////////////
 
 void
-MidiTrackerEditor::register_actions ()
-{
-	Glib::RefPtr<ActionGroup> beats_per_row_actions = myactions.create_action_group (X_("BeatsPerRow"));
-	RadioAction::Group beats_per_row_choice_group;
-
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-onetwentyeighths"), _("Beats Per Row to One Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv128)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixtyfourths"), _("Beats Per Row to Sixty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv64)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv32)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv28)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv24)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv20)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv16)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv14)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv12)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv10)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv8)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv7)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv6)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv5)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv4)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv3)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeatDiv2)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBeat)));
-	myactions.register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"), (sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_chosen), Editing::SnapToBar)));
-}
-
-void
 MidiTrackerEditor::resize_width()
 {
 	int width, height;
@@ -1515,20 +1442,6 @@ MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
 	return false;
 }
 
-bool
-MidiTrackerEditor::step_edit_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	step_edit = !step_edit;
-	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
-	return false;
-}
-
 void
 MidiTrackerEditor::redisplay_model ()
 {
@@ -1537,11 +1450,11 @@ MidiTrackerEditor::redisplay_model ()
 
 	if (_session) {
 
-		mtp->set_rows_per_beat(rows_per_beat);
+		mtp->set_rows_per_beat(main_toolbar.rows_per_beat);
 		mtp->update();
 
-		delay_spinner.get_adjustment()->set_lower(mtp->delay_ticks_min());
-		delay_spinner.get_adjustment()->set_upper(mtp->delay_ticks_max());
+		main_toolbar.delay_spinner.get_adjustment()->set_lower(mtp->delay_ticks_min());
+		main_toolbar.delay_spinner.get_adjustment()->set_upper(mtp->delay_ticks_max());
 
 		TreeModel::Row row;
 
@@ -1805,7 +1718,7 @@ MidiTrackerEditor::editing_note_started (CellEditable* ed, const string& path, i
 	edit_colnum = note_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
-	if (ed && step_edit) {
+	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_key_press), false);
@@ -1819,7 +1732,7 @@ MidiTrackerEditor::editing_note_channel_started (CellEditable* ed, const string&
 	edit_colnum = note_channel_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
-	if (ed && step_edit) {
+	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_channel_key_press), false);
@@ -1833,7 +1746,7 @@ MidiTrackerEditor::editing_note_velocity_started (CellEditable* ed, const string
 	edit_colnum = note_velocity_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
-	if (ed && step_edit) {
+	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_velocity_key_press), false);
@@ -1847,7 +1760,7 @@ MidiTrackerEditor::editing_note_delay_started (CellEditable* ed, const string& p
 	edit_colnum = note_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
-	if (ed && step_edit) {
+	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_delay_key_press), false);
@@ -1861,7 +1774,7 @@ MidiTrackerEditor::editing_automation_started (CellEditable* ed, const string& p
 	edit_colnum = automation_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
-	if (ed && step_edit) {
+	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_automation_key_press), false);
@@ -1875,7 +1788,7 @@ MidiTrackerEditor::editing_automation_delay_started (CellEditable* ed, const str
 	edit_colnum = automation_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
 
-	if (ed && step_edit) {
+	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
 			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_automation_delay_key_press), false);
@@ -1915,7 +1828,7 @@ MidiTrackerEditor::parse_pitch (std::string text) const
 {
 	// Add default octave, if the octave digit is missing
 	if (!text.empty() && !std::isdigit(*text.rbegin()))
-		text += to_string(octave_spinner.get_value_as_int());
+		text += to_string(main_toolbar.octave_spinner.get_value_as_int());
 
 	// Parse the note per se
 	return ParameterDescriptor::midi_note_num(text);
@@ -1957,9 +1870,9 @@ MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
 
-	int delay = delay_spinner.get_value_as_int();
-	uint8_t chan = channel_spinner.get_value_as_int() - 1;
-	uint8_t vel = velocity_spinner.get_value_as_int();
+	int delay = main_toolbar.delay_spinner.get_value_as_int();
+	uint8_t chan = main_toolbar.channel_spinner.get_value_as_int() - 1;
+	uint8_t vel = main_toolbar.velocity_spinner.get_value_as_int();
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
@@ -2027,7 +1940,7 @@ MidiTrackerEditor::set_off_note (int rowidx, int tracknum)
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
 
-	int delay = delay_spinner.get_value_as_int();
+	int delay = main_toolbar.delay_spinner.get_value_as_int();
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
@@ -2279,8 +2192,8 @@ MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 void MidiTrackerEditor::play_note(uint8_t pitch)
 {
 	uint8_t event[3];
-	uint8_t chan = channel_spinner.get_value_as_int() - 1;
-	uint8_t vel = velocity_spinner.get_value_as_int();
+	uint8_t chan = main_toolbar.channel_spinner.get_value_as_int() - 1;
+	uint8_t vel = main_toolbar.velocity_spinner.get_value_as_int();
 	event[0] = (MIDI_CMD_NOTE_ON | chan);
 	event[1] = pitch;
 	event[2] = vel;
@@ -2290,7 +2203,7 @@ void MidiTrackerEditor::play_note(uint8_t pitch)
 void MidiTrackerEditor::release_note(uint8_t pitch)
 {
 	uint8_t event[3];
-	uint8_t chan = channel_spinner.get_value_as_int() - 1;
+	uint8_t chan = main_toolbar.channel_spinner.get_value_as_int() - 1;
 	event[0] = (MIDI_CMD_NOTE_OFF | chan);
 	event[1] = pitch;
 	event[2] = 0;
@@ -2399,7 +2312,7 @@ MidiTrackerEditor::set_automation (double val, int rowidx, int tracknum)
 
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
-		int delay = delay_spinner.get_value_as_int ();
+		int delay = main_toolbar.delay_spinner.get_value_as_int ();
 		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(rowidx, delay);
 		uint32_t row_sample = ap->sample_at_row(rowidx, delay);
 		double awhen = is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
@@ -2878,7 +2791,7 @@ MidiTrackerEditor::digit_key_press (GdkEventKey* ev)
 uint8_t
 MidiTrackerEditor::pitch_key (GdkEventKey* ev)
 {
-	int octave = octave_spinner.get_value_as_int();
+	int octave = main_toolbar.octave_spinner.get_value_as_int();
 
 	switch (ev->keyval) {
 	case GDK_z:                 // C
@@ -3126,7 +3039,7 @@ bool MidiTrackerEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int
 {
 	play_note(pitch);
 	set_on_note (pitch, rowidx, tracknum);
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
@@ -3134,7 +3047,7 @@ bool MidiTrackerEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int
 bool MidiTrackerEditor::step_editing_set_off_note (int rowidx, int tracknum)
 {
 	set_off_note (rowidx, tracknum);
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
@@ -3142,7 +3055,7 @@ bool MidiTrackerEditor::step_editing_set_off_note (int rowidx, int tracknum)
 bool MidiTrackerEditor::step_editing_delete_note (int rowidx, int tracknum)
 {
 	delete_note (rowidx, tracknum);
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
@@ -3204,12 +3117,12 @@ MidiTrackerEditor::step_editing_set_note_channel (int digit, int rowidx, int tra
 	boost::shared_ptr<MidiTrackerEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int ch = note->channel();
-		int position = position_spinner.get_value_as_int();
+		int position = main_toolbar.position_spinner.get_value_as_int();
 		int new_ch = change_digit (ch + 1, digit, position);
 		set_note_channel (note, new_ch - 1);
 	}
 
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
@@ -3271,11 +3184,11 @@ MidiTrackerEditor::step_editing_set_note_velocity (int digit, int rowidx, int tr
 	boost::shared_ptr<MidiTrackerEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int vel = note->velocity();
-		int position = position_spinner.get_value_as_int();
+		int position = main_toolbar.position_spinner.get_value_as_int();
 		int new_vel = change_digit (vel, digit, position);
 		set_note_velocity (note, new_vel);
 	}
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 	return true;
 }
@@ -3346,8 +3259,8 @@ MidiTrackerEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 bool
 MidiTrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
 {
-	int position = position_spinner.get_value_as_int();
-	int steps = steps_spinner.get_value_as_int();
+	int position = main_toolbar.position_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
 	if (!on_note && !off_note) {
@@ -3439,12 +3352,12 @@ MidiTrackerEditor::step_editing_set_automation (int digit, int rowidx, int track
 	double oval = val_def.first;
 
 	// Set new value
-	int position = position_spinner.get_value_as_int();
+	int position = main_toolbar.position_spinner.get_value_as_int();
 	double nval = change_digit_or_sign (oval, digit, position);
 	set_automation (nval, rowidx, tracknum);
 
 	// Move cursor
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 
 	return true;
@@ -3521,13 +3434,13 @@ MidiTrackerEditor::step_editing_set_automation_delay (int digit, int rowidx, int
 
 	// Set new value
 	if (val_def.second) {
-		int position = position_spinner.get_value_as_int();
+		int position = main_toolbar.position_spinner.get_value_as_int();
 		int new_delay = change_digit_or_sign (old_delay, digit, position);
 		set_automation_delay (new_delay, rowidx, tracknum);
 	}
 
 	// Move cursor
-	int steps = steps_spinner.get_value_as_int();
+	int steps = main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
 
 	return true;
@@ -3811,13 +3724,18 @@ MidiTrackerEditor::setup_pattern ()
 }
 
 void
-MidiTrackerEditor::setup_toolbar ()
+MidiTrackerEditor::setup_toolbars ()
 {
-	toolbar.set_spacing (2);
+	main_toolbar.setup ();
+	setup_midi_track_toolbars ();
+}
 
-	// Add beats per row selection
-	beats_per_row_selector.show ();
-	toolbar.pack_start (beats_per_row_selector, false, false);
+void MidiTrackerEditor::setup_midi_track_toolbars ()
+{
+	// TODO setup for all tracks
+	HBox& mt_toolbar = midi_track_toolbars.front();
+
+	mt_toolbar.set_spacing (2);
 
 	// Add visible note button
 	visible_note_button.set_name ("visible note button");
@@ -3825,7 +3743,7 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_note_button.show ();
 	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_note_press), false);
-	toolbar.pack_start (visible_note_button, false, false);
+	mt_toolbar.pack_start (visible_note_button, false, false);
 
 	// Add visible channel button
 	visible_channel_button.set_name ("visible channel button");
@@ -3833,7 +3751,7 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_channel_button.show ();
 	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_channel_press), false);
-	toolbar.pack_start (visible_channel_button, false, false);
+	mt_toolbar.pack_start (visible_channel_button, false, false);
 
 	// Add visible velocity button
 	visible_velocity_button.set_name ("visible velocity button");
@@ -3841,7 +3759,7 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_velocity_button.show ();
 	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_velocity_press), false);
-	toolbar.pack_start (visible_velocity_button, false, false);
+	mt_toolbar.pack_start (visible_velocity_button, false, false);
 
 	// Add visible delay button
 	visible_delay_button.set_name ("visible delay button");
@@ -3849,94 +3767,31 @@ MidiTrackerEditor::setup_toolbar ()
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	visible_delay_button.show ();
 	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_delay_press), false);
-	toolbar.pack_start (visible_delay_button, false, false);
+	mt_toolbar.pack_start (visible_delay_button, false, false);
 
 	// Add automation button
 	automation_button.set_name ("automation button");
 	automation_button.set_text (S_("Automation|A"));
 	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackerEditor::automation_click));
 	automation_button.show ();
-	toolbar.pack_start (automation_button, false, false);
+	mt_toolbar.pack_start (automation_button, false, false);
 
 	// Remove/add note column
 	rm_add_note_column_separator.show ();
-	toolbar.pack_start (rm_add_note_column_separator, false, false);
+	mt_toolbar.pack_start (rm_add_note_column_separator, false, false);
 	remove_note_column_button.set_name ("remove note column");
 	remove_note_column_button.set_text (S_("Remove|-"));
 	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::remove_note_column_press), false);
 	remove_note_column_button.show ();
 	remove_note_column_button.set_sensitive (false);
-	toolbar.pack_start (remove_note_column_button, false, false);
+	mt_toolbar.pack_start (remove_note_column_button, false, false);
 	add_note_column_button.set_name ("add note column");
 	add_note_column_button.set_text (S_("Add|+"));
 	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::add_note_column_press), false);
 	add_note_column_button.show ();
-	toolbar.pack_start (add_note_column_button, false, false);
+	mt_toolbar.pack_start (add_note_column_button, false, false);
 
-	// Step edit button
-	step_edit_separator.show ();
-	toolbar.pack_start (step_edit_separator, false, false);
-	step_edit_button.set_name ("step edit button");
-	step_edit_button.set_text (S_("Step Edit"));
-	step_edit_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::step_edit_press), false);
-	step_edit_button.show ();
-	toolbar.pack_start (step_edit_button, false, false);
-
-	// Steps spinner
-	steps_separator.show ();
-	toolbar.pack_start (steps_separator, false, false);
-	steps_label.show ();
-	toolbar.pack_start (steps_label, false, false);
-	steps_spinner.set_activates_default ();
-	steps_spinner.show ();
-	toolbar.pack_start (steps_spinner, false, false);
-
-	// Octave spinner
-	octave_separator.show ();
-	toolbar.pack_start (octave_separator, false, false);
-	octave_label.show ();
-	toolbar.pack_start (octave_label, false, false);
-	octave_spinner.set_activates_default ();
-	octave_spinner.show ();
-	toolbar.pack_start (octave_spinner, false, false);
-
-	// Channel spinner
-	channel_separator.show ();
-	toolbar.pack_start (channel_separator, false, false);
-	channel_label.show ();
-	toolbar.pack_start (channel_label, false, false);
-	channel_spinner.set_activates_default ();
-	channel_spinner.show ();
-	toolbar.pack_start (channel_spinner, false, false);
-
-	// Velocity spinner
-	velocity_separator.show ();
-	toolbar.pack_start (velocity_separator, false, false);
-	velocity_label.show ();
-	toolbar.pack_start (velocity_label, false, false);
-	velocity_spinner.set_activates_default ();
-	velocity_spinner.show ();
-	toolbar.pack_start (velocity_spinner, false, false);
-
-	// Delay spinner
-	delay_separator.show ();
-	toolbar.pack_start (delay_separator, false, false);
-	delay_label.show ();
-	toolbar.pack_start (delay_label, false, false);
-	delay_spinner.set_activates_default ();
-	delay_spinner.show ();
-	toolbar.pack_start (delay_spinner, false, false);
-
-	// Position spinner
-	position_separator.show ();
-	toolbar.pack_start (position_separator, false, false);
-	position_label.show ();
-	toolbar.pack_start (position_label, false, false);
-	position_spinner.set_activates_default ();
-	position_spinner.show ();
-	toolbar.pack_start (position_spinner, false, false);
-
-	toolbar.show ();
+	mt_toolbar.show ();
 }
 
 void
@@ -3948,38 +3803,8 @@ MidiTrackerEditor::setup_scroller ()
 }
 
 void
-MidiTrackerEditor::build_beats_per_row_menu ()
-{
-	using namespace Menu_Helpers;
-
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv128 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv128)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv64 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv64)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv32 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv32)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv28 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv28)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv24 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv24)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv20 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv20)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv16 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv16)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv14 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv14)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv12 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv12)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv10 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv10)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv8 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv8)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv7 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv7)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv6 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv6)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv5 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv5)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv4 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv4)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv3 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv3)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeatDiv2 - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeatDiv2)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBeat - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBeat)));
-	// TODO SnapToBar is not yet supported
-	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)SnapToBar - (int)SnapToBeatDiv128], sigc::bind (sigc::mem_fun(*this, &MidiTrackerEditor::beats_per_row_selection_done), (SnapType) SnapToBar)));
-
-	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings, COMBO_TRIANGLE_WIDTH, 2);
-}
-
-void
 MidiTrackerEditor::setup_tooltips ()
 {
-	set_tooltip (beats_per_row_selector, _("Beats per row"));
 	set_tooltip (visible_note_button, _("Toggle note visibility"));
 	set_tooltip (visible_channel_button, _("Toggle channel visibility"));
 	set_tooltip (visible_velocity_button, _("Toggle velocity visibility"));
@@ -3987,156 +3812,6 @@ MidiTrackerEditor::setup_tooltips ()
 	set_tooltip (remove_note_column_button, _("Remove note column"));
 	set_tooltip (add_note_column_button, _("Add note column"));
 	set_tooltip (automation_button, _("MIDI Controllers and Automation"));
-	octave_spinner.set_tooltip_text (_("Default octave"));
-	channel_spinner.set_tooltip_text (_("Default channel"));
-	velocity_spinner.set_tooltip_text (_("Default velocity"));
-	delay_spinner.set_tooltip_text (_("Default delay"));
-	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)"));
-	steps_spinner.set_tooltip_text (_("Step size"));
-}
-
-void
-MidiTrackerEditor::set_beats_per_row_to (SnapType st)
-{
-	unsigned int snap_ind = (int)st - (int)SnapToBeatDiv128;
-
-	string str = beats_per_row_strings[snap_ind];
-
-	if (str != beats_per_row_selector.get_text()) {
-		beats_per_row_selector.set_text (str);
-	}
-
-	switch (st) {
-	case SnapToBeatDiv128: rows_per_beat = 128; break;
-	case SnapToBeatDiv64: rows_per_beat = 64; break;
-	case SnapToBeatDiv32: rows_per_beat = 32; break;
-	case SnapToBeatDiv28: rows_per_beat = 28; break;
-	case SnapToBeatDiv24: rows_per_beat = 24; break;
-	case SnapToBeatDiv20: rows_per_beat = 20; break;
-	case SnapToBeatDiv16: rows_per_beat = 16; break;
-	case SnapToBeatDiv14: rows_per_beat = 14; break;
-	case SnapToBeatDiv12: rows_per_beat = 12; break;
-	case SnapToBeatDiv10: rows_per_beat = 10; break;
-	case SnapToBeatDiv8: rows_per_beat = 8; break;
-	case SnapToBeatDiv7: rows_per_beat = 7; break;
-	case SnapToBeatDiv6: rows_per_beat = 6; break;
-	case SnapToBeatDiv5: rows_per_beat = 5; break;
-	case SnapToBeatDiv4: rows_per_beat = 4; break;
-	case SnapToBeatDiv3: rows_per_beat = 3; break;
-	case SnapToBeatDiv2: rows_per_beat = 2; break;
-	case SnapToBeat: rows_per_beat = 1; break;
-	case SnapToBar: rows_per_beat = 0; break;
-	default:
-		/* relax */
-		break;
-	}
-
-	redisplay_model ();
-}
-
-void
-MidiTrackerEditor::beats_per_row_selection_done (SnapType snaptype)
-{
-	RefPtr<RadioAction> ract = beats_per_row_action (snaptype);
-	if (ract) {
-		ract->set_active ();
-	}
-}
-
-RefPtr<RadioAction>
-MidiTrackerEditor::beats_per_row_action (SnapType type)
-{
-	const char* action = 0;
-	RefPtr<Action> act;
-
-	switch (type) {
-	case Editing::SnapToBeatDiv128:
-		action = "beats-per-row-onetwentyeighths";
-		break;
-	case Editing::SnapToBeatDiv64:
-		action = "beats-per-row-sixtyfourths";
-		break;
-	case Editing::SnapToBeatDiv32:
-		action = "beats-per-row-thirtyseconds";
-		break;
-	case Editing::SnapToBeatDiv28:
-		action = "beats-per-row-twentyeighths";
-		break;
-	case Editing::SnapToBeatDiv24:
-		action = "beats-per-row-twentyfourths";
-		break;
-	case Editing::SnapToBeatDiv20:
-		action = "beats-per-row-twentieths";
-		break;
-	case Editing::SnapToBeatDiv16:
-		action = "beats-per-row-asixteenthbeat";
-		break;
-	case Editing::SnapToBeatDiv14:
-		action = "beats-per-row-fourteenths";
-		break;
-	case Editing::SnapToBeatDiv12:
-		action = "beats-per-row-twelfths";
-		break;
-	case Editing::SnapToBeatDiv10:
-		action = "beats-per-row-tenths";
-		break;
-	case Editing::SnapToBeatDiv8:
-		action = "beats-per-row-eighths";
-		break;
-	case Editing::SnapToBeatDiv7:
-		action = "beats-per-row-sevenths";
-		break;
-	case Editing::SnapToBeatDiv6:
-		action = "beats-per-row-sixths";
-		break;
-	case Editing::SnapToBeatDiv5:
-		action = "beats-per-row-fifths";
-		break;
-	case Editing::SnapToBeatDiv4:
-		action = "beats-per-row-quarters";
-		break;
-	case Editing::SnapToBeatDiv3:
-		action = "beats-per-row-thirds";
-		break;
-	case Editing::SnapToBeatDiv2:
-		action = "beats-per-row-halves";
-		break;
-	case Editing::SnapToBeat:
-		action = "beats-per-row-beat";
-		break;
-	case Editing::SnapToBar:
-		action = "beats-per-row-bar";
-		break;
-	default:
-		fatal << string_compose (_("programming error: %1: %2"), "Editor: impossible beats-per-row", (int) type) << endmsg;
-		abort(); /*NOTREACHED*/
-	}
-
-	act = ActionManager::get_action (X_("BeatsPerRow"), action);
-
-	if (act) {
-		RefPtr<RadioAction> ract = RefPtr<RadioAction>::cast_dynamic(act);
-		return ract;
-
-	} else  {
-		error << string_compose (_("programming error: %1"), "MidiTrackerEditor::beats_per_row_chosen could not find action to match type.") << endmsg;
-		return RefPtr<RadioAction>();
-	}
-}
-
-void
-MidiTrackerEditor::beats_per_row_chosen (SnapType type)
-{
-	/* this is driven by a toggle on a radio group, and so is invoked twice,
-	   once for the item that became inactive and once for the one that became
-	   active.
-	*/
-
-	RefPtr<RadioAction> ract = beats_per_row_action (type);
-
-	if (ract && ract->get_active()) {
-		set_beats_per_row_to (type);
-	}
 }
 
 char MidiTrackerEditor::digit_to_char(int digit, int base)
