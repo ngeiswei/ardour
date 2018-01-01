@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_midi_tracker_editor_h_
-#define __ardour_gtk2_midi_tracker_editor_h_
+#ifndef __ardour_gtk2_tracker_midi_tracker_editor_h_
+#define __ardour_gtk2_tracker_midi_tracker_editor_h_
 
 #include <cmath>
 
@@ -41,11 +41,12 @@
 #include "widgets/ardour_dropdown.h"
 
 #include "ardour_window.h"
-#include "editing.h"
 #include "midi_time_axis.h"
 #include "region_selection.h"
 
 #include "midi_track_pattern.h"
+
+#include "main_toolbar.h"
 
 namespace Evoral {
 	template<typename Time> class Note;
@@ -328,14 +329,10 @@ class MidiTrackerEditor : public ArdourWindow
 	int                          edit_colnum;
 	Gtk::CellEditable*           editing_editable;
 	Gtk::Table                   buttons;
-	Gtk::HBox                    toolbar;
+	MainToolbar                  main_toolbar;
+	std::vector<Gtk::HBox>       midi_track_toolbars;
 	Gtk::VBox                    vbox;
-	Gtkmm2ext::ActionMap         myactions;
 
-	// TODO: put this toolbar in its own class
-	ArdourWidgets::ArdourDropdown beats_per_row_selector;
-	std::vector<std::string>     beats_per_row_strings;
-	uint8_t                      rows_per_beat;
 	ArdourWidgets::ArdourButton  visible_note_button;
 	ArdourWidgets::ArdourButton  visible_channel_button;
 	ArdourWidgets::ArdourButton  visible_velocity_button;
@@ -347,33 +344,6 @@ class MidiTrackerEditor : public ArdourWindow
 	Gtk::VSeparator              rm_add_note_column_separator;
 	ArdourWidgets::ArdourButton  remove_note_column_button;
 	ArdourWidgets::ArdourButton  add_note_column_button;
-	Gtk::VSeparator              step_edit_separator;
-	ArdourWidgets::ArdourButton  step_edit_button;
-	bool                         step_edit;
-	Gtk::VSeparator              octave_separator;
-	Gtk::Label                   octave_label;
-	Gtk::Adjustment              octave_adjustment;
-	Gtk::SpinButton              octave_spinner;
-	Gtk::VSeparator              channel_separator;
-	Gtk::Label                   channel_label;
-	Gtk::Adjustment              channel_adjustment;
-	Gtk::SpinButton              channel_spinner;
-	Gtk::VSeparator              velocity_separator;
-	Gtk::Label                   velocity_label;
-	Gtk::Adjustment              velocity_adjustment;
-	Gtk::SpinButton              velocity_spinner;
-	Gtk::VSeparator              delay_separator;
-	Gtk::Label                   delay_label;
-	Gtk::Adjustment              delay_adjustment;
-	Gtk::SpinButton              delay_spinner;	
-	Gtk::VSeparator              position_separator;
-	Gtk::Label                   position_label;
-	Gtk::Adjustment              position_adjustment;
-	Gtk::SpinButton              position_spinner;
-	Gtk::VSeparator              steps_separator;
-	Gtk::Label                   steps_label;
-	Gtk::Adjustment              steps_adjustment;
-	Gtk::SpinButton              steps_spinner;
 
 	boost::shared_ptr<ARDOUR::MidiRegion> region;
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
@@ -383,10 +353,6 @@ class MidiTrackerEditor : public ArdourWindow
 
 	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnectionList content_connections;
-
-	void build_beats_per_row_menu ();
-
-	void register_actions ();
 
 	////////////////////////
 	// Display Pattern    //
@@ -413,10 +379,11 @@ class MidiTrackerEditor : public ArdourWindow
 	void update_remove_note_column_button ();
 	bool remove_note_column_press (GdkEventButton* ev);
 	bool add_note_column_press (GdkEventButton* ev);
-	bool step_edit_press (GdkEventButton* ev);
 
 	void setup_tooltips ();
-	void setup_toolbar ();
+	void setup_toolbars ();
+	void setup_main_toolbar ();
+	void setup_midi_track_toolbars ();
 	void setup_time_column ();
 	void setup_note_column (size_t);
 	void setup_note_channel_column (size_t);
@@ -470,8 +437,11 @@ class MidiTrackerEditor : public ArdourWindow
 	bool scroll_event (GdkEventScroll*);
 	void setup_pattern ();
 	void setup_scroller ();
+
+public:
 	void redisplay_model ();
 
+private:
 	uint32_t get_row_index (const std::string& path);
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path);
 
@@ -538,14 +508,6 @@ class MidiTrackerEditor : public ArdourWindow
 
 	bool is_midi_track () const;
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track() const;
-
-	// Beats per row corresponds to a SnapType. I could have user an integer
-	// directly but I prefer to use the SnapType to be more consistent with the
-	// main editor.
-	void set_beats_per_row_to (Editing::SnapType);
-	void beats_per_row_selection_done (Editing::SnapType);
-	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::SnapType);
-	void beats_per_row_chosen (Editing::SnapType);
 
 	/**
 	 * Clamp x to be within [l, u], that is return max(l, min(u, x))
