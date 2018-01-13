@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015-2017 Nil Geisweiller
+    Copyright (C) 2015-2018 Nil Geisweiller
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,15 +116,9 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	, edit_colnum (-1)
 	, editing_editable (NULL)
 	, main_toolbar (*this)
-	, midi_track_toolbars (rs.size())
-	, visible_note (true)
-	, visible_channel (false)
-	, visible_velocity (false)
-	, visible_delay (false)
 	, region (dynamic_cast<MidiRegionView*>(rs.front())->midi_region())
 	, track (dynamic_cast<MidiRegionView*>(rs.front())->midi_view()->midi_track())
 	, midi_model (region->midi_source(0)->model())
-
 {
 	for (RegionSelection::const_iterator it = region_selection.begin();
 	     it != region_selection.end(); ++it) {
@@ -157,7 +151,6 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	setup_pattern ();
 	setup_scroller ();
 	setup_toolbars ();
-	setup_tooltips ();
 
 	redisplay_model ();
 
@@ -171,9 +164,9 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
-	for (std::vector<Gtk::HBox>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it) {
-		std::cout << "vbox.pack_start [" << &(*it) << "]" << std::endl;
-		vbox.pack_start (*it, false, false);
+	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it) {
+		std::cout << "vbox.pack_start [" << &(**it) << "]" << std::endl;
+		vbox.pack_start (**it, false, false);
 	}
 	vbox.pack_start (scroller, true, true);
 
@@ -186,6 +179,8 @@ MidiTrackerEditor::~MidiTrackerEditor ()
 	delete mtp;
 	delete automation_action_menu;
 	delete controller_menu;
+	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
+		delete *it;
 }
 
 ////////////////
@@ -1243,8 +1238,8 @@ void
 MidiTrackerEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_note : false);
-	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+		view.get_column(note_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_note : false);
+	midi_track_toolbars.front()->update_visible_note_button ();
 
 	// Keep the window width is kept to its minimum
 	resize_width();
@@ -1256,25 +1251,12 @@ MidiTrackerEditor::note_colnum(int tracknum)
 	return tracknum*4 + NOTE_COLNUM;
 }
 
-bool
-MidiTrackerEditor::visible_note_press(GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	visible_note = !visible_note;
-	redisplay_visible_note();
-	return false;
-}
-
 void
 MidiTrackerEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_channel_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_channel : false);
-	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+		view.get_column(note_channel_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_channel : false);
+	midi_track_toolbars.front()->update_visible_channel_button ();
 
 	// Keep the window width is kept to its minimum
 	resize_width();
@@ -1286,25 +1268,12 @@ MidiTrackerEditor::note_channel_colnum(int tracknum)
 	return tracknum*4 + CHANNEL_COLNUM;
 }
 
-bool
-MidiTrackerEditor::visible_channel_press(GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	visible_channel = !visible_channel;
-	redisplay_visible_channel();
-	return false;
-}
-
 void
 MidiTrackerEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_velocity_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_velocity : false);
-	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+		view.get_column(note_velocity_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_velocity : false);
+	midi_track_toolbars.front()->update_visible_velocity_button ();
 
 	// Keep the window width is kept to its minimum
 	resize_width();
@@ -1316,26 +1285,13 @@ MidiTrackerEditor::note_velocity_colnum(int tracknum)
 	return tracknum*4 + VELOCITY_COLNUM;
 }
 
-bool
-MidiTrackerEditor::visible_velocity_press(GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	visible_velocity = !visible_velocity;
-	redisplay_visible_velocity();
-	return false;
-}
-
 void
 MidiTrackerEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
-		view.get_column(note_delay_colnum(i))->set_visible(i < mtp->np.ntracks ? visible_delay : false);
+		view.get_column(note_delay_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_delay : false);
 	redisplay_visible_automation_delay ();
-	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	midi_track_toolbars.front()->update_visible_delay_button ();
 
 	// Keep the window width is kept to its minimum
 	resize_width();
@@ -1345,19 +1301,6 @@ int
 MidiTrackerEditor::note_delay_colnum(int tracknum)
 {
 	return tracknum*4 + DELAY_COLNUM;
-}
-
-bool
-MidiTrackerEditor::visible_delay_press(GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	visible_delay = !visible_delay;
-	redisplay_visible_delay();
-	return false;
 }
 
 void
@@ -1385,7 +1328,7 @@ MidiTrackerEditor::redisplay_visible_automation_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_delay_colnum(i);
-		bool is_visible = visible_delay && is_in(col - 1, visible_automation_columns);
+		bool is_visible = midi_track_toolbars.front()->visible_delay && is_in(col - 1, visible_automation_columns);
 		view.get_column(col)->set_visible(is_visible);
 	}
 
@@ -1397,49 +1340,6 @@ int
 MidiTrackerEditor::automation_delay_colnum(int tracknum)
 {
 	return automation_col_offset + 2 * tracknum + 1;
-}
-
-void
-MidiTrackerEditor::automation_click ()
-{
-	build_automation_action_menu ();
-	automation_action_menu->popup (1, gtk_get_current_event_time());
-}
-
-void
-MidiTrackerEditor::update_remove_note_column_button ()
-{
-	remove_note_column_button.set_sensitive (mtp->np.nreqtracks < mtp->np.ntracks);
-}
-
-bool
-MidiTrackerEditor::remove_note_column_press(GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	mtp->np.dec_ntracks ();
-	redisplay_model ();
-	update_remove_note_column_button ();
-
-	return false;
-}
-
-bool
-MidiTrackerEditor::add_note_column_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	mtp->np.inc_ntracks ();
-	redisplay_model ();
-	update_remove_note_column_button ();
-
-	return false;
 }
 
 void
@@ -3726,6 +3626,10 @@ MidiTrackerEditor::setup_pattern ()
 void
 MidiTrackerEditor::setup_toolbars ()
 {
+	// TODO setup for all tracks
+	// TODO replace that by emplace_back when supports C++11
+	midi_track_toolbars.push_back(new MidiTrackToolbar (*this));
+
 	main_toolbar.setup ();
 	setup_midi_track_toolbars ();
 }
@@ -3733,65 +3637,7 @@ MidiTrackerEditor::setup_toolbars ()
 void MidiTrackerEditor::setup_midi_track_toolbars ()
 {
 	// TODO setup for all tracks
-	HBox& mt_toolbar = midi_track_toolbars.front();
-
-	mt_toolbar.set_spacing (2);
-
-	// Add visible note button
-	visible_note_button.set_name ("visible note button");
-	visible_note_button.set_text (S_("Note|N"));
-	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	visible_note_button.show ();
-	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_note_press), false);
-	mt_toolbar.pack_start (visible_note_button, false, false);
-
-	// Add visible channel button
-	visible_channel_button.set_name ("visible channel button");
-	visible_channel_button.set_text (S_("Channel|C"));
-	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	visible_channel_button.show ();
-	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_channel_press), false);
-	mt_toolbar.pack_start (visible_channel_button, false, false);
-
-	// Add visible velocity button
-	visible_velocity_button.set_name ("visible velocity button");
-	visible_velocity_button.set_text (S_("Velocity|V"));
-	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	visible_velocity_button.show ();
-	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_velocity_press), false);
-	mt_toolbar.pack_start (visible_velocity_button, false, false);
-
-	// Add visible delay button
-	visible_delay_button.set_name ("visible delay button");
-	visible_delay_button.set_text (S_("Delay|D"));
-	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	visible_delay_button.show ();
-	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::visible_delay_press), false);
-	mt_toolbar.pack_start (visible_delay_button, false, false);
-
-	// Add automation button
-	automation_button.set_name ("automation button");
-	automation_button.set_text (S_("Automation|A"));
-	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackerEditor::automation_click));
-	automation_button.show ();
-	mt_toolbar.pack_start (automation_button, false, false);
-
-	// Remove/add note column
-	rm_add_note_column_separator.show ();
-	mt_toolbar.pack_start (rm_add_note_column_separator, false, false);
-	remove_note_column_button.set_name ("remove note column");
-	remove_note_column_button.set_text (S_("Remove|-"));
-	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::remove_note_column_press), false);
-	remove_note_column_button.show ();
-	remove_note_column_button.set_sensitive (false);
-	mt_toolbar.pack_start (remove_note_column_button, false, false);
-	add_note_column_button.set_name ("add note column");
-	add_note_column_button.set_text (S_("Add|+"));
-	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackerEditor::add_note_column_press), false);
-	add_note_column_button.show ();
-	mt_toolbar.pack_start (add_note_column_button, false, false);
-
-	mt_toolbar.show ();
+	midi_track_toolbars.front()->setup ();
 }
 
 void
@@ -3800,18 +3646,6 @@ MidiTrackerEditor::setup_scroller ()
 	scroller.add (view);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
 	scroller.show ();
-}
-
-void
-MidiTrackerEditor::setup_tooltips ()
-{
-	set_tooltip (visible_note_button, _("Toggle note visibility"));
-	set_tooltip (visible_channel_button, _("Toggle channel visibility"));
-	set_tooltip (visible_velocity_button, _("Toggle velocity visibility"));
-	set_tooltip (visible_delay_button, _("Toggle delay visibility"));
-	set_tooltip (remove_note_column_button, _("Remove note column"));
-	set_tooltip (add_note_column_button, _("Add note column"));
-	set_tooltip (automation_button, _("MIDI Controllers and Automation"));
 }
 
 char MidiTrackerEditor::digit_to_char(int digit, int base)
