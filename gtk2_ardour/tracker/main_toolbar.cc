@@ -172,7 +172,7 @@ void
 MainToolbar::setup_tooltips ()
 {
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
-	// TODO: add step edit button tooltip
+	step_edit_button.set_tooltip_text (_("Toggle step editing"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
