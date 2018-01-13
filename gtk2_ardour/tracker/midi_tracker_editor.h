@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015-2017 Nil Geisweiller
+    Copyright (C) 2015-2018 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -45,8 +45,8 @@
 #include "region_selection.h"
 
 #include "midi_track_pattern.h"
-
 #include "main_toolbar.h"
+#include "midi_track_toolbar.h"
 
 namespace Evoral {
 	template<typename Time> class Note;
@@ -164,11 +164,13 @@ class MidiTrackerEditor : public ArdourWindow
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
 	ColAutoTrackBimap col2autotrack;
 
-	ArdourWidgets::ArdourButton  automation_button;
+	// TODO: move to midi_track_toolbar
+public:
 	Gtk::Menu                    subplugin_menu;
 	Gtk::Menu*                   automation_action_menu;
 	Gtk::Menu*                   controller_menu;
 
+private:
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
 	/** parameter -> menu item map for the plugin automation menu */
 	ParameterMenuMap _subplugin_menu_map;
@@ -215,7 +217,9 @@ class MidiTrackerEditor : public ArdourWindow
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
 	void processor_menu_item_toggled (MidiTrackerEditor::ProcessorAutomationInfo*, MidiTrackerEditor::ProcessorAutomationNode*);
+public:
 	void build_automation_action_menu ();
+private:
 	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, ARDOUR::AutomationType auto_type, uint8_t cmd);
 	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
 	void update_automation_column_visibility (const Evoral::Parameter& param);
@@ -330,26 +334,17 @@ class MidiTrackerEditor : public ArdourWindow
 	Gtk::CellEditable*           editing_editable;
 	Gtk::Table                   buttons;
 	MainToolbar                  main_toolbar;
-	std::vector<Gtk::HBox>       midi_track_toolbars;
+	std::vector<MidiTrackToolbar*> midi_track_toolbars; // TODO: maybe replace that with a map from track to toolbar
 	Gtk::VBox                    vbox;
-
-	ArdourWidgets::ArdourButton  visible_note_button;
-	ArdourWidgets::ArdourButton  visible_channel_button;
-	ArdourWidgets::ArdourButton  visible_velocity_button;
-	ArdourWidgets::ArdourButton  visible_delay_button;
-	bool                         visible_note;
-	bool                         visible_channel;
-	bool                         visible_velocity;
-	bool                         visible_delay;
-	Gtk::VSeparator              rm_add_note_column_separator;
-	ArdourWidgets::ArdourButton  remove_note_column_button;
-	ArdourWidgets::ArdourButton  add_note_column_button;
 
 	boost::shared_ptr<ARDOUR::MidiRegion> region;
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
 
+	// TODO have a sequence
+public:
 	MidiTrackPattern* mtp;
+private:
 
 	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnectionList content_connections;
@@ -359,10 +354,7 @@ class MidiTrackerEditor : public ArdourWindow
 	////////////////////////
 
 	void resize_width();        // Resize to keep the width to the minimum
-	bool visible_note_press (GdkEventButton*);
-	bool visible_channel_press (GdkEventButton*);
-	bool visible_velocity_press (GdkEventButton*);
-	bool visible_delay_press (GdkEventButton*);
+public:
 	void redisplay_visible_note ();
 	int note_colnum (int tracknum);
 	void redisplay_visible_channel ();
@@ -375,12 +367,8 @@ class MidiTrackerEditor : public ArdourWindow
 	int automation_colnum (int tracknum);
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int tracknum);
-	void automation_click ();
-	void update_remove_note_column_button ();
-	bool remove_note_column_press (GdkEventButton* ev);
-	bool add_note_column_press (GdkEventButton* ev);
 
-	void setup_tooltips ();
+private:
 	void setup_toolbars ();
 	void setup_main_toolbar ();
 	void setup_midi_track_toolbars ();
