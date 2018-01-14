@@ -23,8 +23,9 @@
 
 #include "pbd/i18n.h"
 
-MidiTrackToolbar::MidiTrackToolbar (MidiTrackerEditor& mte)
+MidiTrackToolbar::MidiTrackToolbar (MidiTrackerEditor& mte, MidiTrackPattern& mtp)
 	: midi_tracker_editor (mte)
+	, midi_track_pattern (mtp)
 	, visible_note (true)
 	, visible_channel (false)
 	, visible_velocity (false)
@@ -181,7 +182,7 @@ MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
 		return true;
 	}
 
-	midi_tracker_editor.mtp->np.dec_ntracks (); // TODO: better have a ref to mtp
+	midi_track_pattern.np.dec_ntracks ();
 	midi_tracker_editor.redisplay_model ();
 	update_remove_note_column_button ();
 
@@ -196,7 +197,7 @@ MidiTrackToolbar::add_note_column_press (GdkEventButton* ev)
 		return true;
 	}
 
-	midi_tracker_editor.mtp->np.inc_ntracks (); // TODO: better have a ref to mtp
+	midi_track_pattern.np.inc_ntracks ();
 	midi_tracker_editor.redisplay_model ();
 	update_remove_note_column_button ();
 
@@ -236,6 +237,5 @@ MidiTrackToolbar::update_automation_button()
 void
 MidiTrackToolbar::update_remove_note_column_button ()
 {
-	// TODO: have a reference of mtp
-	remove_note_column_button.set_sensitive (midi_tracker_editor.mtp->np.nreqtracks < midi_tracker_editor.mtp->np.ntracks);
+	remove_note_column_button.set_sensitive (midi_track_pattern.np.nreqtracks < midi_track_pattern.np.ntracks);
 }

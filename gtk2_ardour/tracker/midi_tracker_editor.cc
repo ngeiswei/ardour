@@ -73,6 +73,8 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Make sure including audio tracks in the selection doesn't crash
+//
 // - [ ] Wrap the whole code in a Tracker namespace
 //
 // - [ ] Add shortcut for parameters, steps, etc
@@ -3628,7 +3630,7 @@ MidiTrackerEditor::setup_toolbars ()
 {
 	// TODO setup for all tracks
 	// TODO replace that by emplace_back when supports C++11
-	midi_track_toolbars.push_back(new MidiTrackToolbar (*this));
+	midi_track_toolbars.push_back(new MidiTrackToolbar (*this, *mtp));
 
 	main_toolbar.setup ();
 	setup_midi_track_toolbars ();
