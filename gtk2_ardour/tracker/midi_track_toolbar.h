@@ -24,12 +24,14 @@
 
 #include "widgets/ardour_button.h"
 
+#include "midi_track_pattern.h"
+
 class MidiTrackerEditor;
 
 class MidiTrackToolbar : public Gtk::HBox
 {
 public:
-	MidiTrackToolbar (MidiTrackerEditor& mte);
+	MidiTrackToolbar (MidiTrackerEditor& mte, MidiTrackPattern& mtp);
 	void setup ();
 
 	/**
@@ -60,6 +62,7 @@ public:
 	void update_remove_note_column_button ();
 
 	MidiTrackerEditor& midi_tracker_editor;
+	MidiTrackPattern& midi_track_pattern;
 
 	ArdourWidgets::ArdourButton  visible_note_button;
 	bool                         visible_note;
