@@ -23,15 +23,42 @@
 #include <gtkmm/separator.h>
 
 #include "widgets/ardour_button.h"
+#include "ardour/processor.h"
 
 #include "midi_track_pattern.h"
 
 class MidiTrackerEditor;
 
+struct ProcessorAutomationNode {
+	Evoral::Parameter                         what;
+	Gtk::CheckMenuItem*                       menu_item;
+	// corresponding column index. If set to 0 then undetermined yet
+	size_t                                    column;
+
+	ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem)
+		: what (w), menu_item (mitem), column(0) {}
+	// TODO: do you really need this?
+	~ProcessorAutomationNode ();
+};
+
+struct ProcessorAutomationInfo {
+	boost::shared_ptr<ARDOUR::Processor>  processor;
+	bool                                  valid;
+	Gtk::Menu*                            menu;
+	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
+
+	ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
+		: processor (i), valid (true), menu (0) {}
+	// TODO: do you really need this?
+	~ProcessorAutomationInfo ();
+};
+
 class MidiTrackToolbar : public Gtk::HBox
 {
 public:
+	// TODO: add midi_track
 	MidiTrackToolbar (MidiTrackerEditor& mte, MidiTrackPattern& mtp);
+	~MidiTrackToolbar ();
 	void setup ();
 
 	/**
@@ -50,6 +77,20 @@ public:
 	void automation_click ();
 	bool remove_note_column_press (GdkEventButton* ev);
 	bool add_note_column_press (GdkEventButton* ev);
+
+	/**
+	 * Helpers for building automation menu.
+	 */
+	void build_automation_action_menu ();
+	void build_controller_menu ();
+	void setup_processor_menu_and_curves ();
+	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
+	void processor_menu_item_toggled (ProcessorAutomationInfo*, ProcessorAutomationNode*);
+	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, ARDOUR::AutomationType auto_type, uint8_t cmd);
+	void add_single_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
+	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
+	ProcessorAutomationNode* find_processor_automation_node (boost::shared_ptr<ARDOUR::Processor> processor, Evoral::Parameter what);
+	Gtk::CheckMenuItem* automation_child_menu_item (const Evoral::Parameter& param);
 
 	/**
 	 * Helpers to update buttons status display
@@ -73,9 +114,31 @@ public:
 	ArdourWidgets::ArdourButton  visible_delay_button;
 	bool                         visible_delay;
 	ArdourWidgets::ArdourButton  automation_button;
+	Gtk::Menu                    subplugin_menu;
+	Gtk::Menu*                   automation_action_menu;
+	Gtk::Menu*                   controller_menu;
 	Gtk::VSeparator              rm_add_note_column_separator;
 	ArdourWidgets::ArdourButton  remove_note_column_button;
 	ArdourWidgets::ArdourButton  add_note_column_button;
+
+	/**
+	 * Information about all automatable processor parameters that apply to
+	 * this route.  The Amp processor is not included in this list.
+	 */
+	std::list<ProcessorAutomationInfo*> processor_automation;
+
+	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
+	/** parameter -> menu item map for the plugin automation menu */
+	ParameterMenuMap _subplugin_menu_map;
+	/** parameter -> menu item map for the channel command items */
+	ParameterMenuMap _channel_command_menu_map;
+	/** parameter -> menu item map for the controller menu */
+	ParameterMenuMap _controller_menu_map;
+
+	Gtk::CheckMenuItem* gain_automation_item;
+	Gtk::CheckMenuItem* trim_automation_item;
+	Gtk::CheckMenuItem* mute_automation_item;
+	Gtk::CheckMenuItem* pan_automation_item;
 };
 
 #endif /* __ardour_gtk2_tracker_midi_track_toolbar_h_ */
