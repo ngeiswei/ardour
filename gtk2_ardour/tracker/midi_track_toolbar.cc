@@ -241,13 +241,13 @@ MidiTrackToolbar::build_automation_action_menu ()
 	automation_action_menu->set_name ("ArdourContextMenu");
 
 	items.push_back (MenuElem (_("Show All Automation"),
-	                           sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::show_all_automation)));
+	                           sigc::mem_fun (*this, &MidiTrackToolbar::show_all_automation)));
 
 	items.push_back (MenuElem (_("Show Existing Automation"),
-	                           sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::show_existing_automation)));
+	                           sigc::mem_fun (*this, &MidiTrackToolbar::show_existing_automation)));
 
 	items.push_back (MenuElem (_("Hide All Automation"),
-	                           sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::hide_all_automation)));
+	                           sigc::mem_fun (*this, &MidiTrackToolbar::hide_all_automation)));
 
 	/* Attach the plugin submenu. It may have previously been used elsewhere,
 	   so it was detached above
@@ -771,6 +771,203 @@ CheckMenuItem* MidiTrackToolbar::automation_child_menu_item(const Evoral::Parame
 	else if (ccmm_it != _channel_command_menu_map.end())
 		mitem = ccmm_it->second;
 	return mitem;
+}
+
+// Show all automation, with the exception of midi automations, only show the
+// existing one, because there are too many.
+//
+// TODO: this menu needs to be persistent between sessions. Should also be
+// fixed for the track/piano roll view.
+void
+MidiTrackToolbar::show_all_automation ()
+{
+	show_all_main_automations ();
+	show_existing_midi_automations ();
+	show_all_processor_automations ();
+
+	midi_tracker_editor.redisplay_model ();
+}
+
+void
+MidiTrackToolbar::show_existing_automation ()
+{
+	show_existing_main_automations ();
+	show_existing_midi_automations ();
+	show_existing_processor_automations ();
+
+	midi_tracker_editor.redisplay_model ();
+}
+
+void
+MidiTrackToolbar::hide_all_automation ()
+{
+	hide_main_automations ();
+	hide_midi_automations ();
+	hide_processor_automations ();
+
+	midi_tracker_editor.redisplay_model ();
+}
+
+void
+MidiTrackToolbar::show_all_main_automations ()
+{
+	// Gain
+	gain_automation_item->set_active (true);
+	midi_tracker_editor.update_gain_column_visibility ();
+
+	// Mute
+	mute_automation_item->set_active (true);
+	midi_tracker_editor.update_mute_column_visibility ();
+
+	// Pan
+	pan_automation_item->set_active (true);
+	midi_tracker_editor.update_pan_columns_visibility ();
+}
+
+void
+MidiTrackToolbar::show_existing_main_automations ()
+{
+	// Gain
+	bool gain_visible = midi_tracker_editor.param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
+	gain_automation_item->set_active (gain_visible);
+	midi_tracker_editor.update_gain_column_visibility ();
+
+	// Mute
+	bool mute_visible = midi_tracker_editor.param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
+	mute_automation_item->set_active (mute_visible);
+	midi_tracker_editor.update_mute_column_visibility ();
+
+	// Pan
+	bool pan_visible = false;
+	std::set<Evoral::Parameter> const & pan_params = midi_tracker_editor.route->pannable()->what_can_be_automated ();
+	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
+		if (midi_tracker_editor.param2actrl[*p]->list()->size() > 0) {
+			pan_visible = true;
+			break;
+		}
+	}
+	pan_automation_item->set_active (pan_visible);
+	midi_tracker_editor.update_pan_columns_visibility ();
+}
+
+void
+MidiTrackToolbar::hide_main_automations ()
+{
+	// Gain
+	gain_automation_item->set_active (false);
+	midi_tracker_editor.update_gain_column_visibility ();
+
+	// Mute
+	mute_automation_item->set_active (false);
+	midi_tracker_editor.update_mute_column_visibility ();
+
+	// Pan
+	pan_automation_item->set_active (false);
+	midi_tracker_editor.update_pan_columns_visibility ();
+}
+
+void
+MidiTrackToolbar::show_existing_midi_automations ()
+{
+	const std::set<Evoral::Parameter> params = midi_tracker_editor.midi_track()->midi_playlist()->contained_automation();
+	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
+		MidiTrackerEditor::ColParamBimap::right_const_iterator it = midi_tracker_editor.col2param.right.find(*p);
+		size_t column = (it == midi_tracker_editor.col2param.right.end()) || (it->second == 0) ?
+			midi_tracker_editor.add_midi_automation_column (*p) : it->second;
+
+		// Still no column available, skip
+		if (column == 0)
+			continue;
+
+		midi_tracker_editor.visible_automation_columns.insert (column);
+	}
+}
+
+void
+MidiTrackToolbar::hide_midi_automations ()
+{
+	std::set<size_t> to_remove;
+	for (std::set<size_t>::iterator it = midi_tracker_editor.visible_automation_columns.begin();
+	     it != midi_tracker_editor.visible_automation_columns.end(); it++) {
+		size_t column = *it;
+		MidiTrackerEditor::ColParamBimap::left_const_iterator c2p_it = midi_tracker_editor.col2param.left.find(column);
+		if (c2p_it == midi_tracker_editor.col2param.left.end())
+			continue;
+
+		Evoral::Parameter param = c2p_it->second;
+		CheckMenuItem* mitem = automation_child_menu_item(param);
+
+		if (mitem)
+			to_remove.insert(column);
+	}
+	for (std::set<size_t>::iterator it = to_remove.begin();
+	     it != to_remove.end(); it++)
+		midi_tracker_editor.visible_automation_columns.erase (*it);
+}
+
+void
+MidiTrackToolbar::show_all_processor_automations ()
+{
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin();
+	     i != processor_automation.end(); ++i) {
+		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+			size_t& column = (*ii)->column;
+			if (column == 0)
+				midi_tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
+
+			// Still no column available, skip
+			if (column == 0)
+				continue;
+
+			midi_tracker_editor.visible_automation_columns.insert (column);
+
+			(*ii)->menu_item->set_active (true);
+		}
+	}
+}
+
+void
+MidiTrackToolbar::show_existing_processor_automations ()
+{
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin();
+	     i != processor_automation.end(); ++i) {
+		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+			size_t& column = (*ii)->column;
+			bool exist = midi_tracker_editor.param2actrl[(*ii)->what]->list()->size() > 0;
+
+			// Create automation column if necessary
+			if (exist) {
+				if (column == 0)
+					midi_tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
+			}
+
+			// Still no column available, skip
+			if (column == 0)
+				continue;
+
+			if (exist)
+				midi_tracker_editor.visible_automation_columns.insert (column);
+			else
+				midi_tracker_editor.visible_automation_columns.erase (column);
+
+			(*ii)->menu_item->set_active (exist);
+		}
+	}
+}
+
+void
+MidiTrackToolbar::hide_processor_automations ()
+{
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin();
+	     i != processor_automation.end(); ++i) {
+		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+			size_t column = (*ii)->column;
+			if (column != 0) {
+				midi_tracker_editor.visible_automation_columns.erase (column);
+				(*ii)->menu_item->set_active (false);
+			}
+		}
+	}
 }
 
 void
