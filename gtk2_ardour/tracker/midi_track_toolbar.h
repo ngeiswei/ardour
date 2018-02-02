@@ -24,6 +24,8 @@
 
 #include "widgets/ardour_button.h"
 #include "ardour/processor.h"
+#include "ardour/pannable.h"
+#include "ardour/midi_playlist.h"
 
 #include "midi_track_pattern.h"
 
@@ -91,6 +93,24 @@ public:
 	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
 	ProcessorAutomationNode* find_processor_automation_node (boost::shared_ptr<ARDOUR::Processor> processor, Evoral::Parameter what);
 	Gtk::CheckMenuItem* automation_child_menu_item (const Evoral::Parameter& param);
+
+	/**
+	 * Helpers to update automations
+	 */
+	void show_all_automation ();
+	void show_existing_automation ();
+	void hide_all_automation ();
+	// Show/hide gain, mute and pan
+	void show_all_main_automations ();
+	void show_existing_main_automations ();
+	void hide_main_automations ();
+	// Show/hide midi automations
+	void show_existing_midi_automations ();
+	void hide_midi_automations ();
+	// Show/hide processor automations
+	void show_all_processor_automations ();
+	void show_existing_processor_automations ();
+	void hide_processor_automations ();
 
 	/**
 	 * Helpers to update buttons status display
