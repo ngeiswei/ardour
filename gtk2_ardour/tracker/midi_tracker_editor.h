@@ -101,47 +101,22 @@ class MidiTrackerEditor : public ArdourWindow
 	MidiTrackerEditor(ARDOUR::Session*, RegionSelection& rs);
 	~MidiTrackerEditor();
 
-  private:
+private:
 
 	///////////////////
 	// Automation	 //
 	///////////////////
 
-	struct ProcessorAutomationNode {
-		Evoral::Parameter                         what;
-		Gtk::CheckMenuItem*                       menu_item;
-		// corresponding column index. If set to 0 then undetermined yet
-		size_t                                    column;
-		MidiTrackerEditor&                        parent;
-
-		ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem, MidiTrackerEditor& p)
-		    : what (w), menu_item (mitem), column(0), parent (p) {}
-
-	    ~ProcessorAutomationNode ();
-	};
-
-	struct ProcessorAutomationInfo {
-	    boost::shared_ptr<ARDOUR::Processor>  processor;
-	    bool                                  valid;
-	    Gtk::Menu*                            menu;
-	    std::vector<ProcessorAutomationNode*> columns;
-
-	    ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
-		    : processor (i), valid (true), menu (0) {}
-
-	    ~ProcessorAutomationInfo ();
-	};
+	// Map Parameter to AutomationControl
+	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
+	// TODO: per midi track?
+	Parameter2AutomationControl param2actrl;
 
 	// List of selected region considered at the creation of this class
 	RegionSelection region_selection;
 
 	// Reference to the unique editor
 	PublicEditor& public_editor;
-
-	/** Information about all automatable processor parameters that apply to
-	 *  this route.  The Amp processor is not included in this list.
-	 */
-	std::list<ProcessorAutomationInfo*> processor_automation;
 
 	// Column index of the first automation
 	size_t automation_col_offset;
@@ -153,80 +128,47 @@ class MidiTrackerEditor : public ArdourWindow
 	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> ColParamBimap;
 	ColParamBimap col2param;
 
+public:
 	// Keep track of all visible automation columns
 	std::set<size_t> visible_automation_columns;
-
-	// Map Parameter to AutomationControl
-	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
-	Parameter2AutomationControl param2actrl;
+private:
 
 	// Map column index to automation track index and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
 	ColAutoTrackBimap col2autotrack;
-
-	// TODO: move to midi_track_toolbar
-public:
-	Gtk::Menu                    subplugin_menu;
-	Gtk::Menu*                   automation_action_menu;
-	Gtk::Menu*                   controller_menu;
-
-private:
-	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
-	/** parameter -> menu item map for the plugin automation menu */
-	ParameterMenuMap _subplugin_menu_map;
-	/** parameter -> menu item map for the channel command items */
-	ParameterMenuMap _channel_command_menu_map;
-	/** parameter -> menu item map for the controller menu */
-	ParameterMenuMap _controller_menu_map;
-
-	/** Set of pan parameter types */
-	std::set<ARDOUR::AutomationType> _pan_param_types;
 
 	size_t gain_column;
 	size_t trim_column; // TODO: support audio tracks
 	size_t mute_column;
 	std::vector<size_t> pan_columns;
 
-	Gtk::CheckMenuItem* gain_automation_item;
-	Gtk::CheckMenuItem* trim_automation_item;
-	Gtk::CheckMenuItem* mute_automation_item;
-	Gtk::CheckMenuItem* pan_automation_item;
+	/** Set of pan parameter types */
+	std::set<ARDOUR::AutomationType> _pan_param_types;
 
-	ProcessorAutomationNode* find_processor_automation_node (boost::shared_ptr<ARDOUR::Processor> processor, Evoral::Parameter what);
-
-	Gtk::CheckMenuItem* automation_child_menu_item (const Evoral::Parameter& param);
-
-	bool is_pan_type (const Evoral::Parameter& param) const;
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
 	size_t select_available_automation_column ();
 	size_t add_main_automation_column (const Evoral::Parameter& param);
 	size_t add_midi_automation_column (const Evoral::Parameter& param);
+public:
 	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor, const Evoral::Parameter& what);
 
-	void build_param2actrl ();
 	void build_pattern ();
 	void update_automation_patterns ();
+	// TODO: per midi track?
+	void build_param2actrl ();
+private:
 	void connect (const Evoral::Parameter&);
 
+public:
 	virtual void show_all_automation ();
 	bool has_pan_automation() const;
 	virtual void show_existing_automation ();
 	virtual void hide_all_automation ();
 
-	void setup_processor_menu_and_curves ();
-	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
-	void processor_menu_item_toggled (MidiTrackerEditor::ProcessorAutomationInfo*, MidiTrackerEditor::ProcessorAutomationNode*);
-public:
-	void build_automation_action_menu ();
-private:
-	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, ARDOUR::AutomationType auto_type, uint8_t cmd);
 	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
 	void update_automation_column_visibility (const Evoral::Parameter& param);
-	void build_controller_menu ();
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
-	void add_single_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
-	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
 
 	// Return if the automation column associated to this parameter is currently visible
 	bool is_automation_visible(const Evoral::Parameter& param) const;
@@ -239,7 +181,7 @@ private:
 	void update_trim_column_visibility ();
 	void update_mute_column_visibility ();
 	void update_pan_columns_visibility ();
-
+private:
 	// Show/hide gain, mute and pan
 	void show_all_main_automations ();
 	void show_existing_main_automations ();
@@ -320,8 +262,9 @@ private:
 	static const std::string undefined_str;
 
 	MidiTimeAxisView* midi_time_axis_view;
+public:
 	boost::shared_ptr<ARDOUR::Route> route;
-
+private:
 	MidiTrackerModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 	uint32_t                     nrows;
@@ -367,6 +310,7 @@ public:
 	int automation_colnum (int tracknum);
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int tracknum);
+	bool is_pan_type (const Evoral::Parameter& param) const;
 
 private:
 	void setup_toolbars ();
@@ -494,9 +438,11 @@ private:
 	// Other (sort out)    //
 	/////////////////////////
 
+public:
 	bool is_midi_track () const;
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track() const;
 
+private:
 	/**
 	 * Clamp x to be within [l, u], that is return max(l, min(u, x))
 	 *
