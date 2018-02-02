@@ -191,6 +191,18 @@ MidiTrackerEditor::is_pan_type (const Evoral::Parameter& param) const
 	return _pan_param_types.find((ARDOUR::AutomationType)param.type()) != _pan_param_types.end();
 }
 
+// bool
+// MidiTrackerEditor::has_pan_automation() const
+// {
+// 	for (std::set<AutomationType>::const_iterator it = _pan_param_types.begin();
+// 	     it != _pan_param_types.end(); ++it) {
+// 		Parameter2AutomationControl::const_iterator pac_it = param2actrl.find(Evoral::Parameter(*it));
+// 		if (pac_it != param2actrl.end() && pac_it->second->list()->size() > 0)
+// 			return true;
+// 	}
+// 	return false;
+// }
+
 size_t
 MidiTrackerEditor::select_available_automation_column ()
 {
@@ -286,148 +298,6 @@ MidiTrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor>
 	// Set the column title
 	string name = processor->describe_parameter (what);
 	view.get_column(pan->column)->set_title (name);
-}
-
-void
-MidiTrackerEditor::show_all_processor_automations ()
-{
-	// TODO make for all tracks
-	for (list<ProcessorAutomationInfo*>::iterator i = midi_track_toolbars.front()->processor_automation.begin();
-	     i != midi_track_toolbars.front()->processor_automation.end(); ++i) {
-		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
-			size_t& column = (*ii)->column;
-			if (column == 0)
-				add_processor_automation_column ((*i)->processor, (*ii)->what);
-
-			// Still no column available, skip
-			if (column == 0)
-				continue;
-
-			visible_automation_columns.insert (column);
-
-			(*ii)->menu_item->set_active (true);
-		}
-	}
-}
-
-// Show all automation, with the exception of midi automations, only show the
-// existing one, because there are too many.
-//
-// TODO: this menu needs to be persistent between sessions. Should also be
-// fixed for the track/piano roll view.
-void
-MidiTrackerEditor::show_all_automation ()
-{
-	show_all_main_automations ();
-	show_existing_midi_automations ();
-	show_all_processor_automations ();
-
-	redisplay_model ();
-}
-
-void
-MidiTrackerEditor::show_existing_midi_automations ()
-{
-	const set<Evoral::Parameter> params = midi_track()->midi_playlist()->contained_automation();
-	for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-		ColParamBimap::right_const_iterator it = col2param.right.find(*p);
-		size_t column = (it == col2param.right.end()) || (it->second == 0) ?
-			add_midi_automation_column (*p) : it->second;
-
-		// Still no column available, skip
-		if (column == 0)
-			continue;
-
-		visible_automation_columns.insert (column);
-	}
-}
-
-void
-MidiTrackerEditor::show_existing_processor_automations ()
-{
-	for (list<ProcessorAutomationInfo*>::iterator i = midi_track_toolbars.front()->processor_automation.begin();
-	     i != midi_track_toolbars.front()->processor_automation.end(); ++i) {
-		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
-			size_t& column = (*ii)->column;
-			bool exist = param2actrl[(*ii)->what]->list()->size() > 0;
-
-			// Create automation column if necessary
-			if (exist) {
-				if (column == 0)
-					add_processor_automation_column ((*i)->processor, (*ii)->what);
-			}
-
-			// Still no column available, skip
-			if (column == 0)
-				continue;
-
-			if (exist)
-				visible_automation_columns.insert (column);
-			else
-				visible_automation_columns.erase (column);
-
-			(*ii)->menu_item->set_active (exist);
-		}
-	}
-}
-
-void
-MidiTrackerEditor::show_existing_automation ()
-{
-	show_existing_main_automations ();
-	show_existing_midi_automations ();
-	show_existing_processor_automations ();
-
-	redisplay_model ();
-}
-
-void
-MidiTrackerEditor::hide_midi_automations ()
-{
-	std::set<size_t> to_remove;
-	for (std::set<size_t>::iterator it = visible_automation_columns.begin();
-	     it != visible_automation_columns.end(); it++) {
-		size_t column = *it;
-		ColParamBimap::left_const_iterator c2p_it = col2param.left.find(column);
-		if (c2p_it == col2param.left.end())
-			continue;
-
-		Evoral::Parameter param = c2p_it->second;
-		// TODO make for all tracks
-		CheckMenuItem* mitem = midi_track_toolbars.front()->automation_child_menu_item(param);
-
-		if (mitem)
-			to_remove.insert(column);
-	}
-	for (std::set<size_t>::iterator it = to_remove.begin();
-	     it != to_remove.end(); it++)
-		visible_automation_columns.erase (*it);
-}
-
-void
-MidiTrackerEditor::hide_processor_automations ()
-{
-	// TODO make for all tracks
-	for (list<ProcessorAutomationInfo*>::iterator i = midi_track_toolbars.front()->processor_automation.begin();
-	     i != midi_track_toolbars.front()->processor_automation.end(); ++i) {
-		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
-			size_t column = (*ii)->column;
-			if (column != 0) {
-				visible_automation_columns.erase (column);
-				(*ii)->menu_item->set_active (false);
-			}
-		}
-	}
-}
-
-void
-MidiTrackerEditor::hide_all_automation ()
-{
-	hide_main_automations ();
-	hide_midi_automations ();
-	hide_processor_automations ();
-
-	redisplay_model ();
 }
 
 void
@@ -607,85 +477,6 @@ MidiTrackerEditor::update_pan_columns_visibility ()
 
 	/* now trigger a redisplay */
 	redisplay_model ();
-}
-
-void
-MidiTrackerEditor::show_all_main_automations ()
-{
-	// Gain
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->gain_automation_item->set_active (true);
-	update_gain_column_visibility ();
-
-	// Mute
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->mute_automation_item->set_active (true);
-	update_mute_column_visibility ();
-
-	// Pan
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->pan_automation_item->set_active (true);
-	update_pan_columns_visibility ();
-}
-
-bool
-MidiTrackerEditor::has_pan_automation() const
-{
-	for (std::set<AutomationType>::const_iterator it = _pan_param_types.begin();
-	     it != _pan_param_types.end(); ++it) {
-		Parameter2AutomationControl::const_iterator pac_it = param2actrl.find(Evoral::Parameter(*it));
-		if (pac_it != param2actrl.end() && pac_it->second->list()->size() > 0)
-			return true;
-	}
-	return false;
-}
-
-void
-MidiTrackerEditor::show_existing_main_automations ()
-{
-	// Gain
-	bool gain_visible = param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->gain_automation_item->set_active (gain_visible);
-	update_gain_column_visibility ();
-
-	// Mute
-	bool mute_visible = param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->mute_automation_item->set_active (mute_visible);
-	update_mute_column_visibility ();
-
-	// Pan
-	bool pan_visible = false;
-	set<Evoral::Parameter> const & pan_params = route->pannable()->what_can_be_automated ();
-	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		if (param2actrl[*p]->list()->size() > 0) {
-			pan_visible = true;
-			break;
-		}
-	}
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->pan_automation_item->set_active (pan_visible);
-	update_pan_columns_visibility ();
-}
-
-void
-MidiTrackerEditor::hide_main_automations ()
-{
-	// Gain
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->gain_automation_item->set_active (false);
-	update_gain_column_visibility ();
-
-	// Mute
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->mute_automation_item->set_active (false);
-	update_mute_column_visibility ();
-
-	// Pan
-	// TODO: make for all tracks
-	midi_track_toolbars.front()->pan_automation_item->set_active (false);
-	update_pan_columns_visibility ();
 }
 
 /////////////////////////

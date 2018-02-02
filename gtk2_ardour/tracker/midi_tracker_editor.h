@@ -109,9 +109,12 @@ private:
 
 	// Map Parameter to AutomationControl
 	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
+
+public:
 	// TODO: per midi track?
 	Parameter2AutomationControl param2actrl;
 
+private:
 	// List of selected region considered at the creation of this class
 	RegionSelection region_selection;
 
@@ -124,11 +127,11 @@ private:
 	// List of column indices currently unassigned to an automation
 	std::set<size_t> available_automation_columns;
 
+public:
 	// Map column index to automation parameter and vice versa
 	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> ColParamBimap;
 	ColParamBimap col2param;
 
-public:
 	// Keep track of all visible automation columns
 	std::set<size_t> visible_automation_columns;
 private:
@@ -142,15 +145,12 @@ private:
 	size_t mute_column;
 	std::vector<size_t> pan_columns;
 
-	/** Set of pan parameter types */
-	std::set<ARDOUR::AutomationType> _pan_param_types;
-
+public:
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
 	size_t select_available_automation_column ();
 	size_t add_main_automation_column (const Evoral::Parameter& param);
 	size_t add_midi_automation_column (const Evoral::Parameter& param);
-public:
 	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor, const Evoral::Parameter& what);
 
 	void build_pattern ();
@@ -161,11 +161,6 @@ private:
 	void connect (const Evoral::Parameter&);
 
 public:
-	virtual void show_all_automation ();
-	bool has_pan_automation() const;
-	virtual void show_existing_automation ();
-	virtual void hide_all_automation ();
-
 	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
 	void update_automation_column_visibility (const Evoral::Parameter& param);
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
@@ -182,19 +177,6 @@ public:
 	void update_mute_column_visibility ();
 	void update_pan_columns_visibility ();
 private:
-	// Show/hide gain, mute and pan
-	void show_all_main_automations ();
-	void show_existing_main_automations ();
-	void hide_main_automations ();
-
-	// Show midi automations
-	void show_existing_midi_automations ();
-	void hide_midi_automations ();
-
-	// Show processor automations
-	void show_all_processor_automations ();
-	void show_existing_processor_automations ();
-	void hide_processor_automations ();
 
 	////////////////////////////
 	// Other (to sort out)	  //
@@ -284,6 +266,9 @@ private:
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
 
+	/** Set of pan parameter types */
+	std::set<ARDOUR::AutomationType> _pan_param_types;
+
 	// TODO have a sequence
 public:
 	MidiTrackPattern* mtp;
@@ -311,6 +296,7 @@ public:
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int tracknum);
 	bool is_pan_type (const Evoral::Parameter& param) const;
+	// bool has_pan_automation() const;
 
 private:
 	void setup_toolbars ();
