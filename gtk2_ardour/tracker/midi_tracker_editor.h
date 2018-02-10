@@ -158,6 +158,7 @@ public:
 	// TODO: per midi track?
 	void build_param2actrl ();
 private:
+	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor);
 	void connect (const Evoral::Parameter&);
 
 public:
@@ -269,8 +270,8 @@ private:
 	/** Set of pan parameter types */
 	std::set<ARDOUR::AutomationType> _pan_param_types;
 
-	// TODO have a sequence
 public:
+	// TODO have a sequence
 	MidiTrackPattern* mtp;
 private:
 
@@ -296,7 +297,6 @@ public:
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int tracknum);
 	bool is_pan_type (const Evoral::Parameter& param) const;
-	// bool has_pan_automation() const;
 
 private:
 	void setup_toolbars ();
