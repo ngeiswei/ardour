@@ -147,7 +147,6 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 
 	build_param2actrl ();
 	build_pattern ();
-
 	setup_pattern ();
 	setup_scroller ();
 	setup_toolbars ();
@@ -190,18 +189,6 @@ MidiTrackerEditor::is_pan_type (const Evoral::Parameter& param) const
 {
 	return _pan_param_types.find((ARDOUR::AutomationType)param.type()) != _pan_param_types.end();
 }
-
-// bool
-// MidiTrackerEditor::has_pan_automation() const
-// {
-// 	for (std::set<AutomationType>::const_iterator it = _pan_param_types.begin();
-// 	     it != _pan_param_types.end(); ++it) {
-// 		Parameter2AutomationControl::const_iterator pac_it = param2actrl.find(Evoral::Parameter(*it));
-// 		if (pac_it != param2actrl.end() && pac_it->second->list()->size() > 0)
-// 			return true;
-// 	}
-// 	return false;
-// }
 
 size_t
 MidiTrackerEditor::select_available_automation_column ()
@@ -1655,12 +1642,21 @@ MidiTrackerEditor::build_param2actrl ()
 
 	// Processors
 	// TODO: make for all tracks
-	for (list<ProcessorAutomationInfo*>::iterator i = midi_track_toolbars.front()->processor_automation.begin();
-	     i != midi_track_toolbars.front()->processor_automation.end(); ++i) {
-		for (vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
-			param2actrl[(*ii)->what] = boost::dynamic_pointer_cast<AutomationControl>((*i)->processor->control((*ii)->what));
-			connect((*ii)->what);
-		}
+	route->foreach_processor (sigc::mem_fun (*this, &MidiTrackerEditor::add_processor_to_param2actrl));
+}
+
+void
+MidiTrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processor> p)
+{
+	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
+
+	if (!processor || !processor->display_to_user ())
+		return;
+
+	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
+	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait) {
+		param2actrl[*ait] = boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait));
+		connect(*ait);
 	}
 }
 
@@ -1841,7 +1837,7 @@ void MidiTrackerEditor::wrap_around_move (TreeModel::Path& path, int steps) cons
 void
 MidiTrackerEditor::horizontal_move_cursor (int steps, bool tab)
 {
-	// TODO support tab == true
+	// TODO support tab == true, to move from one ardour track to the next
 	int colnum = edit_colnum;
 	const int n_col = view.get_columns().size();
 	TreeViewColumn* col;

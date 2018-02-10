@@ -549,7 +549,6 @@ MidiTrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proce
 	*/
 
 	subplugin_menu.items().push_back (MenuElem (processor->name(), *rai->menu));
-	rai->valid = true;
 }
 
 void
