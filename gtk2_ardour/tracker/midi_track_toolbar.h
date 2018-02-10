@@ -45,12 +45,11 @@ struct ProcessorAutomationNode {
 
 struct ProcessorAutomationInfo {
 	boost::shared_ptr<ARDOUR::Processor>  processor;
-	bool                                  valid;
 	Gtk::Menu*                            menu;
 	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
 
 	ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
-		: processor (i), valid (true), menu (0) {}
+		: processor (i), menu (0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationInfo ();
 };
