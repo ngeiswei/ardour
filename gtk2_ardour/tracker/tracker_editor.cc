@@ -50,7 +50,7 @@
 #include "gtkmm2ext/rgb_macros.h"
 
 #include "ui_config.h"
-#include "midi_tracker_editor.h"
+#include "tracker_editor.h"
 #include "midi_track_toolbar.h"
 #include "note_player.h"
 #include "widgets/tooltips.h"
@@ -97,13 +97,13 @@ using Timecode::BBT_Time;
 // - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 
 ///////////////////////
-// MidiTrackerEditor //
+// TrackerEditor //
 ///////////////////////
 
-const std::string MidiTrackerEditor::note_off_str = "===";
-const std::string MidiTrackerEditor::undefined_str = "***";
+const std::string TrackerEditor::note_off_str = "===";
+const std::string TrackerEditor::undefined_str = "***";
 
-MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
+TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	: ArdourWindow (dynamic_cast<MidiRegionView*>(rs.front())->midi_region()->name())
 	, region_selection(rs)
 	, public_editor(dynamic_cast<MidiRegionView*>(rs.front())->midi_view ()->editor ())
@@ -154,9 +154,9 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	redisplay_model ();
 
 	midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                     boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
+	                                     boost::bind (&TrackerEditor::redisplay_model, this), gui_context());
 	region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-	                                       boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
+	                                       boost::bind (&TrackerEditor::redisplay_model, this), gui_context());
 
 	vbox.show ();
 
@@ -173,7 +173,7 @@ MidiTrackerEditor::MidiTrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	set_size_request (-1, 400);
 }
 
-MidiTrackerEditor::~MidiTrackerEditor ()
+TrackerEditor::~TrackerEditor ()
 {
 	delete mtp;
 	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
@@ -185,13 +185,13 @@ MidiTrackerEditor::~MidiTrackerEditor ()
 ////////////////
 
 bool
-MidiTrackerEditor::is_pan_type (const Evoral::Parameter& param) const
+TrackerEditor::is_pan_type (const Evoral::Parameter& param) const
 {
 	return _pan_param_types.find((ARDOUR::AutomationType)param.type()) != _pan_param_types.end();
 }
 
 size_t
-MidiTrackerEditor::select_available_automation_column ()
+TrackerEditor::select_available_automation_column ()
 {
 	// Find the next available column
 	if (available_automation_columns.empty()) {
@@ -206,7 +206,7 @@ MidiTrackerEditor::select_available_automation_column ()
 }
 
 size_t
-MidiTrackerEditor::add_main_automation_column (const Evoral::Parameter& param)
+TrackerEditor::add_main_automation_column (const Evoral::Parameter& param)
 {
 	// Select the next available column
 	size_t column = select_available_automation_column ();
@@ -226,7 +226,7 @@ MidiTrackerEditor::add_main_automation_column (const Evoral::Parameter& param)
 }
 
 size_t
-MidiTrackerEditor::add_midi_automation_column (const Evoral::Parameter& param)
+TrackerEditor::add_midi_automation_column (const Evoral::Parameter& param)
 {
 	// If not in param2actrl, add it.
 	if (!param2actrl[param]) {
@@ -254,7 +254,7 @@ MidiTrackerEditor::add_midi_automation_column (const Evoral::Parameter& param)
  * parameter.
  */
 void
-MidiTrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
+TrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
 {
 	ProcessorAutomationNode* pan;
 
@@ -288,7 +288,7 @@ MidiTrackerEditor::add_processor_automation_column (boost::shared_ptr<Processor>
 }
 
 void
-MidiTrackerEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
+TrackerEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
 {
 	const uint16_t selected_channels = midi_track()->get_playback_channel_mask();
 
@@ -310,7 +310,7 @@ MidiTrackerEditor::change_all_channel_tracks_visibility (bool yn, Evoral::Parame
  *  Will add column if necessary.
  */
 void
-MidiTrackerEditor::update_automation_column_visibility (const Evoral::Parameter& param)
+TrackerEditor::update_automation_column_visibility (const Evoral::Parameter& param)
 {
 	// Find menu item associated to this parameter
 	// TODO: make for all tracks
@@ -337,7 +337,7 @@ MidiTrackerEditor::update_automation_column_visibility (const Evoral::Parameter&
 }
 
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiTrackerEditor::get_device_names ()
+TrackerEditor::get_device_names ()
 {
 	// TODO: check whether the device names are per track and upgrade this
 	// function to take the track in input
@@ -345,7 +345,7 @@ MidiTrackerEditor::get_device_names ()
 }
 
 bool
-MidiTrackerEditor::is_automation_visible(const Evoral::Parameter& param) const
+TrackerEditor::is_automation_visible(const Evoral::Parameter& param) const
 {
 	ColParamBimap::right_const_iterator it = col2param.right.find(param);
 	return it != col2param.right.end() &&
@@ -353,21 +353,21 @@ MidiTrackerEditor::is_automation_visible(const Evoral::Parameter& param) const
 }
 
 bool
-MidiTrackerEditor::is_gain_visible() const
+TrackerEditor::is_gain_visible() const
 {
 	return visible_automation_columns.find(gain_column)
 		!= visible_automation_columns.end();
 };
 
 bool
-MidiTrackerEditor::is_mute_visible() const
+TrackerEditor::is_mute_visible() const
 {
 	return visible_automation_columns.find(mute_column)
 		!= visible_automation_columns.end();
 };
 
 bool
-MidiTrackerEditor::is_pan_visible() const
+TrackerEditor::is_pan_visible() const
 {
 	bool visible = not pan_columns.empty();
 	for (std::vector<size_t>::const_iterator it = pan_columns.begin(); it != pan_columns.end(); ++it) {
@@ -379,7 +379,7 @@ MidiTrackerEditor::is_pan_visible() const
 };
 
 void
-MidiTrackerEditor::update_gain_column_visibility ()
+TrackerEditor::update_gain_column_visibility ()
 {
 	// TODO: make for all tracks
 	const bool showit = midi_track_toolbars.front()->gain_automation_item->get_active();
@@ -401,7 +401,7 @@ MidiTrackerEditor::update_gain_column_visibility ()
 }
 
 void
-MidiTrackerEditor::update_trim_column_visibility ()
+TrackerEditor::update_trim_column_visibility ()
 {
 	// bool const showit = trim_automation_item->get_active();
 
@@ -417,7 +417,7 @@ MidiTrackerEditor::update_trim_column_visibility ()
 }
 
 void
-MidiTrackerEditor::update_mute_column_visibility ()
+TrackerEditor::update_mute_column_visibility ()
 {
 	// TODO: make for all tracks
 	const bool showit = midi_track_toolbars.front()->mute_automation_item->get_active();
@@ -439,7 +439,7 @@ MidiTrackerEditor::update_mute_column_visibility ()
 }
 
 void
-MidiTrackerEditor::update_pan_columns_visibility ()
+TrackerEditor::update_pan_columns_visibility ()
 {
 	// TODO: make for all tracks
 	const bool showit = midi_track_toolbars.front()->pan_automation_item->get_active();
@@ -471,7 +471,7 @@ MidiTrackerEditor::update_pan_columns_visibility ()
 /////////////////////////
 
 void
-MidiTrackerEditor::resize_width()
+TrackerEditor::resize_width()
 {
 	int width, height;
 	get_size(width, height);
@@ -479,7 +479,7 @@ MidiTrackerEditor::resize_width()
 }
 
 void
-MidiTrackerEditor::redisplay_visible_note()
+TrackerEditor::redisplay_visible_note()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_note : false);
@@ -490,13 +490,13 @@ MidiTrackerEditor::redisplay_visible_note()
 }
 
 int
-MidiTrackerEditor::note_colnum(int tracknum)
+TrackerEditor::note_colnum(int tracknum)
 {
 	return tracknum*4 + NOTE_COLNUM;
 }
 
 void
-MidiTrackerEditor::redisplay_visible_channel()
+TrackerEditor::redisplay_visible_channel()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_channel_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_channel : false);
@@ -507,13 +507,13 @@ MidiTrackerEditor::redisplay_visible_channel()
 }
 
 int
-MidiTrackerEditor::note_channel_colnum(int tracknum)
+TrackerEditor::note_channel_colnum(int tracknum)
 {
 	return tracknum*4 + CHANNEL_COLNUM;
 }
 
 void
-MidiTrackerEditor::redisplay_visible_velocity()
+TrackerEditor::redisplay_visible_velocity()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_velocity_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_velocity : false);
@@ -524,13 +524,13 @@ MidiTrackerEditor::redisplay_visible_velocity()
 }
 
 int
-MidiTrackerEditor::note_velocity_colnum(int tracknum)
+TrackerEditor::note_velocity_colnum(int tracknum)
 {
 	return tracknum*4 + VELOCITY_COLNUM;
 }
 
 void
-MidiTrackerEditor::redisplay_visible_delay()
+TrackerEditor::redisplay_visible_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
 		view.get_column(note_delay_colnum(i))->set_visible(i < mtp->np.ntracks ? midi_track_toolbars.front()->visible_delay : false);
@@ -542,13 +542,13 @@ MidiTrackerEditor::redisplay_visible_delay()
 }
 
 int
-MidiTrackerEditor::note_delay_colnum(int tracknum)
+TrackerEditor::note_delay_colnum(int tracknum)
 {
 	return tracknum*4 + DELAY_COLNUM;
 }
 
 void
-MidiTrackerEditor::redisplay_visible_automation()
+TrackerEditor::redisplay_visible_automation()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_colnum(i);
@@ -562,13 +562,13 @@ MidiTrackerEditor::redisplay_visible_automation()
 }
 
 int
-MidiTrackerEditor::automation_colnum(int tracknum)
+TrackerEditor::automation_colnum(int tracknum)
 {
 	return automation_col_offset + 2 * tracknum;
 }
 
 void
-MidiTrackerEditor::redisplay_visible_automation_delay()
+TrackerEditor::redisplay_visible_automation_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_delay_colnum(i);
@@ -581,13 +581,13 @@ MidiTrackerEditor::redisplay_visible_automation_delay()
 }
 
 int
-MidiTrackerEditor::automation_delay_colnum(int tracknum)
+TrackerEditor::automation_delay_colnum(int tracknum)
 {
 	return automation_col_offset + 2 * tracknum + 1;
 }
 
 void
-MidiTrackerEditor::redisplay_model ()
+TrackerEditor::redisplay_model ()
 {
 	if (editing_editable)
 		return;
@@ -788,31 +788,31 @@ MidiTrackerEditor::redisplay_model ()
 /////////////////////
 
 uint32_t
-MidiTrackerEditor::get_row_index(const std::string& path)
+TrackerEditor::get_row_index(const std::string& path)
 {
 	return get_row_index (TreeModel::Path (path));
 }
 
 uint32_t
-MidiTrackerEditor::get_row_index(const TreeModel::Path& path)
+TrackerEditor::get_row_index(const TreeModel::Path& path)
 {
 	return path.front();
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_on_note(int rowidx)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_on_note(int rowidx)
 {
 	return get_on_note(TreeModel::Path (1U, rowidx));
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_on_note(const std::string& path)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_on_note(const std::string& path)
 {
 	return get_on_note(TreeModel::Path (path));
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_on_note(const TreeModel::Path& path)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_on_note(const TreeModel::Path& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -820,20 +820,20 @@ MidiTrackerEditor::get_on_note(const TreeModel::Path& path)
 	return (*iter)[columns._on_note[edit_tracknum]];
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_off_note(int rowidx)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_off_note(int rowidx)
 {
 	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowidx));
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_off_note(const std::string& path)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_off_note(const std::string& path)
 {
 	return get_off_note (TreeModel::Path (path));
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_off_note(const TreeModel::Path& path)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_off_note(const TreeModel::Path& path)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -841,14 +841,14 @@ MidiTrackerEditor::get_off_note(const TreeModel::Path& path)
 	return (*iter)[columns._off_note[edit_tracknum]];
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_note(const std::string& path)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_note(const std::string& path)
 {
 	return get_note (TreeModel::Path (path));
 }
 
-boost::shared_ptr<MidiTrackerEditor::NoteType>
-MidiTrackerEditor::get_note(const TreeModel::Path& path)
+boost::shared_ptr<TrackerEditor::NoteType>
+TrackerEditor::get_note(const TreeModel::Path& path)
 {
 	NoteTypePtr note = get_on_note(path);
 	if (!note)
@@ -857,7 +857,7 @@ MidiTrackerEditor::get_note(const TreeModel::Path& path)
 }
 
 void
-MidiTrackerEditor::editing_note_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_note_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -865,13 +865,13 @@ MidiTrackerEditor::editing_note_started (CellEditable* ed, const string& path, i
 	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::step_editing_note_key_press), false);
 		}
 	}
 }
 
 void
-MidiTrackerEditor::editing_note_channel_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_note_channel_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_channel_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -879,13 +879,13 @@ MidiTrackerEditor::editing_note_channel_started (CellEditable* ed, const string&
 	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_channel_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::step_editing_note_channel_key_press), false);
 		}
 	}
 }
 
 void
-MidiTrackerEditor::editing_note_velocity_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_note_velocity_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_velocity_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -893,13 +893,13 @@ MidiTrackerEditor::editing_note_velocity_started (CellEditable* ed, const string
 	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_velocity_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::step_editing_note_velocity_key_press), false);
 		}
 	}
 }
 
 void
-MidiTrackerEditor::editing_note_delay_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_note_delay_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = note_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -907,13 +907,13 @@ MidiTrackerEditor::editing_note_delay_started (CellEditable* ed, const string& p
 	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_note_delay_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::step_editing_note_delay_key_press), false);
 		}
 	}
 }
 
 void
-MidiTrackerEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_automation_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = automation_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -921,13 +921,13 @@ MidiTrackerEditor::editing_automation_started (CellEditable* ed, const string& p
 	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_automation_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::step_editing_automation_key_press), false);
 		}
 	}
 }
 
 void
-MidiTrackerEditor::editing_automation_delay_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_automation_delay_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_colnum = automation_delay_colnum (tracknum);
 	editing_started (ed, path, tracknum);
@@ -935,13 +935,13 @@ MidiTrackerEditor::editing_automation_delay_started (CellEditable* ed, const str
 	if (ed && main_toolbar.step_edit) {
 		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
 		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::step_editing_automation_delay_key_press), false);
+			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::step_editing_automation_delay_key_press), false);
 		}
 	}
 }
 
 void
-MidiTrackerEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
+TrackerEditor::editing_started (CellEditable* ed, const string& path, int tracknum)
 {
 	edit_path = TreePath (path);
 	edit_rowidx = get_row_index (edit_path);
@@ -950,7 +950,7 @@ MidiTrackerEditor::editing_started (CellEditable* ed, const string& path, int tr
 }
 
 void
-MidiTrackerEditor::clear_editables ()
+TrackerEditor::clear_editables ()
 {
 	edit_path.clear ();
 	edit_rowidx = -1;
@@ -962,13 +962,13 @@ MidiTrackerEditor::clear_editables ()
 }
 
 void
-MidiTrackerEditor::editing_canceled ()
+TrackerEditor::editing_canceled ()
 {
 	clear_editables ();
 }
 
 uint8_t
-MidiTrackerEditor::parse_pitch (std::string text) const
+TrackerEditor::parse_pitch (std::string text) const
 {
 	// Add default octave, if the octave digit is missing
 	if (!text.empty() && !std::isdigit(*text.rbegin()))
@@ -979,7 +979,7 @@ MidiTrackerEditor::parse_pitch (std::string text) const
 }
 
 void
-MidiTrackerEditor::note_edited (const std::string& path, const std::string& text)
+TrackerEditor::note_edited (const std::string& path, const std::string& text)
 {
 	std::string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
@@ -1005,7 +1005,7 @@ MidiTrackerEditor::note_edited (const std::string& path, const std::string& text
 }
 
 void
-MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
+TrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
 	// Abort if the new pitch is invalid
 	if (127 < pitch)
@@ -1079,7 +1079,7 @@ MidiTrackerEditor::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::set_off_note (int rowidx, int tracknum)
+TrackerEditor::set_off_note (int rowidx, int tracknum)
 {
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
@@ -1131,7 +1131,7 @@ MidiTrackerEditor::set_off_note (int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::delete_note (int rowidx, int tracknum)
+TrackerEditor::delete_note (int rowidx, int tracknum)
 {
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
@@ -1173,7 +1173,7 @@ MidiTrackerEditor::delete_note (int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::note_channel_edited (const std::string& path, const std::string& text)
+TrackerEditor::note_channel_edited (const std::string& path, const std::string& text)
 {
 	NoteTypePtr note = get_on_note(path);
 	if (text.empty() || !note) {
@@ -1197,7 +1197,7 @@ MidiTrackerEditor::note_channel_edited (const std::string& path, const std::stri
 }
 
 void
-MidiTrackerEditor::set_note_channel (NoteTypePtr note, int ch)
+TrackerEditor::set_note_channel (NoteTypePtr note, int ch)
 {
 	if (!note)
 		return;
@@ -1215,7 +1215,7 @@ MidiTrackerEditor::set_note_channel (NoteTypePtr note, int ch)
 }
 
 void
-MidiTrackerEditor::note_velocity_edited (const std::string& path, const std::string& text)
+TrackerEditor::note_velocity_edited (const std::string& path, const std::string& text)
 {
 	NoteTypePtr note = get_on_note(path);
 	if (text.empty() || !note) {
@@ -1239,7 +1239,7 @@ MidiTrackerEditor::note_velocity_edited (const std::string& path, const std::str
 }
 
 void
-MidiTrackerEditor::set_note_velocity (NoteTypePtr note, int vel)
+TrackerEditor::set_note_velocity (NoteTypePtr note, int vel)
 {
 	if (!note)
 		return;
@@ -1259,7 +1259,7 @@ MidiTrackerEditor::set_note_velocity (NoteTypePtr note, int vel)
 }
 
 void
-MidiTrackerEditor::note_delay_edited (const std::string& path, const std::string& text)
+TrackerEditor::note_delay_edited (const std::string& path, const std::string& text)
 {
 	// Can't edit ***
 	if (!mtp->np.is_displayable(edit_rowidx, edit_tracknum)) {
@@ -1277,7 +1277,7 @@ MidiTrackerEditor::note_delay_edited (const std::string& path, const std::string
 }
 
 void
-MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
+TrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 {
 	NoteTypePtr on_note = get_on_note(rowidx);
 	NoteTypePtr off_note = get_off_note(rowidx);
@@ -1333,7 +1333,7 @@ MidiTrackerEditor::set_note_delay (int delay, int rowidx, int tracknum)
 	apply_command (cmd);
 }
 
-void MidiTrackerEditor::play_note(uint8_t pitch)
+void TrackerEditor::play_note(uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1344,7 +1344,7 @@ void MidiTrackerEditor::play_note(uint8_t pitch)
 	track->write_immediate_event (3, event);
 }
 
-void MidiTrackerEditor::release_note(uint8_t pitch)
+void TrackerEditor::release_note(uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1354,12 +1354,12 @@ void MidiTrackerEditor::release_note(uint8_t pitch)
 	track->write_immediate_event (3, event);
 }
 
-bool MidiTrackerEditor::is_region_automation (const Evoral::Parameter& param) const
+bool TrackerEditor::is_region_automation (const Evoral::Parameter& param) const
 {
 	return ARDOUR::parameter_is_midi((AutomationType)param.type());
 }
 
-Evoral::Parameter MidiTrackerEditor::get_parameter (int tracknum)
+Evoral::Parameter TrackerEditor::get_parameter (int tracknum)
 {
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotrack.right.find(tracknum);
 	if (ac_it == col2autotrack.right.end())
@@ -1372,7 +1372,7 @@ Evoral::Parameter MidiTrackerEditor::get_parameter (int tracknum)
 	return param;
 }
 
-boost::shared_ptr<AutomationList> MidiTrackerEditor::get_alist (const Evoral::Parameter& param)
+boost::shared_ptr<AutomationList> TrackerEditor::get_alist (const Evoral::Parameter& param)
 {
 	if (!param)
 		return NULL;
@@ -1381,7 +1381,7 @@ boost::shared_ptr<AutomationList> MidiTrackerEditor::get_alist (const Evoral::Pa
 	return alist;
 }
 
-AutomationPattern* MidiTrackerEditor::get_automation_pattern (const Evoral::Parameter& param)
+AutomationPattern* TrackerEditor::get_automation_pattern (const Evoral::Parameter& param)
 {
 	if (!param)
 		return NULL;
@@ -1389,7 +1389,7 @@ AutomationPattern* MidiTrackerEditor::get_automation_pattern (const Evoral::Para
 }
 
 void
-MidiTrackerEditor::automation_edited (const std::string& path, const std::string& text)
+TrackerEditor::automation_edited (const std::string& path, const std::string& text)
 {
 	bool is_del = text.empty();
 	double nval;
@@ -1415,7 +1415,7 @@ MidiTrackerEditor::automation_edited (const std::string& path, const std::string
 }
 
 std::pair<double, bool>
-MidiTrackerEditor::get_automation_value (int rowidx, int tracknum)
+TrackerEditor::get_automation_value (int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (tracknum);
@@ -1433,7 +1433,7 @@ MidiTrackerEditor::get_automation_value (int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::set_automation (double val, int rowidx, int tracknum)
+TrackerEditor::set_automation (double val, int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (tracknum);
@@ -1475,7 +1475,7 @@ MidiTrackerEditor::set_automation (double val, int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::delete_automation(int rowidx, int tracknum)
+TrackerEditor::delete_automation(int rowidx, int tracknum)
 {
 	Evoral::Parameter param = get_parameter (tracknum);
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
@@ -1497,7 +1497,7 @@ MidiTrackerEditor::delete_automation(int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::automation_delay_edited (const std::string& path, const std::string& text)
+TrackerEditor::automation_delay_edited (const std::string& path, const std::string& text)
 {
 	int delay = 0;
 	// Parse the edited delay
@@ -1526,7 +1526,7 @@ MidiTrackerEditor::automation_delay_edited (const std::string& path, const std::
 }
 
 std::pair<int, bool>
-MidiTrackerEditor::get_automation_delay (int rowidx, int tracknum)
+TrackerEditor::get_automation_delay (int rowidx, int tracknum)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (tracknum);
@@ -1546,7 +1546,7 @@ MidiTrackerEditor::get_automation_delay (int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
+TrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 {
 	// Check if within acceptable boundaries
 	if (delay < mtp->delay_ticks_min() || mtp->delay_ticks_max() < delay)
@@ -1582,7 +1582,7 @@ MidiTrackerEditor::set_automation_delay (int delay, int rowidx, int tracknum)
 }
 
 void
-MidiTrackerEditor::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
+TrackerEditor::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
 {
 	public_editor.begin_reversible_command (opname);
 	_session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
@@ -1591,7 +1591,7 @@ MidiTrackerEditor::register_automation_undo (boost::shared_ptr<AutomationList> a
 }
 
 void
-MidiTrackerEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
+TrackerEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
 	midi_model->apply_command (_session, cmd);
@@ -1606,19 +1606,19 @@ MidiTrackerEditor::apply_command (MidiModel::NoteDiffCommand* cmd)
 /////////////////////////
 
 bool
-MidiTrackerEditor::is_midi_track () const
+TrackerEditor::is_midi_track () const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route) != 0;
 }
 
 boost::shared_ptr<MidiTrack>
-MidiTrackerEditor::midi_track() const
+TrackerEditor::midi_track() const
 {
 	return boost::dynamic_pointer_cast<MidiTrack>(route);
 }
 
 void
-MidiTrackerEditor::build_param2actrl ()
+TrackerEditor::build_param2actrl ()
 {
 	// Gain
 	param2actrl[Evoral::Parameter(GainAutomation)] =  route->gain_control();
@@ -1642,11 +1642,11 @@ MidiTrackerEditor::build_param2actrl ()
 
 	// Processors
 	// TODO: make for all tracks
-	route->foreach_processor (sigc::mem_fun (*this, &MidiTrackerEditor::add_processor_to_param2actrl));
+	route->foreach_processor (sigc::mem_fun (*this, &TrackerEditor::add_processor_to_param2actrl));
 }
 
 void
-MidiTrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processor> p)
+TrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processor> p)
 {
 	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
 
@@ -1661,15 +1661,15 @@ MidiTrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processo
 }
 
 void
-MidiTrackerEditor::connect (const Evoral::Parameter& param)
+TrackerEditor::connect (const Evoral::Parameter& param)
 {
 	boost::shared_ptr<AutomationList> alist = param2actrl[param]->alist();
-	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
-	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&MidiTrackerEditor::redisplay_model, this), gui_context());
+	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerEditor::redisplay_model, this), gui_context());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerEditor::redisplay_model, this), gui_context());
 }
 
 void
-MidiTrackerEditor::setup_time_column()
+TrackerEditor::setup_time_column()
 {
 	TreeViewColumn* viewcolumn_time  = new TreeViewColumn (_("Time"), columns.time);
 	CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();		
@@ -1678,7 +1678,7 @@ MidiTrackerEditor::setup_time_column()
 }
 
 void
-MidiTrackerEditor::setup_note_column (size_t i)
+TrackerEditor::setup_note_column (size_t i)
 {
 	string note_str(_("Note"));
 
@@ -1691,16 +1691,16 @@ MidiTrackerEditor::setup_note_column (size_t i)
 	viewcolumn_note->add_attribute(cellrenderer_note->property_foreground (), columns._note_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_started), i));
-	cellrenderer_note->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
-	cellrenderer_note->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_edited));
+	cellrenderer_note->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::editing_note_started), i));
+	cellrenderer_note->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerEditor::editing_canceled));
+	cellrenderer_note->signal_edited().connect (sigc::mem_fun (*this, &TrackerEditor::note_edited));
 	cellrenderer_note->property_editable() = true;
 
 	view.append_column (*viewcolumn_note);
 }
 
 void
-MidiTrackerEditor::setup_note_channel_column (size_t i)
+TrackerEditor::setup_note_channel_column (size_t i)
 {
 	string ch_str(S_("Channel|Ch"));
 
@@ -1713,16 +1713,16 @@ MidiTrackerEditor::setup_note_channel_column (size_t i)
 	viewcolumn_channel->add_attribute(cellrenderer_channel->property_foreground (), columns._channel_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_channel_started), i));
-	cellrenderer_channel->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
-	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_channel_edited));
+	cellrenderer_channel->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::editing_note_channel_started), i));
+	cellrenderer_channel->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerEditor::editing_canceled));
+	cellrenderer_channel->signal_edited().connect (sigc::mem_fun (*this, &TrackerEditor::note_channel_edited));
 	cellrenderer_channel->property_editable() = true;
 
 	view.append_column (*viewcolumn_channel);
 }
 
 void
-MidiTrackerEditor::setup_note_velocity_column (size_t i)
+TrackerEditor::setup_note_velocity_column (size_t i)
 {
 	string vel_str(S_("Velocity|Vel"));
 
@@ -1735,16 +1735,16 @@ MidiTrackerEditor::setup_note_velocity_column (size_t i)
 	viewcolumn_velocity->add_attribute(cellrenderer_velocity->property_foreground (), columns._velocity_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_velocity_started), i));
-	cellrenderer_velocity->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
-	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_velocity_edited));
+	cellrenderer_velocity->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::editing_note_velocity_started), i));
+	cellrenderer_velocity->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerEditor::editing_canceled));
+	cellrenderer_velocity->signal_edited().connect (sigc::mem_fun (*this, &TrackerEditor::note_velocity_edited));
 	cellrenderer_velocity->property_editable() = true;
 
 	view.append_column (*viewcolumn_velocity);
 }
 
 void
-MidiTrackerEditor::setup_note_delay_column (size_t i)
+TrackerEditor::setup_note_delay_column (size_t i)
 {
 	string delay_str(_("Delay"));
 
@@ -1757,16 +1757,16 @@ MidiTrackerEditor::setup_note_delay_column (size_t i)
 	viewcolumn_delay->add_attribute(cellrenderer_delay->property_foreground (), columns._delay_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_note_delay_started), i));
-	cellrenderer_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
-	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::note_delay_edited));
+	cellrenderer_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::editing_note_delay_started), i));
+	cellrenderer_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerEditor::editing_canceled));
+	cellrenderer_delay->signal_edited().connect (sigc::mem_fun (*this, &TrackerEditor::note_delay_edited));
 	cellrenderer_delay->property_editable() = true;
 
 	view.append_column (*viewcolumn_delay);
 }
 
 void
-MidiTrackerEditor::setup_automation_column (size_t i)
+TrackerEditor::setup_automation_column (size_t i)
 {
 	stringstream ss_automation;
 	ss_automation << "A" << i;
@@ -1780,9 +1780,9 @@ MidiTrackerEditor::setup_automation_column (size_t i)
 	viewcolumn_automation->add_attribute(cellrenderer_automation->property_foreground (), columns._automation_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_automation_started), i));
-	cellrenderer_automation->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
-	cellrenderer_automation->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::automation_edited));
+	cellrenderer_automation->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::editing_automation_started), i));
+	cellrenderer_automation->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerEditor::editing_canceled));
+	cellrenderer_automation->signal_edited().connect (sigc::mem_fun (*this, &TrackerEditor::automation_edited));
 	cellrenderer_automation->property_editable() = true;
 
 	size_t column = view.get_columns().size();
@@ -1793,7 +1793,7 @@ MidiTrackerEditor::setup_automation_column (size_t i)
 }
 
 void
-MidiTrackerEditor::setup_automation_delay_column (size_t i)
+TrackerEditor::setup_automation_delay_column (size_t i)
 {
 	stringstream ss_automation_delay;
 	ss_automation_delay << _("Delay");
@@ -1807,9 +1807,9 @@ MidiTrackerEditor::setup_automation_delay_column (size_t i)
 	viewcolumn_automation_delay->add_attribute(cellrenderer_automation_delay->property_foreground (), columns._automation_delay_foreground_color[i]);
 
 	// Link to editing methods
-	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &MidiTrackerEditor::editing_automation_delay_started), i));
-	cellrenderer_automation_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &MidiTrackerEditor::editing_canceled));
-	cellrenderer_automation_delay->signal_edited().connect (sigc::mem_fun (*this, &MidiTrackerEditor::automation_delay_edited));
+	cellrenderer_automation_delay->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::editing_automation_delay_started), i));
+	cellrenderer_automation_delay->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerEditor::editing_canceled));
+	cellrenderer_automation_delay->signal_edited().connect (sigc::mem_fun (*this, &TrackerEditor::automation_delay_edited));
 	cellrenderer_automation_delay->property_editable() = true;
 
 	size_t column = view.get_columns().size();
@@ -1818,7 +1818,7 @@ MidiTrackerEditor::setup_automation_delay_column (size_t i)
 }
 
 void
-MidiTrackerEditor::vertical_move_cursor (int steps)
+TrackerEditor::vertical_move_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
 	wrap_around_move (path, steps);
@@ -1826,7 +1826,7 @@ MidiTrackerEditor::vertical_move_cursor (int steps)
 	view.set_cursor (path, *col, true);
 }
 
-void MidiTrackerEditor::wrap_around_move (TreeModel::Path& path, int steps) const
+void TrackerEditor::wrap_around_move (TreeModel::Path& path, int steps) const
 {
 	path[0] += steps;
 	path[0] %= nrows;
@@ -1835,7 +1835,7 @@ void MidiTrackerEditor::wrap_around_move (TreeModel::Path& path, int steps) cons
 }
 
 void
-MidiTrackerEditor::horizontal_move_cursor (int steps, bool tab)
+TrackerEditor::horizontal_move_cursor (int steps, bool tab)
 {
 	// TODO support tab == true, to move from one ardour track to the next
 	int colnum = edit_colnum;
@@ -1863,12 +1863,12 @@ MidiTrackerEditor::horizontal_move_cursor (int steps, bool tab)
 }
 
 uint8_t
-MidiTrackerEditor::pitch (uint8_t semitones, int octave)
+TrackerEditor::pitch (uint8_t semitones, int octave)
 {
 	return (uint8_t)(octave + 1) * 12 + semitones;
 }
 
-bool MidiTrackerEditor::move_cursor_key_press (GdkEventKey* ev)
+bool TrackerEditor::move_cursor_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -1904,7 +1904,7 @@ bool MidiTrackerEditor::move_cursor_key_press (GdkEventKey* ev)
 }
 
 int
-MidiTrackerEditor::digit_key_press (GdkEventKey* ev)
+TrackerEditor::digit_key_press (GdkEventKey* ev)
 {
 	switch (ev->keyval) {
 	// Num keys
@@ -1944,7 +1944,7 @@ MidiTrackerEditor::digit_key_press (GdkEventKey* ev)
 }
 
 uint8_t
-MidiTrackerEditor::pitch_key (GdkEventKey* ev)
+TrackerEditor::pitch_key (GdkEventKey* ev)
 {
 	int octave = main_toolbar.octave_spinner.get_value_as_int();
 
@@ -2056,7 +2056,7 @@ MidiTrackerEditor::pitch_key (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::step_editing_note_key_press (GdkEventKey* ev)
+TrackerEditor::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2190,7 +2190,7 @@ MidiTrackerEditor::step_editing_note_key_press (GdkEventKey* ev)
 	return ret;
 }
 
-bool MidiTrackerEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum)
+bool TrackerEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum)
 {
 	play_note(pitch);
 	set_on_note (pitch, rowidx, tracknum);
@@ -2199,7 +2199,7 @@ bool MidiTrackerEditor::step_editing_set_on_note (uint8_t pitch, int rowidx, int
 	return true;
 }
 
-bool MidiTrackerEditor::step_editing_set_off_note (int rowidx, int tracknum)
+bool TrackerEditor::step_editing_set_off_note (int rowidx, int tracknum)
 {
 	set_off_note (rowidx, tracknum);
 	int steps = main_toolbar.steps_spinner.get_value_as_int();
@@ -2207,7 +2207,7 @@ bool MidiTrackerEditor::step_editing_set_off_note (int rowidx, int tracknum)
 	return true;
 }
 
-bool MidiTrackerEditor::step_editing_delete_note (int rowidx, int tracknum)
+bool TrackerEditor::step_editing_delete_note (int rowidx, int tracknum)
 {
 	delete_note (rowidx, tracknum);
 	int steps = main_toolbar.steps_spinner.get_value_as_int();
@@ -2216,7 +2216,7 @@ bool MidiTrackerEditor::step_editing_delete_note (int rowidx, int tracknum)
 }
 
 bool
-MidiTrackerEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
+TrackerEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2267,9 +2267,9 @@ MidiTrackerEditor::step_editing_note_channel_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::step_editing_set_note_channel (int digit, int rowidx, int tracknum)
+TrackerEditor::step_editing_set_note_channel (int digit, int rowidx, int tracknum)
 {
-	boost::shared_ptr<MidiTrackerEditor::NoteType> note = get_on_note(rowidx);
+	boost::shared_ptr<TrackerEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int ch = note->channel();
 		int position = main_toolbar.position_spinner.get_value_as_int();
@@ -2283,7 +2283,7 @@ MidiTrackerEditor::step_editing_set_note_channel (int digit, int rowidx, int tra
 }
 
 bool
-MidiTrackerEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
+TrackerEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2334,9 +2334,9 @@ MidiTrackerEditor::step_editing_note_velocity_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::step_editing_set_note_velocity (int digit, int rowidx, int tracknum)
+TrackerEditor::step_editing_set_note_velocity (int digit, int rowidx, int tracknum)
 {
-	boost::shared_ptr<MidiTrackerEditor::NoteType> note = get_on_note(rowidx);
+	boost::shared_ptr<TrackerEditor::NoteType> note = get_on_note(rowidx);
 	if (note) {
 		int vel = note->velocity();
 		int position = main_toolbar.position_spinner.get_value_as_int();
@@ -2349,7 +2349,7 @@ MidiTrackerEditor::step_editing_set_note_velocity (int digit, int rowidx, int tr
 }
 
 bool
-MidiTrackerEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
+TrackerEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2412,7 +2412,7 @@ MidiTrackerEditor::step_editing_note_delay_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
+TrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
 {
 	int position = main_toolbar.position_spinner.get_value_as_int();
 	int steps = main_toolbar.steps_spinner.get_value_as_int();
@@ -2438,7 +2438,7 @@ MidiTrackerEditor::step_editing_set_note_delay (int digit, int rowidx, int track
 }
 
 bool
-MidiTrackerEditor::step_editing_automation_key_press (GdkEventKey* ev)
+TrackerEditor::step_editing_automation_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2501,7 +2501,7 @@ MidiTrackerEditor::step_editing_automation_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::step_editing_set_automation (int digit, int rowidx, int tracknum)
+TrackerEditor::step_editing_set_automation (int digit, int rowidx, int tracknum)
 {
 	std::pair<double, bool> val_def = get_automation_value(rowidx, tracknum);
 	double oval = val_def.first;
@@ -2519,7 +2519,7 @@ MidiTrackerEditor::step_editing_set_automation (int digit, int rowidx, int track
 }
 
 bool
-MidiTrackerEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
+TrackerEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2582,7 +2582,7 @@ MidiTrackerEditor::step_editing_automation_delay_key_press (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::step_editing_set_automation_delay (int digit, int rowidx, int tracknum)
+TrackerEditor::step_editing_set_automation_delay (int digit, int rowidx, int tracknum)
 {
 	std::pair<int, bool> val_def = get_automation_delay (rowidx, tracknum);
 	int old_delay = val_def.first;
@@ -2602,7 +2602,7 @@ MidiTrackerEditor::step_editing_set_automation_delay (int digit, int rowidx, int
 }
 
 bool
-MidiTrackerEditor::key_press (GdkEventKey* ev)
+TrackerEditor::key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2687,7 +2687,7 @@ MidiTrackerEditor::key_press (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::key_release (GdkEventKey* ev)
+TrackerEditor::key_release (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2772,7 +2772,7 @@ MidiTrackerEditor::key_release (GdkEventKey* ev)
 }
 
 bool
-MidiTrackerEditor::button_event (GdkEventButton* ev)
+TrackerEditor::button_event (GdkEventButton* ev)
 {
 	// TODO: understand why get_path_at_pos does not work
 	// if (ev->button == 1) {
@@ -2807,14 +2807,14 @@ MidiTrackerEditor::button_event (GdkEventButton* ev)
 }
 
 bool
-MidiTrackerEditor::scroll_event (GdkEventScroll* ev)
+TrackerEditor::scroll_event (GdkEventScroll* ev)
 {
 	// TODO change values if editing is active, otherwise scroll.
 	return false;               // Silence compiler
 }
 
 void
-MidiTrackerEditor::build_pattern ()
+TrackerEditor::build_pattern ()
 {
 	mtp = new MidiTrackPattern(_session, region);
 
@@ -2822,7 +2822,7 @@ MidiTrackerEditor::build_pattern ()
 }
 
 void
-MidiTrackerEditor::update_automation_patterns ()
+TrackerEditor::update_automation_patterns ()
 {
 	// Insert automation controls in the automation patterns
 	for (Parameter2AutomationControl::const_iterator it = param2actrl.begin(); it != param2actrl.end(); ++it) {
@@ -2835,7 +2835,7 @@ MidiTrackerEditor::update_automation_patterns ()
 }
 
 void
-MidiTrackerEditor::setup_pattern ()
+TrackerEditor::setup_pattern ()
 {
 	model = ListStore::create (columns);
 	view.set_model (model);
@@ -2859,15 +2859,15 @@ MidiTrackerEditor::setup_pattern ()
 	}
 
 	// Connect to key press events
-	view.signal_key_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::key_press), false);
-	view.signal_key_release_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::key_release), false);
+	view.signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::key_press), false);
+	view.signal_key_release_event().connect (sigc::mem_fun (*this, &TrackerEditor::key_release), false);
 
 	// Connect to mouse button events
 	//
 	// Disabled for now because it doesn't work as expected
 	//
-	// view.signal_button_press_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::button_event), false);
-	// view.signal_scroll_event().connect (sigc::mem_fun (*this, &MidiTrackerEditor::scroll_event), false);
+	// view.signal_button_press_event().connect (sigc::mem_fun (*this, &TrackerEditor::button_event), false);
+	// view.signal_scroll_event().connect (sigc::mem_fun (*this, &TrackerEditor::scroll_event), false);
 
 	view.set_headers_visible (true);
 	view.set_rules_hint (true);
@@ -2879,7 +2879,7 @@ MidiTrackerEditor::setup_pattern ()
 }
 
 void
-MidiTrackerEditor::setup_toolbars ()
+TrackerEditor::setup_toolbars ()
 {
 	// TODO setup for all tracks
 	// TODO replace that by emplace_back when supports C++11
@@ -2889,7 +2889,7 @@ MidiTrackerEditor::setup_toolbars ()
 	setup_midi_track_toolbars ();
 }
 
-void MidiTrackerEditor::setup_midi_track_toolbars ()
+void TrackerEditor::setup_midi_track_toolbars ()
 {
 	// TODO setup for all tracks
 	midi_track_toolbars.front()->setup_processor_menu_and_curves ();
@@ -2897,19 +2897,19 @@ void MidiTrackerEditor::setup_midi_track_toolbars ()
 }
 
 void
-MidiTrackerEditor::setup_scroller ()
+TrackerEditor::setup_scroller ()
 {
 	scroller.add (view);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
 	scroller.show ();
 }
 
-char MidiTrackerEditor::digit_to_char(int digit, int base)
+char TrackerEditor::digit_to_char(int digit, int base)
 {
 	return num_to_string(digit, base)[0];
 }
 
-int MidiTrackerEditor::char_to_digit(char c, int base)
+int TrackerEditor::char_to_digit(char c, int base)
 {
 	std::string s;
 	s.push_back(c);
@@ -2917,7 +2917,7 @@ int MidiTrackerEditor::char_to_digit(char c, int base)
 }
 
 std::pair<int, int>
-MidiTrackerEditor::position_range (const std::string& str)
+TrackerEditor::position_range (const std::string& str)
 {
 	size_t sepos = str.find('.'); // TODO support other locals
 	int l = 0, u = 0;
@@ -2931,7 +2931,7 @@ MidiTrackerEditor::position_range (const std::string& str)
 }
 
 std::string
-MidiTrackerEditor::pad (const std::string& str, int position)
+TrackerEditor::pad (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
 	if (position < pr.first) {
@@ -2945,7 +2945,7 @@ MidiTrackerEditor::pad (const std::string& str, int position)
 	return str;
 }
 
-size_t MidiTrackerEditor::locate (const std::string& str, int position)
+size_t TrackerEditor::locate (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
 	if (pr.first <= position and position <= pr.second) {
