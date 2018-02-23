@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_tracker_note_pattern_h_
-#define __ardour_gtk2_tracker_note_pattern_h_
+#ifndef __ardour_tracker_note_pattern_h_
+#define __ardour_tracker_note_pattern_h_
 
 #include "evoral/types.hpp"
 #include "evoral/Note.hpp"
@@ -170,4 +170,4 @@ typename NoteContainer::iterator NotePattern::find_eq_id(NoteContainer& notes, N
 	return notes.end();
 }
 
-#endif /* __ardour_gtk2_tracker_note_pattern_h_ */
+#endif /* __ardour_tracker_note_pattern_h_ */

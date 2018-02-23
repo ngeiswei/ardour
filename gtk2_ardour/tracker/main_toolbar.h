@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_tracker_main_toolbar_h_
-#define __ardour_gtk2_tracker_main_toolbar_h_
+#ifndef __ardour_tracker_main_toolbar_h_
+#define __ardour_tracker_main_toolbar_h_
 
 #include <gtkmm/box.h>
 #include <gtkmm/separator.h>
@@ -32,12 +32,12 @@
 
 #include "editing.h"
 
-class MidiTrackerEditor;
+class TrackerEditor;
 
 class MainToolbar : public Gtk::HBox
 {
 public:
-	MainToolbar (MidiTrackerEditor& mte);
+	MainToolbar (TrackerEditor& mte);
 	void setup ();
 
 	/**
@@ -61,7 +61,7 @@ public:
 	 */
 	bool step_edit_press (GdkEventButton* ev);
 
-	MidiTrackerEditor& midi_tracker_editor;
+	TrackerEditor& tracker_editor;
 
 	Gtkmm2ext::ActionMap         myactions;
 	ArdourWidgets::ArdourDropdown beats_per_row_selector;
@@ -96,4 +96,4 @@ public:
 	Gtk::SpinButton              steps_spinner;
 };
 
-#endif /* __ardour_gtk2_tracker_main_toolbar_h_ */
+#endif /* __ardour_tracker_main_toolbar_h_ */

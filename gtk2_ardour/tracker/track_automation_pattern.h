@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_tracker_track_automation_pattern_h_
-#define __ardour_gtk2_tracker_track_automation_pattern_h_
+#ifndef __ardour_tracker_track_automation_pattern_h_
+#define __ardour_tracker_track_automation_pattern_h_
 
 #include "automation_pattern.h"
 
@@ -34,4 +34,4 @@ public:
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 };
 
-#endif /* __ardour_gtk2_tracker_track_automation_pattern_h_ */
+#endif /* __ardour_tracker_track_automation_pattern_h_ */
