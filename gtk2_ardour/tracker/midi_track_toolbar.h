@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_tracker_midi_track_toolbar_h_
-#define __ardour_gtk2_tracker_midi_track_toolbar_h_
+#ifndef __ardour_tracker_midi_track_toolbar_h_
+#define __ardour_tracker_midi_track_toolbar_h_
 
 #include <gtkmm/box.h>
 #include <gtkmm/separator.h>
@@ -29,7 +29,7 @@
 
 #include "midi_track_pattern.h"
 
-class MidiTrackerEditor;
+class TrackerEditor;
 
 struct ProcessorAutomationNode {
 	Evoral::Parameter                         what;
@@ -58,7 +58,7 @@ class MidiTrackToolbar : public Gtk::HBox
 {
 public:
 	// TODO: add midi_track
-	MidiTrackToolbar (MidiTrackerEditor& mte, MidiTrackPattern& mtp);
+	MidiTrackToolbar (TrackerEditor& mte, MidiTrackPattern& mtp);
 	~MidiTrackToolbar ();
 	void setup ();
 
@@ -121,7 +121,7 @@ public:
 	void update_automation_button();
 	void update_remove_note_column_button ();
 
-	MidiTrackerEditor& midi_tracker_editor;
+	TrackerEditor& tracker_editor;
 	MidiTrackPattern& midi_track_pattern;
 
 	ArdourWidgets::ArdourButton  visible_note_button;
@@ -160,4 +160,4 @@ public:
 	Gtk::CheckMenuItem* pan_automation_item;
 };
 
-#endif /* __ardour_gtk2_tracker_midi_track_toolbar_h_ */
+#endif /* __ardour_tracker_midi_track_toolbar_h_ */

@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_tracker_midi_tracker_editor_h_
-#define __ardour_gtk2_tracker_midi_tracker_editor_h_
+#ifndef __ardour_tracker_tracker_editor_h_
+#define __ardour_tracker_tracker_editor_h_
 
 #include <cmath>
 
@@ -73,10 +73,10 @@ class AutomationTimeAxisView;
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
-// Maximum number of note columns in the midi tracker editor
+// Maximum number of note columns in the tracker editor
 #define MAX_NUMBER_OF_NOTE_TRACKS 64
 
-// Maximum number of automation columns in the midi tracker editor
+// Maximum number of automation columns in the tracker editor
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS 64
 
 // Test if element is in container
@@ -93,13 +93,13 @@ bool is_key_in(const typename M::key_type& key, const M& map)
 	return map.find(key) != map.end();
 }
 
-class MidiTrackerEditor : public ArdourWindow
+class TrackerEditor : public ArdourWindow
 {
-  public:
+public:
 	typedef Evoral::Note<Temporal::Beats> NoteType;
 
-	MidiTrackerEditor(ARDOUR::Session*, RegionSelection& rs);
-	~MidiTrackerEditor();
+	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
+	~TrackerEditor();
 
 private:
 
@@ -185,8 +185,8 @@ private:
 
 	typedef boost::shared_ptr<NoteType> NoteTypePtr;
 
-	struct MidiTrackerModelColumns : public Gtk::TreeModel::ColumnRecord {
-		MidiTrackerModelColumns()
+	struct TrackerGridModelColumns : public Gtk::TreeModel::ColumnRecord {
+		TrackerGridModelColumns()
 		{
 			// The background color differs when the row is on beats and
 			// bars. This is to keep track of it.
@@ -248,7 +248,7 @@ private:
 public:
 	boost::shared_ptr<ARDOUR::Route> route;
 private:
-	MidiTrackerModelColumns      columns;
+	TrackerGridModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 	uint32_t                     nrows;
 	Gtk::TreeView                view;
@@ -542,4 +542,4 @@ private:
 	}
 };
 
-#endif /* __ardour_gtk2_tracker_midi_tracker_editor_h_ */
+#endif /* __ardour_tracker_tracker_editor_h_ */

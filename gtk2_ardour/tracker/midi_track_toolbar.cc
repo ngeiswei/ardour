@@ -17,7 +17,7 @@
 */
 
 #include "midi_track_toolbar.h"
-#include "midi_tracker_editor.h"
+#include "tracker_editor.h"
 
 #include "widgets/tooltips.h"
 #include "ardour/midi_track.h"
@@ -34,8 +34,8 @@ using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace ARDOUR;
 
-MidiTrackToolbar::MidiTrackToolbar (MidiTrackerEditor& mte, MidiTrackPattern& mtp)
-	: midi_tracker_editor (mte)
+MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp)
+	: tracker_editor (te)
 	, midi_track_pattern (mtp)
 	, visible_note (true)
 	, visible_channel (false)
@@ -142,7 +142,7 @@ MidiTrackToolbar::visible_note_press(GdkEventButton* ev)
 	}
 
 	visible_note = !visible_note;
-	midi_tracker_editor.redisplay_visible_note();
+	tracker_editor.redisplay_visible_note();
 	return false;
 }
 
@@ -155,7 +155,7 @@ MidiTrackToolbar::visible_channel_press(GdkEventButton* ev)
 	}
 
 	visible_channel = !visible_channel;
-	midi_tracker_editor.redisplay_visible_channel();
+	tracker_editor.redisplay_visible_channel();
 	return false;
 }
 
@@ -168,7 +168,7 @@ MidiTrackToolbar::visible_velocity_press(GdkEventButton* ev)
 	}
 
 	visible_velocity = !visible_velocity;
-	midi_tracker_editor.redisplay_visible_velocity();
+	tracker_editor.redisplay_visible_velocity();
 	return false;
 }
 
@@ -181,7 +181,7 @@ MidiTrackToolbar::visible_delay_press(GdkEventButton* ev)
 	}
 
 	visible_delay = !visible_delay;
-	midi_tracker_editor.redisplay_visible_delay();
+	tracker_editor.redisplay_visible_delay();
 	return false;
 }
 
@@ -201,7 +201,7 @@ MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
 	}
 
 	midi_track_pattern.np.dec_ntracks ();
-	midi_tracker_editor.redisplay_model ();
+	tracker_editor.redisplay_model ();
 	update_remove_note_column_button ();
 
 	return false;
@@ -216,7 +216,7 @@ MidiTrackToolbar::add_note_column_press (GdkEventButton* ev)
 	}
 
 	midi_track_pattern.np.inc_ntracks ();
-	midi_tracker_editor.redisplay_model ();
+	tracker_editor.redisplay_model ();
 	update_remove_note_column_button ();
 
 	return false;
@@ -255,8 +255,8 @@ MidiTrackToolbar::build_automation_action_menu ()
 
 	// TODO could be optimized, no need to rebuild everything
 	setup_processor_menu_and_curves ();
-	midi_tracker_editor.build_param2actrl ();
-	midi_tracker_editor.update_automation_patterns ();
+	tracker_editor.build_param2actrl ();
+	tracker_editor.update_automation_patterns ();
 
 	if (!subplugin_menu.items().empty()) {
 		items.push_back (SeparatorElem ());
@@ -267,27 +267,27 @@ MidiTrackToolbar::build_automation_action_menu ()
 	/* Add any route automation */
 
 	if (true) {
-		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_gain_column_visibility)));
+		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_gain_column_visibility)));
 		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		gain_automation_item->set_active (midi_tracker_editor.is_gain_visible());
+		gain_automation_item->set_active (tracker_editor.is_gain_visible());
 	}
 
 	if (false /*trim_track*/ /* TODO: support audio track */) {
-		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_trim_column_visibility)));
+		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_trim_column_visibility)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		trim_automation_item->set_active (false);
 	}
 
 	if (true /*mute_track*/) {
-		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_mute_column_visibility)));
+		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_mute_column_visibility)));
 		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		mute_automation_item->set_active (midi_tracker_editor.is_mute_visible());
+		mute_automation_item->set_active (tracker_editor.is_mute_visible());
 	}
 
 	if (true /*pan_tracks*/) {
-		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_pan_columns_visibility)));
+		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_pan_columns_visibility)));
 		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		pan_automation_item->set_active (midi_tracker_editor.is_pan_visible());
+		pan_automation_item->set_active (tracker_editor.is_pan_visible());
 	}
 
 	/* Add any midi automation */
@@ -296,7 +296,7 @@ MidiTrackToolbar::build_automation_action_menu ()
 
 	MenuList& automation_items = automation_action_menu->items();
 
-	uint16_t selected_channels = midi_tracker_editor.midi_track()->get_playback_channel_mask();
+	uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
 
 	if (selected_channels !=  0) {
 
@@ -352,7 +352,7 @@ MidiTrackToolbar::build_controller_menu ()
 	   combination covering the currently selected channels for this track
 	*/
 
-	const uint16_t selected_channels = midi_tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
 
 	/* count the number of selected channels because we will build a different menu
 	   structure if there is more than 1 selected.
@@ -368,7 +368,7 @@ MidiTrackToolbar::build_controller_menu ()
 	}
 
 	using namespace MIDI::Name;
-	boost::shared_ptr<MasterDeviceNames> device_names = midi_tracker_editor.get_device_names();
+	boost::shared_ptr<MasterDeviceNames> device_names = tracker_editor.get_device_names();
 
 	if (device_names && !device_names->controls().empty()) {
 		/* Controllers names available in midnam file, generate fancy menu */
@@ -450,7 +450,7 @@ MidiTrackToolbar::setup_processor_menu_and_curves ()
 {
 	_subplugin_menu_map.clear ();
 	subplugin_menu.items().clear ();
-	midi_tracker_editor.route->foreach_processor (sigc::mem_fun (*this, &MidiTrackToolbar::add_processor_to_subplugin_menu));
+	tracker_editor.route->foreach_processor (sigc::mem_fun (*this, &MidiTrackToolbar::add_processor_to_subplugin_menu));
 }
 
 void
@@ -557,15 +557,15 @@ MidiTrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Pro
 	const bool showit = pan->menu_item->get_active();
 
 	if (pan->column == 0)
-		midi_tracker_editor.add_processor_automation_column (rai->processor, pan->what);
+		tracker_editor.add_processor_automation_column (rai->processor, pan->what);
 
 	if (showit)
-		midi_tracker_editor.visible_automation_columns.insert (pan->column);
+		tracker_editor.visible_automation_columns.insert (pan->column);
 	else
-		midi_tracker_editor.visible_automation_columns.erase (pan->column);
+		tracker_editor.visible_automation_columns.erase (pan->column);
 
 	/* now trigger a redisplay */
-	midi_tracker_editor.redisplay_model ();
+	tracker_editor.redisplay_model ();
 }
 
 void
@@ -580,7 +580,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 	   structure if there is more than 1 selected.
 	 */
 
-	const uint16_t selected_channels = midi_tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
 	int chn_cnt = 0;
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -603,11 +603,11 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		chn_items.push_back (
 			MenuElem (_("Hide all channels"),
-			          sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
 			                      false, param_without_channel)));
 		chn_items.push_back (
 			MenuElem (_("Show all channels"),
-			          sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
 			                      true, param_without_channel)));
 
 		for (uint8_t chn = 0; chn < 16; chn++) {
@@ -618,10 +618,10 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-					               sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
-				bool visible = midi_tracker_editor.is_automation_visible(fully_qualified_param);
+				bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
 
 				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
@@ -643,10 +643,10 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				items.push_back (
 					CheckMenuElem (label,
-					               sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
-				bool visible = midi_tracker_editor.is_automation_visible(fully_qualified_param);
+				bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
 
 				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&items.back());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
@@ -667,7 +667,7 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 {
 	using namespace Menu_Helpers;
 
-	const uint16_t selected_channels = midi_tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
 	for (uint8_t chn = 0; chn < 16; chn++) {
 		if (selected_channels & (0x0001 << chn)) {
 
@@ -676,11 +676,11 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 				CheckMenuElem (
 					string_compose ("<b>%1</b>: %2 [%3]", ctl, name, int (chn + 1)),
 					sigc::bind (
-						sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_automation_column_visibility),
+						sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
 						fully_qualified_param)));
 			dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
 
-			bool visible = midi_tracker_editor.is_automation_visible(fully_qualified_param);
+			bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
 
 			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&ctl_items.back());
 			_controller_menu_map[fully_qualified_param] = cmi;
@@ -700,7 +700,7 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 {
 	using namespace Menu_Helpers;
 
-	const uint16_t selected_channels = midi_tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
 
 	Menu* chn_menu = manage (new Menu);
 	MenuList& chn_items (chn_menu->items());
@@ -710,11 +710,11 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 	Evoral::Parameter param_without_channel (MidiCCAutomation, 0, ctl);
 	chn_items.push_back (
 		MenuElem (_("Hide all channels"),
-		          sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
 		                      false, param_without_channel)));
 	chn_items.push_back (
 		MenuElem (_("Show all channels"),
-		          sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
 		                      true, param_without_channel)));
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -725,10 +725,10 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
 			chn_items.push_back (
 				CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-				               sigc::bind (sigc::mem_fun (midi_tracker_editor, &MidiTrackerEditor::update_automation_column_visibility),
+				               sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
 				                           fully_qualified_param)));
 
-			bool visible = midi_tracker_editor.is_automation_visible(fully_qualified_param);
+			bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
 
 			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
 			_controller_menu_map[fully_qualified_param] = cmi;
@@ -784,7 +784,7 @@ MidiTrackToolbar::show_all_automation ()
 	show_existing_midi_automations ();
 	show_all_processor_automations ();
 
-	midi_tracker_editor.redisplay_model ();
+	tracker_editor.redisplay_model ();
 }
 
 void
@@ -794,7 +794,7 @@ MidiTrackToolbar::show_existing_automation ()
 	show_existing_midi_automations ();
 	show_existing_processor_automations ();
 
-	midi_tracker_editor.redisplay_model ();
+	tracker_editor.redisplay_model ();
 }
 
 void
@@ -804,7 +804,7 @@ MidiTrackToolbar::hide_all_automation ()
 	hide_midi_automations ();
 	hide_processor_automations ();
 
-	midi_tracker_editor.redisplay_model ();
+	tracker_editor.redisplay_model ();
 }
 
 void
@@ -812,41 +812,41 @@ MidiTrackToolbar::show_all_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (true);
-	midi_tracker_editor.update_gain_column_visibility ();
+	tracker_editor.update_gain_column_visibility ();
 
 	// Mute
 	mute_automation_item->set_active (true);
-	midi_tracker_editor.update_mute_column_visibility ();
+	tracker_editor.update_mute_column_visibility ();
 
 	// Pan
 	pan_automation_item->set_active (true);
-	midi_tracker_editor.update_pan_columns_visibility ();
+	tracker_editor.update_pan_columns_visibility ();
 }
 
 void
 MidiTrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = midi_tracker_editor.param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
+	bool gain_visible = tracker_editor.param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
 	gain_automation_item->set_active (gain_visible);
-	midi_tracker_editor.update_gain_column_visibility ();
+	tracker_editor.update_gain_column_visibility ();
 
 	// Mute
-	bool mute_visible = midi_tracker_editor.param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
+	bool mute_visible = tracker_editor.param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
 	mute_automation_item->set_active (mute_visible);
-	midi_tracker_editor.update_mute_column_visibility ();
+	tracker_editor.update_mute_column_visibility ();
 
 	// Pan
 	bool pan_visible = false;
-	std::set<Evoral::Parameter> const & pan_params = midi_tracker_editor.route->pannable()->what_can_be_automated ();
+	std::set<Evoral::Parameter> const & pan_params = tracker_editor.route->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		if (midi_tracker_editor.param2actrl[*p]->list()->size() > 0) {
+		if (tracker_editor.param2actrl[*p]->list()->size() > 0) {
 			pan_visible = true;
 			break;
 		}
 	}
 	pan_automation_item->set_active (pan_visible);
-	midi_tracker_editor.update_pan_columns_visibility ();
+	tracker_editor.update_pan_columns_visibility ();
 }
 
 void
@@ -854,31 +854,31 @@ MidiTrackToolbar::hide_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (false);
-	midi_tracker_editor.update_gain_column_visibility ();
+	tracker_editor.update_gain_column_visibility ();
 
 	// Mute
 	mute_automation_item->set_active (false);
-	midi_tracker_editor.update_mute_column_visibility ();
+	tracker_editor.update_mute_column_visibility ();
 
 	// Pan
 	pan_automation_item->set_active (false);
-	midi_tracker_editor.update_pan_columns_visibility ();
+	tracker_editor.update_pan_columns_visibility ();
 }
 
 void
 MidiTrackToolbar::show_existing_midi_automations ()
 {
-	const std::set<Evoral::Parameter> params = midi_tracker_editor.midi_track()->midi_playlist()->contained_automation();
+	const std::set<Evoral::Parameter> params = tracker_editor.midi_track()->midi_playlist()->contained_automation();
 	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-		MidiTrackerEditor::ColParamBimap::right_const_iterator it = midi_tracker_editor.col2param.right.find(*p);
-		size_t column = (it == midi_tracker_editor.col2param.right.end()) || (it->second == 0) ?
-			midi_tracker_editor.add_midi_automation_column (*p) : it->second;
+		TrackerEditor::ColParamBimap::right_const_iterator it = tracker_editor.col2param.right.find(*p);
+		size_t column = (it == tracker_editor.col2param.right.end()) || (it->second == 0) ?
+			tracker_editor.add_midi_automation_column (*p) : it->second;
 
 		// Still no column available, skip
 		if (column == 0)
 			continue;
 
-		midi_tracker_editor.visible_automation_columns.insert (column);
+		tracker_editor.visible_automation_columns.insert (column);
 	}
 }
 
@@ -886,11 +886,11 @@ void
 MidiTrackToolbar::hide_midi_automations ()
 {
 	std::set<size_t> to_remove;
-	for (std::set<size_t>::iterator it = midi_tracker_editor.visible_automation_columns.begin();
-	     it != midi_tracker_editor.visible_automation_columns.end(); it++) {
+	for (std::set<size_t>::iterator it = tracker_editor.visible_automation_columns.begin();
+	     it != tracker_editor.visible_automation_columns.end(); it++) {
 		size_t column = *it;
-		MidiTrackerEditor::ColParamBimap::left_const_iterator c2p_it = midi_tracker_editor.col2param.left.find(column);
-		if (c2p_it == midi_tracker_editor.col2param.left.end())
+		TrackerEditor::ColParamBimap::left_const_iterator c2p_it = tracker_editor.col2param.left.find(column);
+		if (c2p_it == tracker_editor.col2param.left.end())
 			continue;
 
 		Evoral::Parameter param = c2p_it->second;
@@ -901,7 +901,7 @@ MidiTrackToolbar::hide_midi_automations ()
 	}
 	for (std::set<size_t>::iterator it = to_remove.begin();
 	     it != to_remove.end(); it++)
-		midi_tracker_editor.visible_automation_columns.erase (*it);
+		tracker_editor.visible_automation_columns.erase (*it);
 }
 
 void
@@ -912,13 +912,13 @@ MidiTrackToolbar::show_all_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
 			if (column == 0)
-				midi_tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
+				tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
 
 			// Still no column available, skip
 			if (column == 0)
 				continue;
 
-			midi_tracker_editor.visible_automation_columns.insert (column);
+			tracker_editor.visible_automation_columns.insert (column);
 
 			(*ii)->menu_item->set_active (true);
 		}
@@ -932,12 +932,12 @@ MidiTrackToolbar::show_existing_processor_automations ()
 	     i != processor_automation.end(); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
-			bool exist = midi_tracker_editor.param2actrl[(*ii)->what]->list()->size() > 0;
+			bool exist = tracker_editor.param2actrl[(*ii)->what]->list()->size() > 0;
 
 			// Create automation column if necessary
 			if (exist) {
 				if (column == 0)
-					midi_tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
+					tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
 			}
 
 			// Still no column available, skip
@@ -945,9 +945,9 @@ MidiTrackToolbar::show_existing_processor_automations ()
 				continue;
 
 			if (exist)
-				midi_tracker_editor.visible_automation_columns.insert (column);
+				tracker_editor.visible_automation_columns.insert (column);
 			else
-				midi_tracker_editor.visible_automation_columns.erase (column);
+				tracker_editor.visible_automation_columns.erase (column);
 
 			(*ii)->menu_item->set_active (exist);
 		}
@@ -962,7 +962,7 @@ MidiTrackToolbar::hide_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t column = (*ii)->column;
 			if (column != 0) {
-				midi_tracker_editor.visible_automation_columns.erase (column);
+				tracker_editor.visible_automation_columns.erase (column);
 				(*ii)->menu_item->set_active (false);
 			}
 		}
