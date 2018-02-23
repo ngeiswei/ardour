@@ -63,7 +63,7 @@ class AutomationTimeAxisView;
 class AutomationRegionView;
 class MidiCutBuffer;
 class MidiListEditor;
-class MidiTrackerEditor;
+class TrackerEditor;
 class EditNoteDialog;
 class PatchChange;
 class ItemCounts;
@@ -523,7 +523,7 @@ public:
 	void update_ghost_note (double, double, uint32_t state);
 
 	MidiListEditor* _list_editor;
-	MidiTrackerEditor* _tracker_editor;
+	TrackerEditor* _tracker_editor;
 	bool _no_sound_notes;
 
 	void snap_changed ();

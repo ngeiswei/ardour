@@ -16,8 +16,8 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_gtk2_tracker_track_pattern_h_
-#define __ardour_gtk2_tracker_track_pattern_h_
+#ifndef __ardour_tracker_track_pattern_h_
+#define __ardour_tracker_track_pattern_h_
 
 #include "note_pattern.h"
 #include "region_automation_pattern.h"
@@ -38,9 +38,9 @@ public:
 	RegionAutomationPattern rap;
 	TrackAutomationPattern tap;
 
-	// TODO attempt to move MidiTrackerEditor::param2actrl + its ctor here
-	// TODO attempt to move MidiTrackerEditor::update_automation_patterns here
-	// TODO attempt to move MidiTrackerEditor::get_automation_pattern here
+	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
+	// TODO attempt to move TrackerEditor::update_automation_patterns here
+	// TODO attempt to move TrackerEditor::get_automation_pattern here
 	// TODO attempt to move that sort of code here:
 	// int delay_ticks = is_region_automation (param) ?
 	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
@@ -58,4 +58,4 @@ public:
 	void update();
 };
 
-#endif /* __ardour_gtk2_tracker_track_pattern_h_ */
+#endif /* __ardour_tracker_track_pattern_h_ */
