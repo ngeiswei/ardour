@@ -17,7 +17,7 @@
 */
 
 #include "main_toolbar.h"
-#include "midi_tracker_editor.h"
+#include "tracker_editor.h"
 
 #include "actions.h"
 
@@ -56,8 +56,8 @@ static const gchar *_beats_per_row_strings[] = {
 	0
 };
 
-MainToolbar::MainToolbar (MidiTrackerEditor& mte)
-	: midi_tracker_editor (mte)
+MainToolbar::MainToolbar (TrackerEditor& te)
+	: tracker_editor (te)
 	, myactions (X_("Tracking"))
 	, beats_per_row_strings (I18N (_beats_per_row_strings))
 	, step_edit (false)
@@ -378,8 +378,8 @@ MainToolbar::set_beats_per_row_to (SnapType st)
 		break;
 	}
 
-	// TODO: alternatively send signal to MidiTrackerEditor
-	midi_tracker_editor.redisplay_model ();
+	// TODO: alternatively send signal to TrackerEditor
+	tracker_editor.redisplay_model ();
 }
 
 bool

@@ -1960,7 +1960,7 @@ Editor::register_region_actions ()
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "show-region-list-editor", _("List Editor..."), sigc::mem_fun (*this, &Editor::show_midi_list_editor));
 
 	/* Open the tracker editor dialogue for the selected regions */
-	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "show-region-tracker-editor", _("Tracker Editor..."), sigc::mem_fun (*this, &Editor::show_midi_tracker_editor));
+	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "show-region-tracker-editor", _("Tracker Editor..."), sigc::mem_fun (*this, &Editor::show_tracker_editor));
 
 	/* Open the region properties dialogue for the selected regions */
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "show-region-properties", _("Properties..."), sigc::mem_fun (*this, &Editor::show_region_properties));

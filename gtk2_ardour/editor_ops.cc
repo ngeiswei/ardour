@@ -128,7 +128,7 @@
 #include "utils.h"
 #include "vca_time_axis.h"
 
-#include "tracker/midi_tracker_editor.h"
+#include "tracker/tracker_editor.h"
 
 #include "pbd/i18n.h"
 
@@ -3049,13 +3049,13 @@ Editor::show_midi_list_editor ()
 	selection->foreach_midi_regionview (&MidiRegionView::show_list_editor);
 }
 
-/** Show the midi tracker editor for the selected MIDI regions */
+/** Show the tracker editor for the selected MIDI regions */
 void
-Editor::show_midi_tracker_editor ()
+Editor::show_tracker_editor ()
 {
 	if (_session) {
 		RegionSelection rs = get_regions_from_selection_and_entered ();
-		MidiTrackerEditor* tracker_editor = new MidiTrackerEditor (_session, rs);
+		TrackerEditor* tracker_editor = new TrackerEditor (_session, rs);
 		tracker_editor->present ();
 	}
 }
