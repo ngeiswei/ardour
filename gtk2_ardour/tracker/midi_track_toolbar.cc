@@ -18,6 +18,8 @@
 
 #include "midi_track_toolbar.h"
 #include "tracker_editor.h"
+#include "tracker_grid.h"
+#include "tracker_util.h"
 
 #include "widgets/tooltips.h"
 #include "ardour/midi_track.h"
@@ -37,6 +39,7 @@ using namespace ARDOUR;
 MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp)
 	: tracker_editor (te)
 	, midi_track_pattern (mtp)
+	, grid (te.grid)
 	, visible_note (true)
 	, visible_channel (false)
 	, visible_velocity (false)
@@ -142,7 +145,7 @@ MidiTrackToolbar::visible_note_press(GdkEventButton* ev)
 	}
 
 	visible_note = !visible_note;
-	tracker_editor.redisplay_visible_note();
+	grid.redisplay_visible_note();
 	return false;
 }
 
@@ -155,7 +158,7 @@ MidiTrackToolbar::visible_channel_press(GdkEventButton* ev)
 	}
 
 	visible_channel = !visible_channel;
-	tracker_editor.redisplay_visible_channel();
+	grid.redisplay_visible_channel();
 	return false;
 }
 
@@ -168,7 +171,7 @@ MidiTrackToolbar::visible_velocity_press(GdkEventButton* ev)
 	}
 
 	visible_velocity = !visible_velocity;
-	tracker_editor.redisplay_visible_velocity();
+	grid.redisplay_visible_velocity();
 	return false;
 }
 
@@ -181,7 +184,7 @@ MidiTrackToolbar::visible_delay_press(GdkEventButton* ev)
 	}
 
 	visible_delay = !visible_delay;
-	tracker_editor.redisplay_visible_delay();
+	grid.redisplay_visible_delay();
 	return false;
 }
 
@@ -201,7 +204,7 @@ MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
 	}
 
 	midi_track_pattern.np.dec_ntracks ();
-	tracker_editor.redisplay_model ();
+	grid.redisplay_model ();
 	update_remove_note_column_button ();
 
 	return false;
@@ -216,7 +219,7 @@ MidiTrackToolbar::add_note_column_press (GdkEventButton* ev)
 	}
 
 	midi_track_pattern.np.inc_ntracks ();
-	tracker_editor.redisplay_model ();
+	grid.redisplay_model ();
 	update_remove_note_column_button ();
 
 	return false;
@@ -267,27 +270,27 @@ MidiTrackToolbar::build_automation_action_menu ()
 	/* Add any route automation */
 
 	if (true) {
-		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_gain_column_visibility)));
+		items.push_back (CheckMenuElem (_("Fader"), sigc::mem_fun (grid, &TrackerGrid::update_gain_column_visibility)));
 		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		gain_automation_item->set_active (tracker_editor.is_gain_visible());
+		gain_automation_item->set_active (grid.is_gain_visible());
 	}
 
 	if (false /*trim_track*/ /* TODO: support audio track */) {
-		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_trim_column_visibility)));
+		items.push_back (CheckMenuElem (_("Trim"), sigc::mem_fun (grid, &TrackerGrid::update_trim_column_visibility)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		trim_automation_item->set_active (false);
 	}
 
 	if (true /*mute_track*/) {
-		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_mute_column_visibility)));
+		items.push_back (CheckMenuElem (_("Mute"), sigc::mem_fun (grid, &TrackerGrid::update_mute_column_visibility)));
 		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		mute_automation_item->set_active (tracker_editor.is_mute_visible());
+		mute_automation_item->set_active (grid.is_mute_visible());
 	}
 
 	if (true /*pan_tracks*/) {
-		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (tracker_editor, &TrackerEditor::update_pan_columns_visibility)));
+		items.push_back (CheckMenuElem (_("Pan"), sigc::mem_fun (grid, &TrackerGrid::update_pan_columns_visibility)));
 		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		pan_automation_item->set_active (tracker_editor.is_pan_visible());
+		pan_automation_item->set_active (grid.is_pan_visible());
 	}
 
 	/* Add any midi automation */
@@ -523,7 +526,7 @@ MidiTrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proce
 
 		_subplugin_menu_map[*i] = mitem;
 
-		if (is_in(*i, has_visible_automation)) {
+		if (TrackerUtil::is_in(*i, has_visible_automation)) {
 			mitem->set_active(true);
 		}
 
@@ -557,15 +560,15 @@ MidiTrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Pro
 	const bool showit = pan->menu_item->get_active();
 
 	if (pan->column == 0)
-		tracker_editor.add_processor_automation_column (rai->processor, pan->what);
+		grid.add_processor_automation_column (rai->processor, pan->what);
 
 	if (showit)
-		tracker_editor.visible_automation_columns.insert (pan->column);
+		grid.visible_automation_columns.insert (pan->column);
 	else
-		tracker_editor.visible_automation_columns.erase (pan->column);
+		grid.visible_automation_columns.erase (pan->column);
 
 	/* now trigger a redisplay */
-	tracker_editor.redisplay_model ();
+	grid.redisplay_model ();
 }
 
 void
@@ -603,11 +606,11 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		chn_items.push_back (
 			MenuElem (_("Hide all channels"),
-			          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
 			                      false, param_without_channel)));
 		chn_items.push_back (
 			MenuElem (_("Show all channels"),
-			          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
+			          sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
 			                      true, param_without_channel)));
 
 		for (uint8_t chn = 0; chn < 16; chn++) {
@@ -618,10 +621,10 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-					               sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
-				bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
+				bool visible = grid.is_automation_visible(fully_qualified_param);
 
 				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
@@ -643,10 +646,10 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				items.push_back (
 					CheckMenuElem (label,
-					               sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
 					                           fully_qualified_param)));
 
-				bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
+				bool visible = grid.is_automation_visible(fully_qualified_param);
 
 				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&items.back());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
@@ -676,11 +679,11 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 				CheckMenuElem (
 					string_compose ("<b>%1</b>: %2 [%3]", ctl, name, int (chn + 1)),
 					sigc::bind (
-						sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
+						sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
 						fully_qualified_param)));
 			dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
 
-			bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
+			bool visible = grid.is_automation_visible(fully_qualified_param);
 
 			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&ctl_items.back());
 			_controller_menu_map[fully_qualified_param] = cmi;
@@ -710,11 +713,11 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 	Evoral::Parameter param_without_channel (MidiCCAutomation, 0, ctl);
 	chn_items.push_back (
 		MenuElem (_("Hide all channels"),
-		          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
 		                      false, param_without_channel)));
 	chn_items.push_back (
 		MenuElem (_("Show all channels"),
-		          sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::change_all_channel_tracks_visibility),
+		          sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
 		                      true, param_without_channel)));
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -725,10 +728,10 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
 			chn_items.push_back (
 				CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-				               sigc::bind (sigc::mem_fun (tracker_editor, &TrackerEditor::update_automation_column_visibility),
+				               sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
 				                           fully_qualified_param)));
 
-			bool visible = tracker_editor.is_automation_visible(fully_qualified_param);
+			bool visible = grid.is_automation_visible(fully_qualified_param);
 
 			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
 			_controller_menu_map[fully_qualified_param] = cmi;
@@ -784,7 +787,7 @@ MidiTrackToolbar::show_all_automation ()
 	show_existing_midi_automations ();
 	show_all_processor_automations ();
 
-	tracker_editor.redisplay_model ();
+	grid.redisplay_model ();
 }
 
 void
@@ -794,7 +797,7 @@ MidiTrackToolbar::show_existing_automation ()
 	show_existing_midi_automations ();
 	show_existing_processor_automations ();
 
-	tracker_editor.redisplay_model ();
+	grid.redisplay_model ();
 }
 
 void
@@ -804,7 +807,7 @@ MidiTrackToolbar::hide_all_automation ()
 	hide_midi_automations ();
 	hide_processor_automations ();
 
-	tracker_editor.redisplay_model ();
+	grid.redisplay_model ();
 }
 
 void
@@ -812,15 +815,15 @@ MidiTrackToolbar::show_all_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (true);
-	tracker_editor.update_gain_column_visibility ();
+	grid.update_gain_column_visibility ();
 
 	// Mute
 	mute_automation_item->set_active (true);
-	tracker_editor.update_mute_column_visibility ();
+	grid.update_mute_column_visibility ();
 
 	// Pan
 	pan_automation_item->set_active (true);
-	tracker_editor.update_pan_columns_visibility ();
+	grid.update_pan_columns_visibility ();
 }
 
 void
@@ -829,12 +832,12 @@ MidiTrackToolbar::show_existing_main_automations ()
 	// Gain
 	bool gain_visible = tracker_editor.param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
 	gain_automation_item->set_active (gain_visible);
-	tracker_editor.update_gain_column_visibility ();
+	grid.update_gain_column_visibility ();
 
 	// Mute
 	bool mute_visible = tracker_editor.param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
 	mute_automation_item->set_active (mute_visible);
-	tracker_editor.update_mute_column_visibility ();
+	grid.update_mute_column_visibility ();
 
 	// Pan
 	bool pan_visible = false;
@@ -846,7 +849,7 @@ MidiTrackToolbar::show_existing_main_automations ()
 		}
 	}
 	pan_automation_item->set_active (pan_visible);
-	tracker_editor.update_pan_columns_visibility ();
+	grid.update_pan_columns_visibility ();
 }
 
 void
@@ -854,15 +857,15 @@ MidiTrackToolbar::hide_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (false);
-	tracker_editor.update_gain_column_visibility ();
+	grid.update_gain_column_visibility ();
 
 	// Mute
 	mute_automation_item->set_active (false);
-	tracker_editor.update_mute_column_visibility ();
+	grid.update_mute_column_visibility ();
 
 	// Pan
 	pan_automation_item->set_active (false);
-	tracker_editor.update_pan_columns_visibility ();
+	grid.update_pan_columns_visibility ();
 }
 
 void
@@ -870,15 +873,15 @@ MidiTrackToolbar::show_existing_midi_automations ()
 {
 	const std::set<Evoral::Parameter> params = tracker_editor.midi_track()->midi_playlist()->contained_automation();
 	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-		TrackerEditor::ColParamBimap::right_const_iterator it = tracker_editor.col2param.right.find(*p);
-		size_t column = (it == tracker_editor.col2param.right.end()) || (it->second == 0) ?
-			tracker_editor.add_midi_automation_column (*p) : it->second;
+		TrackerGrid::ColParamBimap::right_const_iterator it = grid.col2param.right.find(*p);
+		size_t column = (it == grid.col2param.right.end()) || (it->second == 0) ?
+			grid.add_midi_automation_column (*p) : it->second;
 
 		// Still no column available, skip
 		if (column == 0)
 			continue;
 
-		tracker_editor.visible_automation_columns.insert (column);
+		grid.visible_automation_columns.insert (column);
 	}
 }
 
@@ -886,11 +889,11 @@ void
 MidiTrackToolbar::hide_midi_automations ()
 {
 	std::set<size_t> to_remove;
-	for (std::set<size_t>::iterator it = tracker_editor.visible_automation_columns.begin();
-	     it != tracker_editor.visible_automation_columns.end(); it++) {
+	for (std::set<size_t>::iterator it = grid.visible_automation_columns.begin();
+	     it != grid.visible_automation_columns.end(); it++) {
 		size_t column = *it;
-		TrackerEditor::ColParamBimap::left_const_iterator c2p_it = tracker_editor.col2param.left.find(column);
-		if (c2p_it == tracker_editor.col2param.left.end())
+		TrackerGrid::ColParamBimap::left_const_iterator c2p_it = grid.col2param.left.find(column);
+		if (c2p_it == grid.col2param.left.end())
 			continue;
 
 		Evoral::Parameter param = c2p_it->second;
@@ -901,7 +904,7 @@ MidiTrackToolbar::hide_midi_automations ()
 	}
 	for (std::set<size_t>::iterator it = to_remove.begin();
 	     it != to_remove.end(); it++)
-		tracker_editor.visible_automation_columns.erase (*it);
+		grid.visible_automation_columns.erase (*it);
 }
 
 void
@@ -912,13 +915,13 @@ MidiTrackToolbar::show_all_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
 			if (column == 0)
-				tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
+				grid.add_processor_automation_column ((*i)->processor, (*ii)->what);
 
 			// Still no column available, skip
 			if (column == 0)
 				continue;
 
-			tracker_editor.visible_automation_columns.insert (column);
+			grid.visible_automation_columns.insert (column);
 
 			(*ii)->menu_item->set_active (true);
 		}
@@ -937,7 +940,7 @@ MidiTrackToolbar::show_existing_processor_automations ()
 			// Create automation column if necessary
 			if (exist) {
 				if (column == 0)
-					tracker_editor.add_processor_automation_column ((*i)->processor, (*ii)->what);
+					grid.add_processor_automation_column ((*i)->processor, (*ii)->what);
 			}
 
 			// Still no column available, skip
@@ -945,9 +948,9 @@ MidiTrackToolbar::show_existing_processor_automations ()
 				continue;
 
 			if (exist)
-				tracker_editor.visible_automation_columns.insert (column);
+				grid.visible_automation_columns.insert (column);
 			else
-				tracker_editor.visible_automation_columns.erase (column);
+				grid.visible_automation_columns.erase (column);
 
 			(*ii)->menu_item->set_active (exist);
 		}
@@ -962,7 +965,7 @@ MidiTrackToolbar::hide_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t column = (*ii)->column;
 			if (column != 0) {
-				tracker_editor.visible_automation_columns.erase (column);
+				grid.visible_automation_columns.erase (column);
 				(*ii)->menu_item->set_active (false);
 			}
 		}
