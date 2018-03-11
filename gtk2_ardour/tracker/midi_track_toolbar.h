@@ -30,6 +30,7 @@
 #include "midi_track_pattern.h"
 
 class TrackerEditor;
+class TrackerGrid;
 
 struct ProcessorAutomationNode {
 	Evoral::Parameter                         what;
@@ -123,6 +124,7 @@ public:
 
 	TrackerEditor& tracker_editor;
 	MidiTrackPattern& midi_track_pattern;
+	TrackerGrid& grid;
 
 	ArdourWidgets::ArdourButton  visible_note_button;
 	bool                         visible_note;
