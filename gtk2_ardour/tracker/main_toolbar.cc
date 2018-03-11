@@ -379,7 +379,7 @@ MainToolbar::set_beats_per_row_to (SnapType st)
 	}
 
 	// TODO: alternatively send signal to TrackerEditor
-	tracker_editor.redisplay_model ();
+	tracker_editor.grid.redisplay_model ();
 }
 
 bool
