@@ -75,7 +75,18 @@ using Timecode::BBT_Time;
 const std::string TrackerGrid::note_off_str = "===";
 const std::string TrackerGrid::undefined_str = "***";
 
-TrackerGrid::TrackerGrid (TrackerEditor& te) : tracker_editor(te) {}
+TrackerGrid::TrackerGrid (TrackerEditor& te)
+	: tracker_editor (te)
+	, gain_column (0)
+	, trim_column (0)
+	, mute_column (0)
+	, nrows (0)
+	, edit_rowidx (-1)
+	, edit_tracknum (-1)
+	, edit_colnum (-1)
+	, editing_editable (NULL)
+{}
+
 TrackerGrid::~TrackerGrid () {}
 
 size_t
@@ -465,7 +476,6 @@ TrackerGrid::redisplay_model ()
 		return;
 
 	if (tracker_editor.session) {
-
 		mtp->set_rows_per_beat(tracker_editor.main_toolbar.rows_per_beat);
 		mtp->update();
 
@@ -2609,7 +2619,7 @@ TrackerGrid::scroll_event (GdkEventScroll* ev)
 }
 
 void
-TrackerGrid::setup_pattern ()
+TrackerGrid::setup ()
 {
 	model = ListStore::create (columns);
 	set_model (model);
