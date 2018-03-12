@@ -232,10 +232,9 @@ private:
 	bool key_release (GdkEventKey*);
 	bool button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
-	void setup_pattern ();
-	void setup_scroller ();
 
 public:
+	void setup ();
 	void redisplay_model ();    // TODO rename
 
 private:

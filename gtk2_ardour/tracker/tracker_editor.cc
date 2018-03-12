@@ -291,6 +291,7 @@ TrackerEditor::setup_grid ()
 {
 	grid.mtp = mtp;
 	grid.route = route;
+	grid.setup ();
 }
 
 void
