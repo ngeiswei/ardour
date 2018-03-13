@@ -2061,8 +2061,8 @@ private:
 
 	void grid_type_selection_done (Editing::GridType);
 	void snap_mode_selection_done (Editing::SnapMode);
-	void snap_type_chosen (Editing::SnapType);
 	void snap_mode_chosen (Editing::SnapMode);
+	void grid_type_chosen (Editing::GridType);
 
 	void draw_length_selection_done (Editing::GridType);
 	void draw_length_chosen (Editing::GridType);
