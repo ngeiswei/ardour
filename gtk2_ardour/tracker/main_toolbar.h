@@ -51,10 +51,10 @@ public:
 	 */
 	void setup_beats_per_row_menu ();
 	void register_actions ();
-	void beats_per_row_selection_done (Editing::SnapType st);
-	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::SnapType st);
-	void beats_per_row_chosen (Editing::SnapType st);
-	void set_beats_per_row_to (Editing::SnapType st);
+	void beats_per_row_selection_done (Editing::GridType st);
+	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::GridType st);
+	void beats_per_row_chosen (Editing::GridType st);
+	void set_beats_per_row_to (Editing::GridType st);
 
 	/**
 	 * Triggered upon step edit button press event.
