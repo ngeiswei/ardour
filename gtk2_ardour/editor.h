@@ -1877,8 +1877,8 @@ private:
 
 	void grid_type_selection_done (Editing::GridType);
 	void snap_mode_selection_done (Editing::SnapMode);
-	void snap_type_chosen (Editing::SnapType);
 	void snap_mode_chosen (Editing::SnapMode);
+	void grid_type_chosen (Editing::GridType);
 
 	Glib::RefPtr<Gtk::RadioAction> grid_type_action (Editing::GridType);
 	Glib::RefPtr<Gtk::RadioAction> snap_mode_action (Editing::SnapMode);
