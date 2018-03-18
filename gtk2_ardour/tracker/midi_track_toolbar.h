@@ -33,26 +33,26 @@ class TrackerEditor;
 class TrackerGrid;
 
 struct ProcessorAutomationNode {
-	Evoral::Parameter                         what;
-	Gtk::CheckMenuItem*                       menu_item;
-	// corresponding column index. If set to 0 then undetermined yet
-	size_t                                    column;
-
 	ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem)
 		: what (w), menu_item (mitem), column(0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationNode ();
+
+	Evoral::Parameter                         what;
+	Gtk::CheckMenuItem*                       menu_item;
+	// corresponding column index. If set to 0 then undetermined yet
+	size_t                                    column;
 };
 
 struct ProcessorAutomationInfo {
-	boost::shared_ptr<ARDOUR::Processor>  processor;
-	Gtk::Menu*                            menu;
-	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
-
 	ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
 		: processor (i), menu (0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationInfo ();
+
+	boost::shared_ptr<ARDOUR::Processor>  processor;
+	Gtk::Menu*                            menu;
+	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
 };
 
 class MidiTrackToolbar : public Gtk::HBox
@@ -61,6 +61,9 @@ public:
 	// TODO: add midi_track
 	MidiTrackToolbar (TrackerEditor& mte, MidiTrackPattern& mtp);
 	~MidiTrackToolbar ();
+
+	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
+
 	void setup ();
 
 	/**
@@ -148,7 +151,6 @@ public:
 	 */
 	std::list<ProcessorAutomationInfo*> processor_automation;
 
-	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
 	/** parameter -> menu item map for the plugin automation menu */
 	ParameterMenuMap _subplugin_menu_map;
 	/** parameter -> menu item map for the channel command items */

@@ -42,15 +42,15 @@ namespace ARDOUR {
  */
 class NotePattern : public BasePattern {
 public:
+	NotePattern(ARDOUR::Session* session,
+	            boost::shared_ptr<ARDOUR::MidiRegion> region);
+
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
 	typedef Evoral::Note<Temporal::Beats> NoteType;
 	typedef boost::shared_ptr<NoteType> NoteTypePtr;
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
-
-	NotePattern(ARDOUR::Session* session,
-	            boost::shared_ptr<ARDOUR::MidiRegion> region);
 
 	// Build or rebuild the pattern (implement BasePattern::update)
 	void update();
