@@ -32,67 +32,9 @@ class TrackerEditor;
 
 class TrackerGrid : public Gtk::TreeView
 {
-private:
-	// Column index of the first automation
-	size_t automation_col_offset;
-
-	// List of column indices currently unassigned to an automation
-	std::set<size_t> available_automation_columns;
-
 public:
 	TrackerGrid(TrackerEditor& te);
 	~TrackerGrid();
-
-	TrackerEditor& tracker_editor;
-
-	// Map column index to automation parameter and vice versa
-	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> ColParamBimap;
-	ColParamBimap col2param;
-
-	// Keep track of all visible automation columns
-	std::set<size_t> visible_automation_columns;
-
-	// TODO have a sequence
-	MidiTrackPattern* mtp;
-	boost::shared_ptr<ARDOUR::Route> route;
-
-private:
-	// Map column index to automation track index and vice versa
-	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
-	ColAutoTrackBimap col2autotrack;
-
-	size_t gain_column;
-	size_t trim_column; // TODO: support audio tracks
-	size_t mute_column;
-	std::vector<size_t> pan_columns;
-
-public:
-	// Assign an automation parameter to a column and return the corresponding
-	// column index
-	size_t select_available_automation_column ();
-	size_t add_main_automation_column (const Evoral::Parameter& param);
-	size_t add_midi_automation_column (const Evoral::Parameter& param);
-	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor, const Evoral::Parameter& what);
-
-public:
-	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
-	void update_automation_column_visibility (const Evoral::Parameter& param);
-
-	// Return if the automation column associated to this parameter is currently visible
-	bool is_automation_visible(const Evoral::Parameter& param) const;
-
-	// Return true if the gain column is visible
-	bool is_gain_visible () const;
-	bool is_mute_visible () const;
-	bool is_pan_visible () const;
-	void update_gain_column_visibility ();
-	void update_trim_column_visibility ();
-	void update_mute_column_visibility ();
-	void update_pan_columns_visibility ();
-
-	////////////////////////////
-	// Other (to sort out)	  //
-	////////////////////////////
 
 	typedef Evoral::Note<Temporal::Beats> NoteType;
 	typedef boost::shared_ptr<NoteType> NoteTypePtr;
@@ -150,27 +92,32 @@ public:
 		DELAY_COLNUM
 	};
 
-	static const std::string note_off_str;
+	// Assign an automation parameter to a column and return the corresponding
+	// column index
+	size_t select_available_automation_column ();
+	size_t add_main_automation_column (const Evoral::Parameter& param);
+	size_t add_midi_automation_column (const Evoral::Parameter& param);
+	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor, const Evoral::Parameter& what);
 
-	// If the resolution isn't fine enough and multiple notes do not fit in the
-	// same row, then this string is printed.
-	static const std::string undefined_str;
+	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
+	void update_automation_column_visibility (const Evoral::Parameter& param);
 
-	private:
-	TrackerGridModelColumns      columns;
-	Glib::RefPtr<Gtk::ListStore> model;
-	uint32_t                     nrows;
-	Gtk::TreeModel::Path         edit_path;
-	int                          edit_rowidx;
-	int                          edit_tracknum;
-	int                          edit_colnum;
-	Gtk::CellEditable*           editing_editable;
+	// Return if the automation column associated to this parameter is currently visible
+	bool is_automation_visible(const Evoral::Parameter& param) const;
+
+	// Return true if the gain column is visible
+	bool is_gain_visible () const;
+	bool is_mute_visible () const;
+	bool is_pan_visible () const;
+	void update_gain_column_visibility ();
+	void update_trim_column_visibility ();
+	void update_mute_column_visibility ();
+	void update_pan_columns_visibility ();
 
 	////////////////////////
 	// Display Pattern    //
 	////////////////////////
 
-public:
 	void redisplay_visible_note ();
 	int note_colnum (int tracknum);
 	void redisplay_visible_channel ();
@@ -183,6 +130,37 @@ public:
 	int automation_colnum (int tracknum);
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int tracknum);
+
+	void setup ();
+	void redisplay_model ();    // TODO rename
+
+	TrackerEditor& tracker_editor;
+
+	// Map column index to automation parameter and vice versa
+	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> ColParamBimap;
+	ColParamBimap col2param;
+
+	// Keep track of all visible automation columns
+	std::set<size_t> visible_automation_columns;
+
+	// TODO have a sequence
+	MidiTrackPattern* mtp;
+	boost::shared_ptr<ARDOUR::Route> route;
+
+	static const std::string note_off_str;
+
+	// If the resolution isn't fine enough and multiple notes do not fit in the
+	// same row, then this string is printed.
+	static const std::string undefined_str;
+
+	TrackerGridModelColumns      columns;
+	Glib::RefPtr<Gtk::ListStore> model;
+	uint32_t                     nrows;
+	Gtk::TreeModel::Path         edit_path;
+	int                          edit_rowidx;
+	int                          edit_tracknum;
+	int                          edit_colnum;
+	Gtk::CellEditable*           editing_editable;
 
 private:
 	void setup_time_column ();
@@ -233,11 +211,6 @@ private:
 	bool button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
-public:
-	void setup ();
-	void redisplay_model ();    // TODO rename
-
-private:
 	uint32_t get_row_index (const std::string& path);
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path);
 
@@ -293,6 +266,21 @@ private:
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
+	// Map column index to automation track index and vice versa
+	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
+	ColAutoTrackBimap col2autotrack;
+
+	size_t gain_column;
+	size_t trim_column; // TODO: support audio tracks
+	size_t mute_column;
+	std::vector<size_t> pan_columns;
+
+	// Column index of the first automation
+	size_t automation_col_offset;
+
+	// List of column indices currently unassigned to an automation
+	std::set<size_t> available_automation_columns;
 };
 
 #endif /* __ardour_tracker_grib_h_ */
