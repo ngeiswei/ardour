@@ -176,26 +176,6 @@ TrackerEditor::get_device_names ()
 }
 
 void
-TrackerEditor::resize_width()
-{
-	int width, height;
-	get_size(width, height);
-	resize(1, height);
-}
-
-bool
-TrackerEditor::is_midi_track () const
-{
-	return boost::dynamic_pointer_cast<MidiTrack>(route) != 0;
-}
-
-boost::shared_ptr<MidiTrack>
-TrackerEditor::midi_track() const
-{
-	return boost::dynamic_pointer_cast<MidiTrack>(route);
-}
-
-void
 TrackerEditor::build_param2actrl ()
 {
 	// Gain
@@ -244,6 +224,26 @@ TrackerEditor::connect (const Evoral::Parameter& param)
 	boost::shared_ptr<AutomationList> alist = param2actrl[param]->alist();
 	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
+}
+
+void
+TrackerEditor::resize_width()
+{
+	int width, height;
+	get_size(width, height);
+	resize(1, height);
+}
+
+bool
+TrackerEditor::is_midi_track () const
+{
+	return boost::dynamic_pointer_cast<MidiTrack>(route) != 0;
+}
+
+boost::shared_ptr<MidiTrack>
+TrackerEditor::midi_track() const
+{
+	return boost::dynamic_pointer_cast<MidiTrack>(route);
 }
 
 void
