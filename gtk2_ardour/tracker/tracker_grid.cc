@@ -77,14 +77,14 @@ const std::string TrackerGrid::undefined_str = "***";
 
 TrackerGrid::TrackerGrid (TrackerEditor& te)
 	: tracker_editor (te)
-	, gain_column (0)
-	, trim_column (0)
-	, mute_column (0)
 	, nrows (0)
 	, edit_rowidx (-1)
 	, edit_tracknum (-1)
 	, edit_colnum (-1)
 	, editing_editable (NULL)
+	, gain_column (0)
+	, trim_column (0)
+	, mute_column (0)
 {}
 
 TrackerGrid::~TrackerGrid () {}
@@ -357,10 +357,6 @@ TrackerGrid::update_pan_columns_visibility ()
 	redisplay_model ();
 }
 
-/////////////////////////
-// Other (to sort out) //
-/////////////////////////
-
 void
 TrackerGrid::redisplay_visible_note()
 {
@@ -467,6 +463,50 @@ int
 TrackerGrid::automation_delay_colnum(int tracknum)
 {
 	return automation_col_offset + 2 * tracknum + 1;
+}
+
+void
+TrackerGrid::setup ()
+{
+	model = ListStore::create (columns);
+	set_model (model);
+
+	setup_time_column();
+
+	// Instantiate note tracks
+	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++) {
+		setup_note_column(i);
+		setup_note_channel_column(i);
+		setup_note_velocity_column(i);
+		setup_note_delay_column(i);
+	}
+
+	automation_col_offset = get_columns().size();
+
+	// Instantiate automation tracks
+	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
+		setup_automation_column(i);
+		setup_automation_delay_column(i);
+	}
+
+	// Connect to key press events
+	signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::key_press), false);
+	signal_key_release_event().connect (sigc::mem_fun (*this, &TrackerGrid::key_release), false);
+
+	// Connect to mouse button events
+	//
+	// Disabled for now because it doesn't work as expected
+	//
+	// signal_button_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::button_event), false);
+	// signal_scroll_event().connect (sigc::mem_fun (*this, &TrackerGrid::scroll_event), false);
+
+	set_headers_visible (true);
+	set_rules_hint (true);
+	set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
+	get_selection()->set_mode (SELECTION_NONE);
+	set_enable_search(false);
+
+	show ();
 }
 
 void
@@ -2616,48 +2656,4 @@ TrackerGrid::scroll_event (GdkEventScroll* ev)
 {
 	// TODO change values if editing is active, otherwise scroll.
 	return false;               // Silence compiler
-}
-
-void
-TrackerGrid::setup ()
-{
-	model = ListStore::create (columns);
-	set_model (model);
-
-	setup_time_column();
-
-	// Instantiate note tracks
-	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++) {
-		setup_note_column(i);
-		setup_note_channel_column(i);
-		setup_note_velocity_column(i);
-		setup_note_delay_column(i);
-	}
-
-	automation_col_offset = get_columns().size();
-
-	// Instantiate automation tracks
-	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
-		setup_automation_column(i);
-		setup_automation_delay_column(i);
-	}
-
-	// Connect to key press events
-	signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::key_press), false);
-	signal_key_release_event().connect (sigc::mem_fun (*this, &TrackerGrid::key_release), false);
-
-	// Connect to mouse button events
-	//
-	// Disabled for now because it doesn't work as expected
-	//
-	// signal_button_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::button_event), false);
-	// signal_scroll_event().connect (sigc::mem_fun (*this, &TrackerGrid::scroll_event), false);
-
-	set_headers_visible (true);
-	set_rules_hint (true);
-	set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
-	get_selection()->set_mode (SELECTION_NONE);
-	set_enable_search(false);
-
-	show ();
 }

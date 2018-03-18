@@ -34,10 +34,6 @@ public:
 	                  boost::shared_ptr<ARDOUR::MidiRegion> region);
 	virtual ~MidiTrackPattern ();
 
-	NotePattern np;
-	RegionAutomationPattern rap;
-	TrackAutomationPattern tap;
-
 	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
 	// TODO attempt to move TrackerEditor::update_automation_patterns here
 	// TODO attempt to move TrackerEditor::get_automation_pattern here
@@ -56,6 +52,10 @@ public:
 
 	// Build or rebuild note and automation pattern
 	void update();
+
+	NotePattern np;
+	RegionAutomationPattern rap;
+	TrackAutomationPattern tap;
 };
 
 #endif /* __ardour_tracker_track_pattern_h_ */

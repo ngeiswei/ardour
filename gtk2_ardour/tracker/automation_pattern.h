@@ -39,12 +39,12 @@ typedef std::set<boost::shared_ptr<ARDOUR::AutomationControl> > AutomationContro
  */
 class AutomationPattern : public BasePattern {
 public:
-	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
-
 	AutomationPattern(ARDOUR::Session* session,
 	                  boost::shared_ptr<ARDOUR::Region> region,
 	                  const AutomationControlSet& automation_controls=AutomationControlSet());
+
+	typedef ARDOUR::AutomationList::iterator AutomationListIt;
+	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;

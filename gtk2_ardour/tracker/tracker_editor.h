@@ -79,16 +79,21 @@ public:
 	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
 	~TrackerEditor();
 
-private:
-
-	///////////////////
-	// Automation	 //
-	///////////////////
-
 	// Map Parameter to AutomationControl
 	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
 
-public:
+	// TODO: per midi track?
+	void build_param2actrl ();
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
+	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor);
+	void build_pattern ();
+	void update_automation_patterns ();
+	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
+	void connect (const Evoral::Parameter&);
+	void resize_width ();
+	bool is_midi_track () const;
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track() const;
+
 	ARDOUR::Session* session;
 
 	// TODO: per midi track?
@@ -100,18 +105,7 @@ public:
 	// Reference to the unique editor
 	PublicEditor& public_editor;
 
-	// TODO: per midi track?
-	void build_param2actrl ();
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
-	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor);
-	void build_pattern ();
-	void update_automation_patterns ();
-	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
-private:
-	void connect (const Evoral::Parameter&);
-
 	MidiTimeAxisView* midi_time_axis_view;
-public:
 	boost::shared_ptr<ARDOUR::Route> route;
 	Gtk::ScrolledWindow          scroller;
 	Gtk::Table                   buttons;
@@ -124,10 +118,8 @@ public:
 	boost::shared_ptr<ARDOUR::MidiTrack>  track;
 	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
 
-public:
 	// TODO have a sequence
 	MidiTrackPattern* mtp;
-private:
 
 	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnectionList content_connections;
@@ -138,11 +130,6 @@ private:
 	void setup_midi_track_toolbars ();
 	void setup_grid ();
 	void setup_scroller ();
-
-public:
-	void resize_width ();
-	bool is_midi_track () const;
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track() const;
 };
 
 #endif /* __ardour_tracker_tracker_editor_h_ */
