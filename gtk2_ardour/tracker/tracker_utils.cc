@@ -16,19 +16,19 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "tracker_util.h"
+#include "tracker_utils.h"
 
 #include "ardour/parameter_types.h"
 
 bool
-TrackerUtil::is_pan_type (const Evoral::Parameter& param)
+TrackerUtils::is_pan_type (const Evoral::Parameter& param)
 {
 	static std::set<ARDOUR::AutomationType> pan_param_types = get_pan_param_types();
 	return pan_param_types.find((ARDOUR::AutomationType)param.type()) != pan_param_types.end();
 }
 
 std::set<ARDOUR::AutomationType>
-TrackerUtil::get_pan_param_types()
+TrackerUtils::get_pan_param_types()
 {
 	std::set<ARDOUR::AutomationType> pan_param_types;
 	pan_param_types.insert(ARDOUR::PanAzimuthAutomation);
@@ -40,19 +40,19 @@ TrackerUtil::get_pan_param_types()
 }
 
 bool
-TrackerUtil::is_region_automation (const Evoral::Parameter& param)
+TrackerUtils::is_region_automation (const Evoral::Parameter& param)
 {
 	return ARDOUR::parameter_is_midi((ARDOUR::AutomationType)param.type());
 }
 
 char
-TrackerUtil::digit_to_char(int digit, int base)
+TrackerUtils::digit_to_char(int digit, int base)
 {
 	return num_to_string(digit, base)[0];
 }
 
 int
-TrackerUtil::char_to_digit(char c, int base)
+TrackerUtils::char_to_digit(char c, int base)
 {
 	std::string s;
 	s.push_back(c);
@@ -60,7 +60,7 @@ TrackerUtil::char_to_digit(char c, int base)
 }
 
 std::pair<int, int>
-TrackerUtil::position_range (const std::string& str)
+TrackerUtils::position_range (const std::string& str)
 {
 	size_t sepos = str.find('.'); // TODO support other locals
 	int l = 0, u = 0;
@@ -74,7 +74,7 @@ TrackerUtil::position_range (const std::string& str)
 }
 
 std::string
-TrackerUtil::pad (const std::string& str, int position)
+TrackerUtils::pad (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
 	if (position < pr.first) {
@@ -89,7 +89,7 @@ TrackerUtil::pad (const std::string& str, int position)
 }
 
 size_t
-TrackerUtil::locate (const std::string& str, int position)
+TrackerUtils::locate (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
 	if (pr.first <= position and position <= pr.second) {
@@ -103,13 +103,13 @@ TrackerUtil::locate (const std::string& str, int position)
 }
 
 uint8_t
-TrackerUtil::pitch (uint8_t semitones, int octave)
+TrackerUtils::pitch (uint8_t semitones, int octave)
 {
 	return (uint8_t)(octave + 1) * 12 + semitones;
 }
 
 uint8_t
-TrackerUtil::parse_pitch (std::string text, int default_octave)
+TrackerUtils::parse_pitch (std::string text, int default_octave)
 {
 	// Add default octave, if the octave digit is missing
 	if (!text.empty() && !std::isdigit(*text.rbegin()))

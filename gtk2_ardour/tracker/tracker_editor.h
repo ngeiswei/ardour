@@ -46,6 +46,7 @@
 #include "midi_time_axis.h"
 #include "region_selection.h"
 
+#include "tracker_types.h"
 #include "midi_track_pattern.h"
 #include "main_toolbar.h"
 #include "midi_track_toolbar.h"
@@ -79,47 +80,53 @@ public:
 	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
 	~TrackerEditor();
 
-	// Map Parameter to AutomationControl
-	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
+	// Build parameter to automation control map for the give midi track, and
+	// associated route (TODO: probably don't need route!)
+	void build_param2actrl (Parameter2AutomationControl& param2actrl,
+	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
+	                        boost::shared_ptr<ARDOUR::MidiModel> midi_model,
+	                        boost::shared_ptr<ARDOUR::Route> route);
 
-	// TODO: per midi track?
-	void build_param2actrl ();
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
-	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor);
-	void build_pattern ();
+	// Build parameter to automation control map for all track
+	void build_param2actrls ();
+	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor, Parameter2AutomationControl& p2a);
+
+	/**
+	 * Instantiate mtps with all MidiTrackPatterns
+	 */
+	void build_patterns ();
+
 	void update_automation_patterns ();
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
-	void connect (const Evoral::Parameter&);
+	void automation_connect (const Parameter2AutomationControl& p2a, const Evoral::Parameter&);
 	void resize_width ();
-	bool is_midi_track () const;
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track() const;
 
 	ARDOUR::Session* session;
-
-	// TODO: per midi track?
-	Parameter2AutomationControl param2actrl;
-
-	// List of selected region considered at the creation of this class
-	RegionSelection region_selection;
 
 	// Reference to the unique editor
 	PublicEditor& public_editor;
 
-	MidiTimeAxisView* midi_time_axis_view;
-	boost::shared_ptr<ARDOUR::Route> route;
+	// List of selected region considered at the creation of this class
+	RegionSelection region_selection;
+
+	// Hold regions, tracks, models, views, routes and patterns for each midi
+	// track
+	std::vector<boost::shared_ptr<ARDOUR::MidiRegion> > midi_regions;
+	std::vector<boost::shared_ptr<ARDOUR::MidiTrack> > midi_tracks;
+	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models;
+	std::vector<MidiTimeAxisView*> midi_time_axis_views;
+	std::vector<boost::shared_ptr<ARDOUR::Route> > routes;
+	std::vector<MidiTrackPattern*> mtps;
+
+	// Parameter to AutomationControl for each midi track
+	std::vector<Parameter2AutomationControl> param2actrls;
+
 	Gtk::ScrolledWindow          scroller;
 	Gtk::Table                   buttons;
 	TrackerGrid                  grid;
 	MainToolbar                  main_toolbar;
 	std::vector<MidiTrackToolbar*> midi_track_toolbars; // TODO: maybe replace that with a map from track to toolbar
 	Gtk::VBox                    vbox;
-
-	boost::shared_ptr<ARDOUR::MidiRegion> region;
-	boost::shared_ptr<ARDOUR::MidiTrack>  track;
-	boost::shared_ptr<ARDOUR::MidiModel>  midi_model;
-
-	// TODO have a sequence
-	MidiTrackPattern* mtp;
 
 	/** connection used to connect to model's ContentsChanged signal */
 	PBD::ScopedConnectionList content_connections;
