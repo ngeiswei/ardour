@@ -19,7 +19,7 @@
 #include "midi_track_toolbar.h"
 #include "tracker_editor.h"
 #include "tracker_grid.h"
-#include "tracker_util.h"
+#include "tracker_utils.h"
 
 #include "widgets/tooltips.h"
 #include "ardour/midi_track.h"
@@ -36,8 +36,12 @@ using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace ARDOUR;
 
-MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp)
+MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, boost::shared_ptr<ARDOUR::Route> ro, MidiTrackPattern& mtp)
 	: tracker_editor (te)
+	, param2actrl (p2a)
+	, midi_track (mt)
+	, midi_model (mm)
+	, route (ro)
 	, midi_track_pattern (mtp)
 	, grid (te.grid)
 	, visible_note (true)
@@ -256,9 +260,9 @@ MidiTrackToolbar::build_automation_action_menu ()
 	   so it was detached above
 	*/
 
-	// TODO could be optimized, no need to rebuild everything
+	// TODO could be optimized, no need to rebuild everything!
 	setup_processor_menu_and_curves ();
-	tracker_editor.build_param2actrl ();
+	tracker_editor.build_param2actrl (param2actrl, midi_track, midi_model, route);
 	tracker_editor.update_automation_patterns ();
 
 	if (!subplugin_menu.items().empty()) {
@@ -299,7 +303,7 @@ MidiTrackToolbar::build_automation_action_menu ()
 
 	MenuList& automation_items = automation_action_menu->items();
 
-	uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
+	uint16_t selected_channels = midi_track->get_playback_channel_mask();
 
 	if (selected_channels !=  0) {
 
@@ -355,7 +359,7 @@ MidiTrackToolbar::build_controller_menu ()
 	   combination covering the currently selected channels for this track
 	*/
 
-	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
 
 	/* count the number of selected channels because we will build a different menu
 	   structure if there is more than 1 selected.
@@ -453,7 +457,7 @@ MidiTrackToolbar::setup_processor_menu_and_curves ()
 {
 	_subplugin_menu_map.clear ();
 	subplugin_menu.items().clear ();
-	tracker_editor.route->foreach_processor (sigc::mem_fun (*this, &MidiTrackToolbar::add_processor_to_subplugin_menu));
+	route->foreach_processor (sigc::mem_fun (*this, &MidiTrackToolbar::add_processor_to_subplugin_menu));
 }
 
 void
@@ -526,7 +530,7 @@ MidiTrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Proce
 
 		_subplugin_menu_map[*i] = mitem;
 
-		if (TrackerUtil::is_in(*i, has_visible_automation)) {
+		if (TrackerUtils::is_in(*i, has_visible_automation)) {
 			mitem->set_active(true);
 		}
 
@@ -583,7 +587,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 	   structure if there is more than 1 selected.
 	 */
 
-	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
 	int chn_cnt = 0;
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -670,7 +674,7 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 {
 	using namespace Menu_Helpers;
 
-	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
 	for (uint8_t chn = 0; chn < 16; chn++) {
 		if (selected_channels & (0x0001 << chn)) {
 
@@ -703,7 +707,7 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 {
 	using namespace Menu_Helpers;
 
-	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
 
 	Menu* chn_menu = manage (new Menu);
 	MenuList& chn_items (chn_menu->items());
@@ -830,20 +834,20 @@ void
 MidiTrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = tracker_editor.param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
+	bool gain_visible = param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility ();
 
 	// Mute
-	bool mute_visible = tracker_editor.param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
+	bool mute_visible = param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility ();
 
 	// Pan
 	bool pan_visible = false;
-	std::set<Evoral::Parameter> const & pan_params = tracker_editor.route->pannable()->what_can_be_automated ();
+	std::set<Evoral::Parameter> const & pan_params = route->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		if (tracker_editor.param2actrl[*p]->list()->size() > 0) {
+		if (param2actrl[*p]->list()->size() > 0) {
 			pan_visible = true;
 			break;
 		}
@@ -871,7 +875,7 @@ MidiTrackToolbar::hide_main_automations ()
 void
 MidiTrackToolbar::show_existing_midi_automations ()
 {
-	const std::set<Evoral::Parameter> params = tracker_editor.midi_track()->midi_playlist()->contained_automation();
+	const std::set<Evoral::Parameter> params = midi_track->midi_playlist()->contained_automation();
 	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
 		TrackerGrid::ColParamBimap::right_const_iterator it = grid.col2param.right.find(*p);
 		size_t column = (it == grid.col2param.right.end()) || (it->second == 0) ?
@@ -935,7 +939,7 @@ MidiTrackToolbar::show_existing_processor_automations ()
 	     i != processor_automation.end(); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
-			bool exist = tracker_editor.param2actrl[(*ii)->what]->list()->size() > 0;
+			bool exist = param2actrl[(*ii)->what]->list()->size() > 0;
 
 			// Create automation column if necessary
 			if (exist) {
