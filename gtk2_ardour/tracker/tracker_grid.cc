@@ -60,7 +60,7 @@
 
 #include "tracker_editor.h"
 #include "midi_track_toolbar.h"
-#include "tracker_util.h"
+#include "tracker_utils.h"
 
 using namespace std;
 using namespace Gtk;
@@ -116,7 +116,7 @@ TrackerGrid::add_main_automation_column (const Evoral::Parameter& param)
 	col2param.insert(ColParamBimap::value_type(column, param));
 
 	// Set the column title
-	string name = TrackerUtil::is_pan_type(param) ?
+	string name = TrackerUtils::is_pan_type(param) ?
 		route->panner()->describe_parameter (param)
 		: route->describe_parameter (param);
 	get_column(column)->set_title (name);
@@ -128,10 +128,12 @@ size_t
 TrackerGrid::add_midi_automation_column (const Evoral::Parameter& param)
 {
 	// If not in param2actrl, add it.
-	if (!tracker_editor.param2actrl[param]) {
-		tracker_editor.param2actrl[param] = TrackerUtil::is_region_automation (param) ? tracker_editor.midi_model->automation_control(param, true) : route->automation_control(param, true); 
+	// TODO: generalize for multi-track
+	if (!tracker_editor.param2actrls.front()[param]) {
+		// TODO: generalize for multi-track
+		tracker_editor.param2actrls.front()[param] = TrackerUtils::is_region_automation (param) ? tracker_editor.midi_models.front()->automation_control(param, true) : route->automation_control(param, true); 
 		AutomationPattern* ap = get_automation_pattern (param);
-		ap->insert(tracker_editor.param2actrl[param]);
+		ap->insert(tracker_editor.param2actrls.front()[param]);
 	}
 
 	// Select the next available column
@@ -189,7 +191,7 @@ TrackerGrid::add_processor_automation_column (boost::shared_ptr<Processor> proce
 void
 TrackerGrid::change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param)
 {
-	const uint16_t selected_channels = tracker_editor.midi_track()->get_playback_channel_mask();
+	const uint16_t selected_channels = tracker_editor.midi_tracks.front()->get_playback_channel_mask();
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
 		if (selected_channels & (0x0001 << chn)) {
@@ -431,7 +433,7 @@ TrackerGrid::redisplay_visible_automation()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_colnum(i);
-		bool is_visible = TrackerUtil::is_in(col, visible_automation_columns);
+		bool is_visible = TrackerUtils::is_in(col, visible_automation_columns);
 		get_column(col)->set_visible(is_visible);
 	}
 	redisplay_visible_automation_delay();
@@ -451,7 +453,7 @@ TrackerGrid::redisplay_visible_automation_delay()
 {
 	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
 		size_t col = automation_delay_colnum(i);
-		bool is_visible = tracker_editor.midi_track_toolbars.front()->visible_delay && TrackerUtil::is_in(col - 1, visible_automation_columns);
+		bool is_visible = tracker_editor.midi_track_toolbars.front()->visible_delay && TrackerUtils::is_in(col - 1, visible_automation_columns);
 		get_column(col)->set_visible(is_visible);
 	}
 
@@ -660,7 +662,7 @@ TrackerGrid::redisplay_model ()
 							double aval = (*auto_it->second)->value;
 							row[columns.automation[i]] = to_string (aval);
 							double awhen = (*auto_it->second)->when;
-							int64_t delay_ticks = TrackerUtil::is_region_automation (param) ?
+							int64_t delay_ticks = TrackerUtils::is_region_automation (param) ?
 								mtp->region_relative_delay_ticks(Temporal::Beats(awhen), irow) : mtp->delay_ticks((samplepos_t)awhen, irow);
 							if (delay_ticks != 0) {
 								row[columns.automation_delay[i]] = to_string (delay_ticks);
@@ -676,13 +678,13 @@ TrackerGrid::redisplay_model ()
 				} else {
 					// Interpolation
 					double inter_auto_val = 0;
-					if (tracker_editor.param2actrl[param]) {
-						boost::shared_ptr<AutomationList> alist = tracker_editor.param2actrl[param]->alist();
+					if (tracker_editor.param2actrls.front()[param]) {
+						boost::shared_ptr<AutomationList> alist = tracker_editor.param2actrls.front()[param]->alist();
 						// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
 						// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 						// of the WriteLock in ControlList::erase and such, then eval can be used.
 						bool ok;
-						double awhen = TrackerUtil::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+						double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 						inter_auto_val = alist->rt_safe_eval(awhen, ok);
 					}
 					row[columns.automation[i]] = to_string (inter_auto_val);
@@ -892,7 +894,7 @@ TrackerGrid::editing_canceled ()
 uint8_t
 TrackerGrid::parse_pitch (const std::string& text) const
 {
-	return TrackerUtil::parse_pitch(text, tracker_editor.main_toolbar.octave_spinner.get_value_as_int());
+	return TrackerUtils::parse_pitch(text, tracker_editor.main_toolbar.octave_spinner.get_value_as_int());
 }
 
 void
@@ -940,7 +942,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 	if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
-		cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
 	} else if (off_note) {
 		// Replace off note by another (non-off) note. Calculate the start
@@ -951,7 +953,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 		// Build note using defaults
 		NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
 		char const * opname = _("add note");
-		cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
@@ -969,7 +971,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int tracknum)
 		}
 
 		char const * opname = _("add note");
-		cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		// Only update the length the previous note if the new on note
 		// is shortening it.
 		if (prev_note) {
@@ -1008,7 +1010,7 @@ TrackerGrid::set_off_note (int rowidx, int tracknum)
 	if (on_note) {
 		// Replace the on note by an off note, that is remove the on note
 		char const * opname = _("delete note");
-		cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->remove (on_note);
 
 		// If there is no off note, update the length of the preceding node
@@ -1037,7 +1039,7 @@ TrackerGrid::set_off_note (int rowidx, int tracknum)
 		if (prev_note) {
 			Temporal::Beats new_length = here - prev_start;
 			char const * opname = _("resize note");
-			cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+			cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 			cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, new_length);
 		}
 	}
@@ -1058,7 +1060,7 @@ TrackerGrid::delete_note (int rowidx, int tracknum)
 	if (on_note) {
 		// Delete on note and change
 		char const * opname = _("delete note");
-		cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->remove (on_note);
 
 		// If there is an off note, update the length of the preceding note
@@ -1080,7 +1082,7 @@ TrackerGrid::delete_note (int rowidx, int tracknum)
 		Temporal::Beats end = mtp->np.next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
-		cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, length);
 	}
 
@@ -1123,7 +1125,7 @@ TrackerGrid::set_note_channel (NoteTypePtr note, int ch)
 		char const* opname = _("change note channel");
 
 		// Define change command
-		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->change (note, MidiModel::NoteDiffCommand::Channel, ch);
 
 		// Apply change command
@@ -1167,7 +1169,7 @@ TrackerGrid::set_note_velocity (NoteTypePtr note, int vel)
 		char const* opname = _("change note velocity");
 
 		// Define change command
-		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, vel);
 
 		// Apply change command
@@ -1202,7 +1204,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int tracknum)
 		return;
 
 	char const* opname = _("change note delay");
-	MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_model->new_note_diff_command (opname);
+	MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
 
 	// Check if within acceptable boundaries
 	if (delay < mtp->delay_ticks_min() || mtp->delay_ticks_max() < delay)
@@ -1258,7 +1260,7 @@ void TrackerGrid::play_note(uint8_t pitch)
 	event[0] = (MIDI_CMD_NOTE_ON | chan);
 	event[1] = pitch;
 	event[2] = vel;
-	tracker_editor.track->write_immediate_event (3, event);
+	tracker_editor.midi_tracks.front()->write_immediate_event (3, event);
 }
 
 void TrackerGrid::release_note(uint8_t pitch)
@@ -1268,7 +1270,7 @@ void TrackerGrid::release_note(uint8_t pitch)
 	event[0] = (MIDI_CMD_NOTE_OFF | chan);
 	event[1] = pitch;
 	event[2] = 0;
-	tracker_editor.track->write_immediate_event (3, event);
+	tracker_editor.midi_tracks.front()->write_immediate_event (3, event);
 }
 
 Evoral::Parameter TrackerGrid::get_parameter (int tracknum)
@@ -1289,7 +1291,7 @@ TrackerGrid::get_alist (const Evoral::Parameter& param)
 {
 	if (!param)
 		return NULL;
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrl[param];
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrls.front()[param];
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
 	return alist;
 }
@@ -1299,7 +1301,7 @@ TrackerGrid::get_automation_pattern (const Evoral::Parameter& param)
 {
 	if (!param)
 		return NULL;
-	return TrackerUtil::is_region_automation (param) ? (AutomationPattern*)&(mtp->rap) : (AutomationPattern*)&(mtp->tap);
+	return TrackerUtils::is_region_automation (param) ? (AutomationPattern*)&(mtp->rap) : (AutomationPattern*)&(mtp->tap);
 }
 
 void
@@ -1356,8 +1358,8 @@ TrackerGrid::set_automation (double val, int rowidx, int tracknum)
 		return;
 
 	// Clamp nval to its range
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrl[param];
-	val = TrackerUtil::clamp (val, actrl->lower (), actrl->upper ());
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrls.front()[param];
+	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
 
 	// Find the control iterator to change
 	AutomationPattern* ap = get_automation_pattern (param);
@@ -1373,7 +1375,7 @@ TrackerGrid::set_automation (double val, int rowidx, int tracknum)
 		int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(rowidx, delay);
 		uint32_t row_sample = ap->sample_at_row(rowidx, delay);
-		double awhen = TrackerUtil::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		if (alist->editor_add (awhen, val, false)) {
 			XMLNode& after = alist->get_state ();
 			register_automation_undo (alist, _("add automation event"), before, after);
@@ -1452,7 +1454,7 @@ TrackerGrid::get_automation_delay (int rowidx, int tracknum)
 	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
 	if (auto_it != r2at.end()) {
 		double awhen = (*auto_it->second)->when;
-		int delay_ticks = TrackerUtil::is_region_automation (param) ?
+		int delay_ticks = TrackerUtils::is_region_automation (param) ?
 			mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
 		return std::make_pair(delay_ticks, true);
 	}
@@ -1487,7 +1489,7 @@ TrackerGrid::set_automation_delay (int delay, int rowidx, int tracknum)
 
 	// Change existing delay
 	XMLNode& before = alist->get_state ();
-	double awhen = TrackerUtil::is_region_automation (param) ?
+	double awhen = TrackerUtils::is_region_automation (param) ?
 		(row_relative_beats < ap->start_beats ? ap->start_beats : row_relative_beats).to_double()
 		: row_sample;
 	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
@@ -1508,7 +1510,7 @@ void
 TrackerGrid::apply_command (MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
-	tracker_editor.midi_model->apply_command (tracker_editor.session, cmd);
+	tracker_editor.midi_models.front()->apply_command (tracker_editor.session, cmd);
 
 	// reset edit info, since we're done
 	// TODO: is this really necessary since clear_editables does that
@@ -1793,105 +1795,105 @@ TrackerGrid::pitch_key (GdkEventKey* ev)
 	switch (ev->keyval) {
 	case GDK_z:                 // C
 	case GDK_Z:
-		return TrackerUtil::pitch (0, octave);
+		return TrackerUtils::pitch (0, octave);
 	case GDK_s:                 // C#
 	case GDK_S:
-		return TrackerUtil::pitch (1, octave);
+		return TrackerUtils::pitch (1, octave);
 	case GDK_x:                 // D
 	case GDK_X:
-		return TrackerUtil::pitch (2, octave);
+		return TrackerUtils::pitch (2, octave);
 	case GDK_d:                 // D#
 	case GDK_D:
-		return TrackerUtil::pitch (3, octave);
+		return TrackerUtils::pitch (3, octave);
 	case GDK_c:                 // E
 	case GDK_C:
-		return TrackerUtil::pitch (4, octave);
+		return TrackerUtils::pitch (4, octave);
 	case GDK_v:                 // F
 	case GDK_V:
-		return TrackerUtil::pitch (5, octave);
+		return TrackerUtils::pitch (5, octave);
 	case GDK_g:                 // F#
 	case GDK_G:
-		return TrackerUtil::pitch (6, octave);
+		return TrackerUtils::pitch (6, octave);
 	case GDK_b:                 // G
 	case GDK_B:
-		return TrackerUtil::pitch (7, octave);
+		return TrackerUtils::pitch (7, octave);
 	case GDK_h:                 // G#
 	case GDK_H:
-		return TrackerUtil::pitch (8, octave);
+		return TrackerUtils::pitch (8, octave);
 	case GDK_n:                 // A
 	case GDK_N:
-		return TrackerUtil::pitch (9, octave);
+		return TrackerUtils::pitch (9, octave);
 	case GDK_j:                 // A#
 	case GDK_J:
-		return TrackerUtil::pitch (10, octave);
+		return TrackerUtils::pitch (10, octave);
 	case GDK_m:                 // B
 	case GDK_M:
-		return TrackerUtil::pitch (11, octave);
+		return TrackerUtils::pitch (11, octave);
 	case GDK_q:                 // C+1
 	case GDK_Q:
 	case GDK_comma:
 	case GDK_less:
-		return TrackerUtil::pitch (0, octave + 1);
+		return TrackerUtils::pitch (0, octave + 1);
 	case GDK_2:                 // C#+1
 	case GDK_at:
 	case GDK_l:
 	case GDK_L:
-		return TrackerUtil::pitch (1, octave + 1);
+		return TrackerUtils::pitch (1, octave + 1);
 	case GDK_w:                 // D+1
 	case GDK_W:
 	case GDK_period:
 	case GDK_greater:
-		return TrackerUtil::pitch (2, octave + 1);
+		return TrackerUtils::pitch (2, octave + 1);
 	case GDK_3:                 // D#+1
 	case GDK_numbersign:
 	case GDK_semicolon:
 	case GDK_colon:
-		return TrackerUtil::pitch (3, octave + 1);
+		return TrackerUtils::pitch (3, octave + 1);
 		break;
 	case GDK_e:                 // E+1
 	case GDK_E:
 	case GDK_slash:
 	case GDK_question:
-		return TrackerUtil::pitch (4, octave + 1);
+		return TrackerUtils::pitch (4, octave + 1);
 	case GDK_r:                 // F+1
 	case GDK_R:
-		return TrackerUtil::pitch (5, octave + 1);
+		return TrackerUtils::pitch (5, octave + 1);
 	case GDK_5:                 // F#+1
 	case GDK_percent:
-		return TrackerUtil::pitch (6, octave + 1);
+		return TrackerUtils::pitch (6, octave + 1);
 	case GDK_t:                 // G+1
 	case GDK_T:
-		return TrackerUtil::pitch (7, octave + 1);
+		return TrackerUtils::pitch (7, octave + 1);
 	case GDK_6:                 // G#+1
 	case GDK_caret:
-		return TrackerUtil::pitch (8, octave + 1);
+		return TrackerUtils::pitch (8, octave + 1);
 	case GDK_y:                 // A+1
 	case GDK_Y:
-		return TrackerUtil::pitch (9, octave + 1);
+		return TrackerUtils::pitch (9, octave + 1);
 	case GDK_7:                 // A#+1
 	case GDK_ampersand:
-		return TrackerUtil::pitch (10, octave + 1);
+		return TrackerUtils::pitch (10, octave + 1);
 	case GDK_u:                 // B+1
 	case GDK_U:
-		return TrackerUtil::pitch (11, octave + 1);
+		return TrackerUtils::pitch (11, octave + 1);
 	case GDK_i:                 // C+2
 	case GDK_I:
-		return TrackerUtil::pitch (0, octave + 2);
+		return TrackerUtils::pitch (0, octave + 2);
 	case GDK_9:                 // C#+2
 	case GDK_parenleft:
-		return TrackerUtil::pitch (1, octave + 2);
+		return TrackerUtils::pitch (1, octave + 2);
 	case GDK_o:                 // D+2
 	case GDK_O:
-		return TrackerUtil::pitch (2, octave + 2);
+		return TrackerUtils::pitch (2, octave + 2);
 	case GDK_0:                 // D#+2
 	case GDK_parenright:
-		return TrackerUtil::pitch (3, octave + 2);
+		return TrackerUtils::pitch (3, octave + 2);
 	case GDK_p:                 // E+2
 	case GDK_P:
-		return TrackerUtil::pitch (4, octave + 2);
+		return TrackerUtils::pitch (4, octave + 2);
 	case GDK_bracketleft:       // F+2
 	case GDK_braceleft:
-		return TrackerUtil::pitch (5, octave + 2);
+		return TrackerUtils::pitch (5, octave + 2);
 	default:
 		return -1;
 	}
@@ -2118,7 +2120,7 @@ TrackerGrid::step_editing_set_note_channel (int digit, int rowidx, int tracknum)
 	if (note) {
 		int ch = note->channel();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-		int new_ch = TrackerUtil::change_digit (ch + 1, digit, position);
+		int new_ch = TrackerUtils::change_digit (ch + 1, digit, position);
 		set_note_channel (note, new_ch - 1);
 	}
 
@@ -2185,7 +2187,7 @@ TrackerGrid::step_editing_set_note_velocity (int digit, int rowidx, int tracknum
 	if (note) {
 		int vel = note->velocity();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-		int new_vel = TrackerUtil::change_digit (vel, digit, position);
+		int new_vel = TrackerUtils::change_digit (vel, digit, position);
 		set_note_velocity (note, new_vel);
 	}
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -2273,7 +2275,7 @@ TrackerGrid::step_editing_set_note_delay (int digit, int rowidx, int tracknum)
 		: mtp->region_relative_delay_ticks(off_note->end_time(), edit_rowidx);
 
 	// Update delay
-	int new_delay = TrackerUtil::change_digit_or_sign(old_delay, digit, position);
+	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, position);
 	set_note_delay (new_delay, edit_rowidx, edit_tracknum);
 
 	// Move the cursor
@@ -2353,7 +2355,7 @@ TrackerGrid::step_editing_set_automation (int digit, int rowidx, int tracknum)
 
 	// Set new value
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-	double nval = TrackerUtil::change_digit_or_sign (oval, digit, position);
+	double nval = TrackerUtils::change_digit_or_sign (oval, digit, position);
 	set_automation (nval, rowidx, tracknum);
 
 	// Move cursor
@@ -2435,7 +2437,7 @@ TrackerGrid::step_editing_set_automation_delay (int digit, int rowidx, int track
 	// Set new value
 	if (val_def.second) {
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-		int new_delay = TrackerUtil::change_digit_or_sign (old_delay, digit, position);
+		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, position);
 		set_automation_delay (new_delay, rowidx, tracknum);
 	}
 
