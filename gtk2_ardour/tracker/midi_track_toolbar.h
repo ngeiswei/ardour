@@ -28,6 +28,7 @@
 #include "ardour/midi_playlist.h"
 
 #include "midi_track_pattern.h"
+#include "tracker_types.h"
 
 class TrackerEditor;
 class TrackerGrid;
@@ -58,8 +59,8 @@ struct ProcessorAutomationInfo {
 class MidiTrackToolbar : public Gtk::HBox
 {
 public:
-	// TODO: add midi_track
-	MidiTrackToolbar (TrackerEditor& mte, MidiTrackPattern& mtp);
+	// TODO: get route from midi track
+	MidiTrackToolbar (TrackerEditor& mte, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, boost::shared_ptr<ARDOUR::Route> ro, MidiTrackPattern& mtp);
 	~MidiTrackToolbar ();
 
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
@@ -126,6 +127,10 @@ public:
 	void update_remove_note_column_button ();
 
 	TrackerEditor& tracker_editor;
+	Parameter2AutomationControl& param2actrl;
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
+	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
+	boost::shared_ptr<ARDOUR::Route> route;
 	MidiTrackPattern& midi_track_pattern;
 	TrackerGrid& grid;
 
