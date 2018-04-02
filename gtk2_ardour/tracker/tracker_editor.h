@@ -25,11 +25,8 @@
 
 #include <boost/bimap/bimap.hpp>
 
-#include <gtkmm/separator.h>
-#include <gtkmm/treeview.h>
 #include <gtkmm/table.h>
 #include <gtkmm/box.h>
-#include <gtkmm/liststore.h>
 #include <gtkmm/scrolledwindow.h>
 
 #include "gtkmm2ext/bindings.h"
@@ -38,9 +35,6 @@
 
 #include "ardour/session_handle.h"
 #include "ardour/automation_list.h"
-
-#include "widgets/ardour_button.h"
-#include "widgets/ardour_dropdown.h"
 
 #include "ardour_window.h"
 #include "midi_time_axis.h"
