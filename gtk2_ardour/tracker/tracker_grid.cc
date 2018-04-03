@@ -147,8 +147,8 @@ TrackerGrid::add_main_automation_column (const Evoral::Parameter& param)
 
 	// Set the column title
 	string name = TrackerUtils::is_pan_type(param) ?
-		route->panner()->describe_parameter (param)
-		: route->describe_parameter (param);
+		tracker_editor.midi_tracks.front()->panner()->describe_parameter (param)
+		: tracker_editor.midi_tracks.front()->describe_parameter (param);
 	get_column(column)->set_title (name);
 
 	return column;
@@ -161,7 +161,7 @@ TrackerGrid::add_midi_automation_column (const Evoral::Parameter& param)
 	// TODO: generalize for multi-track
 	if (!tracker_editor.param2actrls.front()[param]) {
 		// TODO: generalize for multi-track
-		tracker_editor.param2actrls.front()[param] = TrackerUtils::is_region_automation (param) ? tracker_editor.midi_models.front()->automation_control(param, true) : route->automation_control(param, true); 
+		tracker_editor.param2actrls.front()[param] = TrackerUtils::is_region_automation (param) ? tracker_editor.midi_models.front()->automation_control(param, true) : tracker_editor.midi_tracks.front()->automation_control(param, true); 
 		AutomationPattern* ap = get_automation_pattern (param);
 		ap->insert(tracker_editor.param2actrls.front()[param]);
 	}
@@ -175,7 +175,7 @@ TrackerGrid::add_midi_automation_column (const Evoral::Parameter& param)
 	col2param.insert(ColParamBimap::value_type(column, param));
 
 	// Set the column title
-	get_column(column)->set_title (route->describe_parameter (param));
+	get_column(column)->set_title (tracker_editor.midi_tracks.front()->describe_parameter (param));
 
 	return column;
 }
@@ -334,7 +334,7 @@ TrackerGrid::update_trim_column_visibility ()
 	// 	/* now trigger a redisplay */
 
 	// 	if (!no_redraw) {
-	// 		 _route->gui_changed (X_("visible_tracks"), (void *) 0); /* EMIT_SIGNAL */
+	// 		 track_editor.midi_tracks.front()->gui_changed (X_("visible_tracks"), (void *) 0); /* EMIT_SIGNAL */
 	// 	}
 	// }
 }
@@ -368,7 +368,7 @@ TrackerGrid::update_pan_columns_visibility ()
 	const bool showit = tracker_editor.midi_track_toolbars.front()->pan_automation_item->get_active();
 
 	if (pan_columns.empty()) {
-		set<Evoral::Parameter> const & params = route->panner()->what_can_be_automated ();
+		set<Evoral::Parameter> const & params = tracker_editor.midi_tracks.front()->panner()->what_can_be_automated ();
 		for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
 			pan_columns.push_back(add_main_automation_column(*p));
 		}
