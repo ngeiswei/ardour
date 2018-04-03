@@ -110,18 +110,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	, grid (*this)
 	, main_toolbar (*this)
 {
-	// TODO: merely for debugging
-	for (RegionSelection::const_iterator it = region_selection.begin();
-	     it != region_selection.end(); ++it) {
-		MidiTimeAxisView* mtav = dynamic_cast<MidiRegionView*>(*it)->midi_view();
-		std::cout << "&public_editor = " << &public_editor << std::endl;
-		std::cout << "&(mtav->editor()) = " << &(mtav->editor()) << std::endl;
-		// As observed route is different per track
-		std::cout << "mtav->_route.get() = " << mtav->_route.get() << std::endl;
-		// Is device_names per track?
-		std::cout << "mtav->get_device_names () = " << mtav->get_device_names ().get() << std::endl;
-	}
-
 	/* We do not handle nested sources/regions. Caller should have tackled this */
 
 	// TODO: what to do about that!!!
@@ -141,8 +129,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 			boost::shared_ptr<ARDOUR::MidiTrack> midi_track = mrv->midi_view()->midi_track();
 			boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_region->midi_source(0)->model();
 			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
-			// TODO: a midi track is also a route, maybe we don't need that!
-			boost::shared_ptr<ARDOUR::Route> route = midi_time_axis_view->_route;
 
 			// Make changing midi content re-render the grid
 			midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
@@ -156,7 +142,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 			midi_tracks.push_back(midi_track);
 			midi_models.push_back(midi_model);
 			midi_time_axis_views.push_back(midi_time_axis_view);
-			routes.push_back(route);
 		}
 	}
 
@@ -206,8 +191,7 @@ TrackerEditor::get_device_names ()
 void
 TrackerEditor::build_param2actrl (Parameter2AutomationControl& param2actrl,
                                   boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-                                  boost::shared_ptr<ARDOUR::MidiModel> midi_model,
-                                  boost::shared_ptr<ARDOUR::Route> route)
+                                  boost::shared_ptr<ARDOUR::MidiModel> midi_model)
 {
 	// In case this is a rebuild
 	param2actrl.clear();
@@ -241,7 +225,7 @@ TrackerEditor::build_param2actrls ()
 {
 	for (unsigned i = 0; i < midi_tracks.size(); ++i) {
 		Parameter2AutomationControl param2actrl;
-		build_param2actrl (param2actrl, midi_tracks[i], midi_models[i], routes[i]);
+		build_param2actrl (param2actrl, midi_tracks[i], midi_models[i]);
 		param2actrls.push_back(param2actrl);
 	}
 }
@@ -312,8 +296,7 @@ TrackerEditor::setup_toolbars ()
 		Parameter2AutomationControl& param2actrl = param2actrls[i];
 		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = midi_tracks[i];
 		boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_models[i];
-		boost::shared_ptr<ARDOUR::Route> route = routes[i];
-		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, route, *mtps[i]);
+		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, *mtps[i]);
 		// TODO replace that by emplace_back when supports C++11
 		midi_track_toolbars.push_back(mttb);
 	}
@@ -335,8 +318,8 @@ TrackerEditor::setup_midi_track_toolbars ()
 void
 TrackerEditor::setup_grid ()
 {
+	// TODO: support multi-tracks
 	grid.mtp = mtps.front();
-	grid.route = routes.front();
 	grid.setup ();
 }
 

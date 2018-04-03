@@ -59,8 +59,7 @@ struct ProcessorAutomationInfo {
 class MidiTrackToolbar : public Gtk::HBox
 {
 public:
-	// TODO: get route from midi track
-	MidiTrackToolbar (TrackerEditor& mte, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, boost::shared_ptr<ARDOUR::Route> ro, MidiTrackPattern& mtp);
+	MidiTrackToolbar (TrackerEditor& mte, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, MidiTrackPattern& mtp);
 	~MidiTrackToolbar ();
 
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
@@ -130,7 +129,6 @@ public:
 	Parameter2AutomationControl& param2actrl;
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
-	boost::shared_ptr<ARDOUR::Route> route;
 	MidiTrackPattern& midi_track_pattern;
 	TrackerGrid& grid;
 
@@ -152,7 +150,7 @@ public:
 
 	/**
 	 * Information about all automatable processor parameters that apply to
-	 * this route.  The Amp processor is not included in this list.
+	 * this route (midi track). The Amp processor is not included in this list.
 	 */
 	std::list<ProcessorAutomationInfo*> processor_automation;
 
