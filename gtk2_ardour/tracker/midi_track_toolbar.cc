@@ -36,12 +36,11 @@ using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace ARDOUR;
 
-MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, boost::shared_ptr<ARDOUR::Route> ro, MidiTrackPattern& mtp)
+MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, MidiTrackPattern& mtp)
 	: tracker_editor (te)
 	, param2actrl (p2a)
 	, midi_track (mt)
 	, midi_model (mm)
-	, route (ro)
 	, midi_track_pattern (mtp)
 	, grid (te.grid)
 	, visible_note (true)
@@ -262,7 +261,7 @@ MidiTrackToolbar::build_automation_action_menu ()
 
 	// TODO could be optimized, no need to rebuild everything!
 	setup_processor_menu_and_curves ();
-	tracker_editor.build_param2actrl (param2actrl, midi_track, midi_model, route);
+	tracker_editor.build_param2actrl (param2actrl, midi_track, midi_model);
 	tracker_editor.update_automation_patterns ();
 
 	if (!subplugin_menu.items().empty()) {
@@ -457,7 +456,7 @@ MidiTrackToolbar::setup_processor_menu_and_curves ()
 {
 	_subplugin_menu_map.clear ();
 	subplugin_menu.items().clear ();
-	route->foreach_processor (sigc::mem_fun (*this, &MidiTrackToolbar::add_processor_to_subplugin_menu));
+	midi_track->foreach_processor (sigc::mem_fun (*this, &MidiTrackToolbar::add_processor_to_subplugin_menu));
 }
 
 void
@@ -845,7 +844,7 @@ MidiTrackToolbar::show_existing_main_automations ()
 
 	// Pan
 	bool pan_visible = false;
-	std::set<Evoral::Parameter> const & pan_params = route->pannable()->what_can_be_automated ();
+	std::set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
 		if (param2actrl[*p]->list()->size() > 0) {
 			pan_visible = true;
