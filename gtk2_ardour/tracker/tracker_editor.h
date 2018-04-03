@@ -62,7 +62,6 @@ namespace ARDOUR {
 	class MidiModel;
 	class MidiTrack;
 	class Session;
-	class Route;
 	class Processor;
 };
 
@@ -74,12 +73,10 @@ public:
 	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
 	~TrackerEditor();
 
-	// Build parameter to automation control map for the give midi track, and
-	// associated route (TODO: probably don't need route!)
+	// Build parameter to automation control map for the give midi track
 	void build_param2actrl (Parameter2AutomationControl& param2actrl,
 	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-	                        boost::shared_ptr<ARDOUR::MidiModel> midi_model,
-	                        boost::shared_ptr<ARDOUR::Route> route);
+	                        boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
 	// Build parameter to automation control map for all track
 	void build_param2actrls ();
@@ -103,13 +100,11 @@ public:
 	// List of selected region considered at the creation of this class
 	RegionSelection region_selection;
 
-	// Hold regions, tracks, models, views, routes and patterns for each midi
-	// track
+	// Hold regions, tracks, models, views and patterns for each midi track
 	std::vector<boost::shared_ptr<ARDOUR::MidiRegion> > midi_regions;
 	std::vector<boost::shared_ptr<ARDOUR::MidiTrack> > midi_tracks;
 	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models;
 	std::vector<MidiTimeAxisView*> midi_time_axis_views;
-	std::vector<boost::shared_ptr<ARDOUR::Route> > routes;
 	std::vector<MidiTrackPattern*> mtps;
 
 	// Parameter to AutomationControl for each midi track
