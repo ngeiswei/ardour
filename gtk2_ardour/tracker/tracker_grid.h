@@ -19,14 +19,26 @@
 #ifndef __ardour_tracker_tracker_grid_h_
 #define __ardour_tracker_tracker_grid_h_
 
+#include <gtkmm/treeview.h>
+#include <gtkmm/liststore.h>
+
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
-// Maximum number of note columns in the tracker editor
-#define MAX_NUMBER_OF_NOTE_TRACKS 64
+// Maximum number of midi tracks in case of multi-track support
+#define MAX_NUMBER_OF_MIDI_TRACKS 4
 
-// Maximum number of automation columns in the tracker editor
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS 64
+// Maximum number of note tracks (note, channel, vel, del) per midi track
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 16
+
+// Total maximum number of note tracks
+#define MAX_NUMBER_OF_NOTE_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK
+
+// Maximum number of automation columns per midi track
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 16
+
+// Total maximum number of automation columns
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK
 
 class TrackerEditor;
 
@@ -40,34 +52,10 @@ public:
 	typedef boost::shared_ptr<NoteType> NoteTypePtr;
 
 	struct TrackerGridModelColumns : public Gtk::TreeModel::ColumnRecord {
-		TrackerGridModelColumns()
-		{
-			// The background color differs when the row is on beats and
-			// bars. This is to keep track of it.
-			add (_background_color);
-			add (time);
-			for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++) {
-				add (note_name[i]);
-				add (_note_foreground_color[i]);
-				add (channel[i]);
-				add (_channel_foreground_color[i]);
-				add (velocity[i]);
-				add (_velocity_foreground_color[i]);
-				add (delay[i]);
-				add (_delay_foreground_color[i]);
-				add (_on_note[i]);		// We keep that around to play and edit
-				add (_off_note[i]);		// We keep that around to play and edit
-			}
-			for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
-				add (automation[i]);
-				add (_automation[i]);
-				add (_automation_foreground_color[i]);
-				add (automation_delay[i]);
-				add (_automation_delay_foreground_color[i]);
-			}
-		};
+		TrackerGridModelColumns();
 		Gtk::TreeModelColumn<std::string> _background_color;
 		Gtk::TreeModelColumn<std::string> time;
+		Gtk::TreeModelColumn<std::string> midi_track_name[MAX_NUMBER_OF_MIDI_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_NOTE_TRACKS];
@@ -86,7 +74,8 @@ public:
 	};
 
 	enum midi_note_columns {
-		NOTE_COLNUM=1,			// from 1 cause the first column is for time
+		// TODO: support midi-tracks
+		NOTE_COLNUM=2,			// from 1 cause the first column is for time + 1 for temporary first midi track
 		CHANNEL_COLNUM,
 		VELOCITY_COLNUM,
 		DELAY_COLNUM
@@ -97,7 +86,8 @@ public:
 	size_t select_available_automation_column ();
 	size_t add_main_automation_column (const Evoral::Parameter& param);
 	size_t add_midi_automation_column (const Evoral::Parameter& param);
-	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor, const Evoral::Parameter& what);
+	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor,
+	                                      const Evoral::Parameter& what);
 
 	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
 	void update_automation_column_visibility (const Evoral::Parameter& param);
@@ -164,6 +154,7 @@ public:
 
 private:
 	void setup_time_column ();
+	void setup_midi_track_column (size_t);
 	void setup_note_column (size_t);
 	void setup_note_channel_column (size_t);
 	void setup_note_velocity_column (size_t);

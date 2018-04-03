@@ -89,6 +89,36 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 
 TrackerGrid::~TrackerGrid () {}
 
+TrackerGrid::TrackerGridModelColumns::TrackerGridModelColumns()
+{
+	// The background color differs when the row is on beats and
+	// bars. This is to keep track of it.
+	add (_background_color);
+	add (time);
+	for (size_t mti /* midi track index */ = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+		add (midi_track_name[mti]);
+		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
+			add (note_name[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (_note_foreground_color[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (channel[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (_channel_foreground_color[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (velocity[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (_velocity_foreground_color[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (delay[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (_delay_foreground_color[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);
+			add (_on_note[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);		// We keep that around to play and edit
+			add (_off_note[mti*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK + i]);		// We keep that around to play and edit
+		}
+		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
+			add (automation[mti*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK + i]);
+			add (_automation[mti*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK + i]);
+			add (_automation_foreground_color[mti*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK + i]);
+			add (automation_delay[mti*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK + i]);
+			add (_automation_delay_foreground_color[mti*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK + i]);
+		}
+	}
+}
+
 size_t
 TrackerGrid::select_available_automation_column ()
 {
@@ -362,7 +392,7 @@ TrackerGrid::update_pan_columns_visibility ()
 void
 TrackerGrid::redisplay_visible_note()
 {
-	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
+	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++)
 		get_column(note_colnum(i))->set_visible(i < mtp->np.ntracks ? tracker_editor.midi_track_toolbars.front()->visible_note : false);
 	tracker_editor.midi_track_toolbars.front()->update_visible_note_button ();
 
@@ -379,7 +409,7 @@ TrackerGrid::note_colnum(int tracknum)
 void
 TrackerGrid::redisplay_visible_channel()
 {
-	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
+	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++)
 		get_column(note_channel_colnum(i))->set_visible(i < mtp->np.ntracks ? tracker_editor.midi_track_toolbars.front()->visible_channel : false);
 	tracker_editor.midi_track_toolbars.front()->update_visible_channel_button ();
 
@@ -396,7 +426,7 @@ TrackerGrid::note_channel_colnum(int tracknum)
 void
 TrackerGrid::redisplay_visible_velocity()
 {
-	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
+	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++)
 		get_column(note_velocity_colnum(i))->set_visible(i < mtp->np.ntracks ? tracker_editor.midi_track_toolbars.front()->visible_velocity : false);
 	tracker_editor.midi_track_toolbars.front()->update_visible_velocity_button ();
 
@@ -413,7 +443,7 @@ TrackerGrid::note_velocity_colnum(int tracknum)
 void
 TrackerGrid::redisplay_visible_delay()
 {
-	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++)
+	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++)
 		get_column(note_delay_colnum(i))->set_visible(i < mtp->np.ntracks ? tracker_editor.midi_track_toolbars.front()->visible_delay : false);
 	redisplay_visible_automation_delay ();
 	tracker_editor.midi_track_toolbars.front()->update_visible_delay_button ();
@@ -431,7 +461,7 @@ TrackerGrid::note_delay_colnum(int tracknum)
 void
 TrackerGrid::redisplay_visible_automation()
 {
-	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
+	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 		size_t col = automation_colnum(i);
 		bool is_visible = TrackerUtils::is_in(col, visible_automation_columns);
 		get_column(col)->set_visible(is_visible);
@@ -451,7 +481,7 @@ TrackerGrid::automation_colnum(int tracknum)
 void
 TrackerGrid::redisplay_visible_automation_delay()
 {
-	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
+	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 		size_t col = automation_delay_colnum(i);
 		bool is_visible = tracker_editor.midi_track_toolbars.front()->visible_delay && TrackerUtils::is_in(col - 1, visible_automation_columns);
 		get_column(col)->set_visible(is_visible);
@@ -475,20 +505,25 @@ TrackerGrid::setup ()
 
 	setup_time_column();
 
-	// Instantiate note tracks
-	for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS; i++) {
-		setup_note_column(i);
-		setup_note_channel_column(i);
-		setup_note_velocity_column(i);
-		setup_note_delay_column(i);
-	}
+	// Instantiate midi tracks
+	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+		setup_midi_track_column(mti);
 
-	automation_col_offset = get_columns().size();
+		// Instantiate note tracks
+		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
+			setup_note_column(i);
+			setup_note_channel_column(i);
+			setup_note_velocity_column(i);
+			setup_note_delay_column(i);
+		}
 
-	// Instantiate automation tracks
-	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS; i++) {
-		setup_automation_column(i);
-		setup_automation_delay_column(i);
+		automation_col_offset = get_columns().size();
+
+		// Instantiate automation tracks
+		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
+			setup_automation_column(i);
+			setup_automation_delay_column(i);
+		}
 	}
 
 	// Connect to key press events
@@ -562,12 +597,12 @@ TrackerGrid::redisplay_model ()
 
 			// Render midi notes pattern
 			size_t ntracks = mtp->np.ntracks;
-			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS) {
+			if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK) {
 				// TODO: use Ardour's logger instead of stdout
 				std::cout << "Warning: Number of note tracks needed for "
 				          << "the tracker interface is too high, "
 				          << "some notes might be discarded" << std::endl;
-				ntracks = MAX_NUMBER_OF_NOTE_TRACKS;
+				ntracks = MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK;
 			}
 			for (size_t i = 0; i < ntracks; i++) {
 
@@ -644,7 +679,7 @@ TrackerGrid::redisplay_model ()
 				const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 				size_t auto_count = r2at.count(irow);
 
-				if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS) {
+				if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK) {
 					std::cout << "Warning: Number of automation tracks needed for the tracker interface is too high, some automations might be discarded" << std::endl;
 					continue;
 				}
@@ -1524,6 +1559,15 @@ TrackerGrid::setup_time_column()
 	CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();
 	viewcolumn_time->add_attribute(cellrenderer_time->property_cell_background (), columns._background_color);
 	append_column (*viewcolumn_time);
+}
+
+void
+TrackerGrid::setup_midi_track_column(size_t mti)
+{
+	TreeViewColumn* viewcolumn_midi_track  = new TreeViewColumn (_("Test"/* TODO midi_track name*/), columns.midi_track_name[mti]);
+	CellRenderer* cellrenderer_midi_track = viewcolumn_midi_track->get_first_cell_renderer ();
+	viewcolumn_midi_track->add_attribute(cellrenderer_midi_track->property_cell_background (), columns._background_color);
+	append_column (*viewcolumn_midi_track);
 }
 
 void

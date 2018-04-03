@@ -174,7 +174,11 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
 	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it) {
-		std::cout << "vbox.pack_start [" << &(**it) << "]" << std::endl;
+		std::string label = (*it)->midi_track->name();
+		label += ":";
+		Gtk::Label* mtt_label = new Gtk::Label (label.c_str());
+		mtt_label->show ();
+		vbox.pack_start (*mtt_label, false, false);
 		vbox.pack_start (**it, false, false);
 	}
 	vbox.pack_start (scroller, true, true);
@@ -209,17 +213,17 @@ TrackerEditor::build_param2actrl (Parameter2AutomationControl& param2actrl,
 	param2actrl.clear();
 
 	// Gain
-	param2actrl[Evoral::Parameter(GainAutomation)] =  route->gain_control();
+	param2actrl[Evoral::Parameter(GainAutomation)] =  midi_track->gain_control();
 	automation_connect(param2actrl, Evoral::Parameter(GainAutomation));
 
 	// Mute
-	param2actrl[Evoral::Parameter(MuteAutomation)] =  route->mute_control();
+	param2actrl[Evoral::Parameter(MuteAutomation)] =  midi_track->mute_control();
 	automation_connect(param2actrl, Evoral::Parameter(MuteAutomation));
 
 	// Pan
-	set<Evoral::Parameter> const & pan_params = route->pannable()->what_can_be_automated ();
+	set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		param2actrl[*p] = route->pannable()->automation_control(*p);
+		param2actrl[*p] = midi_track->pannable()->automation_control(*p);
 		automation_connect(param2actrl, *p);
 	}
 
@@ -229,7 +233,7 @@ TrackerEditor::build_param2actrl (Parameter2AutomationControl& param2actrl,
 		param2actrl[*i] = midi_model->automation_control(*i);
 
 	// Processors
-	route->foreach_processor (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::add_processor_to_param2actrl), param2actrl));
+	midi_track->foreach_processor (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::add_processor_to_param2actrl), param2actrl));
 }
 
 void
