@@ -133,9 +133,8 @@ public:
 	// Keep track of all visible automation columns
 	std::set<size_t> visible_automation_columns;
 
-	// TODO have a sequence
+	// TODO: support multi-tracks, have a sequence
 	MidiTrackPattern* mtp;
-	boost::shared_ptr<ARDOUR::Route> route;
 
 	static const std::string note_off_str;
 
