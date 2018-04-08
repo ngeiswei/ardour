@@ -26,10 +26,10 @@
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
 // Maximum number of midi tracks in case of multi-track support
-#define MAX_NUMBER_OF_MIDI_TRACKS 4
+#define MAX_NUMBER_OF_MIDI_TRACKS 2
 
 // Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 16
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 4
 
 // Total maximum number of note tracks
 #define MAX_NUMBER_OF_NOTE_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK
@@ -42,6 +42,7 @@
 
 class TrackerEditor;
 
+// TODO: constify the hell out of it
 class TrackerGrid : public Gtk::TreeView
 {
 public:
@@ -56,26 +57,25 @@ public:
 		Gtk::TreeModelColumn<std::string> _background_color;
 		Gtk::TreeModelColumn<std::string> time;
 		Gtk::TreeModelColumn<std::string> midi_track_name[MAX_NUMBER_OF_MIDI_TRACKS];
-		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> velocity[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_NOTE_TRACKS];
-		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_AUTOMATION_TRACKS];
-		Gtk::TreeModelColumn<ARDOUR::AutomationList::iterator> _automation[MAX_NUMBER_OF_AUTOMATION_TRACKS];
-		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_AUTOMATION_TRACKS];
-		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_AUTOMATION_TRACKS];
-		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> velocity[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<ARDOUR::AutomationList::iterator> _automation[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 	};
 
 	enum midi_note_columns {
-		// TODO: support midi-tracks
-		NOTE_COLNUM=2,			// from 1 cause the first column is for time + 1 for temporary first midi track
+		NOTE_COLNUM=2,			// 1 for time + 1 for the first midi track name
 		CHANNEL_COLNUM,
 		VELOCITY_COLNUM,
 		DELAY_COLNUM
@@ -83,58 +83,60 @@ public:
 
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
-	size_t select_available_automation_column ();
-	size_t add_main_automation_column (const Evoral::Parameter& param);
-	size_t add_midi_automation_column (const Evoral::Parameter& param);
-	void add_processor_automation_column (boost::shared_ptr<ARDOUR::Processor> processor,
+	size_t select_available_automation_column (size_t mti);
+	size_t add_main_automation_column (size_t mti, const Evoral::Parameter& param);
+	size_t add_midi_automation_column (size_t mti, const Evoral::Parameter& param);
+	void add_processor_automation_column (size_t mti, boost::shared_ptr<ARDOUR::Processor> processor,
 	                                      const Evoral::Parameter& what);
 
-	void change_all_channel_tracks_visibility (bool yn, Evoral::Parameter param);
-	void update_automation_column_visibility (const Evoral::Parameter& param);
+	void change_all_channel_tracks_visibility (size_t mti, bool yn, Evoral::Parameter param);
+	void update_automation_column_visibility (size_t mti, const Evoral::Parameter& param);
 
 	// Return if the automation column associated to this parameter is currently visible
-	bool is_automation_visible(const Evoral::Parameter& param) const;
+	bool is_automation_visible(size_t mti, const Evoral::Parameter& param) const;
 
 	// Return true if the gain column is visible
-	bool is_gain_visible () const;
-	bool is_mute_visible () const;
-	bool is_pan_visible () const;
-	void update_gain_column_visibility ();
-	void update_trim_column_visibility ();
-	void update_mute_column_visibility ();
-	void update_pan_columns_visibility ();
+	bool is_gain_visible (size_t mti) const;
+	bool is_mute_visible (size_t mti) const;
+	bool is_pan_visible (size_t mti) const;
+	void update_gain_column_visibility (size_t mti);
+	void update_trim_column_visibility (size_t mti);
+	void update_mute_column_visibility (size_t mti);
+	void update_pan_columns_visibility (size_t mti);
 
 	////////////////////////
 	// Display Pattern    //
 	////////////////////////
 
 	void redisplay_visible_note ();
-	int note_colnum (int tracknum);
+	int mti_col_offset(size_t mti);
+	int note_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_channel ();
-	int note_channel_colnum (int tracknum);
+	int note_channel_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_velocity ();
-	int note_velocity_colnum (int tracknum);
+	int note_velocity_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_delay ();
-	int note_delay_colnum (int tracknum);
+	int note_delay_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_automation ();
-	int automation_colnum (int tracknum);
+	size_t automation_col_offset(size_t mti);
+	int automation_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_automation_delay ();
-	int automation_delay_colnum (int tracknum);
+	int automation_delay_colnum (size_t mti, size_t tracknum);
 
-	void setup ();
+	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
 	void redisplay_model ();    // TODO rename
 
 	TrackerEditor& tracker_editor;
 
 	// Map column index to automation parameter and vice versa
 	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> ColParamBimap;
-	ColParamBimap col2param;
+	std::vector<ColParamBimap> col2params; // For each midi track
 
-	// Keep track of all visible automation columns
+	// Keep track of all visible automation columns across all midi tracks
 	std::set<size_t> visible_automation_columns;
 
-	// TODO: support multi-tracks, have a sequence
-	MidiTrackPattern* mtp;
+	// Pattern per midi track
+	std::vector<MidiTrackPattern*>* mtps;
 
 	static const std::string note_off_str;
 
@@ -147,19 +149,21 @@ public:
 	uint32_t                     nrows;
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_rowidx;
-	int                          edit_tracknum;
 	int                          edit_colnum;
+	int                          edit_mti;
+	MidiTrackPattern*            edit_mtp;
+	int                          edit_tracknum;
 	Gtk::CellEditable*           editing_editable;
 
 private:
 	void setup_time_column ();
-	void setup_midi_track_column (size_t);
-	void setup_note_column (size_t);
-	void setup_note_channel_column (size_t);
-	void setup_note_velocity_column (size_t);
-	void setup_note_delay_column (size_t);
-	void setup_automation_column (size_t);
-	void setup_automation_delay_column (size_t);
+	void setup_midi_track_column (size_t mti);
+	void setup_note_column (size_t mti, size_t i);
+	void setup_note_channel_column (size_t mti, size_t i);
+	void setup_note_velocity_column (size_t mti, size_t i);
+	void setup_note_delay_column (size_t mti, size_t i);
+	void setup_automation_column (size_t mti, size_t i);
+	void setup_automation_delay_column (size_t mti, size_t i);
 
 	/////////////////////
 	// Edit Pattern    //
@@ -181,20 +185,20 @@ private:
 	uint8_t pitch_key (GdkEventKey* ev);
 
 	bool step_editing_note_key_press (GdkEventKey*);
-	bool step_editing_set_on_note (uint8_t pitch, int rowidx, int tracknum);
-	bool step_editing_set_off_note (int rowidx, int tracknum);
-	bool step_editing_delete_note (int rowidx, int tracknum);
+	bool step_editing_set_on_note (uint8_t pitch);
+	bool step_editing_set_off_note ();
+	bool step_editing_delete_note ();
 
 	bool step_editing_note_channel_key_press (GdkEventKey*);
-	bool step_editing_set_note_channel (int digit, int rowidx, int tracknum);
+	bool step_editing_set_note_channel (int digit);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
-	bool step_editing_set_note_velocity (int digit, int rowidx, int tracknum);
+	bool step_editing_set_note_velocity (int digit);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
-	bool step_editing_set_note_delay (int digit, int rowidx, int tracknum);
+	bool step_editing_set_note_delay (int digit);
 	bool step_editing_automation_key_press (GdkEventKey*);
-	bool step_editing_set_automation (int digit, int rowidx, int tracknum);
+	bool step_editing_set_automation (int digit);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
-	bool step_editing_set_automation_delay (int digit, int rowidx, int tracknum);
+	bool step_editing_set_automation_delay (int digit);
 
 	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
@@ -214,13 +218,13 @@ private:
 	NoteTypePtr get_note (const std::string& path); // on or off
 	NoteTypePtr get_note (const Gtk::TreeModel::Path& path); // on or off
 
-	void editing_note_started (Gtk::CellEditable*, const std::string& path, int);
-	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int);
-	void editing_note_velocity_started (Gtk::CellEditable*, const std::string& path, int);
-	void editing_note_delay_started (Gtk::CellEditable*, const std::string& path, int);
-	void editing_automation_started (Gtk::CellEditable*, const std::string& path, int);
-	void editing_automation_delay_started (Gtk::CellEditable*, const std::string& path, int);
-	void editing_started (Gtk::CellEditable*, const std::string& path, int);
+	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_note_velocity_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_note_delay_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_automation_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_automation_delay_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
 
 	void clear_editables ();
 	void editing_canceled ();
@@ -228,46 +232,46 @@ private:
 	// Midi note callbacks
 	uint8_t parse_pitch (const std::string& text) const;
 	void note_edited (const std::string& path, const std::string& text);
-	void set_on_note (uint8_t pitch, int rowidx, int tracknum);
-	void set_off_note (int rowidx, int tracknum);
-	void delete_note (int rowidx, int tracknum);
+	void set_on_note (uint8_t pitch, int rowidx, int mti, int tracknum);
+	void set_off_note (int rowidx, int mti, int tracknum);
+	void delete_note (int rowidx, int mti, int tracknum);
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel (NoteTypePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
 	void set_note_velocity (NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
-	void set_note_delay (int delay, int rowidx, int tracknum);
+	void set_note_delay (int delay, int rowidx, int mti, int tracknum);
 
 	// Play note
 	void play_note(uint8_t pitch);
 	void release_note(uint8_t pitch);
 
 	// Automation callbacks
-	Evoral::Parameter get_parameter (int automation_tracknum);
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
-	AutomationPattern* get_automation_pattern (const Evoral::Parameter& param);
+	Evoral::Parameter get_parameter (int mti, int automation_tracknum);
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, const Evoral::Parameter& param);
+	AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
-	std::pair<double, bool> get_automation_value (int rowidx, int tracknum); // return zero if undefined!
-	void set_automation (double val, int rowidx, int automation_tracknum);
-	void delete_automation (int rowidx, int automation_tracknum);
+	std::pair<double, bool> get_automation_value (int rowidx, int mti, int tracknum); // return zero if undefined!
+	void set_automation (double val, int rowidx, int mti, int automation_tracknum);
+	void delete_automation (int rowidx, int mti, int automation_tracknum);
 	void automation_delay_edited (const std::string& path, const std::string& text);
-	std::pair<int, bool> get_automation_delay (int rowidx, int tracknum); // return zero if undefined!
-	void set_automation_delay (int delay, int rowidx, int automation_tracknum);
+	std::pair<int, bool> get_automation_delay (int rowidx, int mti, int tracknum); // return zero if undefined!
+	void set_automation_delay (int delay, int rowidx, int mti, int automation_tracknum);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	// Map column index to automation track index and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
-	ColAutoTrackBimap col2autotrack;
 
-	size_t gain_column;
-	size_t trim_column; // TODO: support audio tracks
-	size_t mute_column;
-	std::vector<size_t> pan_columns;
+	// ColAutoTrackBimap per midi track
+	std::vector<ColAutoTrackBimap> col2autotracks;
 
-	// Column index of the first automation
-	size_t automation_col_offset;
+	// Gain, trim, mute and pan columns per midi track
+	std::vector<size_t> gain_columns;
+	std::vector<size_t> trim_columns; // TODO: support audio tracks
+	std::vector<size_t> mute_columns;
+	std::vector<std::vector<size_t> > pan_columns;
 
 	// List of column indices currently unassigned to an automation
 	std::set<size_t> available_automation_columns;
