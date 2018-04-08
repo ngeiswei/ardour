@@ -158,14 +158,8 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
-	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it) {
-		std::string label = (*it)->midi_track->name();
-		label += ":";
-		Gtk::Label* mtt_label = new Gtk::Label (label.c_str());
-		mtt_label->show ();
-		vbox.pack_start (*mtt_label, false, false);
+	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
 		vbox.pack_start (**it, false, false);
-	}
 	vbox.pack_start (scroller, true, true);
 
 	add (vbox);
@@ -292,12 +286,12 @@ TrackerEditor::update_automation_patterns ()
 void
 TrackerEditor::setup_toolbars ()
 {
-	for (unsigned i = 0; i < midi_tracks.size(); i++) {
-		Parameter2AutomationControl& param2actrl = param2actrls[i];
-		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = midi_tracks[i];
-		boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_models[i];
-		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, *mtps[i]);
-		// TODO replace that by emplace_back when supports C++11
+	for (size_t mti = 0; mti < midi_tracks.size(); mti++) {
+		Parameter2AutomationControl& param2actrl = param2actrls[mti];
+		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = midi_tracks[mti];
+		boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_models[mti];
+		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, *mtps[mti], mti);
+		// TODO replace by emplace_back when supports C++11
 		midi_track_toolbars.push_back(mttb);
 	}
 
@@ -318,9 +312,7 @@ TrackerEditor::setup_midi_track_toolbars ()
 void
 TrackerEditor::setup_grid ()
 {
-	// TODO: support multi-tracks
-	grid.mtp = mtps.front();
-	grid.setup ();
+	grid.setup (mtps);
 }
 
 void
