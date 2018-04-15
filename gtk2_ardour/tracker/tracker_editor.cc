@@ -78,6 +78,8 @@ using Timecode::BBT_Time;
 //
 // - [ ] Make the non-editing cursor visible
 //
+// - [ ] Support arbitrary number of tracks
+//
 // - [ ] Make sure including audio tracks in the selection doesn't crash
 //
 // - [ ] Wrap the whole code in a Tracker namespace
@@ -85,6 +87,8 @@ using Timecode::BBT_Time;
 // - [ ] Add shortcut for parameters, steps, etc
 //
 // - [ ] Add copy/move, etc notes
+//
+// - [ ] Tranfer other shortcut, spacebar, etc
 //
 // - [ ] Use Ardour's logger instead of stdout
 //
@@ -95,6 +99,13 @@ using Timecode::BBT_Time;
 // - [ ] Support audio tracks and trim automation
 //
 // - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
+
+////////////////
+// Questions? //
+////////////////
+//
+// - [ ] One button delay for both note and automation or 2 botton delay, one
+//       for note and one for automation?
 
 ///////////////////
 // TrackerEditor //
@@ -323,19 +334,17 @@ TrackerEditor::setup_scroller ()
 std::string
 window_name(RegionSelection& rs)
 {
-	std::string wn("Tracker Editor: ");
-	static const unsigned wn_max_size = 32;
+	std::string wn("Tracker Editor:");
+	static const unsigned wn_max_size = 64;
 	bool first = true;
 	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
+		wn += " ";
 		if (wn.size() <= wn_max_size) {
 			MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
 			if (mrv) {
 				boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
-				if (!first)
-					wn += ", ";
 				wn += midi_region->name();
 			}
-			first = false;
 		} else {
 			wn += "...";
 			break;
