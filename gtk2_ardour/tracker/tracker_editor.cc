@@ -76,13 +76,13 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Make the non-editing cursor visible
+//
 // - [ ] Make sure including audio tracks in the selection doesn't crash
 //
 // - [ ] Wrap the whole code in a Tracker namespace
 //
 // - [ ] Add shortcut for parameters, steps, etc
-//
-// - [ ] Make the non-editing cursor visible
 //
 // - [ ] Add copy/move, etc notes
 //
@@ -94,8 +94,6 @@ using Timecode::BBT_Time;
 //
 // - [ ] Support audio tracks and trim automation
 //
-// - [ ] Support multiple tracks and regions.
-//
 // - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 
 ///////////////////
@@ -103,7 +101,7 @@ using Timecode::BBT_Time;
 ///////////////////
 
 TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
-	: ArdourWindow (dynamic_cast<MidiRegionView*>(rs.front())->midi_region()->name())
+	: ArdourWindow (window_name(rs))
 	, session(s)
 	, public_editor(dynamic_cast<MidiRegionView*>(rs.front())->midi_view ()->editor ())
 	, region_selection(rs)
@@ -177,8 +175,7 @@ TrackerEditor::~TrackerEditor ()
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
 TrackerEditor::get_device_names ()
 {
-	// TODO: check whether the device names are per track and upgrade this
-	// function to take the track in input
+	// TODO: support mti
 	return midi_time_axis_views.front()->get_device_names ();
 }
 
@@ -321,4 +318,28 @@ TrackerEditor::setup_scroller ()
 	scroller.add (grid);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
 	scroller.show ();
+}
+
+std::string
+window_name(RegionSelection& rs)
+{
+	std::string wn("Tracker Editor: ");
+	static const unsigned wn_max_size = 32;
+	bool first = true;
+	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
+		if (wn.size() <= wn_max_size) {
+			MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
+			if (mrv) {
+				boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
+				if (!first)
+					wn += ", ";
+				wn += midi_region->name();
+			}
+			first = false;
+		} else {
+			wn += "...";
+			break;
+		}
+	}
+	return wn;
 }

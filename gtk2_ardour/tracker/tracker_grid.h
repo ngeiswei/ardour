@@ -26,16 +26,16 @@
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
 // Maximum number of midi tracks in case of multi-track support
-#define MAX_NUMBER_OF_MIDI_TRACKS 2
+#define MAX_NUMBER_OF_MIDI_TRACKS 4
 
 // Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 4
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 8
 
 // Total maximum number of note tracks
 #define MAX_NUMBER_OF_NOTE_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK
 
 // Maximum number of automation columns per midi track
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 16
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 8
 
 // Total maximum number of automation columns
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK
@@ -236,15 +236,15 @@ private:
 	void set_off_note (int rowidx, int mti, int tracknum);
 	void delete_note (int rowidx, int mti, int tracknum);
 	void note_channel_edited (const std::string& path, const std::string& text);
-	void set_note_channel (NoteTypePtr note, int ch);
+	void set_note_channel (int mti, NoteTypePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
-	void set_note_velocity (NoteTypePtr note, int vel);
+	void set_note_velocity (int mti, NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
 	void set_note_delay (int delay, int rowidx, int mti, int tracknum);
 
 	// Play note
-	void play_note(uint8_t pitch);
-	void release_note(uint8_t pitch);
+	void play_note(int mti, uint8_t pitch);
+	void release_note(int mti, uint8_t pitch);
 
 	// Automation callbacks
 	Evoral::Parameter get_parameter (int mti, int automation_tracknum);
@@ -259,7 +259,7 @@ private:
 	void set_automation_delay (int delay, int rowidx, int mti, int automation_tracknum);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
-	void apply_command (ARDOUR::MidiModel::NoteDiffCommand* cmd);
+	void apply_command (int mti, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	// Map column index to automation track index and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
