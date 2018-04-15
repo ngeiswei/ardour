@@ -128,4 +128,8 @@ private:
 	void setup_scroller ();
 };
 
+
+// Determine the window name of a selection of regions.
+std::string window_name(RegionSelection& rs);
+
 #endif /* __ardour_tracker_tracker_editor_h_ */
