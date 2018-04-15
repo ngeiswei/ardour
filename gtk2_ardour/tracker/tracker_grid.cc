@@ -546,6 +546,7 @@ TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
 		mute_columns.push_back(0);
 		col2params.push_back(ColParamBimap());
 		col2autotracks.push_back(ColAutoTrackBimap());
+		pan_columns.push_back(std::vector<size_t>());
 
 		// Instantiate note tracks
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
@@ -590,6 +591,7 @@ TrackerGrid::redisplay_model ()
 
 	if (tracker_editor.session) {
 		// In case the resolution (lines per beat) has changed
+		// TODO: support multi-tracks
 		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(mtps->front()->delay_ticks_min());
 		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(mtps->front()->delay_ticks_max());
 
@@ -1028,7 +1030,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int tracknum)
 	if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
-		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
 	} else if (off_note) {
 		// Replace off note by another (non-off) note. Calculate the start
@@ -1039,7 +1041,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int tracknum)
 		// Build note using defaults
 		NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
 		char const * opname = _("add note");
-		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
@@ -1057,7 +1059,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int tracknum)
 		}
 
 		char const * opname = _("add note");
-		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		// Only update the length the previous note if the new on note
 		// is shortening it.
 		if (prev_note) {
@@ -1080,7 +1082,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int tracknum)
 
 	// Apply note changes
 	if (cmd)
-		apply_command (cmd);
+		apply_command (mti, cmd);
 }
 
 void
@@ -1098,7 +1100,7 @@ TrackerGrid::set_off_note (int rowidx, int mti, int tracknum)
 	if (on_note) {
 		// Replace the on note by an off note, that is remove the on note
 		char const * opname = _("delete note");
-		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->remove (on_note);
 
 		// If there is no off note, update the length of the preceding node
@@ -1127,14 +1129,14 @@ TrackerGrid::set_off_note (int rowidx, int mti, int tracknum)
 		if (prev_note) {
 			Temporal::Beats new_length = here - prev_start;
 			char const * opname = _("resize note");
-			cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+			cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 			cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, new_length);
 		}
 	}
 
 	// Apply note changes
 	if (cmd)
-		apply_command (cmd);
+		apply_command (mti, cmd);
 }
 
 void
@@ -1150,7 +1152,7 @@ TrackerGrid::delete_note (int rowidx, int mti, int tracknum)
 	if (on_note) {
 		// Delete on note and change
 		char const * opname = _("delete note");
-		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->remove (on_note);
 
 		// If there is an off note, update the length of the preceding note
@@ -1172,13 +1174,13 @@ TrackerGrid::delete_note (int rowidx, int mti, int tracknum)
 		Temporal::Beats end = mtp->np.next_off(rowidx, edit_tracknum);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
-		cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, length);
 	}
 
 	// Apply note changes
 	if (cmd)
-		apply_command (cmd);
+		apply_command (mti, cmd);
 }
 
 void
@@ -1199,14 +1201,14 @@ TrackerGrid::note_channel_edited (const std::string& path, const std::string& te
 	int  ch;
 	if (sscanf (text.c_str(), "%d", &ch) == 1) {
 		ch--;  // Adjust for zero-based counting
-		set_note_channel(note, ch);
+		set_note_channel(edit_mti, note, ch);
 	}
 
 	clear_editables ();
 }
 
 void
-TrackerGrid::set_note_channel (NoteTypePtr note, int ch)
+TrackerGrid::set_note_channel (int mti, NoteTypePtr note, int ch)
 {
 	if (!note)
 		return;
@@ -1215,11 +1217,11 @@ TrackerGrid::set_note_channel (NoteTypePtr note, int ch)
 		char const* opname = _("change note channel");
 
 		// Define change command
-		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->change (note, MidiModel::NoteDiffCommand::Channel, ch);
 
 		// Apply change command
-		apply_command (cmd);
+		apply_command (mti, cmd);
 	}
 }
 
@@ -1241,14 +1243,14 @@ TrackerGrid::note_velocity_edited (const std::string& path, const std::string& t
 	int  vel;
 	// Parse the edited velocity and set the note velocity
 	if (sscanf (text.c_str(), "%d", &vel) == 1) {
-		set_note_velocity (note, vel);
+		set_note_velocity (edit_mti, note, vel);
 	}
 
 	clear_editables ();
 }
 
 void
-TrackerGrid::set_note_velocity (NoteTypePtr note, int vel)
+TrackerGrid::set_note_velocity (int mti, NoteTypePtr note, int vel)
 {
 	if (!note)
 		return;
@@ -1259,11 +1261,11 @@ TrackerGrid::set_note_velocity (NoteTypePtr note, int vel)
 		char const* opname = _("change note velocity");
 
 		// Define change command
-		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models.front()->new_note_diff_command (opname);
+		MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, vel);
 
 		// Apply change command
-		apply_command (cmd);
+		apply_command (mti, cmd);
 	}
 }
 
@@ -1341,10 +1343,10 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int tracknum)
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
 
-	apply_command (cmd);
+	apply_command (mti, cmd);
 }
 
-void TrackerGrid::play_note(uint8_t pitch)
+void TrackerGrid::play_note(int mti, uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1352,17 +1354,17 @@ void TrackerGrid::play_note(uint8_t pitch)
 	event[0] = (MIDI_CMD_NOTE_ON | chan);
 	event[1] = pitch;
 	event[2] = vel;
-	tracker_editor.midi_tracks.front()->write_immediate_event (3, event);
+	tracker_editor.midi_tracks[mti]->write_immediate_event (3, event);
 }
 
-void TrackerGrid::release_note(uint8_t pitch)
+void TrackerGrid::release_note(int mti, uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
 	event[0] = (MIDI_CMD_NOTE_OFF | chan);
 	event[1] = pitch;
 	event[2] = 0;
-	tracker_editor.midi_tracks.front()->write_immediate_event (3, event);
+	tracker_editor.midi_tracks[mti]->write_immediate_event (3, event);
 }
 
 Evoral::Parameter TrackerGrid::get_parameter (int mti, int tracknum)
@@ -1450,7 +1452,7 @@ TrackerGrid::set_automation (double val, int rowidx, int mti, int tracknum)
 		return;
 
 	// Clamp nval to its range
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrls.front()[param];
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrls[mti][param];
 	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
 
 	// Find the control iterator to change
@@ -1599,10 +1601,10 @@ TrackerGrid::register_automation_undo (boost::shared_ptr<AutomationList> alist, 
 }
 
 void
-TrackerGrid::apply_command (MidiModel::NoteDiffCommand* cmd)
+TrackerGrid::apply_command (int mti, MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
-	tracker_editor.midi_models.front()->apply_command (tracker_editor.session, cmd);
+	tracker_editor.midi_models[mti]->apply_command (tracker_editor.session, cmd);
 
 	// reset edit info, since we're done
 	// TODO: is this really necessary since clear_editables does that
@@ -1621,6 +1623,8 @@ TrackerGrid::setup_time_column()
 void
 TrackerGrid::setup_midi_track_column(size_t mti)
 {
+	// TODO: use a "|" as column label header, and instead have the track name
+	// repeat itself vertically along the entire column.
 	std::string label = tracker_editor.midi_tracks[mti]->name();
 	label += ":";
 	TreeViewColumn* viewcolumn_midi_track  = new TreeViewColumn (label, columns.midi_track_name[mti]);
@@ -2140,7 +2144,7 @@ TrackerGrid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_on_note (uint8_t pitch)
 {
-	play_note(pitch);
+	play_note(edit_mti, pitch);
 	set_on_note (pitch, edit_rowidx, edit_mti, edit_tracknum);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
@@ -2224,7 +2228,7 @@ TrackerGrid::step_editing_set_note_channel (int digit)
 		int ch = note->channel();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, position);
-		set_note_channel (note, new_ch - 1);
+		set_note_channel (edit_mti, note, new_ch - 1);
 	}
 
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -2291,7 +2295,7 @@ TrackerGrid::step_editing_set_note_velocity (int digit)
 		int vel = note->velocity();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_vel = TrackerUtils::change_digit (vel, digit, position);
-		set_note_velocity (note, new_vel);
+		set_note_velocity (edit_mti, note, new_vel);
 	}
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
@@ -2628,7 +2632,7 @@ TrackerGrid::key_press (GdkEventKey* ev)
 	case GDK_P:
 	case GDK_bracketleft:       // F+2
 	case GDK_braceleft:
-		play_note (pitch_key (ev));
+		play_note (0 /* TODO: change mti depending on cursor position */, pitch_key (ev));
 		ret = true;
 		break;
 	}
@@ -2713,7 +2717,7 @@ TrackerGrid::key_release (GdkEventKey* ev)
 	case GDK_P:
 	case GDK_bracketleft:       // F+2
 	case GDK_braceleft:
-		release_note (pitch_key (ev));
+		release_note (0 /* TODO: change mti depending on cursor position */, pitch_key (ev));
 		ret = true;
 		break;
 	}
