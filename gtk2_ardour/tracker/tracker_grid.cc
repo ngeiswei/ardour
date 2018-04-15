@@ -383,9 +383,9 @@ TrackerGrid::update_pan_columns_visibility (size_t mti)
 void
 TrackerGrid::redisplay_visible_note()
 {
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = mti < mtps->size() and i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
+			bool visible = i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
 		if (mti < mtps->size())
@@ -411,7 +411,7 @@ TrackerGrid::note_colnum(size_t mti, size_t tracknum)
 void
 TrackerGrid::redisplay_visible_channel()
 {
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = mti < mtps->size() and i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
@@ -433,7 +433,7 @@ TrackerGrid::note_channel_colnum(size_t mti, size_t tracknum)
 void
 TrackerGrid::redisplay_visible_velocity()
 {
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = mti < mtps->size() and i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
@@ -455,7 +455,7 @@ TrackerGrid::note_velocity_colnum(size_t mti, size_t tracknum)
 void
 TrackerGrid::redisplay_visible_delay()
 {
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = mti < mtps->size() and i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
@@ -479,7 +479,7 @@ TrackerGrid::note_delay_colnum(size_t mti, size_t tracknum)
 void
 TrackerGrid::redisplay_visible_automation()
 {
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_colnum(mti, i);
 			bool visible = TrackerUtils::is_in(col, visible_automation_columns);
@@ -508,7 +508,7 @@ TrackerGrid::automation_colnum(size_t mti, size_t tracknum)
 void
 TrackerGrid::redisplay_visible_automation_delay()
 {
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_delay_colnum(mti, i);
 			bool visible = mti < mtps->size() and tracker_editor.midi_track_toolbars[mti]->visible_delay and TrackerUtils::is_in(col - 1, visible_automation_columns);
@@ -537,7 +537,7 @@ TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
 	setup_time_column();
 
 	// Instantiate midi tracks
-	for (size_t mti = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
+	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		setup_midi_track_column(mti);
 
 		// Setup column info
