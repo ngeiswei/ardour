@@ -78,6 +78,7 @@ const std::string TrackerGrid::undefined_str = "***";
 TrackerGrid::TrackerGrid (TrackerEditor& te)
 	: tracker_editor (te)
 	, nrows (0)
+	, current_mti(0)
 	, edit_rowidx (-1)
 	, edit_colnum (-1)
 	, edit_mti (-1)
@@ -962,6 +963,9 @@ TrackerGrid::editing_started (CellEditable* ed, const string& path, int mti, int
 	edit_mtp = (*mtps)[edit_mti];
 	edit_tracknum = tracknum;
 	editing_editable = ed;
+
+	// For now set the current cursor to the edit cursor
+	current_mti = mti;
 }
 
 void
@@ -2148,7 +2152,7 @@ TrackerGrid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_on_note (uint8_t pitch)
 {
-	play_note(edit_mti, pitch);
+	play_note (edit_mti, pitch);
 	set_on_note (pitch, edit_rowidx, edit_mti, edit_tracknum);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_cursor (steps);
@@ -2636,7 +2640,7 @@ TrackerGrid::key_press (GdkEventKey* ev)
 	case GDK_P:
 	case GDK_bracketleft:       // F+2
 	case GDK_braceleft:
-		play_note (0 /* TODO: change mti depending on cursor position */, pitch_key (ev));
+		play_note (current_mti, pitch_key (ev));
 		ret = true;
 		break;
 	}
@@ -2721,7 +2725,7 @@ TrackerGrid::key_release (GdkEventKey* ev)
 	case GDK_P:
 	case GDK_bracketleft:       // F+2
 	case GDK_braceleft:
-		release_note (0 /* TODO: change mti depending on cursor position */, pitch_key (ev));
+		release_note (current_mti, pitch_key (ev));
 		ret = true;
 		break;
 	}
