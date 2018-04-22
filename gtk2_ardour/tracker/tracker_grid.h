@@ -26,23 +26,22 @@
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
 // Maximum number of midi tracks in case of multi-track support
-#define MAX_NUMBER_OF_MIDI_TRACKS 4
+#define MAX_NUMBER_OF_MIDI_TRACKS 32
 
 // Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 8
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 16
 
 // Total maximum number of note tracks
 #define MAX_NUMBER_OF_NOTE_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK
 
 // Maximum number of automation columns per midi track
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 8
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 16
 
 // Total maximum number of automation columns
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK
 
 class TrackerEditor;
 
-// TODO: constify the hell out of it
 class TrackerGrid : public Gtk::TreeView
 {
 public:
@@ -89,7 +88,7 @@ public:
 	void add_processor_automation_column (size_t mti, boost::shared_ptr<ARDOUR::Processor> processor,
 	                                      const Evoral::Parameter& what);
 
-	void change_all_channel_tracks_visibility (size_t mti, bool yn, Evoral::Parameter param);
+	void change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param);
 	void update_automation_column_visibility (size_t mti, const Evoral::Parameter& param);
 
 	// Return if the automation column associated to this parameter is currently visible
@@ -107,6 +106,8 @@ public:
 	////////////////////////
 	// Display Pattern    //
 	////////////////////////
+
+	// TODO: constify the hell out of it
 
 	void redisplay_visible_note ();
 	int mti_col_offset(size_t mti);
