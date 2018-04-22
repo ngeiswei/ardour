@@ -76,7 +76,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Make the non-editing cursor visible
+// - [ ] Make the non-editing cursor is visible
 //
 // - [ ] Support arbitrary number of tracks
 //
@@ -336,7 +336,6 @@ window_name(RegionSelection& rs)
 {
 	std::string wn("Tracker Editor:");
 	static const unsigned wn_max_size = 64;
-	bool first = true;
 	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
 		wn += " ";
 		if (wn.size() <= wn_max_size) {
