@@ -54,6 +54,7 @@ public:
 	struct TrackerGridModelColumns : public Gtk::TreeModel::ColumnRecord {
 		TrackerGridModelColumns();
 		Gtk::TreeModelColumn<std::string> _background_color;
+		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> time;
 		Gtk::TreeModelColumn<std::string> midi_track_name[MAX_NUMBER_OF_MIDI_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];

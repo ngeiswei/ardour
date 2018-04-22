@@ -94,6 +94,7 @@ TrackerGrid::TrackerGridModelColumns::TrackerGridModelColumns()
 	// The background color differs when the row is on beats and
 	// bars. This is to keep track of it.
 	add (_background_color);
+	add (_family);
 	add (time);
 	for (size_t mti /* midi track index */ = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
 		add (midi_track_name[mti]);
@@ -640,6 +641,10 @@ TrackerGrid::redisplay_model ()
 					(row_beats == row_beats.round_up_to_beat() ?
 					 (row_bbt.beats == 1 ? bar_background_color : beat_background_color)
 					 : background_color);
+
+				// TODO: process this out of the mti loop
+				// Set font family to Monospace
+				row[columns._family] = "Monospace";
 
 				// Render midi region name (for now midi track name). Display
 				// names vertically.
@@ -1627,7 +1632,10 @@ TrackerGrid::setup_time_column()
 {
 	TreeViewColumn* viewcolumn_time  = new TreeViewColumn (_("Time"), columns.time);
 	CellRenderer* cellrenderer_time = viewcolumn_time->get_first_cell_renderer ();
+
+	// Link to color attributes
 	viewcolumn_time->add_attribute(cellrenderer_time->property_cell_background (), columns._background_color);
+
 	append_column (*viewcolumn_time);
 }
 
@@ -1636,8 +1644,14 @@ TrackerGrid::setup_midi_track_column(size_t mti)
 {
 	std::string label("|");
 	TreeViewColumn* viewcolumn_midi_track  = new TreeViewColumn (label, columns.midi_track_name[mti]);
-	CellRenderer* cellrenderer_midi_track = viewcolumn_midi_track->get_first_cell_renderer ();
+	CellRendererText* cellrenderer_midi_track = dynamic_cast<CellRendererText*> (viewcolumn_midi_track->get_first_cell_renderer ());
+
+	// Link to font attributes
+	viewcolumn_midi_track->add_attribute(cellrenderer_midi_track->property_family (), columns._family);
+
+	// Link to color attributes
 	viewcolumn_midi_track->add_attribute(cellrenderer_midi_track->property_cell_background (), columns._background_color);
+
 	append_column (*viewcolumn_midi_track);
 }
 
@@ -1649,6 +1663,14 @@ TrackerGrid::setup_note_column (size_t mti, size_t i)
 	// TODO be careful of potential memory leaks
 	TreeViewColumn* viewcolumn_note = new TreeViewColumn (note_str.c_str(), columns.note_name[mti][i]);
 	CellRendererText* cellrenderer_note = dynamic_cast<CellRendererText*> (viewcolumn_note->get_first_cell_renderer ());
+
+	// TODO: maybe property_wrap_mode() can be used to have fake multi-line
+	// header
+
+	// TODO: play with property_stretch() as well
+
+	// // Link to font attributes
+	// viewcolumn_note->add_attribute(cellrenderer_note->property_family (), columns._family);
 
 	// Link to color attributes
 	viewcolumn_note->add_attribute(cellrenderer_note->property_cell_background (), columns._background_color);
