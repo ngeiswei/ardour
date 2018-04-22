@@ -148,6 +148,11 @@ public:
 	TrackerGridModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 	uint32_t                     nrows;
+
+	// Coordonates associated to current cursor
+	int                          current_mti;
+
+	// Coordonates associated to edit cursor
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_rowidx;
 	int                          edit_colnum;
