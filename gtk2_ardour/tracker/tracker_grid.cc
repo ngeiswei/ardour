@@ -215,7 +215,7 @@ TrackerGrid::add_processor_automation_column (size_t mti, boost::shared_ptr<Proc
 }
 
 void
-TrackerGrid::change_all_channel_tracks_visibility (size_t mti, bool yn, Evoral::Parameter param)
+TrackerGrid::change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param)
 {
 	const uint16_t selected_channels = tracker_editor.midi_tracks[mti]->get_playback_channel_mask();
 
@@ -639,6 +639,13 @@ TrackerGrid::redisplay_model ()
 					(row_beats == row_beats.round_up_to_beat() ?
 					 (row_bbt.beats == 1 ? bar_background_color : beat_background_color)
 					 : background_color);
+
+				// Render midi region name (for now midi track name). Display
+				// names vertically.
+				const std::string& name = tracker_editor.midi_tracks[mti]->name();
+				uint32_t offset_idx = irow % (name.size() + 1);
+				const static std::string name_seq(":");
+				row[columns.midi_track_name[mti]] = offset_idx == name.size() ? name_seq : string{name[offset_idx]};
 
 				// Render midi notes pattern
 				size_t ntracks = mtp->np.ntracks;
@@ -1623,10 +1630,7 @@ TrackerGrid::setup_time_column()
 void
 TrackerGrid::setup_midi_track_column(size_t mti)
 {
-	// TODO: use a "|" as column label header, and instead have the track name
-	// repeat itself vertically along the entire column.
-	std::string label = tracker_editor.midi_tracks[mti]->name();
-	label += ":";
+	std::string label("|");
 	TreeViewColumn* viewcolumn_midi_track  = new TreeViewColumn (label, columns.midi_track_name[mti]);
 	CellRenderer* cellrenderer_midi_track = viewcolumn_midi_track->get_first_cell_renderer ();
 	viewcolumn_midi_track->add_attribute(cellrenderer_midi_track->property_cell_background (), columns._background_color);
