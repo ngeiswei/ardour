@@ -76,7 +76,10 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Make the non-editing cursor is visible
+// - [ ] Make the non-editing cursor is visible (look at TreeView::set_hover_selection)
+//
+// - [ ] Grey out + button when max number of note tracks have been
+//       reached. Similarly And grey out Automation selection as well.
 //
 // - [ ] Support arbitrary number of tracks
 //
@@ -86,7 +89,7 @@ using Timecode::BBT_Time;
 //
 // - [ ] Add shortcut for parameters, steps, etc
 //
-// - [ ] Add copy/move, etc notes
+// - [ ] Add copy/move, etc, notes + popup menu
 //
 // - [ ] Tranfer other shortcut, spacebar, etc
 //
