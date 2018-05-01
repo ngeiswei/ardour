@@ -40,6 +40,9 @@
 // Total maximum number of automation columns
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK
 
+#define NUMBER_OF_COL_PER_NOTE_TRACK 5 /*note+channel+velocity+delay+separator*/
+#define NUMBER_OF_COL_PER_AUTOMATION_TRACK 3 /*automation+delay+separator*/
+
 class TrackerEditor;
 
 class TrackerGrid : public Gtk::TreeView
@@ -53,24 +56,32 @@ public:
 
 	struct TrackerGridModelColumns : public Gtk::TreeModel::ColumnRecord {
 		TrackerGridModelColumns();
+		// TODO: add empty columns to separate between each note track and each automations
 		Gtk::TreeModelColumn<std::string> _background_color;
 		Gtk::TreeModelColumn<std::string> _family; // font family
+		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
 		Gtk::TreeModelColumn<std::string> time;
 		Gtk::TreeModelColumn<std::string> midi_track_name[MAX_NUMBER_OF_MIDI_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _channel_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> velocity[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _velocity_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
+		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<ARDOUR::AutomationList::iterator> _automation[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
+		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 	};
 
@@ -78,7 +89,8 @@ public:
 		NOTE_COLNUM=2,			// 1 for time + 1 for the first midi track name
 		CHANNEL_COLNUM,
 		VELOCITY_COLNUM,
-		DELAY_COLNUM
+		DELAY_COLNUM,
+		SEPARATOR_COLNUM
 	};
 
 	// Assign an automation parameter to a column and return the corresponding
@@ -119,11 +131,15 @@ public:
 	int note_velocity_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_delay ();
 	int note_delay_colnum (size_t mti, size_t tracknum);
+	void redisplay_visible_note_separator ();
+	int note_separator_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_automation ();
 	size_t automation_col_offset(size_t mti);
 	int automation_colnum (size_t mti, size_t tracknum);
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (size_t mti, size_t tracknum);
+	void redisplay_visible_automation_separator ();
+	int automation_separator_colnum (size_t mti, size_t tracknum);
 
 	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
 	void redisplay_model ();    // TODO rename
@@ -151,12 +167,15 @@ public:
 	uint32_t                     nrows;
 
 	// Coordonates associated to current cursor
+	Gtk::TreeModel::Path         current_path;
+	int                          current_row;
+	int                          current_col;
 	int                          current_mti;
 
 	// Coordonates associated to edit cursor
 	Gtk::TreeModel::Path         edit_path;
-	int                          edit_rowidx;
-	int                          edit_colnum;
+	int                          edit_row;
+	int                          edit_col;
 	int                          edit_mti;
 	MidiTrackPattern*            edit_mtp;
 	int                          edit_tracknum;
@@ -169,8 +188,10 @@ private:
 	void setup_note_channel_column (size_t mti, size_t i);
 	void setup_note_velocity_column (size_t mti, size_t i);
 	void setup_note_delay_column (size_t mti, size_t i);
+	void setup_note_separator_column (); // TODO: could be replaced by setup_separator
 	void setup_automation_column (size_t mti, size_t i);
 	void setup_automation_delay_column (size_t mti, size_t i);
+	void setup_automation_separator_column (); // TODO: could be replaced by setup_separator
 
 	/////////////////////
 	// Edit Pattern    //
@@ -212,8 +233,12 @@ private:
 	bool button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
-	uint32_t get_row_index (const std::string& path);
-	uint32_t get_row_index (const Gtk::TreeModel::Path& path);
+	// Return the row index of a tree model path
+	uint32_t get_row_index (const std::string& path) const;
+	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
+
+	// Return the column index of a tree view column, -1 if col doesn't exist.
+	int get_col_index (Gtk::TreeViewColumn* col);
 
 	// Get note from path and edit_column
 	NoteTypePtr get_on_note (int rowidx);
