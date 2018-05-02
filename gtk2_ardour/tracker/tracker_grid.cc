@@ -134,13 +134,13 @@ size_t
 TrackerGrid::select_available_automation_column (size_t mti)
 {
 	// Find the next available column
-	if (available_automation_columns.empty()) {
+	if (available_automation_columns[mti].empty()) {
 		std::cout << "Warning: no more available automation column" << std::endl;
 		return 0;
 	}
-	std::set<size_t>::iterator it = available_automation_columns.begin();
+	std::set<size_t>::iterator it = available_automation_columns[mti].begin();
 	size_t column = *it;
-	available_automation_columns.erase(it);
+	available_automation_columns[mti].erase(it);
 
 	return column;
 }
@@ -602,6 +602,7 @@ TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
 		col2params.push_back(ColParamBimap());
 		col2autotracks.push_back(ColAutoTrackBimap());
 		pan_columns.push_back(std::vector<size_t>());
+		available_automation_columns.push_back(std::set<size_t>());
 
 		// Instantiate note tracks
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
@@ -802,7 +803,9 @@ TrackerGrid::redisplay_model ()
 
 					if (i >= MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK) {
 						// TODO: use Ardour log
-						std::cout << "Warning: Number of automation tracks needed for the tracker interface is too high, some automations might be discarded" << std::endl;
+						std::cout << "Warning: The automation track number " << i
+						          << " exceeds the maximum number of automation tracks "
+						          << MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK << std::endl;
 						continue;
 					}
 
@@ -1844,7 +1847,7 @@ void
 TrackerGrid::setup_automation_column (size_t mti, size_t i)
 {
 	stringstream ss_automation;
-	ss_automation << "A" << i;
+	ss_automation << "A" << i << ":" << mti;
 
 	// TODO be careful of potential memory leaks
 	TreeViewColumn* viewcolumn_automation = new TreeViewColumn (_(ss_automation.str().c_str()), columns.automation[mti][i]);
@@ -1863,7 +1866,7 @@ TrackerGrid::setup_automation_column (size_t mti, size_t i)
 	size_t column = get_columns().size();
 	append_column (*viewcolumn_automation);
 	col2autotracks[mti].insert(ColAutoTrackBimap::value_type(column, i));
-	available_automation_columns.insert(column);
+	available_automation_columns[mti].insert(column);
 	get_column(column)->set_visible (false);
 }
 
