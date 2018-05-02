@@ -76,6 +76,8 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Disable note Ch, Vel and Delay when N is disabled
+//
 // - [ ] Make the non-editing cursor is visible (look at TreeView::set_hover_selection)
 //
 // - [ ] Grey out + button when max number of note tracks have been
