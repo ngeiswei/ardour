@@ -305,8 +305,8 @@ private:
 	std::vector<size_t> mute_columns;
 	std::vector<std::vector<size_t> > pan_columns;
 
-	// List of column indices currently unassigned to an automation
-	std::set<size_t> available_automation_columns;
+	// List of column indices currently unassigned to an automation per midi track
+	std::vector<std::set<size_t>> available_automation_columns;
 };
 
 #endif /* __ardour_tracker_grib_h_ */
