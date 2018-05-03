@@ -204,6 +204,9 @@ private:
 	// Move a path by s steps, wrapping around so that is remains [0, nrows).
 	void wrap_around_move (Gtk::TreeModel::Path& path, int s) const;
 
+	// Check whether a given column is editable
+	bool is_editable (Gtk::TreeViewColumn* col) const;
+
 	// Move the cursor steps columns rightwards, or leftwards if steps is
 	// negative.
 	void horizontal_move_cursor (int steps, bool tab=false);

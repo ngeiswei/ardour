@@ -76,8 +76,6 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Fix editing cursor arrow key control
-//
 // - [ ] Make non-editing cursor visible
 //
 // - [ ] Grey out + button when max number of note tracks have been
