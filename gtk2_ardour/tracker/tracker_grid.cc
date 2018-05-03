@@ -426,7 +426,9 @@ TrackerGrid::redisplay_visible_channel()
 {
 	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_channel;
+			bool visible = i < (*mtps)[mti]->np.ntracks
+				and tracker_editor.midi_track_toolbars[mti]->visible_note
+				and tracker_editor.midi_track_toolbars[mti]->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_channel_button ();
@@ -447,7 +449,9 @@ TrackerGrid::redisplay_visible_velocity()
 {
 	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
+			bool visible = i < (*mtps)[mti]->np.ntracks
+				and tracker_editor.midi_track_toolbars[mti]->visible_note
+				and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_velocity_button ();
@@ -468,7 +472,9 @@ TrackerGrid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_delay;
+			bool visible = i < (*mtps)[mti]->np.ntracks
+				and tracker_editor.midi_track_toolbars[mti]->visible_note
+				and tracker_editor.midi_track_toolbars[mti]->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_delay_button ();
@@ -492,10 +498,7 @@ TrackerGrid::redisplay_visible_note_separator()
 	for (size_t mti = 0; mti < mtps->size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = i < (*mtps)[mti]->np.ntracks
-				and (tracker_editor.midi_track_toolbars[mti]->visible_note or
-				     tracker_editor.midi_track_toolbars[mti]->visible_channel or
-				     tracker_editor.midi_track_toolbars[mti]->visible_velocity or
-				     tracker_editor.midi_track_toolbars[mti]->visible_delay);
+				and tracker_editor.midi_track_toolbars[mti]->visible_note;
 			get_column(note_separator_colnum(mti, i))->set_visible (visible);
 		}
 	}
