@@ -157,6 +157,10 @@ MidiTrackToolbar::visible_note_press(GdkEventButton* ev)
 
 	visible_note = !visible_note;
 	grid.redisplay_visible_note();
+	grid.redisplay_visible_channel();
+	grid.redisplay_visible_velocity();
+	grid.redisplay_visible_delay();
+	grid.redisplay_visible_note_separator();
 	return false;
 }
 
