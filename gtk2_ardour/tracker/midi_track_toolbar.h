@@ -124,6 +124,7 @@ public:
 	void update_visible_delay_button();
 	void update_automation_button();
 	void update_remove_note_column_button ();
+	void update_add_note_column_button ();
 
 	TrackerEditor& tracker_editor;
 	Parameter2AutomationControl& param2actrl;
