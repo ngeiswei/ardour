@@ -1923,6 +1923,13 @@ void TrackerGrid::wrap_around_move (TreeModel::Path& path, int steps) const
 		path[0] += nrows;
 }
 
+bool
+TrackerGrid::is_editable (TreeViewColumn* col) const
+{
+	CellRendererText* cellrenderer = dynamic_cast<CellRendererText*> (col->get_first_cell_renderer ());
+	return cellrenderer->property_editable ();
+}
+
 void
 TrackerGrid::horizontal_move_cursor (int steps, bool tab)
 {
@@ -1936,7 +1943,7 @@ TrackerGrid::horizontal_move_cursor (int steps, bool tab)
 		if (colnum < 1)
 			colnum = n_col - 1;
 		col = get_column (colnum);
-		if (col->get_visible ())
+		if (col->get_visible () and is_editable (col))
 			++steps;
 	}
 	while (0 < steps) {
@@ -1944,7 +1951,7 @@ TrackerGrid::horizontal_move_cursor (int steps, bool tab)
 		if (n_col <= colnum)
 			colnum = 1;         // colnum 0 is time
 		col = get_column (colnum);
-		if (col->get_visible ())
+		if (col->get_visible () and is_editable (col))
 			--steps;
 	}
 	TreeModel::Path path = edit_path;
