@@ -78,8 +78,8 @@ using Timecode::BBT_Time;
 //
 // - [ ] Make non-editing cursor visible
 //
-// - [ ] Grey out + button when max number of note tracks have been
-//       reached. Similarly And grey out Automation selection as well.
+// - [ ] Grey out Automation button when no longer automation column
+//       available.
 //
 // - [ ] Support arbitrary number of tracks
 //
@@ -91,7 +91,7 @@ using Timecode::BBT_Time;
 //
 // - [ ] Add copy/move, etc, notes + popup menu
 //
-// - [ ] Tranfer other shortcut, spacebar, etc
+// - [ ] Transfer other shortcut, spacebar, etc
 //
 // - [ ] Use Ardour's logger instead of stdout
 //
