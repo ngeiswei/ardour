@@ -76,7 +76,11 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Do not make the last separator column visible
+//
 // - [ ] Make non-editing cursor visible
+//
+// - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 //
 // - [ ] Grey out Automation button when no longer automation column
 //       available.
@@ -91,17 +95,13 @@ using Timecode::BBT_Time;
 //
 // - [ ] Add copy/move, etc, notes + popup menu
 //
-// - [ ] Transfer other shortcut, spacebar, etc
+// - [ ] Transfer Ardour shortcuts, spacebar, etc
 //
 // - [ ] Use Ardour's logger instead of stdout
-//
-// - [ ] Support ardour shortcut such as playing the song, etc
 //
 // - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
 //
 // - [ ] Support audio tracks and trim automation
-//
-// - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 
 ////////////////
 // Questions? //
