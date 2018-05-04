@@ -58,7 +58,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	: tracker_editor (te)
 	, myactions (X_("Tracking"))
 	, beats_per_row_strings (I18N (_beats_per_row_strings))
-	, step_edit (false)
+	, step_edit (true)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -106,6 +106,7 @@ MainToolbar::setup_layout ()
 	step_edit_button.set_name ("step edit button");
 	step_edit_button.set_text (S_("Step Edit"));
 	step_edit_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MainToolbar::step_edit_press), false);
+	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	step_edit_button.show ();
 	pack_start (step_edit_button, false, false);
 
