@@ -712,8 +712,11 @@ TrackerGrid::redisplay_model ()
 				// names vertically.
 				const std::string& name = tracker_editor.midi_tracks[mti]->name();
 				uint32_t offset_idx = irow % (name.size() + 1);
-				const static std::string name_seq(":");
-				row[columns.midi_track_name[mti]] = offset_idx == name.size() ? name_seq : string{name[offset_idx]};
+				const static std::string name_sep(" ");
+				std::string cell_str = " ";
+				cell_str += offset_idx == name.size() ? name_sep : string{name[offset_idx]};
+				cell_str += " ";
+				row[columns.midi_track_name[mti]] = cell_str;
 
 				// Render midi notes pattern
 				size_t ntracks = mtp->np.ntracks;
