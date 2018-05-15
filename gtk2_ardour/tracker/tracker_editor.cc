@@ -76,6 +76,9 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
+// - [ ] Replace Step Edit button by Edit and have non step edit function by
+//       pressing enter or double clicking
+//
 // - [ ] Do not make the last separator column visible
 //
 // - [ ] Make non-editing cursor visible
