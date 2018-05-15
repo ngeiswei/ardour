@@ -22,6 +22,8 @@
 #include <gtkmm/treeview.h>
 #include <gtkmm/liststore.h>
 
+#include "tracker_column.h"
+
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
@@ -85,17 +87,9 @@ public:
 		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 	};
 
-	enum midi_note_columns {
-		NOTE_COLNUM=2,			// 1 for time + 1 for the first midi track name
-		CHANNEL_COLNUM,
-		VELOCITY_COLNUM,
-		DELAY_COLNUM,
-		SEPARATOR_COLNUM
-	};
-
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
-	size_t select_available_automation_column (size_t mti);
+	size_t select_available_automation_column (size_t mti /* midi track index */);
 	size_t add_main_automation_column (size_t mti, const Evoral::Parameter& param);
 	size_t add_midi_automation_column (size_t mti, const Evoral::Parameter& param);
 	void add_processor_automation_column (size_t mti, boost::shared_ptr<ARDOUR::Processor> processor,
@@ -124,22 +118,22 @@ public:
 
 	void redisplay_visible_note ();
 	int mti_col_offset(size_t mti);
-	int note_colnum (size_t mti, size_t tracknum);
+	int note_colnum (size_t mti, size_t cgi /* column group index */);
 	void redisplay_visible_channel ();
-	int note_channel_colnum (size_t mti, size_t tracknum);
+	int note_channel_colnum (size_t mti, size_t cgi);
 	void redisplay_visible_velocity ();
-	int note_velocity_colnum (size_t mti, size_t tracknum);
+	int note_velocity_colnum (size_t mti, size_t cgi);
 	void redisplay_visible_delay ();
-	int note_delay_colnum (size_t mti, size_t tracknum);
+	int note_delay_colnum (size_t mti, size_t cgi);
 	void redisplay_visible_note_separator ();
-	int note_separator_colnum (size_t mti, size_t tracknum);
+	int note_separator_colnum (size_t mti, size_t cgi);
 	void redisplay_visible_automation ();
 	size_t automation_col_offset(size_t mti);
-	int automation_colnum (size_t mti, size_t tracknum);
+	int automation_colnum (size_t mti, size_t cgi);
 	void redisplay_visible_automation_delay ();
-	int automation_delay_colnum (size_t mti, size_t tracknum);
+	int automation_delay_colnum (size_t mti, size_t cgi);
 	void redisplay_visible_automation_separator ();
-	int automation_separator_colnum (size_t mti, size_t tracknum);
+	int automation_separator_colnum (size_t mti, size_t cgi);
 
 	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
 	void redisplay_model ();    // TODO rename
@@ -171,6 +165,11 @@ public:
 	int                          current_row;
 	int                          current_col;
 	int                          current_mti;
+	int                          current_cgi;
+
+	// TODO: probably not necessary
+	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
+	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
 
 	// Coordonates associated to edit cursor
 	Gtk::TreeModel::Path         edit_path;
@@ -178,7 +177,7 @@ public:
 	int                          edit_col;
 	int                          edit_mti;
 	MidiTrackPattern*            edit_mtp;
-	int                          edit_tracknum;
+	int                          edit_cgi;
 	Gtk::CellEditable*           editing_editable;
 
 private:
@@ -194,26 +193,68 @@ private:
 	void setup_automation_separator_column (); // TODO: could be replaced by setup_separator
 
 	/////////////////////
-	// Edit Pattern    //
+	// Action Utils    //
+	/////////////////////
+
+	// Move a path by s steps, wrapping around so that is remains [0, nrows).
+	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, int s);
+
+	// Move a colnum by s steps, wrapping around so that is remains in the
+	// visible columns
+	void wrap_around_horizontal_move (int& colnum, int s, bool tab);
+
+	int digit_key_press (GdkEventKey* ev);
+	uint8_t pitch_key (GdkEventKey* ev);
+
+	/////////////////////////
+	// Non Editing Actions //
+	/////////////////////////
+
+	// Move the cursor steps rows downwards, or upwards if steps is
+	// negative.
+	void vertical_move_current_cursor (int steps);
+
+	// Move the current cursor steps columns rightwards, or leftwards if steps
+	// is negative.
+	void horizontal_move_current_cursor (int steps, bool tab=false);
+
+	bool move_current_cursor_key_press (GdkEventKey* ev);
+
+	bool key_press (GdkEventKey*);
+	bool key_release (GdkEventKey*);
+	bool button_event (GdkEventButton*);
+	bool scroll_event (GdkEventScroll*);
+
+	// Return the row index of a tree model path
+	uint32_t get_row_index (const std::string& path) const;
+	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
+
+	// Return the column index of a tree view column, -1 if col doesn't exist.
+	int get_col_index (Gtk::TreeViewColumn* col);
+
+	// Play note
+	void play_note(int mti, uint8_t pitch);
+	void release_note(int mti, uint8_t pitch);
+
+	// Set current cursor
+	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col);
+
+	/////////////////////
+	// Editing Actions //
 	/////////////////////
 
 	// Move the cursor steps rows downwards, or upwards if steps is
 	// negative. Called while editing.
-	void vertical_move_cursor (int steps);
-
-	// Move a path by s steps, wrapping around so that is remains [0, nrows).
-	void wrap_around_move (Gtk::TreeModel::Path& path, int s) const;
+	void vertical_move_edit_cursor (int steps);
 
 	// Check whether a given column is editable
 	bool is_editable (Gtk::TreeViewColumn* col) const;
 
-	// Move the cursor steps columns rightwards, or leftwards if steps is
-	// negative.
-	void horizontal_move_cursor (int steps, bool tab=false);
+	// Move the editing cursor steps columns rightwards, or leftwards if steps
+	// is negative.
+	void horizontal_move_edit_cursor (int steps, bool tab=false);
 
-	bool move_cursor_key_press (GdkEventKey* ev);
-	int digit_key_press (GdkEventKey* ev);
-	uint8_t pitch_key (GdkEventKey* ev);
+	bool move_edit_cursor_key_press (GdkEventKey* ev);
 
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch);
@@ -230,18 +271,6 @@ private:
 	bool step_editing_set_automation (int digit);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
 	bool step_editing_set_automation_delay (int digit);
-
-	bool key_press (GdkEventKey*);
-	bool key_release (GdkEventKey*);
-	bool button_event (GdkEventButton*);
-	bool scroll_event (GdkEventScroll*);
-
-	// Return the row index of a tree model path
-	uint32_t get_row_index (const std::string& path) const;
-	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
-
-	// Return the column index of a tree view column, -1 if col doesn't exist.
-	int get_col_index (Gtk::TreeViewColumn* col);
 
 	// Get note from path and edit_column
 	NoteTypePtr get_on_note (int rowidx);
@@ -267,31 +296,27 @@ private:
 	// Midi note callbacks
 	uint8_t parse_pitch (const std::string& text) const;
 	void note_edited (const std::string& path, const std::string& text);
-	void set_on_note (uint8_t pitch, int rowidx, int mti, int tracknum);
-	void set_off_note (int rowidx, int mti, int tracknum);
-	void delete_note (int rowidx, int mti, int tracknum);
+	void set_on_note (uint8_t pitch, int rowidx, int mti, int cgi);
+	void set_off_note (int rowidx, int mti, int cgi);
+	void delete_note (int rowidx, int mti, int cgi);
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel (int mti, NoteTypePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
 	void set_note_velocity (int mti, NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
-	void set_note_delay (int delay, int rowidx, int mti, int tracknum);
-
-	// Play note
-	void play_note(int mti, uint8_t pitch);
-	void release_note(int mti, uint8_t pitch);
+	void set_note_delay (int delay, int rowidx, int mti, int cgi);
 
 	// Automation callbacks
-	Evoral::Parameter get_parameter (int mti, int automation_tracknum);
+	Evoral::Parameter get_parameter (int mti, int automation_cgi);
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, const Evoral::Parameter& param);
 	AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
-	std::pair<double, bool> get_automation_value (int rowidx, int mti, int tracknum); // return zero if undefined!
-	void set_automation (double val, int rowidx, int mti, int automation_tracknum);
-	void delete_automation (int rowidx, int mti, int automation_tracknum);
+	std::pair<double, bool> get_automation_value (int rowidx, int mti, int cgi); // return zero if undefined!
+	void set_automation (double val, int rowidx, int mti, int automation_cgi);
+	void delete_automation (int rowidx, int mti, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);
-	std::pair<int, bool> get_automation_delay (int rowidx, int mti, int tracknum); // return zero if undefined!
-	void set_automation_delay (int delay, int rowidx, int mti, int automation_tracknum);
+	std::pair<int, bool> get_automation_delay (int rowidx, int mti, int cgi); // return zero if undefined!
+	void set_automation_delay (int delay, int rowidx, int mti, int automation_cgi);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (int mti, ARDOUR::MidiModel::NoteDiffCommand* cmd);
@@ -312,4 +337,4 @@ private:
 	std::vector<std::set<size_t>> available_automation_columns;
 };
 
-#endif /* __ardour_tracker_grib_h_ */
+#endif /* __ardour_tracker_tracker_grid_h_ */
