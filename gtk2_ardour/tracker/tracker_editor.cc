@@ -333,7 +333,7 @@ void
 TrackerEditor::setup_scroller ()
 {
 	scroller.add (grid);
-	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
+	scroller.set_policy (POLICY_AUTOMATIC, POLICY_AUTOMATIC);
 	scroller.show ();
 }
 
