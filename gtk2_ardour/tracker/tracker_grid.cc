@@ -3020,46 +3020,19 @@ TrackerGrid::key_release (GdkEventKey* ev)
 bool
 TrackerGrid::button_event (GdkEventButton* ev)
 {
-	// TODO: understand why get_path_at_pos does not work
-	// if (ev->button == 1) {
+	if (ev->button == 1) {
 		TreeModel::Path path;
 		TreeViewColumn* col;
 		int cell_x, cell_y;
 		get_path_at_pos(ev->x, ev->y, path, col, cell_x, cell_y);
-		uint32_t row_idx = get_row_index (path);
-		int col_idx = get_col_index (col);
-		std::cout << "ev->button = " << ev->button
-		          << ", ev->x = " << ev->x
-		          << ", ev->y = " << ev->y
-		          << ", ev->x_root = " << ev->x_root
-		          << ", ev->y_root = " << ev->y_root << std::endl;
-		std::cout << "ev->window = " << ev->window
-		          << ", get_bin_window()->gobj() = "
-		          << get_bin_window()->gobj() << endl;
-		int win_x, win_y;
-		get_bin_window()->get_position(win_x, win_y);
-		std::cout << "win_x = " << win_x << ", win_y = " << win_y << endl;
-		std::cout << "path = " << path << ", row_idx = " << row_idx
-		          << ", col_idx = " << col_idx
-		          << ", cell_x = " << cell_x << ", cell_y = " << cell_y
-		          << endl;
 
-		int x, y;
-		int bx, by;
-		get_pointer (x, y);
-		convert_widget_to_bin_window_coords (x, y, bx, by);
-		get_path_at_pos (bx, by, path);
-		std::cout << "x = " << x << ", y = " << y
-		          << ", bx = " << bx << ", by = " << by
-		          << ", path-2 = " << path << std::endl;
+		if (ev->type == GDK_2BUTTON_PRESS)
+			set_cursor (path, *col, true);
+		else if (ev->type == GDK_BUTTON_PRESS)
+			set_current_cursor (path, col);
+	}
 
-		std::cout << std::endl;
-
-	// }
-
-		set_cursor (path, *col, true);
-
-		return true;
+	return true;
 }
 
 bool
