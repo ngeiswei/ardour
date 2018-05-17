@@ -1553,6 +1553,9 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	/* now trigger a redisplay */
 	// TODO: optimize that!
 	redisplay_model ();
+
+	// Readjust scroller
+	scroll_to_row(path);
 }
 
 Evoral::Parameter TrackerGrid::get_parameter (int mti, int cgi)
