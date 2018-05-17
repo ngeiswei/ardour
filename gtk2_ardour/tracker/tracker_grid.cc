@@ -2925,6 +2925,12 @@ TrackerGrid::key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Set edit cursor
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
+		break;
+
 	default:
 		break;
 	}
