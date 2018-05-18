@@ -76,12 +76,15 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Replace Step Edit button by Edit and have non step edit function by
-//       pressing enter or double clicking
+// - [ ] Do not require to enter the cell to edit it when Step Edit mode is
+//       enabled. On top of that only enable note play when current cursor is
+//       over a note column during Step Edit mode (other always play).
+//
+// - [ ] Support regions with different start time and length
+//
+// - [ ] Support layered regions
 //
 // - [ ] Do not make the last separator column visible
-//
-// - [ ] Make non-editing cursor visible
 //
 // - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 //
@@ -110,7 +113,7 @@ using Timecode::BBT_Time;
 // Questions? //
 ////////////////
 //
-// - [ ] One button delay for both note and automation or 2 botton delay, one
+// - [ ] One button delay for both note and automation or 2 button delay, one
 //       for note and one for automation?
 
 ///////////////////
