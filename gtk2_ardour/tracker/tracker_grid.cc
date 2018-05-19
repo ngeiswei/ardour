@@ -82,6 +82,7 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, current_row (0)
 	, current_col (2)           // TODO: replace note_colnum
 	, current_mti (0)
+	, current_mtp (NULL)
 	, current_cgi (0)
 	, current_note_type (TrackerColumn::NOTE)
 	, current_auto_type (TrackerColumn::AUTOMATION_SEPARATOR)
@@ -969,60 +970,45 @@ TrackerGrid::get_col_index(TreeViewColumn* col)
 }
 
 boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_on_note(int rowidx)
+TrackerGrid::get_on_note (int rowidx, int mti, int cgi)
 {
-	return get_on_note(TreeModel::Path (1U, rowidx));
+	return get_on_note (TreeModel::Path (1U, rowidx), mti, cgi);
 }
 
 boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_on_note(const std::string& path)
+TrackerGrid::get_on_note (const std::string& path, int mti, int cgi)
 {
-	return get_on_note(TreeModel::Path (path));
+	return get_on_note (TreeModel::Path (path), mti, cgi);
 }
 
 boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_on_note(const TreeModel::Path& path)
+TrackerGrid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
 		return NoteTypePtr();
-	return (*iter)[columns._on_note[edit_mti][edit_cgi]];
+	return (*iter)[columns._on_note[mti][cgi]];
 }
 
 boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_off_note(int rowidx)
+TrackerGrid::get_off_note(int rowidx, int mti, int cgi)
 {
-	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowidx));
+	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowidx), mti, cgi);
 }
 
 boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_off_note(const std::string& path)
+TrackerGrid::get_off_note(const std::string& path, int mti, int cgi)
 {
-	return get_off_note (TreeModel::Path (path));
+	return get_off_note (TreeModel::Path (path), mti, cgi);
 }
 
 boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_off_note(const TreeModel::Path& path)
+TrackerGrid::get_off_note(const TreeModel::Path& path, int mti, int cgi)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
 		return NoteTypePtr();
-	return (*iter)[columns._off_note[edit_mti][edit_cgi]];
-}
-
-boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_note(const std::string& path)
-{
-	return get_note (TreeModel::Path (path));
-}
-
-boost::shared_ptr<TrackerGrid::NoteType>
-TrackerGrid::get_note(const TreeModel::Path& path)
-{
-	NoteTypePtr note = get_on_note(path);
-	if (!note)
-		note = get_off_note(path);
-	return note;
+	return (*iter)[columns._off_note[mti][cgi]];
 }
 
 void
@@ -1030,13 +1016,6 @@ TrackerGrid::editing_note_started (CellEditable* ed, const string& path, int mti
 {
 	edit_col = note_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
-
-	if (ed && tracker_editor.main_toolbar.step_edit) {
-		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::step_editing_note_key_press), false);
-		}
-	}
 }
 
 void
@@ -1044,13 +1023,6 @@ TrackerGrid::editing_note_channel_started (CellEditable* ed, const string& path,
 {
 	edit_col = note_channel_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
-
-	if (ed && tracker_editor.main_toolbar.step_edit) {
-		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::step_editing_note_channel_key_press), false);
-		}
-	}
 }
 
 void
@@ -1058,13 +1030,6 @@ TrackerGrid::editing_note_velocity_started (CellEditable* ed, const string& path
 {
 	edit_col = note_velocity_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
-
-	if (ed && tracker_editor.main_toolbar.step_edit) {
-		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::step_editing_note_velocity_key_press), false);
-		}
-	}
 }
 
 void
@@ -1072,13 +1037,6 @@ TrackerGrid::editing_note_delay_started (CellEditable* ed, const string& path, i
 {
 	edit_col = note_delay_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
-
-	if (ed && tracker_editor.main_toolbar.step_edit) {
-		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::step_editing_note_delay_key_press), false);
-		}
-	}
 }
 
 void
@@ -1086,13 +1044,6 @@ TrackerGrid::editing_automation_started (CellEditable* ed, const string& path, i
 {
 	edit_col = automation_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
-
-	if (ed && tracker_editor.main_toolbar.step_edit) {
-		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::step_editing_automation_key_press), false);
-		}
-	}
 }
 
 void
@@ -1100,13 +1051,6 @@ TrackerGrid::editing_automation_delay_started (CellEditable* ed, const string& p
 {
 	edit_col = automation_delay_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
-
-	if (ed && tracker_editor.main_toolbar.step_edit) {
-		Gtk::Entry *e = dynamic_cast<Gtk::Entry*> (ed);
-		if (e) {
-			e->signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::step_editing_automation_delay_key_press), false);
-		}
-	}
 }
 
 void
@@ -1182,8 +1126,8 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 	if (127 < pitch)
 		return;
 
-	NoteTypePtr on_note = get_on_note(rowidx);
-	NoteTypePtr off_note = get_off_note(rowidx);
+	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
+	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int();
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1254,8 +1198,8 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 void
 TrackerGrid::set_off_note (int rowidx, int mti, int cgi)
 {
-	NoteTypePtr on_note = get_on_note(rowidx);
-	NoteTypePtr off_note = get_off_note(rowidx);
+	NoteTypePtr on_note = get_on_note(rowidx, mti, cgi);
+	NoteTypePtr off_note = get_off_note(rowidx, mti, cgi);
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int();
 
@@ -1308,8 +1252,8 @@ TrackerGrid::set_off_note (int rowidx, int mti, int cgi)
 void
 TrackerGrid::delete_note (int rowidx, int mti, int cgi)
 {
-	NoteTypePtr on_note = get_on_note(rowidx);
-	NoteTypePtr off_note = get_off_note(rowidx);
+	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
+	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
@@ -1352,7 +1296,7 @@ TrackerGrid::delete_note (int rowidx, int mti, int cgi)
 void
 TrackerGrid::note_channel_edited (const std::string& path, const std::string& text)
 {
-	NoteTypePtr note = get_on_note(path);
+	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty() || !note) {
 		clear_editables ();
 		return;
@@ -1394,7 +1338,7 @@ TrackerGrid::set_note_channel (int mti, NoteTypePtr note, int ch)
 void
 TrackerGrid::note_velocity_edited (const std::string& path, const std::string& text)
 {
-	NoteTypePtr note = get_on_note(path);
+	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty() || !note) {
 		clear_editables ();
 		return;
@@ -1456,8 +1400,8 @@ TrackerGrid::note_delay_edited (const std::string& path, const std::string& text
 void
 TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int cgi)
 {
-	NoteTypePtr on_note = get_on_note(rowidx);
-	NoteTypePtr off_note = get_off_note(rowidx);
+	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
+	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
 	if (!on_note && !off_note)
 		return;
 
@@ -1536,6 +1480,7 @@ void TrackerGrid::release_note(int mti, uint8_t pitch)
 void
 TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 {
+
 	// Set current row
 	current_path = path;
 	current_row = get_row_index (path);
@@ -1543,9 +1488,10 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	// Set current col
 	current_col = get_col_index (col);
 
-	// Set mti, cgi and type
+	// Set mti, mtp, cgi and types
 	TrackerColumn* tc = dynamic_cast<TrackerColumn*>(col);
 	current_mti = tc->midi_track_idx;
+	current_mtp = (*mtps)[current_mti];
 	current_cgi = tc->col_group_idx;
 	current_note_type = tc->note_type;
 	current_auto_type = tc->auto_type;
@@ -2333,7 +2279,7 @@ TrackerGrid::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
-		ret = move_edit_cursor_key_press (ev);
+		ret = move_current_cursor_key_press (ev);
 		break;
 
 	// Other key not passed to the default entry handler
@@ -2367,28 +2313,28 @@ TrackerGrid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_on_note (uint8_t pitch)
 {
-	play_note (edit_mti, pitch);
-	set_on_note (pitch, edit_row, edit_mti, edit_cgi);
+	play_note (current_mti, pitch);
+	set_on_note (pitch, current_row, current_mti, current_cgi);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 	return true;
 }
 
 bool
 TrackerGrid::step_editing_set_off_note ()
 {
-	set_off_note (edit_row, edit_mti, edit_cgi);
+	set_off_note (current_row, current_mti, current_cgi);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 	return true;
 }
 
 bool
 TrackerGrid::step_editing_delete_note ()
 {
-	delete_note (edit_row, edit_mti, edit_cgi);
+	delete_note (current_row, current_mti, current_cgi);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 	return true;
 }
 
@@ -2433,7 +2379,7 @@ TrackerGrid::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
-		ret = move_edit_cursor_key_press (ev);
+		ret = move_current_cursor_key_press (ev);
 		break;
 
 	default:
@@ -2446,16 +2392,16 @@ TrackerGrid::step_editing_note_channel_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_note_channel (int digit)
 {
-	boost::shared_ptr<TrackerGrid::NoteType> note = get_on_note(edit_row);
+	boost::shared_ptr<TrackerGrid::NoteType> note = get_on_note (current_row, current_mti, current_cgi);
 	if (note) {
 		int ch = note->channel();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, position);
-		set_note_channel (edit_mti, note, new_ch - 1);
+		set_note_channel (current_mti, note, new_ch - 1);
 	}
 
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 	return true;
 }
 
@@ -2500,7 +2446,7 @@ TrackerGrid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
-		ret = move_edit_cursor_key_press (ev);
+		ret = move_current_cursor_key_press (ev);
 		break;
 
 	default:
@@ -2513,15 +2459,15 @@ TrackerGrid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_note_velocity (int digit)
 {
-	boost::shared_ptr<TrackerGrid::NoteType> note = get_on_note(edit_row);
+	boost::shared_ptr<TrackerGrid::NoteType> note = get_on_note (current_row, current_mti, current_cgi);
 	if (note) {
 		int vel = note->velocity();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_vel = TrackerUtils::change_digit (vel, digit, position);
-		set_note_velocity (edit_mti, note, new_vel);
+		set_note_velocity (current_mti, note, new_vel);
 	}
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 	return true;
 }
 
@@ -2578,7 +2524,7 @@ TrackerGrid::step_editing_note_delay_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
-		ret = move_edit_cursor_key_press (ev);
+		ret = move_current_cursor_key_press (ev);
 		break;
 
 	default:
@@ -2593,23 +2539,23 @@ TrackerGrid::step_editing_set_note_delay (int digit)
 {
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	NoteTypePtr on_note = get_on_note(edit_row);
-	NoteTypePtr off_note = get_off_note(edit_row);
+	NoteTypePtr on_note = get_on_note (current_row, current_mti, current_cgi);
+	NoteTypePtr off_note = get_off_note (current_row, current_mti, current_cgi);
 	if (!on_note && !off_note) {
 		vertical_move_edit_cursor (steps);
 		return true;
 	}
 
 	// Fetch delay
-	int old_delay = on_note ? edit_mtp->region_relative_delay_ticks(on_note->time(), edit_row)
-		: edit_mtp->region_relative_delay_ticks(off_note->end_time(), edit_row);
+	int old_delay = on_note ? current_mtp->region_relative_delay_ticks(on_note->time(), current_row)
+		: current_mtp->region_relative_delay_ticks(off_note->end_time(), current_row);
 
 	// Update delay
 	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, position);
-	set_note_delay (new_delay, edit_row, edit_mti, edit_cgi);
+	set_note_delay (new_delay, current_row, current_mti, current_cgi);
 
 	// Move the cursor
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 
 	return true;
 }
@@ -2667,7 +2613,7 @@ TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
-		ret = move_edit_cursor_key_press (ev);
+		ret = move_current_cursor_key_press (ev);
 		break;
 
 	default:
@@ -2680,17 +2626,17 @@ TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_automation (int digit)
 {
-	std::pair<double, bool> val_def = get_automation_value(edit_row, edit_mti, edit_cgi);
+	std::pair<double, bool> val_def = get_automation_value(current_row, current_mti, current_cgi);
 	double oval = val_def.first;
 
 	// Set new value
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 	double nval = TrackerUtils::change_digit_or_sign (oval, digit, position);
-	set_automation (nval, edit_row, edit_mti, edit_cgi);
+	set_automation (nval, current_row, current_mti, current_cgi);
 
 	// Move cursor
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 
 	return true;
 }
@@ -2748,7 +2694,7 @@ TrackerGrid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
-		ret = move_edit_cursor_key_press (ev);
+		ret = move_current_cursor_key_press (ev);
 		break;
 
 	default:
@@ -2761,19 +2707,19 @@ TrackerGrid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_automation_delay (int digit)
 {
-	std::pair<int, bool> val_def = get_automation_delay (edit_row, edit_mti, edit_cgi);
+	std::pair<int, bool> val_def = get_automation_delay (current_row, current_mti, current_cgi);
 	int old_delay = val_def.first;
 
 	// Set new value
 	if (val_def.second) {
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, position);
-		set_automation_delay (new_delay, edit_row, edit_mti, edit_cgi);
+		set_automation_delay (new_delay, current_row, current_mti, current_cgi);
 	}
 
 	// Move cursor
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_edit_cursor (steps);
+	vertical_move_current_cursor (steps);
 
 	return true;
 }
@@ -2835,10 +2781,10 @@ TrackerGrid::move_current_cursor_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::key_press (GdkEventKey* ev)
+TrackerGrid::non_editing_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
-
+	
 	switch (ev->keyval) {
 	// On notes
 	case GDK_z:                 // C
@@ -2942,7 +2888,7 @@ TrackerGrid::key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::key_release (GdkEventKey* ev)
+TrackerGrid::non_editing_key_release (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3024,6 +2970,45 @@ TrackerGrid::key_release (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool
+TrackerGrid::key_press (GdkEventKey* ev)
+{
+	if (tracker_editor.main_toolbar.step_edit) {
+		switch (current_auto_type) {
+		case TrackerColumn::AUTOMATION_SEPARATOR:
+			switch (current_note_type) {
+			case TrackerColumn::NOTE:
+				return step_editing_note_key_press (ev);
+			case TrackerColumn::CHANNEL:
+				return step_editing_note_channel_key_press (ev);
+			case TrackerColumn::VELOCITY:
+				return step_editing_note_velocity_key_press (ev);
+			case TrackerColumn::DELAY:
+				return step_editing_note_delay_key_press (ev);
+			default:
+				// TODO use Ardour log
+				std::cout << "Error";
+			}
+		case TrackerColumn::AUTOMATION:
+			return step_editing_automation_key_press (ev);
+		case TrackerColumn::AUTOMATION_DELAY:
+			return step_editing_automation_delay_key_press (ev);
+		default:
+			// TODO use Ardour log
+			std::cout << "Error";
+		}
+	}
+	else return non_editing_key_press (ev);
+
+	return false;
+}
+
+bool
+TrackerGrid::key_release (GdkEventKey* ev)
+{
+	return non_editing_key_release (ev);
 }
 
 bool

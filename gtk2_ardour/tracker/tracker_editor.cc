@@ -76,13 +76,7 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Do not require to enter the cell to edit it when Step Edit mode is
-//       enabled. On top of that only enable note play when current cursor is
-//       over a note column during Step Edit mode (other always play).
-//
 // - [ ] Support regions with different start time and length
-//
-// - [ ] Support layered regions
 //
 // - [ ] Do not make the last separator column visible
 //
@@ -90,6 +84,8 @@ using Timecode::BBT_Time;
 //
 // - [ ] Grey out Automation button when no longer automation column
 //       available.
+//
+// - [ ] Support layered regions
 //
 // - [ ] Support arbitrary number of tracks
 //
