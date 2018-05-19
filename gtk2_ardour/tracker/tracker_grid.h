@@ -165,6 +165,7 @@ public:
 	int                          current_row;
 	int                          current_col;
 	int                          current_mti;
+	MidiTrackPattern*            current_mtp;	
 	int                          current_cgi;
 
 	// TODO: probably not necessary
@@ -218,8 +219,11 @@ private:
 	// is negative.
 	void horizontal_move_current_cursor (int steps, bool tab=false);
 
-	bool move_current_cursor_key_press (GdkEventKey* ev);
+	bool move_current_cursor_key_press (GdkEventKey*);
 
+	bool non_editing_key_press (GdkEventKey*);
+	bool non_editing_key_release (GdkEventKey*);
+	
 	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
 	bool button_event (GdkEventButton*);
@@ -272,15 +276,13 @@ private:
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
 	bool step_editing_set_automation_delay (int digit);
 
-	// Get note from path and edit_column
-	NoteTypePtr get_on_note (int rowidx);
-	NoteTypePtr get_on_note (const std::string& path);
-	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path);
-	NoteTypePtr get_off_note (int rowidx);
-	NoteTypePtr get_off_note (const std::string& path);
-	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path);
-	NoteTypePtr get_note (const std::string& path); // on or off
-	NoteTypePtr get_note (const Gtk::TreeModel::Path& path); // on or off
+	// Get note from path, mti and cgi
+	NoteTypePtr get_on_note (int rowidx, int mti, int cgi);
+	NoteTypePtr get_on_note (const std::string& path, int mti, int cgi);
+	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	NoteTypePtr get_off_note (int rowidx, int mti, int cgi);
+	NoteTypePtr get_off_note (const std::string& path, int mti, int cgi);
+	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
 	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
