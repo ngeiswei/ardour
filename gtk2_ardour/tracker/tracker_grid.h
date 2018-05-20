@@ -31,13 +31,13 @@
 #define MAX_NUMBER_OF_MIDI_TRACKS 32
 
 // Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 16
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK 8
 
 // Total maximum number of note tracks
 #define MAX_NUMBER_OF_NOTE_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK
 
 // Maximum number of automation columns per midi track
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 16
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK 8
 
 // Total maximum number of automation columns
 #define MAX_NUMBER_OF_AUTOMATION_TRACKS MAX_NUMBER_OF_MIDI_TRACKS*MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK
