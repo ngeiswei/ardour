@@ -85,6 +85,9 @@ using Timecode::BBT_Time;
 // - [ ] Grey out Automation button when no longer automation column
 //       available.
 //
+// - [ ] Fix focus. When mouse click on grid, it should be enough to have the
+//       focus on it.
+//
 // - [ ] Support layered regions
 //
 // - [ ] Support arbitrary number of tracks
