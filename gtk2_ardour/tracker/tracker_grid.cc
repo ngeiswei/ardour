@@ -77,10 +77,9 @@ const std::string TrackerGrid::undefined_str = "***";
 
 TrackerGrid::TrackerGrid (TrackerEditor& te)
 	: tracker_editor (te)
-	, nrows (0)
 	, current_path (1)
 	, current_row (0)
-	, current_col (2)           // TODO: replace note_colnum
+	, current_col (2)
 	, current_mti (0)
 	, current_mtp (NULL)
 	, current_cgi (0)
@@ -92,6 +91,7 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, edit_mtp (NULL)
 	, edit_cgi (-1)
 	, editing_editable (NULL)
+	, global_nrows (0)
 {}
 
 TrackerGrid::~TrackerGrid () {}
@@ -612,6 +612,8 @@ TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
 		col2autotracks.push_back(ColAutoTrackBimap());
 		pan_columns.push_back(std::vector<size_t>());
 		available_automation_columns.push_back(std::set<size_t>());
+		row_offset.push_back(push_back(0));
+		nrows.push_back(push_back(0));
 
 		// Instantiate note tracks
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
@@ -685,11 +687,13 @@ TrackerGrid::redisplay_model ()
 
 			TreeModel::Row row;
 
-			nrows = mtp->nrows;
+			row_offset[mti] = 0; // TODO: set row_offset
+			nrows[mti] = mtp->nrows;
+			global_nrow = std::max(global_nrows, row_offset[mti] + nrows[mti]);
 
 			// Fill rows
 			TreeModel::Children::iterator row_it = model->children().begin();
-			for (uint32_t irow = 0; irow < nrows; irow++) {
+			for (uint32_t irow = 0; irow < nrows[mti]; irow++) {
 				// Used to draw the background of the cursor
 				bool is_current_row = (int)irow == current_row;
 
@@ -1931,23 +1935,29 @@ void
 TrackerGrid::vertical_move_edit_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
-	wrap_around_vertical_move (path, steps);
+	wrap_around_vertical_move (path, steps, edit_mti);
 	TreeViewColumn* col = get_column (edit_col);
 	set_cursor (path, *col, true);
 }
 
 void
-TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int steps)
+TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int steps, int mti)
 {
+	// TODO: implement a modulo offset function and use it
+
+	// TODO: or rather implement a is_defined(path, col) and and jump
+	// another step if not
 	path[0] += steps;
-	path[0] %= nrows;
+	path[0] %= global_nrows;
 	if (path[0] < 0)
-		path[0] += nrows;
+		path[0] += nrows[mti];
 }
 
 void
 TrackerGrid::wrap_around_horizontal_move (int& colnum, int steps, bool tab)
 {
+	// Use is_defined(path, col) to skip undefined cells
+	
 	// TODO support tab == true, to move from one ardour track to the next
 	const int n_col = get_columns().size();
 	TreeViewColumn* col;
@@ -2728,7 +2738,7 @@ void
 TrackerGrid::vertical_move_current_cursor (int steps)
 {
 	TreeModel::Path path = current_path;
-	wrap_around_vertical_move (path, steps);
+	wrap_around_vertical_move (path, steps, current_mti);
 	TreeViewColumn* col = get_column (current_col);
 	set_current_cursor (path, col);
 }
