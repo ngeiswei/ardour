@@ -197,7 +197,7 @@ private:
 	/////////////////////
 
 	// Move a path by s steps, wrapping around so that is remains [0, nrows).
-	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, int s);
+	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, int steps, int mti);
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns
