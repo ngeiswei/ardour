@@ -158,7 +158,6 @@ public:
 
 	TrackerGridModelColumns      columns;
 	Glib::RefPtr<Gtk::ListStore> model;
-	uint32_t                     nrows;
 
 	// Coordonates associated to current cursor
 	Gtk::TreeModel::Path         current_path;
@@ -337,6 +336,11 @@ private:
 
 	// List of column indices currently unassigned to an automation per midi track
 	std::vector<std::set<size_t>> available_automation_columns;
+
+	// Row index offset and number of valid rows per mti
+	std::vector<uint32_t>        row_offset;
+	std::vector<uint32_t>        nrows;
+	uint32_t                     global_nrows;
 };
 
 #endif /* __ardour_tracker_tracker_grid_h_ */
