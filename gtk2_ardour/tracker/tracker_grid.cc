@@ -612,8 +612,8 @@ TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
 		col2autotracks.push_back(ColAutoTrackBimap());
 		pan_columns.push_back(std::vector<size_t>());
 		available_automation_columns.push_back(std::set<size_t>());
-		row_offset.push_back(push_back(0));
-		nrows.push_back(push_back(0));
+		row_offset.push_back(0);
+		nrows.push_back(0);
 
 		// Instantiate note tracks
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
@@ -689,7 +689,7 @@ TrackerGrid::redisplay_model ()
 
 			row_offset[mti] = 0; // TODO: set row_offset
 			nrows[mti] = mtp->nrows;
-			global_nrow = std::max(global_nrows, row_offset[mti] + nrows[mti]);
+			global_nrows = std::max(global_nrows, row_offset[mti] + nrows[mti]);
 
 			// Fill rows
 			TreeModel::Children::iterator row_it = model->children().begin();
@@ -2006,12 +2006,12 @@ TrackerGrid::move_edit_cursor_key_press (GdkEventKey* ev)
 
 	case GDK_Up:
 	case GDK_uparrow:
-		vertical_move_edit_cursor(-1);
+		vertical_move_edit_cursor (-1);
 		ret = true;
 		break;
 	case GDK_Down:
 	case GDK_downarrow:
-		vertical_move_edit_cursor(1);
+		vertical_move_edit_cursor (1);
 		ret = true;
 		break;
 	case GDK_Left:
