@@ -49,17 +49,17 @@ void BasePattern::set_rows_per_beat(uint16_t rpb)
 	_ticks_per_row = BBT_Time::ticks_per_beat/rows_per_beat;
 }
 
-Temporal::Beats BasePattern::find_position_row_beats()
+Temporal::Beats BasePattern::find_position_row_beats() const
 {	
 	return position_beats.snap_to (beats_per_row);
 }
 
-Temporal::Beats BasePattern::find_end_row_beats()
+Temporal::Beats BasePattern::find_end_row_beats() const
 {
 	return end_beats.snap_to (beats_per_row);
 }
 
-uint32_t BasePattern::find_nrows()
+uint32_t BasePattern::find_nrows() const
 {
 	return (end_row_beats - position_row_beats).to_double() * rows_per_beat;
 }
@@ -75,66 +75,71 @@ void BasePattern::set_row_range()
 	nrows = find_nrows();
 }
 
-samplepos_t BasePattern::sample_at_row(uint32_t irow, int32_t delay)
+samplepos_t BasePattern::sample_at_row(uint32_t irow, int32_t delay) const
 {
 	return _conv.to (beats_at_row(irow, delay));
 }
 
-Temporal::Beats BasePattern::beats_at_row(uint32_t irow, int32_t delay)
+Temporal::Beats BasePattern::beats_at_row(uint32_t irow, int32_t delay) const
 {
 	Temporal::Beats result = position_row_beats + (irow*1.0) / rows_per_beat;
 	result += Temporal::Beats::ticks(delay);
 	return result;
 }
 
-Temporal::Beats BasePattern::region_relative_beats_at_row(uint32_t irow, int32_t delay)
+Temporal::Beats BasePattern::region_relative_beats_at_row(uint32_t irow, int32_t delay) const
 {
 	return beats_at_row(irow, delay) - position_beats + start_beats;
 }
 
-uint32_t BasePattern::row_at_beats(Temporal::Beats beats)
+uint32_t BasePattern::row_at_beats(const Temporal::Beats& beats) const
 {
-	Temporal::Beats half_row(0.5/rows_per_beat);
-	return clamp((beats - position_row_beats + half_row).to_double() * rows_per_beat);
+	return clamp(relative_row_at_beats(beats));
 }
 
-uint32_t BasePattern::row_at_sample(samplepos_t sample)
+int BasePattern::relative_row_at_beats(const Temporal::Beats& beats) const
+{
+	Temporal::Beats half_row(0.5/rows_per_beat);
+	return (int)((beats - position_row_beats + half_row).to_double() * rows_per_beat);
+}
+
+uint32_t BasePattern::row_at_sample(samplepos_t sample) const
 {
 	return row_at_beats (_conv.from (sample));
 }
 
-uint32_t BasePattern::row_at_beats_min_delay(Temporal::Beats beats)
+uint32_t BasePattern::row_at_beats_min_delay(const Temporal::Beats& beats) const
 {
 	Temporal::Beats tpr_minus_1 = Temporal::Beats::ticks(_ticks_per_row - 1);
 	return clamp((beats - position_row_beats + tpr_minus_1).to_double() * rows_per_beat);
 }
 
-uint32_t BasePattern::row_at_sample_min_delay(samplepos_t sample)
+uint32_t BasePattern::row_at_sample_min_delay(samplepos_t sample) const
 {
 	return row_at_beats_min_delay(_conv.from (sample));
 }
 
-uint32_t BasePattern::row_at_beats_max_delay(Temporal::Beats beats)
+uint32_t BasePattern::row_at_beats_max_delay(const Temporal::Beats& beats) const
 {
 	return clamp((beats - position_row_beats).to_double() * rows_per_beat);
 }
 
-uint32_t BasePattern::row_at_sample_max_delay(samplepos_t sample)
+uint32_t BasePattern::row_at_sample_max_delay(samplepos_t sample) const
 {
 	return row_at_beats_max_delay (_conv.from (sample));
 }
 
-int64_t BasePattern::delay_ticks(const Temporal::Beats& event_time, uint32_t irow)
+int64_t BasePattern::delay_ticks(const Temporal::Beats& event_time, uint32_t irow) const
 {
 	return (event_time - beats_at_row(irow)).to_ticks();
 }
 
-int64_t BasePattern::delay_ticks(samplepos_t sample, uint32_t irow)
+int64_t BasePattern::delay_ticks(samplepos_t sample, uint32_t irow) const
 {
 	return delay_ticks(_conv.from (sample), irow);
 }
 
-int64_t BasePattern::region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t irow)
+int64_t BasePattern::region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t irow) const
 {
 	return delay_ticks(event_time + position_beats - start_beats, irow);
 }

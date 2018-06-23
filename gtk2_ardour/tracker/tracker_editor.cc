@@ -78,6 +78,8 @@ using Timecode::BBT_Time;
 //
 // - [ ] Support regions with different start time and length
 //
+// - [ ] Underlie the digit to be edited
+//
 // - [ ] Do not make the last separator column visible
 //
 // - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
