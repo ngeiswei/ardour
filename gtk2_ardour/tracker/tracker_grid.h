@@ -197,11 +197,11 @@ private:
 	/////////////////////
 
 	// Move a path by s steps, wrapping around so that is remains [0, nrows).
-	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, int steps, int mti);
+	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, int mti, int s);
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns
-	void wrap_around_horizontal_move (int& colnum, int s, bool tab);
+	void wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int s, bool tab);
 
 	int digit_key_press (GdkEventKey* ev);
 	uint8_t pitch_key (GdkEventKey* ev);
@@ -252,6 +252,10 @@ private:
 
 	// Check whether a given column is editable
 	bool is_editable (Gtk::TreeViewColumn* col) const;
+
+	// Check if the cell is defined at all
+	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
+	bool is_defined (const Gtk::TreeModel::Path& path, int mti) const;
 
 	// Move the editing cursor steps columns rightwards, or leftwards if steps
 	// is negative.
