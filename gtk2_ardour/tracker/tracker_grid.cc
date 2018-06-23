@@ -673,23 +673,34 @@ TrackerGrid::redisplay_model ()
 		std::string passive_foreground_color = UIConfiguration::instance().color_str ("tracker editor: passive foreground");
 		std::string cursor_color = UIConfiguration::instance().color_str ("tracker editor: cursor");
 
-		// Fill row independent of mtps, and create missing row
-		// TODO: need to determine nrow as well as the first row
-
+		// Get the min start beat over all tracks
+		Temporal::Beats min_position_beats = numeric_limits<Temporal::Beats>::max();
 		for (size_t mti = 0; mti < mtps->size(); mti++) {
-			// Used to draw the background of the cursor
-			bool is_current_mti = current_mti == (int)mti;
-
 			MidiTrackPattern* mtp = (*mtps)[mti];
 
+			// Update rows per beat
 			mtp->set_rows_per_beat(tracker_editor.main_toolbar.rows_per_beat);
 			mtp->update();
 
-			TreeModel::Row row;
+			// Get min position beat
+			if (mtp->position_row_beats < min_position_beats)
+				min_position_beats = mtp->position_row_beats;
+		}
 
-			row_offset[mti] = 0; // TODO: set row_offset
+		// Set row info
+		global_nrows = 0;
+		for (size_t mti = 0; mti < mtps->size(); mti++) {
+			MidiTrackPattern* mtp = (*mtps)[mti];
+			row_offset[mti] = (int32_t)-mtp->relative_row_at_beats(min_position_beats);
 			nrows[mti] = mtp->nrows;
 			global_nrows = std::max(global_nrows, row_offset[mti] + nrows[mti]);
+		}
+
+		for (size_t mti = 0; mti < mtps->size(); mti++) {
+			MidiTrackPattern* mtp = (*mtps)[mti];
+
+			// Used to draw the background of the cursor
+			bool is_current_mti = current_mti == (int)mti;
 
 			// Fill rows
 			TreeModel::Children::iterator row_it = model->children().begin();
@@ -700,7 +711,7 @@ TrackerGrid::redisplay_model ()
 				// Get existing row, or create one if it does exist
 				if (row_it == model->children().end())
 					row_it = model->append();
-				row = *row_it++;
+				TreeModel::Row row = *row_it++;
 
 				Temporal::Beats row_beats = mtp->beats_at_row(irow);
 				Temporal::Beats row_relative_beats = mtp->region_relative_beats_at_row(irow);
@@ -1935,28 +1946,30 @@ void
 TrackerGrid::vertical_move_edit_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
-	wrap_around_vertical_move (path, steps, edit_mti);
+	wrap_around_vertical_move (path, edit_mti, steps);
 	TreeViewColumn* col = get_column (edit_col);
 	set_cursor (path, *col, true);
 }
 
 void
-TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int steps, int mti)
+TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int mti, int steps)
 {
-	// TODO: implement a modulo offset function and use it
+	// TODO: make sure that steps is equal to or lower than nrows[mti]
+	assert (std::abs(steps) <= nrows[mti]);
 
-	// TODO: or rather implement a is_defined(path, col) and and jump
-	// another step if not
-	path[0] += steps;
-	path[0] %= global_nrows;
-	if (path[0] < 0)
-		path[0] += nrows[mti];
+	// Step till it ends up in a defined cell
+	do {
+		path[0] += steps;
+		path[0] %= global_nrows;
+		if (path[0] < 0)
+			path[0] += global_nrows;
+	} while (!is_defined (path, mti));
 }
 
 void
-TrackerGrid::wrap_around_horizontal_move (int& colnum, int steps, bool tab)
+TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab)
 {
-	// Use is_defined(path, col) to skip undefined cells
+	// TODO: make sure it doesn't loop forever
 	
 	// TODO support tab == true, to move from one ardour track to the next
 	const int n_col = get_columns().size();
@@ -1967,7 +1980,7 @@ TrackerGrid::wrap_around_horizontal_move (int& colnum, int steps, bool tab)
 		if (colnum < 1)
 			colnum = n_col - 1;
 		col = get_column (colnum);
-		if (col->get_visible () and is_editable (col))
+		if (col->get_visible () and is_editable (col) and is_defined (path, col))
 			++steps;
 	}
 	while (0 < steps) {
@@ -1975,7 +1988,7 @@ TrackerGrid::wrap_around_horizontal_move (int& colnum, int steps, bool tab)
 		if (n_col <= colnum)
 			colnum = 1;         // colnum 0 is time
 		col = get_column (colnum);
-		if (col->get_visible () and is_editable (col))
+		if (col->get_visible () and is_editable (col) and is_defined (path, col))
 			--steps;
 	}
 }
@@ -1987,13 +2000,27 @@ TrackerGrid::is_editable (TreeViewColumn* col) const
 	return cellrenderer->property_editable ();
 }
 
+bool
+TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col) const
+{
+	// TODO
+	return true;
+}
+
+bool
+TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, int mti) const
+{
+	// TODO
+	return true;
+}
+
 void
 TrackerGrid::horizontal_move_edit_cursor (int steps, bool tab)
 {
 	int colnum = edit_col;
-	wrap_around_horizontal_move (colnum, steps, tab);
-	TreeViewColumn* col = get_column (colnum);
 	TreeModel::Path path = edit_path;
+	wrap_around_horizontal_move (colnum, edit_path, steps, tab);
+	TreeViewColumn* col = get_column (colnum);
 	set_cursor (path, *col, true);
 }
 
@@ -2738,7 +2765,7 @@ void
 TrackerGrid::vertical_move_current_cursor (int steps)
 {
 	TreeModel::Path path = current_path;
-	wrap_around_vertical_move (path, steps, current_mti);
+	wrap_around_vertical_move (path, current_mti, steps);
 	TreeViewColumn* col = get_column (current_col);
 	set_current_cursor (path, col);
 }
@@ -2747,9 +2774,9 @@ void
 TrackerGrid::horizontal_move_current_cursor (int steps, bool tab)
 {
 	int colnum = current_col;
-	wrap_around_horizontal_move (colnum, steps, tab);
-	TreeViewColumn* col = get_column (colnum);
 	TreeModel::Path path = current_path;
+	wrap_around_horizontal_move (colnum, current_path, steps, tab);
+	TreeViewColumn* col = get_column (colnum);
 	set_current_cursor (path, col);
 }
 
