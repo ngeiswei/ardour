@@ -136,6 +136,11 @@ public:
 	int automation_separator_colnum (size_t mti, size_t cgi);
 
 	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
+	void read_colors ();         // Read colors from config
+	void update_rows_per_beat ();
+	void update_earliest_mtp ();        // earliest track
+	void update_global_nrows ();  // row_offset, nrows, global_nrows
+	void update_global_columns (); // time, color, font
 	void redisplay_model ();    // TODO rename
 
 	TrackerEditor& tracker_editor;
@@ -341,7 +346,17 @@ private:
 	// List of column indices currently unassigned to an automation per midi track
 	std::vector<std::set<size_t>> available_automation_columns;
 
+	// Colors from config
+	std::string beat_background_color;
+	std::string bar_background_color;
+	std::string background_color;
+	std::string blank_foreground_color;
+	std::string active_foreground_color;
+	std::string passive_foreground_color;
+	std::string cursor_color;
+
 	// Row index offset and number of valid rows per mti
+	MidiTrackPattern*            earliest_mtp;
 	std::vector<uint32_t>        row_offset;
 	std::vector<uint32_t>        nrows;
 	uint32_t                     global_nrows;
