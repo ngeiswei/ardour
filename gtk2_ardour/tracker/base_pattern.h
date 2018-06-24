@@ -83,9 +83,9 @@ public:
 	// is _ticks_per_row/2.
 	uint32_t row_at_beats(const Temporal::Beats& beats) const;
 
-	// Like row_at_beats but may return row beyond defined ones, such as
-	// negative or above the maximum number of rows
-	int relative_row_at_beats(const Temporal::Beats& beats) const;
+	// Return the number rows from contained between 2 beats. Return double just
+	// in case fraction of rows are used.
+	double row_distance(const Temporal::Beats& from, const Temporal::Beats& to) const;
 
 	// Like row_at_beats but use sample instead of beats
 	uint32_t row_at_sample(samplepos_t sample) const;
