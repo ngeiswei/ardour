@@ -94,13 +94,13 @@ Temporal::Beats BasePattern::region_relative_beats_at_row(uint32_t irow, int32_t
 
 uint32_t BasePattern::row_at_beats(const Temporal::Beats& beats) const
 {
-	return clamp(relative_row_at_beats(beats));
+	return clamp(row_distance(position_row_beats, beats));
 }
 
-int BasePattern::relative_row_at_beats(const Temporal::Beats& beats) const
+double BasePattern::row_distance(const Temporal::Beats& from, const Temporal::Beats& to) const
 {
 	Temporal::Beats half_row(0.5/rows_per_beat);
-	return (int)((beats - position_row_beats + half_row).to_double() * rows_per_beat);
+	return (to - from + half_row).to_double() * rows_per_beat;
 }
 
 uint32_t BasePattern::row_at_sample(samplepos_t sample) const

@@ -347,6 +347,7 @@ private:
 	std::vector<std::set<size_t>> available_automation_columns;
 
 	// Colors from config
+	std::string gtk_bases_color;
 	std::string beat_background_color;
 	std::string bar_background_color;
 	std::string background_color;
