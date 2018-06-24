@@ -76,11 +76,11 @@ using Timecode::BBT_Time;
 // TODO //
 //////////
 //
-// - [ ] Support regions with different start time and length
-//
-// - [ ] Underlie the digit to be edited
+// - [ ] Support multiple regions in the same track
 //
 // - [ ] Do not make the last separator column visible
+//
+// - [ ] Underlie the digit to be edited
 //
 // - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
 //
@@ -95,6 +95,8 @@ using Timecode::BBT_Time;
 // - [ ] Support arbitrary number of tracks
 //
 // - [ ] Make sure including audio tracks in the selection doesn't crash
+//
+// - [ ] Make sure clicking on the time column doesn't crash
 //
 // - [ ] Wrap the whole code in a Tracker namespace
 //
