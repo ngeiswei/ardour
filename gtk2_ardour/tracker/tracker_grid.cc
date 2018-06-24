@@ -1259,8 +1259,9 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = mtp->region_relative_beats_at_row(rowidx, delay);
-		NoteTypePtr prev_note = mtp->np.find_prev(rowidx, cgi);
+		int rri = (int)rowidx - row_offset[mti];
+		Temporal::Beats here = mtp->region_relative_beats_at_row(rri, delay);
+		NoteTypePtr prev_note = mtp->np.find_prev(rri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1281,7 +1282,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = mtp->np.next_off(rowidx, cgi);
+		Temporal::Beats end = mtp->np.next_off(rri, cgi);
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 		cmd->add (new_note);
@@ -1325,8 +1326,9 @@ TrackerGrid::set_off_note (int rowidx, int mti, int cgi)
 	} else {
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = mtp->region_relative_beats_at_row(rowidx, delay);
-		NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_cgi);
+		int rri = (int)rowidx - row_offset[mti];
+		Temporal::Beats here = mtp->region_relative_beats_at_row(rri, delay);
+		NoteTypePtr prev_note = mtp->np.find_prev(rri, edit_cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1580,7 +1582,6 @@ void TrackerGrid::release_note(int mti, uint8_t pitch)
 void
 TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 {
-
 	// Set current row
 	current_path = path;
 	current_row = get_row_index (path);
@@ -1704,8 +1705,9 @@ TrackerGrid::set_automation (double val, int rowidx, int mti, int cgi)
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
-		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(rowidx, delay);
-		uint32_t row_sample = ap->sample_at_row(rowidx, delay);
+		int rri = (int)rowidx - row_offset[mti];
+		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(rri, delay);
+		uint32_t row_sample = ap->sample_at_row(rri, delay);
 		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		if (alist->editor_add (awhen, val, false)) {
 			XMLNode& after = alist->get_state ();
@@ -1799,8 +1801,9 @@ TrackerGrid::set_automation_delay (int delay, int rowidx, int mti, int cgi)
 	if (delay < (*mtps)[mti]->delay_ticks_min() || (*mtps)[mti]->delay_ticks_max() < delay)
 		return;
 
-	Temporal::Beats row_relative_beats = (*mtps)[mti]->region_relative_beats_at_row(rowidx, delay);
-	uint32_t row_sample = (*mtps)[mti]->sample_at_row(rowidx, delay);
+	int rri = (int)rowidx - row_offset[mti];
+	Temporal::Beats row_relative_beats = (*mtps)[mti]->region_relative_beats_at_row(rri, delay);
+	uint32_t row_sample = (*mtps)[mti]->sample_at_row(rri, delay);
 
 	// Find the parameter to change delay
 	Evoral::Parameter param = get_parameter (mti, cgi);
@@ -1812,7 +1815,7 @@ TrackerGrid::set_automation_delay (int delay, int rowidx, int mti, int cgi)
 	AutomationPattern* ap = get_automation_pattern (mti, param);
 
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rri);
 
 	// If no existing value, abort
 	if (auto_it == r2at.end())
