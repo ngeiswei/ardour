@@ -72,53 +72,6 @@ using namespace PBD;
 using namespace Editing;
 using Timecode::BBT_Time;
 
-//////////
-// TODO //
-//////////
-//
-// - [ ] Support multiple regions in the same track
-//
-// - [ ] Do not make the last separator column visible
-//
-// - [ ] Underlie the digit to be edited
-//
-// - [ ] Support tab in horizontal_move_cursor (for multi-track grid)
-//
-// - [ ] Grey out Automation button when no longer automation column
-//       available.
-//
-// - [ ] Fix focus. When mouse click on grid, it should be enough to have the
-//       focus on it.
-//
-// - [ ] Support layered regions
-//
-// - [ ] Support arbitrary number of tracks
-//
-// - [ ] Make sure including audio tracks in the selection doesn't crash
-//
-// - [ ] Make sure clicking on the time column doesn't crash
-//
-// - [ ] Wrap the whole code in a Tracker namespace
-//
-// - [ ] Add shortcut for parameters, steps, etc
-//
-// - [ ] Add copy/move, etc, notes + popup menu
-//
-// - [ ] Transfer Ardour shortcuts, spacebar, etc
-//
-// - [ ] Use Ardour's logger instead of stdout
-//
-// - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
-//
-// - [ ] Support audio tracks and trim automation
-
-////////////////
-// Questions? //
-////////////////
-//
-// - [ ] One button delay for both note and automation or 2 button delay, one
-//       for note and one for automation?
-
 ///////////////////
 // TrackerEditor //
 ///////////////////
