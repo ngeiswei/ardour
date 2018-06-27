@@ -289,6 +289,18 @@ TrackerGrid::is_automation_visible(size_t mti, const Evoral::Parameter& param) c
 }
 
 bool
+TrackerGrid::has_visible_automation(size_t mti) const
+{
+	for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
+		size_t col = automation_colnum(mti, i);
+		bool visible = TrackerUtils::is_in(col, visible_automation_columns);
+		if (visible)
+			return true;
+	}
+	return false;
+}
+
+bool
 TrackerGrid::is_gain_visible(size_t mti) const
 {
 	return visible_automation_columns.find(gain_columns[mti])
@@ -410,12 +422,12 @@ TrackerGrid::redisplay_visible_note()
 		tracker_editor.midi_track_toolbars[mti]->update_visible_note_button ();
 	}
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::mti_col_offset(size_t mti)
+TrackerGrid::mti_col_offset(size_t mti) const
 {
 	return 1 /* time */ + 1 /* first track name */
 		+ mti * (MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK
@@ -424,7 +436,7 @@ TrackerGrid::mti_col_offset(size_t mti)
 }
 
 int
-TrackerGrid::note_colnum(size_t mti, size_t cgi)
+TrackerGrid::note_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::NOTE;
 }
@@ -442,12 +454,12 @@ TrackerGrid::redisplay_visible_channel()
 		tracker_editor.midi_track_toolbars[mti]->update_visible_channel_button ();
 	}
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::note_channel_colnum(size_t mti, size_t cgi)
+TrackerGrid::note_channel_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::CHANNEL;
 }
@@ -465,12 +477,12 @@ TrackerGrid::redisplay_visible_velocity()
 		tracker_editor.midi_track_toolbars[mti]->update_visible_velocity_button ();
 	}
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::note_velocity_colnum(size_t mti, size_t cgi)
+TrackerGrid::note_velocity_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::VELOCITY;
 }
@@ -490,12 +502,12 @@ TrackerGrid::redisplay_visible_delay()
 	// Do the same for automations
 	redisplay_visible_automation_delay ();
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::note_delay_colnum(size_t mti, size_t cgi)
+TrackerGrid::note_delay_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::DELAY;
 }
@@ -504,19 +516,28 @@ void
 TrackerGrid::redisplay_visible_note_separator()
 {
 	for (size_t mti = 0; mti < mtps->size(); mti++) {
+		bool is_last_mti = mti == (mtps->size() - 1);
+		bool hva = has_visible_automation(mti);
+		size_t ntracks = (*mtps)[mti]->np.ntracks;
+		bool visible_note = tracker_editor.midi_track_toolbars[mti]->visible_note and 0 < ntracks;
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*mtps)[mti]->np.ntracks
-				and tracker_editor.midi_track_toolbars[mti]->visible_note;
+			bool is_first_gci = (i == 0);
+			bool visible;
+			if (is_last_mti and !hva and !visible_note) {
+				visible = is_first_gci;
+			} else {
+				visible = visible_note and (i < ntracks - ((hva or is_last_mti) ? 0 : 1));
+			}
 			get_column(note_separator_colnum(mti, i))->set_visible (visible);
 		}
 	}
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::note_separator_colnum (size_t mti, size_t cgi)
+TrackerGrid::note_separator_colnum (size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::SEPARATOR;
 }
@@ -533,18 +554,18 @@ TrackerGrid::redisplay_visible_automation()
 	}
 	redisplay_visible_automation_delay();
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
-size_t TrackerGrid::automation_col_offset(size_t mti)
+size_t TrackerGrid::automation_col_offset(size_t mti) const
 {
 	return mti_col_offset(mti)
 		+ MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK;
 }
 
 int
-TrackerGrid::automation_colnum(size_t mti, size_t cgi)
+TrackerGrid::automation_colnum(size_t mti, size_t cgi) const
 {
 	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION;
 }
@@ -560,12 +581,12 @@ TrackerGrid::redisplay_visible_automation_delay()
 		}
 	}
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::automation_delay_colnum(size_t mti, size_t cgi)
+TrackerGrid::automation_delay_colnum(size_t mti, size_t cgi) const
 {
 	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION_DELAY;
 }
@@ -574,19 +595,24 @@ void
 TrackerGrid::redisplay_visible_automation_separator()
 {
 	for (size_t mti = 0; mti < mtps->size(); mti++) {
+		size_t greatest_visible_col = 0;
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_separator_colnum(mti, i);
 			bool visible = TrackerUtils::is_in(col - 2, visible_automation_columns);
+			if (visible)
+				greatest_visible_col = std::max(greatest_visible_col, col);
 			get_column(col)->set_visible (visible);
 		}
+		if (0 < greatest_visible_col and mti != (mtps->size() - 1))
+			get_column(greatest_visible_col)->set_visible (false);
 	}
 
-	// Keep the window width is kept to its minimum
+	// Keep the window width to its minimum
 	tracker_editor.resize_width();
 }
 
 int
-TrackerGrid::automation_separator_colnum (size_t mti, size_t cgi)
+TrackerGrid::automation_separator_colnum (size_t mti, size_t cgi) const
 {
 	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION_SEPARATOR;
 }
