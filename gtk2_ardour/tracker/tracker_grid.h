@@ -101,6 +101,9 @@ public:
 	// Return if the automation column associated to this parameter is currently visible
 	bool is_automation_visible(size_t mti, const Evoral::Parameter& param) const;
 
+	// Return true iff there exists some automation in that mti that is visible
+	bool has_visible_automation(size_t mti) const;
+
 	// Return true if the gain column is visible
 	bool is_gain_visible (size_t mti) const;
 	bool is_mute_visible (size_t mti) const;
@@ -114,26 +117,24 @@ public:
 	// Display Pattern    //
 	////////////////////////
 
-	// TODO: constify the hell out of it
-
 	void redisplay_visible_note ();
-	int mti_col_offset(size_t mti);
-	int note_colnum (size_t mti, size_t cgi /* column group index */);
+	int mti_col_offset(size_t mti) const;
+	int note_colnum (size_t mti, size_t cgi /* column group index */) const;
 	void redisplay_visible_channel ();
-	int note_channel_colnum (size_t mti, size_t cgi);
+	int note_channel_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_velocity ();
-	int note_velocity_colnum (size_t mti, size_t cgi);
+	int note_velocity_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_delay ();
-	int note_delay_colnum (size_t mti, size_t cgi);
+	int note_delay_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_note_separator ();
-	int note_separator_colnum (size_t mti, size_t cgi);
+	int note_separator_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_automation ();
-	size_t automation_col_offset(size_t mti);
-	int automation_colnum (size_t mti, size_t cgi);
+	size_t automation_col_offset(size_t mti) const;
+	int automation_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_automation_delay ();
-	int automation_delay_colnum (size_t mti, size_t cgi);
+	int automation_delay_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_automation_separator ();
-	int automation_separator_colnum (size_t mti, size_t cgi);
+	int automation_separator_colnum (size_t mti, size_t cgi) const;
 
 	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
 	void read_colors ();         // Read colors from config
