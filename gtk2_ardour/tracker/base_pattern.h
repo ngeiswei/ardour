@@ -68,15 +68,15 @@ public:
 
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
-	samplepos_t sample_at_row(uint32_t irow, int32_t delay=0) const;
+	samplepos_t sample_at_row(uint32_t rowi, int32_t delay=0) const;
 
 	// Return the beats at the corresponding row index and delay in relative
 	// ticks
-	Temporal::Beats beats_at_row(uint32_t irow, int32_t delay=0) const;
+	Temporal::Beats beats_at_row (uint32_t rowi, int32_t delay=0) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
-	Temporal::Beats region_relative_beats_at_row(uint32_t irow, int32_t delay=0) const;
+	Temporal::Beats region_relative_beats_at_row (uint32_t rowi, int32_t delay=0) const;
 
 	// Return the row index corresponding to the given beats, assuming the
 	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
@@ -105,13 +105,13 @@ public:
 	uint32_t row_at_sample_max_delay(samplepos_t sample) const;
 
 	// Return an event's delay in a certain row in ticks
-	int64_t delay_ticks(const Temporal::Beats& event_time, uint32_t irow) const;
+	int64_t delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const;
 
 	// Like delay_ticks above but uses sample instead of beats
-	int64_t delay_ticks(samplepos_t sample, uint32_t irow) const;
+	int64_t delay_ticks(samplepos_t sample, uint32_t rowi) const;
 
 	// Like delay_ticks but the event_time is relative to the region position
-	int64_t region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t irow) const;
+	int64_t region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const;
 
 	// Return the minimum and maximum number ticks allowed for delay
 	int32_t delay_ticks_min() const;

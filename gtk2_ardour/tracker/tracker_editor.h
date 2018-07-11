@@ -41,7 +41,6 @@
 #include "region_selection.h"
 
 #include "tracker_types.h"
-#include "midi_track_pattern.h"
 #include "main_toolbar.h"
 #include "midi_track_toolbar.h"
 #include "tracker_grid.h"
@@ -108,6 +107,7 @@ public:
 	std::vector<MidiTrackPattern*> mtps;
 
 	// Parameter to AutomationControl for each midi track
+	// TODO: try to move this to multi_track_pattern.h
 	std::vector<Parameter2AutomationControl> param2actrls;
 
 	Gtk::ScrolledWindow          scroller;
