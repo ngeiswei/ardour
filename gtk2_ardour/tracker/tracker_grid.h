@@ -23,6 +23,8 @@
 #include <gtkmm/liststore.h>
 
 #include "tracker_column.h"
+#include "multi_track_pattern.h"
+#include "tracker_utils.h"
 
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
@@ -53,9 +55,6 @@ public:
 	TrackerGrid(TrackerEditor& te);
 	~TrackerGrid();
 
-	typedef Evoral::Note<Temporal::Beats> NoteType;
-	typedef boost::shared_ptr<NoteType> NoteTypePtr;
-
 	struct TrackerGridModelColumns : public Gtk::TreeModel::ColumnRecord {
 		TrackerGridModelColumns();
 		// TODO: add empty columns to separate between each note track and each automations
@@ -79,7 +78,6 @@ public:
 		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
-		Gtk::TreeModelColumn<ARDOUR::AutomationList::iterator> _automation[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
 		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS];
@@ -138,9 +136,6 @@ public:
 
 	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
 	void read_colors ();         // Read colors from config
-	void update_rows_per_beat ();
-	void update_earliest_mtp ();        // earliest track
-	void update_global_nrows ();  // row_offset, nrows, global_nrows
 	void update_global_columns (); // time, color, font
 	void redisplay_model ();    // TODO rename
 
@@ -153,8 +148,8 @@ public:
 	// Keep track of all visible automation columns across all midi tracks
 	std::set<size_t> visible_automation_columns;
 
-	// Pattern per midi track
-	std::vector<MidiTrackPattern*>* mtps;
+	// Represent patterns across all tracks
+	MultiTrackPattern pattern;
 
 	static const std::string note_off_str;
 
@@ -320,7 +315,6 @@ private:
 	// Automation callbacks
 	Evoral::Parameter get_parameter (int mti, int automation_cgi);
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, const Evoral::Parameter& param);
-	AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
 	std::pair<double, bool> get_automation_value (int rowidx, int mti, int cgi); // return zero if undefined!
 	void set_automation (double val, int rowidx, int mti, int automation_cgi);
@@ -356,12 +350,6 @@ private:
 	std::string active_foreground_color;
 	std::string passive_foreground_color;
 	std::string cursor_color;
-
-	// Row index offset and number of valid rows per mti
-	MidiTrackPattern*            earliest_mtp;
-	std::vector<uint32_t>        row_offset;
-	std::vector<uint32_t>        nrows;
-	uint32_t                     global_nrows;
 };
 
 #endif /* __ardour_tracker_tracker_grid_h_ */
