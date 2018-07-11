@@ -75,21 +75,21 @@ void BasePattern::set_row_range()
 	nrows = find_nrows();
 }
 
-samplepos_t BasePattern::sample_at_row(uint32_t irow, int32_t delay) const
+samplepos_t BasePattern::sample_at_row(uint32_t rowi, int32_t delay) const
 {
-	return _conv.to (beats_at_row(irow, delay));
+	return _conv.to (beats_at_row(rowi, delay));
 }
 
-Temporal::Beats BasePattern::beats_at_row(uint32_t irow, int32_t delay) const
+Temporal::Beats BasePattern::beats_at_row(uint32_t rowi, int32_t delay) const
 {
-	Temporal::Beats result = position_row_beats + (irow*1.0) / rows_per_beat;
+	Temporal::Beats result = position_row_beats + (rowi*1.0) / rows_per_beat;
 	result += Temporal::Beats::ticks(delay);
 	return result;
 }
 
-Temporal::Beats BasePattern::region_relative_beats_at_row(uint32_t irow, int32_t delay) const
+Temporal::Beats BasePattern::region_relative_beats_at_row(uint32_t rowi, int32_t delay) const
 {
-	return beats_at_row(irow, delay) - position_beats + start_beats;
+	return beats_at_row(rowi, delay) - position_beats + start_beats;
 }
 
 uint32_t BasePattern::row_at_beats(const Temporal::Beats& beats) const
@@ -129,19 +129,19 @@ uint32_t BasePattern::row_at_sample_max_delay(samplepos_t sample) const
 	return row_at_beats_max_delay (_conv.from (sample));
 }
 
-int64_t BasePattern::delay_ticks(const Temporal::Beats& event_time, uint32_t irow) const
+int64_t BasePattern::delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const
 {
-	return (event_time - beats_at_row(irow)).to_ticks();
+	return (event_time - beats_at_row(rowi)).to_ticks();
 }
 
-int64_t BasePattern::delay_ticks(samplepos_t sample, uint32_t irow) const
+int64_t BasePattern::delay_ticks(samplepos_t sample, uint32_t rowi) const
 {
-	return delay_ticks(_conv.from (sample), irow);
+	return delay_ticks(_conv.from (sample), rowi);
 }
 
-int64_t BasePattern::region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t irow) const
+int64_t BasePattern::region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const
 {
-	return delay_ticks(event_time + position_beats - start_beats, irow);
+	return delay_ticks(event_time + position_beats - start_beats, rowi);
 }
 
 int32_t BasePattern::delay_ticks_min() const
