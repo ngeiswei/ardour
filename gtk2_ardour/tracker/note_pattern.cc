@@ -156,7 +156,7 @@ void NotePattern::dec_ntracks()
 	ntracks--;
 }
 
-NotePattern::NoteTypePtr NotePattern::find_prev(uint32_t row, int track_idx) const
+NoteTypePtr NotePattern::find_prev(uint32_t row, int track_idx) const
 {
 	const RowToNotes& r2n = on_notes[track_idx];
 	RowToNotes::const_reverse_iterator rit =
@@ -165,7 +165,7 @@ NotePattern::NoteTypePtr NotePattern::find_prev(uint32_t row, int track_idx) con
 	return rit != r2n.rend() ? lattest(r2n.equal_range(rit->first)) : NoteTypePtr();
 }
 
-NotePattern::NoteTypePtr NotePattern::find_next(uint32_t row, int track_idx) const
+NoteTypePtr NotePattern::find_next(uint32_t row, int track_idx) const
 {
 	const RowToNotes& r2n = on_notes[track_idx];
 	RowToNotes::const_iterator it = r2n.upper_bound(row);
@@ -202,7 +202,7 @@ void NotePattern::add(int track_idx, NoteTypePtr note)
 	track_to_notes[track_idx].insert(note);
 }
 
-NotePattern::NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
+NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
 {
 	NoteTypePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it)
@@ -211,7 +211,7 @@ NotePattern::NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
 	return result;
 }
 
-NotePattern::NoteTypePtr NotePattern::lattest(const RowToNotesRange& rng) const
+NoteTypePtr NotePattern::lattest(const RowToNotesRange& rng) const
 {
 	NoteTypePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it)
