@@ -19,12 +19,11 @@
 #ifndef __ardour_tracker_note_pattern_h_
 #define __ardour_tracker_note_pattern_h_
 
-#include "evoral/types.hpp"
-#include "evoral/Note.hpp"
 #include "ardour/session_handle.h"
 #include "ardour/midi_model.h"
 
 #include "base_pattern.h"
+#include "tracker_utils.h"
 
 namespace ARDOUR {
 	class MidiRegion;
@@ -47,8 +46,6 @@ public:
 
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
-	typedef Evoral::Note<Temporal::Beats> NoteType;
-	typedef boost::shared_ptr<NoteType> NoteTypePtr;
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 

@@ -24,8 +24,12 @@
 #include <boost/lexical_cast.hpp>
 
 #include "evoral/Parameter.hpp"
+#include "evoral/Note.hpp"
 #include "ardour/types.h"
 #include "ardour/parameter_descriptor.h"
+
+typedef Evoral::Note<Temporal::Beats> NoteType;
+typedef boost::shared_ptr<NoteType> NoteTypePtr;
 
 class TrackerUtils
 {
