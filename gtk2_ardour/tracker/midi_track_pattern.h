@@ -16,17 +16,17 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_tracker_track_pattern_h_
-#define __ardour_tracker_track_pattern_h_
+#ifndef __ardour_tracker_midi_track_pattern_h_
+#define __ardour_tracker_midi_track_pattern_h_
 
 #include "note_pattern.h"
 #include "region_automation_pattern.h"
 #include "track_automation_pattern.h"
 
 /**
- * Represent all patterns, midi notes, midi automations and track automations
- * of a given track, with possibly multiple regions, possibly overlapping, as
- * long as they all come from the same track.
+ * Represent patterns, midi notes, midi automations and track automations of a
+ * given track, with possibly multiple regions, possibly overlapping, as long
+ * as they all come from the same track.
  */
 class MidiTrackPattern : public BasePattern {
 public:
@@ -58,4 +58,4 @@ public:
 	TrackAutomationPattern tap;
 };
 
-#endif /* __ardour_tracker_track_pattern_h_ */
+#endif /* __ardour_tracker_midi_track_pattern_h_ */
