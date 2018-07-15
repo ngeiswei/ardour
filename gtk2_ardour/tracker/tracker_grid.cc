@@ -689,18 +689,18 @@ TrackerGrid::read_colors ()
 }
 
 void
-TrackerGrid::update_global_columns ()
+TrackerGrid::redisplay_global_columns ()
 {
 	// Set Time column, row background color, font
 	TreeModel::Children::iterator row_it = model->children().begin();
-	for (uint32_t row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
+	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 		// Get existing row, or create one if it does exist
 		if (row_it == model->children().end())
 			row_it = model->append();
 		TreeModel::Row row = *row_it++;
 
-		Temporal::Beats row_beats = pattern.earliest_mtp->beats_at_row(row_idx);
-		uint32_t row_sample = pattern.earliest_mtp->sample_at_row(row_idx);
+		Temporal::Beats row_beats = pattern.earliest_mtp->beats_at_row(rowi);
+		uint32_t row_sample = pattern.earliest_mtp->sample_at_row(rowi);
 
 		// Time
 		Timecode::BBT_Time row_bbt;
@@ -721,6 +721,107 @@ TrackerGrid::update_global_columns ()
 }
 
 void
+TrackerGrid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	row[columns._off_note[mti][cgi]] = NULL;
+	row[columns._on_note[mti][cgi]] = NULL;
+}
+
+void
+TrackerGrid::redisplay_undefined (TreeModel::Row& row, size_t mti)
+{
+	// Number of column groups
+	size_t ntracks = (*pattern.mtps)[mti]->np.ntracks;
+	row[columns.midi_track_name[mti]] = "";
+	for (size_t cgi = 0; cgi < ntracks; cgi++) {
+		// cgi stands from column group index
+		row[columns.note_name[mti][cgi]] = "";
+		row[columns.channel[mti][cgi]] = "";
+		row[columns.velocity[mti][cgi]] = "";
+		row[columns.delay[mti][cgi]] = "";
+
+		// TODO: replace gtk_bases_color by a custom one
+		row[columns._note_background_color[mti][cgi]] = gtk_bases_color;
+		row[columns._channel_background_color[mti][cgi]] = gtk_bases_color;
+		row[columns._velocity_background_color[mti][cgi]] = gtk_bases_color;
+		row[columns._delay_background_color[mti][cgi]] = gtk_bases_color;
+
+		// Reset keeping track of the on and off notes
+		reset_off_on_note (row, mti, cgi);
+	}
+}
+
+void
+TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti)
+{
+	// Render midi region name (for now midi track name). Display names
+	// vertically.
+	const std::string& name = tracker_editor.midi_tracks[mti]->name();
+	uint32_t name_offset_idx = pattern.to_rri(rowi, mti) % (name.size() + 1);
+	const static std::string name_sep(" ");
+	std::string cell_str = " ";
+	cell_str += name_offset_idx == name.size() ? name_sep : string{name[name_offset_idx]};
+	cell_str += " ";
+	row[columns.midi_track_name[mti]] = cell_str;
+}
+
+void
+TrackerGrid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	std::string row_background_color = row[columns._background_color];
+	row[columns._note_background_color[mti][cgi]] = row_background_color;
+	row[columns._channel_background_color[mti][cgi]] = row_background_color;
+	row[columns._velocity_background_color[mti][cgi]] = row_background_color;
+	row[columns._delay_background_color[mti][cgi]] = row_background_color;
+}
+
+void
+TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	switch (current_note_type) {
+	case TrackerColumn::NOTE:
+		row[columns._note_background_color[mti][cgi]] = cursor_color;
+		break;
+	case TrackerColumn::CHANNEL:
+		row[columns._channel_background_color[mti][cgi]] = cursor_color;
+		break;
+	case TrackerColumn::VELOCITY:
+		row[columns._velocity_background_color[mti][cgi]] = cursor_color;
+		break;
+	case TrackerColumn::DELAY:
+		row[columns._delay_background_color[mti][cgi]] = cursor_color;
+		break;
+	default:
+		// TODO use Ardour log
+		std::cout << "Error";
+	}
+}
+
+void
+TrackerGrid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	// Fill with blank
+	row[columns.note_name[mti][cgi]] = "----";
+	row[columns.channel[mti][cgi]] = "--";
+	row[columns.velocity[mti][cgi]] = "---";
+	row[columns.delay[mti][cgi]] = "-----";
+
+	// Grey out infoless cells
+	row[columns._note_foreground_color[mti][cgi]] = blank_foreground_color;
+	row[columns._channel_foreground_color[mti][cgi]] = blank_foreground_color;
+	row[columns._velocity_foreground_color[mti][cgi]] = blank_foreground_color;
+	row[columns._delay_foreground_color[mti][cgi]] = blank_foreground_color;
+}
+
+void
+TrackerGrid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	std::string row_background_color = row[columns._background_color];
+	row[columns._automation_background_color[mti][cgi]] = row_background_color;
+	row[columns._automation_delay_background_color[mti][cgi]] = row_background_color;
+}
+
+void
 TrackerGrid::redisplay_model ()
 {
 	if (editing_editable)
@@ -738,74 +839,43 @@ TrackerGrid::redisplay_model ()
 		pattern.update ();
 
 		// Set time column, row background color and font
-		update_global_columns ();
+		redisplay_global_columns ();
 
-		// TODO: keep refactoring
 		// Set midi track patterns columns
 		TreeModel::Children::iterator row_it;
-		for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
-			MidiTrackPattern* mtp = (*pattern.mtps)[mti];
-
+		// Fill rows
+		row_it = model->children().begin();
+		for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 			// Used to draw the background of the cursor
-			bool is_current_mti = current_mti == (int)mti;
+			bool is_current_row = (int)rowi == current_row;
 
-			// Number of column groups
-			size_t ntracks = mtp->np.ntracks;
+			// Get row
+			TreeModel::Row row = *row_it++;
 
-			// Fill rows
-			row_it = model->children().begin();
-			for (uint32_t row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
+			// Get corresponding background color
+			std::string row_background_color = row[columns._background_color];
+
+			for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+				MidiTrackPattern* mtp = (*pattern.mtps)[mti];
+
 				// Used to draw the background of the cursor
-				bool is_current_row = (int)row_idx == current_row;
+				bool is_current_mti = current_mti == (int)mti;
 
-				// Get row
-				TreeModel::Row row = *row_it++;
-
-				// Get row index relative to the mtp
-				int rri = (int)row_idx - pattern.row_offset[mti];
+				// Number of column groups
+				size_t ntracks = mtp->np.ntracks;
 
 				// Undefined
-				// TODO: use is_defined
-				// TODO: wrap this in a method
-				if (rri < 0 or (int)pattern.nrows[mti] < rri) {
-					row[columns.midi_track_name[mti]] = "";
-					for (size_t cgi = 0; cgi < ntracks; cgi++) {
-						// cgi stands from column group index
-						row[columns.note_name[mti][cgi]] = "";
-						row[columns.channel[mti][cgi]] = "";
-						row[columns.velocity[mti][cgi]] = "";
-						row[columns.delay[mti][cgi]] = "";
-
-						// TODO: replace gtk_bases_color by a custom one
-						row[columns._note_background_color[mti][cgi]] = gtk_bases_color;
-						row[columns._channel_background_color[mti][cgi]] = gtk_bases_color;
-						row[columns._velocity_background_color[mti][cgi]] = gtk_bases_color;
-						row[columns._delay_background_color[mti][cgi]] = gtk_bases_color;
-
-						row[columns._off_note[mti][cgi]] = NULL;
-						row[columns._on_note[mti][cgi]] = NULL;
-					}
+				if (!pattern.is_defined(rowi, mti)) {
+					redisplay_undefined (row, mti);
 					continue;
 				}
 
 				// Get corresponding beats and samples
-				Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(row_idx, mti);
-				uint32_t row_sample = pattern.sample_at_row(row_idx, mti);
+				Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowi, mti);
+				uint32_t row_sample = pattern.sample_at_row(rowi, mti);
 
-				// Get corresponding background color
-				std::string row_background_color = row[columns._background_color];
-
-				// Render midi region name (for now midi track name). Display
-				// names vertically.
-				// TODO: Wrap in a method
-				const std::string& name = tracker_editor.midi_tracks[mti]->name();
-				uint32_t name_offset_idx = rri % (name.size() + 1);
-				const static std::string name_sep(" ");
-				std::string cell_str = " ";
-				cell_str += name_offset_idx == name.size() ? name_sep : string{name[name_offset_idx]};
-				cell_str += " ";
-				row[columns.midi_track_name[mti]] = cell_str;
-
+				redisplay_region_name (row, rowi, mti);
+				
 				// Render midi notes pattern
 				if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK) {
 					// TODO: use Ardour's logger instead of stdout
@@ -819,59 +889,32 @@ TrackerGrid::redisplay_model ()
 					bool is_current_cgi = current_cgi == (int)cgi;
 
 					// Fill background colors
-					row[columns._note_background_color[mti][cgi]] = row_background_color;
-					row[columns._channel_background_color[mti][cgi]] = row_background_color;
-					row[columns._velocity_background_color[mti][cgi]] = row_background_color;
-					row[columns._delay_background_color[mti][cgi]] = row_background_color;
+					redisplay_note_background (row, mti, cgi);
 
 					// Fill cursor background color
 					if (is_current_row && is_current_mti && is_current_cgi && current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR) {
-						switch (current_note_type) {
-						case TrackerColumn::NOTE:
-							row[columns._note_background_color[mti][cgi]] = cursor_color;
-							break;
-						case TrackerColumn::CHANNEL:
-							row[columns._channel_background_color[mti][cgi]] = cursor_color;
-							break;
-						case TrackerColumn::VELOCITY:
-							row[columns._velocity_background_color[mti][cgi]] = cursor_color;
-							break;
-						case TrackerColumn::DELAY:
-							row[columns._delay_background_color[mti][cgi]] = cursor_color;
-							break;
-						default:
-							// TODO use Ardour log
-							std::cout << "Error";
-						}
+						redisplay_current_note_cursor (row, mti, cgi);
 					}
 
-					// Fill with blank
-					row[columns.note_name[mti][cgi]] = "----";
-					row[columns.channel[mti][cgi]] = "--";
-					row[columns.velocity[mti][cgi]] = "---";
-					row[columns.delay[mti][cgi]] = "-----";
-
-					// Grey out infoless cells
-					row[columns._note_foreground_color[mti][cgi]] = blank_foreground_color;
-					row[columns._channel_foreground_color[mti][cgi]] = blank_foreground_color;
-					row[columns._velocity_foreground_color[mti][cgi]] = blank_foreground_color;
-					row[columns._delay_foreground_color[mti][cgi]] = blank_foreground_color;
+					// Fill with blank text and color
+					redisplay_blank_note_foreground (row, mti, cgi);
 
 					// Reset keeping track of the on and off notes
-					row[columns._off_note[mti][cgi]] = NULL;
-					row[columns._on_note[mti][cgi]] = NULL;
+					reset_off_on_note (row, mti, cgi);
 
-					size_t off_notes_count = pattern.off_notes_count (row_idx, mti, cgi);
-					size_t on_notes_count = pattern.on_notes_count (row_idx, mti, cgi);
+					size_t off_notes_count = pattern.off_notes_count (rowi, mti, cgi);
+					size_t on_notes_count = pattern.on_notes_count (rowi, mti, cgi);
+
+					// TODO: keep refactoring
 
 					if (on_notes_count > 0 || off_notes_count > 0) {
-						if (pattern.is_note_displayable(row_idx, mti, cgi)) {
+						if (pattern.is_note_displayable(rowi, mti, cgi)) {
 							// Notes off
-							NoteTypePtr note = pattern.off_note(row_idx, mti, cgi);
+							NoteTypePtr note = pattern.off_note(rowi, mti, cgi);
 							if (note) {
 								row[columns.note_name[mti][cgi]] = note_off_str;
 								row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-								int64_t delay_ticks = pattern.region_relative_delay_ticks(note->end_time(), row_idx, mti);
+								int64_t delay_ticks = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti);
 								if (delay_ticks != 0) {
 									row[columns.delay[mti][cgi]] = to_string (delay_ticks);
 									row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -881,7 +924,7 @@ TrackerGrid::redisplay_model ()
 							}
 
 							// Notes on
-							note = pattern.on_note (row_idx, mti, cgi);
+							note = pattern.on_note (rowi, mti, cgi);
 							if (note) {
 								row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
 								row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
@@ -890,7 +933,7 @@ TrackerGrid::redisplay_model ()
 								row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
 								row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 
-								int64_t delay_ticks = pattern.region_relative_delay_ticks(note->time(), row_idx, mti);
+								int64_t delay_ticks = pattern.region_relative_delay_ticks(note->time(), rowi, mti);
 								if (delay_ticks != 0) {
 									row[columns.delay[mti][cgi]] = to_string (delay_ticks);
 									row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -917,7 +960,7 @@ TrackerGrid::redisplay_model ()
 					bool is_current_cgi = current_cgi == (int)cgi;
 
 					const Evoral::Parameter& param = cp_it->second;
-					size_t auto_count = pattern.get_automation_list_count(row_idx, mti, param);
+					size_t auto_count = pattern.get_automation_list_count(rowi, mti, param);
 
 					if (cgi >= MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK) {
 						// TODO: use Ardour log
@@ -928,8 +971,7 @@ TrackerGrid::redisplay_model ()
 					}
 
 					// Fill background colors
-					row[columns._automation_background_color[mti][cgi]] = row_background_color;
-					row[columns._automation_delay_background_color[mti][cgi]] = row_background_color;
+					redisplay_auto_background (row, mti, cgi);
 
 					// Fill cursor background color
 					if (is_current_row && is_current_mti && is_current_cgi && current_note_type == TrackerColumn::SEPARATOR) {
@@ -954,14 +996,14 @@ TrackerGrid::redisplay_model ()
 					row[columns.automation_delay[mti][cgi]] = "-----";
 
 					if (auto_count > 0) {
-						if (pattern.is_auto_displayable(row_idx, mti, param)) {
-							Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (row_idx, mti, param);
+						if (pattern.is_auto_displayable(rowi, mti, param)) {
+							Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, param);
 							double aval = ctl_event->value;
 							row[columns.automation[mti][cgi]] = to_string (aval);
 							double awhen = ctl_event->when;
 							int64_t delay_ticks = TrackerUtils::is_region_automation (param) ?
-								pattern.region_relative_delay_ticks(Temporal::Beats(awhen), row_idx, mti)
-								: pattern.delay_ticks((samplepos_t)awhen, row_idx, mti);
+								pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti)
+								: pattern.delay_ticks((samplepos_t)awhen, rowi, mti);
 							if (delay_ticks != 0) {
 								row[columns.automation_delay[mti][cgi]] = to_string (delay_ticks);
 								row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1226,10 +1268,8 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
-		// TODO: get rid of rri
-		int rri = (int)rowidx - pattern.row_offset[mti];
-		Temporal::Beats here = mtp->region_relative_beats_at_row(rri, delay);
-		NoteTypePtr prev_note = mtp->np.find_prev(rri, cgi);
+		Temporal::Beats here = pattern.region_relative_beats_at_row(rowidx, mti, delay);
+		NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1250,7 +1290,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = mtp->np.next_off(rri, cgi);
+		Temporal::Beats end = pattern.next_off(rowidx, mti, cgi);
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 		cmd->add (new_note);
@@ -1294,9 +1334,8 @@ TrackerGrid::set_off_note (int rowidx, int mti, int cgi)
 	} else {
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
-		int rri = (int)rowidx - pattern.row_offset[mti];
-		Temporal::Beats here = mtp->region_relative_beats_at_row(rri, delay);
-		NoteTypePtr prev_note = mtp->np.find_prev(rri, edit_cgi);
+		Temporal::Beats here = pattern.region_relative_beats_at_row(rowidx, mti, delay);
+		NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, edit_cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1655,7 +1694,6 @@ TrackerGrid::set_automation (double val, int rowidx, int mti, int cgi)
 
 	// Find the control iterator to change
 	AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-
 	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
 	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
 
@@ -1665,9 +1703,8 @@ TrackerGrid::set_automation (double val, int rowidx, int mti, int cgi)
 	// If no existing value, insert one
 	if (auto_it == r2at.end()) {
 		int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
-		int rri = (int)rowidx - pattern.row_offset[mti];
-		Temporal::Beats row_relative_beats = ap->region_relative_beats_at_row(rri, delay);
-		uint32_t row_sample = ap->sample_at_row(rri, delay);
+		Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowidx, mti, delay);
+		uint32_t row_sample = pattern.sample_at_row(rowidx, mti, delay);
 		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		if (alist->editor_add (awhen, val, false)) {
 			XMLNode& after = alist->get_state ();
@@ -1762,8 +1799,8 @@ TrackerGrid::set_automation_delay (int delay, int rowidx, int mti, int cgi)
 		return;
 
 	int rri = (int)rowidx - pattern.row_offset[mti];
-	Temporal::Beats row_relative_beats = (*pattern.mtps)[mti]->region_relative_beats_at_row(rri, delay);
-	uint32_t row_sample = (*pattern.mtps)[mti]->sample_at_row(rri, delay);
+	Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowidx, mti, delay);
+	uint32_t row_sample = pattern.sample_at_row(rowidx, mti, delay);
 
 	// Find the parameter to change delay
 	Evoral::Parameter param = get_parameter (mti, cgi);
