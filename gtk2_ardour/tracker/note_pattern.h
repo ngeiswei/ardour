@@ -73,21 +73,21 @@ public:
 	// Find the previous (resp. next) note of a given row on a given track
 	// index.
 	// TODO: maybe we want to use uint16_t instead of int
-	NoteTypePtr find_prev(uint32_t row, int track_idx) const;
-	NoteTypePtr find_next(uint32_t row, int track_idx) const;
+	NoteTypePtr find_prev(uint32_t row, int cgi) const;
+	NoteTypePtr find_next(uint32_t row, int cgi) const;
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
-	Temporal::Beats next_off(uint32_t row, int track_idx) const;
+	Temporal::Beats next_off(uint32_t row, int cgi) const;
 
 	// Return true if the notes are displayable at this resolution. Basically
 	// if there are too many notes, unless its a pair (note off, note on)
 	// perfectly contiguous, it is not displayable.
-	bool is_displayable(uint32_t row, int track_idx) const;
+	bool is_displayable(uint32_t row, int cgi) const;
 
 	// Add note in track_to_notes. This is used by the midi pattern editor so
 	// that the note pattern can know on which track idx a new note should be.
-	void add(int track_idx, NoteTypePtr note);
+	void add(int cgi, NoteTypePtr note);
 
 	// Number of tracks of that midi track (initially determined by the number
 	// of overlapping notes)
@@ -116,16 +116,16 @@ private:
 	// the track index if found, -1 otherwise.
 	int find_eq_id(NoteTypePtr note) const;
 
-	// Find the note in track_to_notes[track_idx] containing the same id.
-	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(int track_idx, NoteTypePtr note) const;
-	ARDOUR::MidiModel::Notes::iterator find_eq_id(int track_idx, NoteTypePtr note);
+	// Find the note in track_to_notes[cgi] containing the same id.
+	ARDOUR::MidiModel::Notes::const_iterator find_eq_id(int cgi, NoteTypePtr note) const;
+	ARDOUR::MidiModel::Notes::iterator find_eq_id(int cgi, NoteTypePtr note);
 	template <typename NoteContainer>
 	typename NoteContainer::const_iterator find_eq_id(const NoteContainer& notes, NoteTypePtr note) const;
 	template <typename NoteContainer>
 	typename NoteContainer::iterator find_eq_id(NoteContainer& notes, NoteTypePtr note);
 
 	// Erase note in given track with the id of the given note.
-	void erase_eq_id(int track_idx, NoteTypePtr note);
+	void erase_eq_id(int cgi, NoteTypePtr note);
 
 	// Erase note in given Notes with the id of the given note
 	void erase_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note);
@@ -134,7 +134,7 @@ private:
 	ARDOUR::MidiModel::Notes::iterator erase(ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
 	// Check if a track is available to receive a note.
-	bool is_free(int track_idx, NoteTypePtr note) const;
+	bool is_free(int cgi, NoteTypePtr note) const;
 
 	// Find the first track ready of receive a note. Return the track index if
 	// found, -1 otherwise.
