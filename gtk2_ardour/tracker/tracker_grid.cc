@@ -822,6 +822,118 @@ TrackerGrid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t 
 }
 
 void
+TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi)
+{
+	if (pattern.is_note_displayable(rowi, mti, cgi)) {
+		// Notes off
+		NoteTypePtr note = pattern.off_note(rowi, mti, cgi);
+		if (note) {
+			row[columns.note_name[mti][cgi]] = note_off_str;
+			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+			int64_t delay_ticks = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti);
+			if (delay_ticks != 0) {
+				row[columns.delay[mti][cgi]] = to_string (delay_ticks);
+				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
+			}
+			// Keep the note off around for playing and editing
+			row[columns._off_note[mti][cgi]] = note;
+		}
+
+		// Notes on
+		note = pattern.on_note (rowi, mti, cgi);
+		if (note) {
+			row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
+			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
+			row[columns.velocity[mti][cgi]] = to_string ((int)note->velocity());
+			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
+
+			int64_t delay_ticks = pattern.region_relative_delay_ticks(note->time(), rowi, mti);
+			if (delay_ticks != 0) {
+				row[columns.delay[mti][cgi]] = to_string (delay_ticks);
+				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
+			}
+			// Keep the note around for playing and editing
+			row[columns._on_note[mti][cgi]] = note;
+		}
+	} else {
+		// Too many notes, not displayable
+		row[columns.note_name[mti][cgi]] = undefined_str;
+		row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+	}
+}
+
+void
+TrackerGrid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	switch (current_auto_type) {
+	case TrackerColumn::AUTOMATION:
+		row[columns._automation_background_color[mti][cgi]] = cursor_color;
+		break;
+	case TrackerColumn::AUTOMATION_DELAY:
+		row[columns._automation_delay_background_color[mti][cgi]] = cursor_color;
+		break;
+	default:
+		// TODO use Ardour log
+		std::cout << "Error";
+	}
+}
+
+void
+TrackerGrid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	// Fill with blank
+	row[columns.automation[mti][cgi]] = "---";
+	row[columns.automation_delay[mti][cgi]] = "-----";
+
+	// Fill default foreground color
+	row[columns._automation_delay_foreground_color[mti][cgi]] = blank_foreground_color;
+}
+
+void
+TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi, const Evoral::Parameter& param)
+{
+	if (pattern.is_auto_displayable(rowi, mti, param)) {
+		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, param);
+		double aval = ctl_event->value;
+		row[columns.automation[mti][cgi]] = to_string (aval);
+		double awhen = ctl_event->when;
+		int64_t delay_ticks = TrackerUtils::is_region_automation (param) ?
+			pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti)
+			: pattern.delay_ticks((samplepos_t)awhen, rowi, mti);
+		if (delay_ticks != 0) {
+			row[columns.automation_delay[mti][cgi]] = to_string (delay_ticks);
+			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
+		}
+	} else {
+		row[columns.automation[mti][cgi]] = undefined_str;
+	}
+	row[columns._automation_foreground_color[mti][cgi]] = active_foreground_color;
+}
+
+void
+TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi, const Evoral::Parameter& param)
+{
+	double inter_auto_val = 0;
+	if (tracker_editor.param2actrls[mti][param]) {
+		boost::shared_ptr<AutomationList> alist = tracker_editor.param2actrls[mti][param]->alist();
+		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
+		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
+		// of the WriteLock in ControlList::erase and such, then eval can be used.
+		bool ok;
+		// Get corresponding beats and samples
+		Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowi, mti);
+		uint32_t row_sample = pattern.sample_at_row(rowi, mti);
+		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+		// Get interpolation
+		inter_auto_val = alist->rt_safe_eval(awhen, ok);
+	}
+	row[columns.automation[mti][cgi]] = to_string (inter_auto_val);
+	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
+}
+
+void
 TrackerGrid::redisplay_model ()
 {
 	if (editing_editable)
@@ -870,10 +982,6 @@ TrackerGrid::redisplay_model ()
 					continue;
 				}
 
-				// Get corresponding beats and samples
-				Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowi, mti);
-				uint32_t row_sample = pattern.sample_at_row(rowi, mti);
-
 				redisplay_region_name (row, rowi, mti);
 				
 				// Render midi notes pattern
@@ -896,61 +1004,20 @@ TrackerGrid::redisplay_model ()
 						redisplay_current_note_cursor (row, mti, cgi);
 					}
 
-					// Fill with blank text and color
+					// Fill with blank foreground text and colors
 					redisplay_blank_note_foreground (row, mti, cgi);
 
 					// Reset keeping track of the on and off notes
 					reset_off_on_note (row, mti, cgi);
 
+					// Display note
 					size_t off_notes_count = pattern.off_notes_count (rowi, mti, cgi);
 					size_t on_notes_count = pattern.on_notes_count (rowi, mti, cgi);
-
-					// TODO: keep refactoring
-
-					if (on_notes_count > 0 || off_notes_count > 0) {
-						if (pattern.is_note_displayable(rowi, mti, cgi)) {
-							// Notes off
-							NoteTypePtr note = pattern.off_note(rowi, mti, cgi);
-							if (note) {
-								row[columns.note_name[mti][cgi]] = note_off_str;
-								row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-								int64_t delay_ticks = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti);
-								if (delay_ticks != 0) {
-									row[columns.delay[mti][cgi]] = to_string (delay_ticks);
-									row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
-								}
-								// Keep the note off around for playing and editing
-								row[columns._off_note[mti][cgi]] = note;
-							}
-
-							// Notes on
-							note = pattern.on_note (rowi, mti, cgi);
-							if (note) {
-								row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
-								row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
-								row[columns.velocity[mti][cgi]] = to_string ((int)note->velocity());
-								row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-								row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
-								row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
-
-								int64_t delay_ticks = pattern.region_relative_delay_ticks(note->time(), rowi, mti);
-								if (delay_ticks != 0) {
-									row[columns.delay[mti][cgi]] = to_string (delay_ticks);
-									row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
-								}
-								// Keep the note around for playing and editing
-								row[columns._on_note[mti][cgi]] = note;
-							}
-						} else {
-							// Too many notes, not displayable
-							row[columns.note_name[mti][cgi]] = undefined_str;
-							row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-						}
-					}
+					if (0 < on_notes_count || 0 < off_notes_count)
+						redisplay_note (row, rowi, mti, cgi);
 				}
 
 				// Render automation pattern
-				// TODO: split into region vs track automation
 				for (ColParamBimap::left_const_iterator cp_it = col2params[mti].left.begin(); cp_it != col2params[mti].left.end(); ++cp_it) {
 					size_t col_idx = cp_it->first;
 					ColAutoTrackBimap::left_const_iterator ca_it = col2autotracks[mti].left.find(col_idx);
@@ -975,57 +1042,16 @@ TrackerGrid::redisplay_model ()
 
 					// Fill cursor background color
 					if (is_current_row && is_current_mti && is_current_cgi && current_note_type == TrackerColumn::SEPARATOR) {
-						switch (current_auto_type) {
-						case TrackerColumn::AUTOMATION:
-							row[columns._automation_background_color[mti][cgi]] = cursor_color;
-							break;
-						case TrackerColumn::AUTOMATION_DELAY:
-							row[columns._automation_delay_background_color[mti][cgi]] = cursor_color;
-							break;
-						default:
-							// TODO use Ardour log
-							std::cout << "Error";
-						}
+						redisplay_current_auto_cursor (row, mti, cgi);
 					}
 
-					// Fill default foreground color
-					row[columns._automation_delay_foreground_color[mti][cgi]] = blank_foreground_color;
-
-					// Fill with blank
-					row[columns.automation[mti][cgi]] = "---";
-					row[columns.automation_delay[mti][cgi]] = "-----";
+					// Fill default blank foreground text and color
+					redisplay_blank_auto_foreground (row, mti, cgi);
 
 					if (auto_count > 0) {
-						if (pattern.is_auto_displayable(rowi, mti, param)) {
-							Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, param);
-							double aval = ctl_event->value;
-							row[columns.automation[mti][cgi]] = to_string (aval);
-							double awhen = ctl_event->when;
-							int64_t delay_ticks = TrackerUtils::is_region_automation (param) ?
-								pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti)
-								: pattern.delay_ticks((samplepos_t)awhen, rowi, mti);
-							if (delay_ticks != 0) {
-								row[columns.automation_delay[mti][cgi]] = to_string (delay_ticks);
-								row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
-							}
-						} else {
-							row[columns.automation[mti][cgi]] = undefined_str;
-						}
-						row[columns._automation_foreground_color[mti][cgi]] = active_foreground_color;
+						redisplay_automation (row, rowi, mti, cgi, param);
 					} else {
-						// Interpolation
-						double inter_auto_val = 0;
-						if (tracker_editor.param2actrls[mti][param]) {
-							boost::shared_ptr<AutomationList> alist = tracker_editor.param2actrls[mti][param]->alist();
-							// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
-							// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
-							// of the WriteLock in ControlList::erase and such, then eval can be used.
-							bool ok;
-							double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
-							inter_auto_val = alist->rt_safe_eval(awhen, ok);
-						}
-						row[columns.automation[mti][cgi]] = to_string (inter_auto_val);
-						row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
+						redisplay_auto_interpolation (row, rowi, mti, cgi, param);
 					}
 				}
 			}
