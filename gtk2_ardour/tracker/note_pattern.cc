@@ -67,8 +67,8 @@ void NotePattern::update_track_to_notes()
 		strict_notes.insert(*it);
 
 	// Remove missing notes
-	for (size_t track_idx = 0; track_idx < track_to_notes.size(); ++track_idx) {
-		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[track_idx];
+	for (size_t cgi = 0; cgi < track_to_notes.size(); ++cgi) {
+		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[cgi];
 		ARDOUR::MidiModel::Notes::iterator track_notes_it = track_notes.begin();
 		for (; track_notes_it != track_notes.end();) {
 			ARDOUR::MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
@@ -83,14 +83,14 @@ void NotePattern::update_track_to_notes()
 	for (MidiModel::StrictNotes::const_iterator it = strict_notes.begin();
 	     it != strict_notes.end(); ++it) {
 
-		int track_idx = find_eq_id(*it);
+		int cgi = find_eq_id(*it);
 		int freetrack = -1;		// index of the first free track
-		if (-1 < track_idx) {
+		if (-1 < cgi) {
 			// The note is already in track_to_notes, remove it and check if it
 			// can be re-inserted in the same track.
-			erase_eq_id(track_idx, *it);
-			if (is_free(track_idx, *it)) {
-				freetrack = track_idx;
+			erase_eq_id(cgi, *it);
+			if (is_free(cgi, *it)) {
+				freetrack = cgi;
 			}
 		}
 		// Find the first available track
@@ -156,50 +156,50 @@ void NotePattern::dec_ntracks()
 	ntracks--;
 }
 
-NoteTypePtr NotePattern::find_prev(uint32_t row, int track_idx) const
+NoteTypePtr NotePattern::find_prev(uint32_t row, int cgi) const
 {
-	const RowToNotes& r2n = on_notes[track_idx];
+	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_reverse_iterator rit =
 		std::reverse_iterator<RowToNotes::const_iterator>(r2n.lower_bound(row));
 	while (rit != r2n.rend() && rit->first == row) { ++rit; };
 	return rit != r2n.rend() ? lattest(r2n.equal_range(rit->first)) : NoteTypePtr();
 }
 
-NoteTypePtr NotePattern::find_next(uint32_t row, int track_idx) const
+NoteTypePtr NotePattern::find_next(uint32_t row, int cgi) const
 {
-	const RowToNotes& r2n = on_notes[track_idx];
+	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound(row);
 	while (it != r2n.end() && it->first == row) { ++it; };
 	return it != r2n.end() ? earliest(r2n.equal_range(it->first)) : NoteTypePtr();
 }
 
-Temporal::Beats NotePattern::next_off(uint32_t row, int track_idx) const
+Temporal::Beats NotePattern::next_off(uint32_t row, int cgi) const
 {
-	NoteTypePtr next_note = find_next(row, track_idx);
+	NoteTypePtr next_note = find_next(row, cgi);
 	return next_note ? next_note->time() : end_beats;
 }
 
-bool NotePattern::is_displayable(uint32_t row, int track_idx) const
+bool NotePattern::is_displayable(uint32_t row, int cgi) const
 {
-	size_t off_notes_count = off_notes[track_idx].count(row);
-	size_t on_notes_count = on_notes[track_idx].count(row);
-	NotePattern::RowToNotes::const_iterator i_off = off_notes[track_idx].find(row);
-	NotePattern::RowToNotes::const_iterator i_on = on_notes[track_idx].find(row);
+	size_t off_notes_count = off_notes[cgi].count(row);
+	size_t on_notes_count = on_notes[cgi].count(row);
+	NotePattern::RowToNotes::const_iterator i_off = off_notes[cgi].find(row);
+	NotePattern::RowToNotes::const_iterator i_on = on_notes[cgi].find(row);
 	return off_notes_count <= 1 && on_notes_count <= 1
 		&& (off_notes_count != 1 || on_notes_count != 1
 		    || i_off->second->end_time() == i_on->second->time());
 }
 
-void NotePattern::add(int track_idx, NoteTypePtr note)
+void NotePattern::add(int cgi, NoteTypePtr note)
 {
 	// Resize track_to_notes if necessary
-	if (nreqtracks <= track_idx) {
-		nreqtracks = track_idx + 1;
+	if (nreqtracks <= cgi) {
+		nreqtracks = cgi + 1;
 		track_to_notes.resize(nreqtracks);
 	}
 
-	// Insert the note at track_idx
-	track_to_notes[track_idx].insert(note);
+	// Insert the note at cgi
+	track_to_notes[cgi].insert(note);
 }
 
 NoteTypePtr NotePattern::earliest(const RowToNotesRange& rng) const
@@ -228,19 +228,19 @@ int NotePattern::find_eq_id(NoteTypePtr note) const
 	return -1;
 }
 
-ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note) const
+ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int cgi, NoteTypePtr note) const
 {
-	return find_eq_id(track_to_notes[track_idx], note);
+	return find_eq_id(track_to_notes[cgi], note);
 }
 
-ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int track_idx, NoteTypePtr note)
+ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int cgi, NoteTypePtr note)
 {
-	return find_eq_id(track_to_notes[track_idx], note);
+	return find_eq_id(track_to_notes[cgi], note);
 }
 
-void NotePattern::erase_eq_id(int track_idx, NoteTypePtr note)
+void NotePattern::erase_eq_id(int cgi, NoteTypePtr note)
 {
-	erase_eq_id(track_to_notes[track_idx], note);
+	erase_eq_id(track_to_notes[cgi], note);
 }
 
 void NotePattern::erase_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note)
@@ -248,9 +248,9 @@ void NotePattern::erase_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note)
 	notes.erase(find_eq_id(notes, note));
 }
 
-bool NotePattern::is_free(int track_idx, NoteTypePtr note) const
+bool NotePattern::is_free(int cgi, NoteTypePtr note) const
 {
-	const ARDOUR::MidiModel::Notes& notes = track_to_notes[track_idx];
+	const ARDOUR::MidiModel::Notes& notes = track_to_notes[cgi];
 	ARDOUR::MidiModel::Notes::iterator it = notes.begin();
 	for (; it != notes.end(); ++it)
 		if (overlap(*it, note))

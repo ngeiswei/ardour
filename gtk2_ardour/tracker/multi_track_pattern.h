@@ -43,7 +43,8 @@ public:
 	void update_global_nrows ();  // row_offset, nrows, global_nrows
 
 	bool is_defined (uint32_t rowi, size_t mti);
-	
+	void update_undefined (uint32_t rowi, size_t mti);
+
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
 	Temporal::Beats region_relative_beats_at_row (uint32_t rowi, size_t mti, int32_t delay=0) const;
@@ -73,6 +74,15 @@ public:
 	size_t get_automation_list_count (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
 
+	NoteTypePtr find_prev_note(uint32_t rowi, size_t mti, int cgi) const;
+	NoteTypePtr find_next_note(uint32_t rowi, size_t mti, int cgi) const;
+
+	// Return the Beats of the note off as far as it can go (i.e. the next on
+	// note or the end of the region.)
+	Temporal::Beats next_off(uint32_t rowi, size_t mti, int cgi) const;
+
+	int to_rri (uint32_t rowi, size_t mti) const;
+
 	const TrackerEditor& tracker_editor;
 
 	// Pattern per midi track
@@ -83,9 +93,6 @@ public:
 	std::vector<uint32_t>        row_offset;
 	std::vector<uint32_t>        nrows;
 	uint32_t                     global_nrows;
-
-private:
-	int rowi2rri (uint32_t rowi, size_t mti) const;
 };
 
 #endif /* __ardour_tracker_multi_track_pattern_h_ */
