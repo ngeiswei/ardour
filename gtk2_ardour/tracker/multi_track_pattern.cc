@@ -103,58 +103,58 @@ MultiTrackPattern::update_global_nrows ()
 }
 
 bool
-MultiTrackPattern::is_defined (uint32_t row_idx, size_t mti)
+MultiTrackPattern::is_defined (uint32_t rowi, size_t mti)
 {
-	// TODO
-	return true;
+	int rri = to_rri(rowi, mti);
+	return 0 <= rri and rri < (int)nrows[mti];
 }
 
 Temporal::Beats
 MultiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mti, int32_t delay) const
 {
-	return (*mtps)[mti]->region_relative_beats_at_row(rowi2rri(rowi, mti), delay);
+	return (*mtps)[mti]->region_relative_beats_at_row(to_rri(rowi, mti), delay);
 }
 
 int64_t
 MultiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti) const
 {
-	return (*mtps)[mti]->region_relative_delay_ticks(event_time, rowi2rri(rowi, mti));
+	return (*mtps)[mti]->region_relative_delay_ticks(event_time, to_rri(rowi, mti));
 }
 
 int64_t
 MultiTrackPattern::delay_ticks (samplepos_t when, uint32_t rowi, size_t mti) const
 {
-	return (*mtps)[mti]->delay_ticks(when, rowi2rri(rowi, mti));
+	return (*mtps)[mti]->delay_ticks(when, to_rri(rowi, mti));
 }
 
 uint32_t
 MultiTrackPattern::sample_at_row (uint32_t rowi, size_t mti, int32_t delay) const
 {
-	return (*mtps)[mti]->sample_at_row(rowi2rri(rowi, mti), delay);
+	return (*mtps)[mti]->sample_at_row(to_rri(rowi, mti), delay);
 }
 
 size_t
 MultiTrackPattern::off_notes_count (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	return (*mtps)[mti]->np.off_notes[cgi].count(rowi2rri(rowi, mti));
+	return (*mtps)[mti]->np.off_notes[cgi].count(to_rri(rowi, mti));
 }
 
 size_t
 MultiTrackPattern::on_notes_count (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	return (*mtps)[mti]->np.on_notes[cgi].count(rowi2rri(rowi, mti));
+	return (*mtps)[mti]->np.on_notes[cgi].count(to_rri(rowi, mti));
 }
 
 bool
 MultiTrackPattern::is_note_displayable (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	return (*mtps)[mti]->np.is_displayable (rowi2rri(rowi, mti), cgi);
+	return (*mtps)[mti]->np.is_displayable (to_rri(rowi, mti), cgi);
 }
 
 NoteTypePtr
 MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	NotePattern::RowToNotes::const_iterator i_off = (*mtps)[mti]->np.off_notes[cgi].find(rowi2rri(rowi, mti));
+	NotePattern::RowToNotes::const_iterator i_off = (*mtps)[mti]->np.off_notes[cgi].find(to_rri(rowi, mti));
 	if (i_off != (*mtps)[mti]->np.off_notes[cgi].end())
 		return i_off->second;
 	return NULL;
@@ -163,7 +163,7 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t cgi) const
 NoteTypePtr
 MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	NotePattern::RowToNotes::const_iterator i_on = (*mtps)[mti]->np.on_notes[cgi].find(rowi2rri(rowi, mti));
+	NotePattern::RowToNotes::const_iterator i_on = (*mtps)[mti]->np.on_notes[cgi].find(to_rri(rowi, mti));
 	if (i_on != (*mtps)[mti]->np.on_notes[cgi].end())
 		return i_on->second;
 	return NULL;
@@ -172,7 +172,7 @@ MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t cgi) const
 bool
 MultiTrackPattern::is_auto_displayable (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const
 {
-	return get_automation_pattern (mti, param)->is_displayable (rowi2rri(rowi, mti), param);
+	return get_automation_pattern (mti, param)->is_displayable (to_rri(rowi, mti), param);
 }
 
 AutomationPattern*
@@ -195,18 +195,36 @@ size_t
 MultiTrackPattern::get_automation_list_count (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const
 {
 	const AutomationPattern* ap = get_automation_pattern (mti, param);
-	return ap->automations.find(param)->second.count(rowi2rri(rowi, mti));
+	return ap->automations.find(param)->second.count(to_rri(rowi, mti));
 }
 
 Evoral::ControlEvent*
 MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const
 {
 	const AutomationPattern* ap = get_automation_pattern (mti, param);
-	return *(ap->automations.find(param)->second.find(rowi2rri(rowi, mti))->second);
+	return *(ap->automations.find(param)->second.find(to_rri(rowi, mti))->second);
+}
+
+NoteTypePtr
+MultiTrackPattern::find_prev_note(uint32_t rowi, size_t mti, int cgi) const
+{
+	return (*mtps)[mti]->np.find_prev(to_rri(rowi, mti), cgi);
+}
+
+NoteTypePtr
+MultiTrackPattern::find_next_note(uint32_t rowi, size_t mti, int cgi) const
+{
+	return (*mtps)[mti]->np.find_next(to_rri(rowi, mti), cgi);
+}
+
+Temporal::Beats
+MultiTrackPattern::next_off(uint32_t rowi, size_t mti, int cgi) const
+{
+	return (*mtps)[mti]->np.next_off(to_rri(rowi, mti), cgi);
 }
 
 int
-MultiTrackPattern::rowi2rri (uint32_t rowi, size_t mti) const
+MultiTrackPattern::to_rri (uint32_t rowi, size_t mti) const
 {
 	return (int)rowi - row_offset[mti];
 }

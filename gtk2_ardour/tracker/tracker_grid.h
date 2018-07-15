@@ -136,7 +136,14 @@ public:
 
 	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
 	void read_colors ();         // Read colors from config
-	void update_global_columns (); // time, color, font
+	void redisplay_global_columns (); // time, color, font
+	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_undefined (Gtk::TreeModel::Row& row, size_t mti);
+	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti);
+	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_model ();    // TODO rename
 
 	TrackerEditor& tracker_editor;
@@ -281,10 +288,10 @@ private:
 	bool step_editing_set_automation_delay (int digit);
 
 	// Get note from path, mti and cgi
-	NoteTypePtr get_on_note (int rowidx, int mti, int cgi);
+	NoteTypePtr get_on_note (int rowi, int mti, int cgi);
 	NoteTypePtr get_on_note (const std::string& path, int mti, int cgi);
 	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
-	NoteTypePtr get_off_note (int rowidx, int mti, int cgi);
+	NoteTypePtr get_off_note (int rowi, int mti, int cgi);
 	NoteTypePtr get_off_note (const std::string& path, int mti, int cgi);
 	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 
@@ -302,26 +309,26 @@ private:
 	// Midi note callbacks
 	uint8_t parse_pitch (const std::string& text) const;
 	void note_edited (const std::string& path, const std::string& text);
-	void set_on_note (uint8_t pitch, int rowidx, int mti, int cgi);
-	void set_off_note (int rowidx, int mti, int cgi);
-	void delete_note (int rowidx, int mti, int cgi);
+	void set_on_note (uint8_t pitch, int rowi, int mti, int cgi);
+	void set_off_note (int rowi, int mti, int cgi);
+	void delete_note (int rowi, int mti, int cgi);
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel (int mti, NoteTypePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
 	void set_note_velocity (int mti, NoteTypePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
-	void set_note_delay (int delay, int rowidx, int mti, int cgi);
+	void set_note_delay (int delay, int rowi, int mti, int cgi);
 
 	// Automation callbacks
 	Evoral::Parameter get_parameter (int mti, int automation_cgi);
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
-	std::pair<double, bool> get_automation_value (int rowidx, int mti, int cgi); // return zero if undefined!
-	void set_automation (double val, int rowidx, int mti, int automation_cgi);
-	void delete_automation (int rowidx, int mti, int automation_cgi);
+	std::pair<double, bool> get_automation_value (int rowi, int mti, int cgi); // return zero if undefined!
+	void set_automation (double val, int rowi, int mti, int automation_cgi);
+	void delete_automation (int rowi, int mti, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);
-	std::pair<int, bool> get_automation_delay (int rowidx, int mti, int cgi); // return zero if undefined!
-	void set_automation_delay (int delay, int rowidx, int mti, int automation_cgi);
+	std::pair<int, bool> get_automation_delay (int rowi, int mti, int cgi); // return zero if undefined!
+	void set_automation_delay (int delay, int rowi, int mti, int automation_cgi);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
 	void apply_command (int mti, ARDOUR::MidiModel::NoteDiffCommand* cmd);
