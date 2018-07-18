@@ -977,7 +977,7 @@ TrackerGrid::redisplay_model ()
 				size_t ntracks = mtp->np.ntracks;
 
 				// Undefined
-				if (!pattern.is_defined(rowi, mti)) {
+				if (!pattern.is_defined (rowi, mti)) {
 					redisplay_undefined (row, mti);
 					continue;
 				}
@@ -1623,13 +1623,12 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	current_col = get_col_index (col);
 
 	// Set mti, mtp, cgi and types
-	TrackerColumn* tc = dynamic_cast<TrackerColumn*>(col);
-	current_mti = tc->midi_track_idx;
+	current_mti = get_mti(col);
 	current_mtp = (*pattern.mtps)[current_mti];
-	current_cgi = tc->col_group_idx;
-	current_note_type = tc->note_type;
-	current_auto_type = tc->auto_type;
-	
+	current_cgi = get_cgi(col);
+	current_note_type = get_note_type(col);
+	current_auto_type = get_auto_type(col);
+
 	/* now trigger a redisplay */
 	// TODO: optimize that!
 	redisplay_model ();
@@ -2071,9 +2070,9 @@ TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int mti, int step
 	// Step till it ends up in a defined cell
 	do {
 		path[0] += steps;
-		path[0] %= pattern.global_nrows;
 		if (path[0] < 0)
 			path[0] += pattern.global_nrows;
+		path[0] %= pattern.global_nrows;
 	} while (!is_defined (path, mti));
 }
 
@@ -2081,7 +2080,7 @@ void
 TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab)
 {
 	// TODO: make sure it doesn't loop forever
-	
+
 	// TODO support tab == true, to move from one ardour track to the next
 	const int n_col = get_columns().size();
 	TreeViewColumn* col;
@@ -2114,15 +2113,41 @@ TrackerGrid::is_editable (TreeViewColumn* col) const
 bool
 TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col) const
 {
-	// TODO: use is_defined below
-	return true;
+	return is_defined (path, get_mti(col));
 }
 
 bool
 TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, int mti) const
 {
-	// TODO: use pattern is_defined
-	return true;
+	return pattern.is_defined (get_row_index (path), mti);
+}
+
+size_t
+TrackerGrid::get_mti(const TreeViewColumn* col) const
+{
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
+	return tc->midi_track_idx;
+}
+
+size_t
+TrackerGrid::get_cgi(const TreeViewColumn* col) const
+{
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
+	return tc->col_group_idx;
+}
+
+TrackerColumn::midi_note_type
+TrackerGrid::get_note_type(const Gtk::TreeViewColumn* col) const
+{
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
+	return tc->note_type;
+}
+
+TrackerColumn::automation_type
+TrackerGrid::get_auto_type(const Gtk::TreeViewColumn* col) const
+{
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
+	return tc->auto_type;
 }
 
 void
