@@ -270,6 +270,11 @@ private:
 	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
 	bool is_defined (const Gtk::TreeModel::Path& path, int mti) const;
 
+	size_t get_mti(const Gtk::TreeViewColumn* col) const;
+	size_t get_cgi(const Gtk::TreeViewColumn* col) const;
+	TrackerColumn::midi_note_type get_note_type(const Gtk::TreeViewColumn* col) const;
+	TrackerColumn::automation_type get_auto_type(const Gtk::TreeViewColumn* col) const;
+
 	// Move the editing cursor steps columns rightwards, or leftwards if steps
 	// is negative.
 	void horizontal_move_edit_cursor (int steps, bool tab=false);
