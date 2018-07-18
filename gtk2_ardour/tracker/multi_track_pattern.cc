@@ -103,7 +103,7 @@ MultiTrackPattern::update_global_nrows ()
 }
 
 bool
-MultiTrackPattern::is_defined (uint32_t rowi, size_t mti)
+MultiTrackPattern::is_defined (uint32_t rowi, size_t mti) const
 {
 	int rri = to_rri(rowi, mti);
 	return 0 <= rri and rri < (int)nrows[mti];

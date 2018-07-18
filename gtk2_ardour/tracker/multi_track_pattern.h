@@ -42,7 +42,7 @@ public:
 	void update_earliest_mtp ();  // earliest midi track
 	void update_global_nrows ();  // row_offset, nrows, global_nrows
 
-	bool is_defined (uint32_t rowi, size_t mti);
+	bool is_defined (uint32_t rowi, size_t mti) const;
 	void update_undefined (uint32_t rowi, size_t mti);
 
 	// Like beats_at_row but the beats is calculated in reference to the
