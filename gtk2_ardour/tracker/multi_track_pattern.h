@@ -34,7 +34,7 @@ public:
 	MultiTrackPattern (const TrackerEditor& te);
 	~MultiTrackPattern ();
 
-	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
+	void setup ();
 
 	void update ();
 	void update_rows_per_beat ();
@@ -86,7 +86,7 @@ public:
 	const TrackerEditor& tracker_editor;
 
 	// Pattern per midi track
-	std::vector<MidiTrackPattern*>* mtps;
+	std::vector<MidiTrackPattern*> mtps;
 
 	// Row index offset and number of valid rows per mti
 	MidiTrackPattern*            earliest_mtp;

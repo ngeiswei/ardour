@@ -104,7 +104,6 @@ public:
 	std::vector<boost::shared_ptr<ARDOUR::MidiTrack> > midi_tracks;
 	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models;
 	std::vector<MidiTimeAxisView*> midi_time_axis_views;
-	std::vector<MidiTrackPattern*> mtps;
 
 	// Parameter to AutomationControl for each midi track
 	// TODO: try to move this to multi_track_pattern.h
