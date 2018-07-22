@@ -94,7 +94,7 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	set_session (s);
 
 	// Build regions, tracks, midi_models, midi_time_axis_views and routes
-	// TODO: for now we assume that there is one region per track
+	// TODO: support multi region per same track
 	for (RegionSelection::const_iterator it = region_selection.begin();
 	     it != region_selection.end(); ++it) {
 		MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
@@ -121,7 +121,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 
 	build_param2actrls ();
 	build_patterns ();
-	setup_grid ();
 	setup_scroller ();
 	setup_toolbars ();
 
@@ -142,8 +141,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 
 TrackerEditor::~TrackerEditor ()
 {
-	for (std::vector<MidiTrackPattern*>::iterator it = mtps.begin(); it != mtps.end(); ++it)
-		delete *it;
 	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
 		delete *it;
 }
@@ -232,11 +229,6 @@ TrackerEditor::resize_width()
 void
 TrackerEditor::build_patterns ()
 {
-	for (unsigned i = 0; i < midi_regions.size(); i++) {
-		MidiTrackPattern* mtp = new MidiTrackPattern(_session, midi_regions[i]);
-		mtps.push_back(mtp);
-	}
-
 	update_automation_patterns ();
 }
 
@@ -244,7 +236,7 @@ void
 TrackerEditor::update_automation_patterns ()
 {
 	for (unsigned i = 0; i < param2actrls.size(); i++) {
-		MidiTrackPattern* mtp = mtps[i];
+		MidiTrackPattern* mtp = grid.pattern.mtps[i];
 		// Insert automation controls in the automation patterns
 		for (Parameter2AutomationControl::const_iterator it = param2actrls[i].begin(); it != param2actrls[i].end(); ++it) {
 			// Midi automation are attached to the region, not the track
@@ -263,7 +255,7 @@ TrackerEditor::setup_toolbars ()
 		Parameter2AutomationControl& param2actrl = param2actrls[mti];
 		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = midi_tracks[mti];
 		boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_models[mti];
-		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, *mtps[mti], mti);
+		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, *grid.pattern.mtps[mti], mti);
 		// TODO replace by emplace_back when supports C++11
 		midi_track_toolbars.push_back(mttb);
 	}
@@ -280,12 +272,6 @@ TrackerEditor::setup_midi_track_toolbars ()
 		midi_track_toolbars[i]->setup_processor_menu_and_curves ();
 		midi_track_toolbars[i]->setup ();
 	}
-}
-
-void
-TrackerEditor::setup_grid ()
-{
-	grid.setup (mtps);
 }
 
 void
