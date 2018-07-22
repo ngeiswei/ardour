@@ -92,7 +92,9 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, edit_mtp (NULL)
 	, edit_cgi (-1)
 	, editing_editable (NULL)
-{}
+{
+	setup ();
+}
 
 TrackerGrid::~TrackerGrid () {}
 
@@ -412,9 +414,9 @@ TrackerGrid::update_pan_columns_visibility (size_t mti)
 void
 TrackerGrid::redisplay_visible_note()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*pattern.mtps)[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
+			bool visible = i < pattern.mtps[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_note_button ();
@@ -442,9 +444,9 @@ TrackerGrid::note_colnum(size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_channel()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*pattern.mtps)[mti]->np.ntracks
+			bool visible = i < pattern.mtps[mti]->np.ntracks
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
@@ -465,9 +467,9 @@ TrackerGrid::note_channel_colnum(size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_velocity()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*pattern.mtps)[mti]->np.ntracks
+			bool visible = i < pattern.mtps[mti]->np.ntracks
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
@@ -488,9 +490,9 @@ TrackerGrid::note_velocity_colnum(size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_delay()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < (*pattern.mtps)[mti]->np.ntracks
+			bool visible = i < pattern.mtps[mti]->np.ntracks
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
@@ -513,10 +515,10 @@ TrackerGrid::note_delay_colnum(size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_note_separator()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
-		bool is_last_mti = mti == (pattern.mtps->size() - 1);
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
+		bool is_last_mti = mti == (pattern.mtps.size() - 1);
 		bool hva = has_visible_automation(mti);
-		size_t ntracks = (*pattern.mtps)[mti]->np.ntracks;
+		size_t ntracks = pattern.mtps[mti]->np.ntracks;
 		bool visible_note = tracker_editor.midi_track_toolbars[mti]->visible_note and 0 < ntracks;
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool is_first_gci = (i == 0);
@@ -543,7 +545,7 @@ TrackerGrid::note_separator_colnum (size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_automation()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_colnum(mti, i);
 			bool visible = TrackerUtils::is_in(col, visible_automation_columns);
@@ -571,7 +573,7 @@ TrackerGrid::automation_colnum(size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_automation_delay()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_delay_colnum(mti, i);
 			bool visible = tracker_editor.midi_track_toolbars[mti]->visible_delay and TrackerUtils::is_in(col - 1, visible_automation_columns);
@@ -592,7 +594,7 @@ TrackerGrid::automation_delay_colnum(size_t mti, size_t cgi) const
 void
 TrackerGrid::redisplay_visible_automation_separator()
 {
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		size_t greatest_visible_col = 0;
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_separator_colnum(mti, i);
@@ -601,7 +603,7 @@ TrackerGrid::redisplay_visible_automation_separator()
 				greatest_visible_col = std::max(greatest_visible_col, col);
 			get_column(col)->set_visible (visible);
 		}
-		if (0 < greatest_visible_col and mti != (pattern.mtps->size() - 1))
+		if (0 < greatest_visible_col and mti != (pattern.mtps.size() - 1))
 			get_column(greatest_visible_col)->set_visible (false);
 	}
 
@@ -616,9 +618,9 @@ TrackerGrid::automation_separator_colnum (size_t mti, size_t cgi) const
 }
 
 void
-TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
+TrackerGrid::setup ()
 {
-	pattern.setup (midi_track_patterns);
+	pattern.setup ();
 
 	model = ListStore::create (columns);
 	set_model (model);
@@ -626,7 +628,7 @@ TrackerGrid::setup (std::vector<MidiTrackPattern*>& midi_track_patterns)
 	setup_time_column();
 
 	// Instantiate midi tracks
-	for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
+	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		setup_midi_track_column(mti);
 
 		// Setup column info
@@ -731,7 +733,7 @@ void
 TrackerGrid::redisplay_undefined (TreeModel::Row& row, size_t mti)
 {
 	// Number of column groups
-	size_t ntracks = (*pattern.mtps)[mti]->np.ntracks;
+	size_t ntracks = pattern.mtps[mti]->np.ntracks;
 	row[columns.midi_track_name[mti]] = "";
 	for (size_t cgi = 0; cgi < ntracks; cgi++) {
 		// cgi stands from column group index
@@ -941,8 +943,8 @@ TrackerGrid::redisplay_model ()
 
 	if (tracker_editor.session) {
 		// In case the resolution (lines per beat) has changed
-		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.mtps->front()->delay_ticks_min());
-		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.mtps->front()->delay_ticks_max());
+		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.mtps.front()->delay_ticks_min());
+		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.mtps.front()->delay_ticks_max());
 
 		// Load colors from config
 		read_colors ();
@@ -967,8 +969,8 @@ TrackerGrid::redisplay_model ()
 			// Get corresponding background color
 			std::string row_background_color = row[columns._background_color];
 
-			for (size_t mti = 0; mti < pattern.mtps->size(); mti++) {
-				MidiTrackPattern* mtp = (*pattern.mtps)[mti];
+			for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
+				MidiTrackPattern* mtp = pattern.mtps[mti];
 
 				// Used to draw the background of the cursor
 				bool is_current_mti = current_mti == (int)mti;
@@ -1194,7 +1196,7 @@ TrackerGrid::editing_started (CellEditable* ed, const string& path, int mti, int
 	edit_path = TreePath (path);
 	edit_row = get_row_index (edit_path);
 	edit_mti = mti;
-	edit_mtp = (*pattern.mtps)[edit_mti];
+	edit_mtp = pattern.mtps[edit_mti];
 	edit_cgi = cgi;
 	editing_editable = ed;
 
@@ -1238,7 +1240,7 @@ TrackerGrid::note_edited (const std::string& path, const std::string& text)
 	bool is_on = pitch <= 127;
 
 	// Can't edit ***
-	if (not edit_mtp->np.is_displayable(edit_row, edit_cgi)) {
+	if (!pattern.is_note_displayable(edit_row, edit_mti, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -1270,7 +1272,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
-	MidiTrackPattern* mtp = (*pattern.mtps)[mti];
+	MidiTrackPattern* mtp = pattern.mtps[mti];
 
 	if (on_note) {
 		// Change the pitch of the on note
@@ -1281,7 +1283,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time();
-		Temporal::Beats end = mtp->np.next_off(rowidx, cgi);
+		Temporal::Beats end = pattern.next_off(rowidx, mti, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
 		NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
@@ -1290,7 +1292,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
-		mtp->np.add (cgi, new_note);
+		mtp->np.add (cgi, new_note); // TODO implement pattern.add
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
@@ -1340,8 +1342,6 @@ TrackerGrid::set_off_note (int rowidx, int mti, int cgi)
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
-	MidiTrackPattern* mtp = (*pattern.mtps)[mti];
-
 	if (on_note) {
 		// Replace the on note by an off note, that is remove the on note
 		char const * opname = _("delete note");
@@ -1351,7 +1351,7 @@ TrackerGrid::set_off_note (int rowidx, int mti, int cgi)
 		// If there is no off note, update the length of the preceding node
 		// to match the new off note (smart off note).
 		if (!off_note) {
-			NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_cgi);
+			NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, edit_cgi);
 			if (prev_note) {
 				Temporal::Beats length = on_note->time() - prev_note->time();
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -1392,8 +1392,6 @@ TrackerGrid::delete_note (int rowidx, int mti, int cgi)
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
-	MidiTrackPattern* mtp = (*pattern.mtps)[mti];
-
 	if (on_note) {
 		// Delete on note and change
 		char const * opname = _("delete note");
@@ -1403,11 +1401,11 @@ TrackerGrid::delete_note (int rowidx, int mti, int cgi)
 		// If there is an off note, update the length of the preceding note
 		// to match the next note or the end of the region.
 		if (off_note) {
-			NoteTypePtr prev_note = mtp->np.find_prev(rowidx, edit_cgi);
+			NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, edit_cgi);
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Temporal::Beats start = prev_note->time();
-				Temporal::Beats end = mtp->np.next_off(rowidx, edit_cgi);
+				Temporal::Beats end = pattern.next_off(rowidx, mti, edit_cgi);
 				Temporal::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
@@ -1416,7 +1414,7 @@ TrackerGrid::delete_note (int rowidx, int mti, int cgi)
 		// Update the length of the corresponding on note so the off note
 		// matches the next note or the end of the region.
 		Temporal::Beats start = off_note->time();
-		Temporal::Beats end = mtp->np.next_off(rowidx, edit_cgi);
+		Temporal::Beats end = pattern.next_off(rowidx, mti, edit_cgi);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
 		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
@@ -1438,7 +1436,7 @@ TrackerGrid::note_channel_edited (const std::string& path, const std::string& te
 	}
 
 	// Can't edit ***
-	if (!edit_mtp->np.is_displayable(edit_row, edit_cgi)) {
+	if (!pattern.is_note_displayable(edit_row, edit_mti, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -1480,7 +1478,7 @@ TrackerGrid::note_velocity_edited (const std::string& path, const std::string& t
 	}
 
 	// Can't edit ***
-	if (!edit_mtp->np.is_displayable(edit_row, edit_cgi)) {
+	if (!pattern.is_note_displayable(edit_row, edit_mti, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -1518,7 +1516,7 @@ void
 TrackerGrid::note_delay_edited (const std::string& path, const std::string& text)
 {
 	// Can't edit ***
-	if (!edit_mtp->np.is_displayable(edit_row, edit_cgi)) {
+	if (!pattern.is_note_displayable(edit_row, edit_mti, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -1543,7 +1541,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int cgi)
 	char const* opname = _("change note delay");
 	MidiModel::NoteDiffCommand* cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
 
-	MidiTrackPattern* mtp = (*pattern.mtps)[mti];
+	MidiTrackPattern* mtp = pattern.mtps[mti]; // TODO: move the used methods into pattern
 
 	// Check if within acceptable boundaries
 	if (delay < mtp->delay_ticks_min() || mtp->delay_ticks_max() < delay)
@@ -1553,7 +1551,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int cgi)
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int delta = delay - mtp->region_relative_delay_ticks(on_note->time(), rowidx);
+		int delta = delay - pattern.region_relative_delay_ticks(on_note->time(), rowidx, mti);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_start = on_note->time() + relative_beats;
 		// Make sure the new_start is still within the visible region
@@ -1576,7 +1574,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int cgi)
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int delta = delay - mtp->region_relative_delay_ticks(off_note->end_time(), rowidx);
+		int delta = delay - pattern.region_relative_delay_ticks(off_note->end_time(), rowidx, mti);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_length = off_note->length() + relative_beats;
 		// Make sure the off note is after the on note
@@ -1624,7 +1622,7 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 
 	// Set mti, mtp, cgi and types
 	current_mti = get_mti(col);
-	current_mtp = (*pattern.mtps)[current_mti];
+	current_mtp = pattern.mtps[current_mti];
 	current_cgi = get_cgi(col);
 	current_note_type = get_note_type(col);
 	current_auto_type = get_auto_type(col);
@@ -1810,7 +1808,7 @@ TrackerGrid::get_automation_delay (int rowidx, int mti, int cgi)
 	if (auto_it != r2at.end()) {
 		double awhen = (*auto_it->second)->when;
 		int delay_ticks = TrackerUtils::is_region_automation (param) ?
-			(*pattern.mtps)[mti]->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : (*pattern.mtps)[mti]->delay_ticks((samplepos_t)awhen, rowidx);
+			pattern.mtps[mti]->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : pattern.mtps[mti]->delay_ticks((samplepos_t)awhen, rowidx);
 		return std::make_pair(delay_ticks, true);
 	}
 	return std::make_pair(0, false);
@@ -1820,7 +1818,7 @@ void
 TrackerGrid::set_automation_delay (int delay, int rowidx, int mti, int cgi)
 {
 	// Check if within acceptable boundaries
-	if (delay < (*pattern.mtps)[mti]->delay_ticks_min() || (*pattern.mtps)[mti]->delay_ticks_max() < delay)
+	if (delay < pattern.mtps[mti]->delay_ticks_min() || pattern.mtps[mti]->delay_ticks_max() < delay)
 		return;
 
 	int rri = (int)rowidx - pattern.row_offset[mti];
@@ -2720,8 +2718,8 @@ TrackerGrid::step_editing_set_note_delay (int digit)
 	}
 
 	// Fetch delay
-	int old_delay = on_note ? current_mtp->region_relative_delay_ticks(on_note->time(), current_row)
-		: current_mtp->region_relative_delay_ticks(off_note->end_time(), current_row);
+	int old_delay = on_note ? pattern.region_relative_delay_ticks(on_note->time(), current_row, current_mti)
+		: pattern.region_relative_delay_ticks(off_note->end_time(), current_row, current_mti);
 
 	// Update delay
 	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, position);
