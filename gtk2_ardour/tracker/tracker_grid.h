@@ -134,7 +134,7 @@ public:
 	void redisplay_visible_automation_separator ();
 	int automation_separator_colnum (size_t mti, size_t cgi) const;
 
-	void setup (std::vector<MidiTrackPattern*>& midi_track_patterns);
+	void setup ();
 	void read_colors ();         // Read colors from config
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
