@@ -72,19 +72,19 @@ public:
 	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
 	~TrackerEditor();
 
-	// Build parameter to automation control map for the give midi track
+	boost::shared_ptr<ARDOUR::MidiModel> to_model (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
+
+	// Build parameter to automation control map for the given midi track and
+	// region (or for now model).
+	//
+	// TODO: ultimately we want to disentangle region and track 
 	void build_param2actrl (Parameter2AutomationControl& param2actrl,
 	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                        boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
 	// Build parameter to automation control map for all track
-	void build_param2actrls ();
+	void build_region2param2actrls ();
 	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor, Parameter2AutomationControl& p2a);
-
-	/**
-	 * Instantiate mtps with all MidiTrackPatterns
-	 */
-	void build_patterns ();
 
 	void update_automation_patterns ();
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
@@ -105,10 +105,14 @@ public:
 	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models;
 	std::vector<MidiTimeAxisView*> midi_time_axis_views;
 
-	// Parameter to AutomationControl for each midi track
+	// Parameter to AutomationControl per region
 	// TODO: try to move this to multi_track_pattern.h
-	std::vector<Parameter2AutomationControl> param2actrls;
+	typedef std::map<boost::shared_ptr<ARDOUR::MidiRegion>, Parameter2AutomationControl> Region2Parameter2AutomationControl;
+	Region2Parameter2AutomationControl region2param2actrls;
 
+	// NEXT TODO: replace this by above (or something else) in order to support multi-region midi tracker pattern
+	std::vector<Parameter2AutomationControl> param2actrls;
+	
 	Gtk::ScrolledWindow          scroller;
 	Gtk::Table                   buttons;
 	TrackerGrid                  grid;

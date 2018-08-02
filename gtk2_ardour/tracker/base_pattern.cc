@@ -36,8 +36,29 @@ using Timecode::BBT_Time;
 
 BasePattern::BasePattern(ARDOUR::Session* session,
                          boost::shared_ptr<ARDOUR::Region> region)
-	: _session(session), _region(region),
-	  _conv(_session->tempo_map(), _region->position())
+	: position(region->position())
+	, start(region->start())
+	, length(region->length())
+	, first_sample(region->first_sample())
+	, last_sample(region->last_sample())
+	, _session(session)
+	, _conv(_session->tempo_map(), region->position())
+{
+}
+
+BasePattern::BasePattern(ARDOUR::Session* session,
+                         Temporal::samplepos_t _position,
+                         Temporal::samplepos_t _start,
+                         Temporal::samplecnt_t _length,
+                         Temporal::samplepos_t _first_sample,
+                         Temporal::samplepos_t _last_sample)
+	: position(_position)
+	, start(_start)
+	, length(_length)
+	, first_sample(_first_sample)
+	, last_sample(_last_sample)
+	, _session(session)
+	, _conv(_session->tempo_map(), _position)
 {
 }
 
@@ -66,16 +87,16 @@ uint32_t BasePattern::find_nrows() const
 
 void BasePattern::set_row_range()
 {
-	position_beats = _conv.from (_region->position());
-	start_beats = _conv.from (_region->start());
-	end_beats = _conv.from (_region->last_sample() + 1);
+	position_beats = _conv.from (position);
+	start_beats = _conv.from (start);
+	end_beats = _conv.from (last_sample + 1);
 	length_beats = end_beats - position_beats;
 	position_row_beats = find_position_row_beats();
 	end_row_beats = find_end_row_beats();
 	nrows = find_nrows();
 }
 
-samplepos_t BasePattern::sample_at_row(uint32_t rowi, int32_t delay) const
+Temporal::samplepos_t BasePattern::sample_at_row(uint32_t rowi, int32_t delay) const
 {
 	return _conv.to (beats_at_row(rowi, delay));
 }
@@ -103,7 +124,7 @@ double BasePattern::row_distance(const Temporal::Beats& from, const Temporal::Be
 	return (to - from + half_row).to_double() * rows_per_beat;
 }
 
-uint32_t BasePattern::row_at_sample(samplepos_t sample) const
+uint32_t BasePattern::row_at_sample(Temporal::samplepos_t sample) const
 {
 	return row_at_beats (_conv.from (sample));
 }
@@ -114,7 +135,7 @@ uint32_t BasePattern::row_at_beats_min_delay(const Temporal::Beats& beats) const
 	return clamp((beats - position_row_beats + tpr_minus_1).to_double() * rows_per_beat);
 }
 
-uint32_t BasePattern::row_at_sample_min_delay(samplepos_t sample) const
+uint32_t BasePattern::row_at_sample_min_delay(Temporal::samplepos_t sample) const
 {
 	return row_at_beats_min_delay(_conv.from (sample));
 }
@@ -124,7 +145,7 @@ uint32_t BasePattern::row_at_beats_max_delay(const Temporal::Beats& beats) const
 	return clamp((beats - position_row_beats).to_double() * rows_per_beat);
 }
 
-uint32_t BasePattern::row_at_sample_max_delay(samplepos_t sample) const
+uint32_t BasePattern::row_at_sample_max_delay(Temporal::samplepos_t sample) const
 {
 	return row_at_beats_max_delay (_conv.from (sample));
 }
@@ -134,7 +155,7 @@ int64_t BasePattern::delay_ticks(const Temporal::Beats& event_time, uint32_t row
 	return (event_time - beats_at_row(rowi)).to_ticks();
 }
 
-int64_t BasePattern::delay_ticks(samplepos_t sample, uint32_t rowi) const
+int64_t BasePattern::delay_ticks(Temporal::samplepos_t sample, uint32_t rowi) const
 {
 	return delay_ticks(_conv.from (sample), rowi);
 }

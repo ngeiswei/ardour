@@ -43,12 +43,19 @@ class BasePattern {
 public:
 	BasePattern(ARDOUR::Session* session,
 	            boost::shared_ptr<ARDOUR::Region> region);
+	BasePattern(ARDOUR::Session* session,
+	            Temporal::samplepos_t _position,
+	            Temporal::samplepos_t _start,
+	            Temporal::samplecnt_t _length,
+	            Temporal::samplepos_t _first_sample,
+	            Temporal::samplepos_t _last_sample);
 
-	static const uint32_t UNDEFINED_ROW = -1;
+	// A negative row index (i.e. max value) is considered invalid
+	static const uint32_t INVALID_ROW = -1;
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
-	// see below.
+	// i.e. call update().
 	void set_rows_per_beat(uint16_t rpb);
 
 	// Build or rebuild the pattern
@@ -68,7 +75,7 @@ public:
 
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
-	samplepos_t sample_at_row(uint32_t rowi, int32_t delay=0) const;
+	Temporal::samplepos_t sample_at_row(uint32_t rowi, int32_t delay=0) const;
 
 	// Return the beats at the corresponding row index and delay in relative
 	// ticks
@@ -88,27 +95,27 @@ public:
 	double row_distance(const Temporal::Beats& from, const Temporal::Beats& to) const;
 
 	// Like row_at_beats but use sample instead of beats
-	uint32_t row_at_sample(samplepos_t sample) const;
+	uint32_t row_at_sample(Temporal::samplepos_t sample) const;
 
 	// Return the row index assuming the beats is allowed to have the minimum
 	// negative delay (1 - _ticks_per_row).
 	uint32_t row_at_beats_min_delay(const Temporal::Beats& beats) const;
 
 	// Like row_at_beats_min_delay but use sample instead of beats
-	uint32_t row_at_sample_min_delay(samplepos_t sample) const;
+	uint32_t row_at_sample_min_delay(Temporal::samplepos_t sample) const;
 
 	// Return the row index assuming the beats is allowed to have the maximum
 	// positive delay (_ticks_per_row - 1).
 	uint32_t row_at_beats_max_delay(const Temporal::Beats& beats) const;
 
 	// Like row_at_beats_max_delay but use sample instead of beats
-	uint32_t row_at_sample_max_delay(samplepos_t sample) const;
+	uint32_t row_at_sample_max_delay(Temporal::samplepos_t sample) const;
 
 	// Return an event's delay in a certain row in ticks
 	int64_t delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const;
 
 	// Like delay_ticks above but uses sample instead of beats
-	int64_t delay_ticks(samplepos_t sample, uint32_t rowi) const;
+	int64_t delay_ticks(Temporal::samplepos_t sample, uint32_t rowi) const;
 
 	// Like delay_ticks but the event_time is relative to the region position
 	int64_t region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const;
@@ -117,8 +124,15 @@ public:
 	int32_t delay_ticks_min() const;
 	int32_t delay_ticks_max() const;
 
-	// Beats corresponding to the region's position, start from the source, end
-	// and length in beats.
+	// Samples corresponding to typical region
+	Temporal::samplepos_t position;
+	Temporal::samplepos_t start;
+	Temporal::samplecnt_t length;
+	Temporal::samplepos_t first_sample;
+	Temporal::samplepos_t last_sample;
+
+	// Beats corresponding to typical region's position, start from the source,
+	// end and length in beats.
 	Temporal::Beats position_beats;
 	Temporal::Beats start_beats;
 	Temporal::Beats end_beats;
@@ -141,7 +155,6 @@ public:
 protected:
 	uint32_t _ticks_per_row;		// number of ticks per rows
 	ARDOUR::Session* _session;
-	boost::shared_ptr<ARDOUR::Region> _region;
 	ARDOUR::BeatsSamplesConverter _conv;
 
 	// Make sure a given row is clamped to be in [0, nrows)
