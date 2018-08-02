@@ -20,6 +20,11 @@
 
 #include "ardour/parameter_types.h"
 
+bool region_position_less::operator()(boost::shared_ptr<ARDOUR::MidiRegion> lhs, boost::shared_ptr<ARDOUR::MidiRegion> rhs)
+{
+	return lhs->position() < rhs->position();
+}
+
 bool
 TrackerUtils::is_pan_type (const Evoral::Parameter& param)
 {

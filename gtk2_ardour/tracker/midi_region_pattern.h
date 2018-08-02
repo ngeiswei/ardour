@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2017-2018 Nil Geisweiller
+    Copyright (C) 2018 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,22 +16,20 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_tracker_midi_track_pattern_h_
-#define __ardour_tracker_midi_track_pattern_h_
+#ifndef __ardour_tracker_midi_region_pattern_h_
+#define __ardour_tracker_midi_region_pattern_h_
 
-#include "midi_region_pattern.h"
-#include "track_automation_pattern.h"
+#include "note_pattern.h"
+#include "region_automation_pattern.h"
 
 /**
- * Represent patterns, midi notes, midi automations and track automations of a
- * given track, with possibly multiple regions, possibly overlapping, as long
- * as they all come from the same track.
+ * Represent pattern of midi notes and midi automations of a given region.
  */
-class MidiTrackPattern : public BasePattern {
+class MidiRegionPattern : public BasePattern {
 public:
-	MidiTrackPattern (ARDOUR::Session* session,
-	                  const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
-	virtual ~MidiTrackPattern ();
+	MidiRegionPattern (ARDOUR::Session* session,
+	                   boost::shared_ptr<ARDOUR::MidiRegion> region);
+	virtual ~MidiRegionPattern ();
 
 	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
 	// TODO attempt to move TrackerEditor::update_automation_patterns here
@@ -42,7 +40,7 @@ public:
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
-	// see below.
+	// i.e. call update().
 	void set_rows_per_beat(uint16_t rpb);
 
 	// Set position_row_beats, end_row_beats and nrows
@@ -51,12 +49,8 @@ public:
 	// Build or rebuild note and automation pattern
 	void update();
 
-	// Return true iff the row is defined, that is if such a row points to an
-	// existing region.
-	bool is_defined (uint32_t rowi) const;
-
-	MidiRegionPattern mrp;
-	TrackAutomationPattern tap;
+	NotePattern np;
+	RegionAutomationPattern rap;
 };
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */
