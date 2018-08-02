@@ -21,11 +21,10 @@
 #include "midi_track_pattern.h"
 
 MidiTrackPattern::MidiTrackPattern (ARDOUR::Session* session,
-                                    boost::shared_ptr<ARDOUR::MidiRegion> region)
-	: BasePattern(session, region)
-	, np(session, region)
-	, rap(session, region)
-	, tap(session, region)
+                                    const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+	: BasePattern(session, regions.front()) // NEXT TODO: support multiple regions
+	, mrp(session, regions.front())
+	, tap(session, regions.front())
 {
 }
 
@@ -36,33 +35,34 @@ MidiTrackPattern::~MidiTrackPattern ()
 void MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
 {
 	BasePattern::set_rows_per_beat(rpb);
-	np.set_rows_per_beat(rpb);
-	rap.set_rows_per_beat(rpb);
+	mrp.set_rows_per_beat(rpb);
 	tap.set_rows_per_beat(rpb);
 }
 
 void MidiTrackPattern::set_row_range()
 {
 	BasePattern::set_row_range();
-	np.set_row_range();
-	rap.set_row_range();
+	mrp.set_row_range();
 	tap.set_row_range();
 
 	// Make sure that midi and automation regions start at the same sample
-	assert (sample_at_row(0) == np.sample_at_row(0));
-	assert (sample_at_row(0) == rap.sample_at_row(0));
+	assert (sample_at_row(0) == mrp.sample_at_row(0));
 	assert (sample_at_row(0) == tap.sample_at_row(0));
 
 	// Make sure all patterns have the same number of rows
-	assert (nrows == np.nrows);
-	assert (nrows == rap.nrows);
+	assert (nrows == mrp.nrows);
 	assert (nrows == tap.nrows);
 }
 
 void MidiTrackPattern::update()
 {
 	set_row_range();
-	np.update();
-	rap.update();
+	mrp.update();
 	tap.update();
+}
+
+bool MidiTrackPattern::is_defined (uint32_t rowi) const
+{
+	// NEXT TODO: return true iff there is an existing region at this rowi
+	return true;
 }

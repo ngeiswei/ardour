@@ -48,7 +48,7 @@ void AutomationPattern::update()
 		// Build automation pattern
 		for (AutomationList::iterator it = al->begin(); it != al->end(); ++it) {
 			uint32_t row = event2row(param, *it);
-			if (row != UNDEFINED_ROW)
+			if (row != INVALID_ROW)
 				automations[param].insert(RowToAutomationIt::value_type(row, it));
 		}
 	}

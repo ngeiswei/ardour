@@ -416,7 +416,7 @@ TrackerGrid::redisplay_visible_note()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
+			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_note_button ();
@@ -446,7 +446,7 @@ TrackerGrid::redisplay_visible_channel()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->np.ntracks
+			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
@@ -469,7 +469,7 @@ TrackerGrid::redisplay_visible_velocity()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->np.ntracks
+			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
@@ -492,7 +492,7 @@ TrackerGrid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->np.ntracks
+			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
@@ -518,7 +518,7 @@ TrackerGrid::redisplay_visible_note_separator()
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		bool is_last_mti = mti == (pattern.mtps.size() - 1);
 		bool hva = has_visible_automation(mti);
-		size_t ntracks = pattern.mtps[mti]->np.ntracks;
+		size_t ntracks = pattern.mtps[mti]->mrp.np.ntracks;
 		bool visible_note = tracker_editor.midi_track_toolbars[mti]->visible_note and 0 < ntracks;
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool is_first_gci = (i == 0);
@@ -733,7 +733,7 @@ void
 TrackerGrid::redisplay_undefined (TreeModel::Row& row, size_t mti)
 {
 	// Number of column groups
-	size_t ntracks = pattern.mtps[mti]->np.ntracks;
+	size_t ntracks = pattern.mtps[mti]->mrp.np.ntracks;
 	row[columns.midi_track_name[mti]] = "";
 	for (size_t cgi = 0; cgi < ntracks; cgi++) {
 		// cgi stands from column group index
@@ -976,7 +976,7 @@ TrackerGrid::redisplay_model ()
 				bool is_current_mti = current_mti == (int)mti;
 
 				// Number of column groups
-				size_t ntracks = mtp->np.ntracks;
+				size_t ntracks = mtp->mrp.np.ntracks;
 
 				// Undefined
 				if (!pattern.is_defined (rowi, mti)) {
@@ -1292,7 +1292,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
-		mtp->np.add (cgi, new_note); // TODO implement pattern.add
+		mtp->mrp.np.add (cgi, new_note); // TODO implement pattern.add
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
@@ -1324,7 +1324,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 		cmd->add (new_note);
 		// Pre-emptively add the note in np to so that it knows in
 		// which track it is supposed to be.
-		mtp->np.add (cgi, new_note);
+		mtp->mrp.np.add (cgi, new_note); // NEXT TODO: wrap this in a mrp method
 	}
 
 	// Apply note changes
