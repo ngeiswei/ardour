@@ -218,7 +218,7 @@ MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
 		return true;
 	}
 
-	midi_track_pattern.np.dec_ntracks ();
+	midi_track_pattern.mrp.np.dec_ntracks ();
 	grid.redisplay_model ();
 	update_remove_note_column_button ();
 	update_add_note_column_button ();
@@ -234,7 +234,7 @@ MidiTrackToolbar::add_note_column_press (GdkEventButton* ev)
 		return true;
 	}
 
-	midi_track_pattern.np.inc_ntracks ();
+	midi_track_pattern.mrp.np.inc_ntracks ();
 	grid.redisplay_model ();
 	update_remove_note_column_button ();
 	update_add_note_column_button ();
@@ -1022,11 +1022,11 @@ MidiTrackToolbar::update_automation_button()
 void
 MidiTrackToolbar::update_remove_note_column_button ()
 {
-	remove_note_column_button.set_sensitive (midi_track_pattern.np.nreqtracks < midi_track_pattern.np.ntracks);
+	remove_note_column_button.set_sensitive (midi_track_pattern.mrp.np.nreqtracks < midi_track_pattern.mrp.np.ntracks);
 }
 
 void
 MidiTrackToolbar::update_add_note_column_button ()
 {
-	add_note_column_button.set_sensitive (midi_track_pattern.np.ntracks < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK);
+	add_note_column_button.set_sensitive (midi_track_pattern.mrp.np.ntracks < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK);
 }

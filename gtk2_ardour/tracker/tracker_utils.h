@@ -27,9 +27,18 @@
 #include "evoral/Note.hpp"
 #include "ardour/types.h"
 #include "ardour/parameter_descriptor.h"
+#include "ardour/midi_region.h"
 
 typedef Evoral::Note<Temporal::Beats> NoteType;
 typedef boost::shared_ptr<NoteType> NoteTypePtr;
+
+/**
+ * Less than operator for regions, order according to position, earlier comes first
+ */
+struct region_position_less
+{
+	bool operator()(boost::shared_ptr<ARDOUR::MidiRegion> lhs, boost::shared_ptr<ARDOUR::MidiRegion> rhs);
+};
 
 class TrackerUtils
 {
