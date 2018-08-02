@@ -41,7 +41,7 @@ RegionAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral:
 	Temporal::Beats relative_beats(event->when);
 
 	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats)
-		return UNDEFINED_ROW;
+		return INVALID_ROW;
 
 	Temporal::Beats beats(relative_beats + position_beats - start_beats);
 	uint32_t row = row_at_beats(beats);

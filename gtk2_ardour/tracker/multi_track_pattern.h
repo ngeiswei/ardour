@@ -34,6 +34,7 @@ public:
 	MultiTrackPattern (const TrackerEditor& te);
 	~MultiTrackPattern ();
 
+	void setup_regions_per_track ();
 	void setup ();
 
 	void update ();
@@ -42,8 +43,9 @@ public:
 	void update_earliest_mtp ();  // earliest midi track
 	void update_global_nrows ();  // row_offset, nrows, global_nrows
 
+	// Return true iff the row at mti is defined, that is if such a row and mti
+	// points to an existing region.
 	bool is_defined (uint32_t rowi, size_t mti) const;
-	void update_undefined (uint32_t rowi, size_t mti);
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
@@ -66,7 +68,7 @@ public:
 	NoteTypePtr on_note (uint32_t rowi, size_t mti, size_t cgi) const;
 
 	bool is_auto_displayable (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
-	
+
 	const AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param) const;
 	AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
 
@@ -81,9 +83,14 @@ public:
 	// note or the end of the region.)
 	Temporal::Beats next_off(uint32_t rowi, size_t mti, int cgi) const;
 
+	// Return the row index relative to the start of pattern at mti.
 	int to_rri (uint32_t rowi, size_t mti) const;
 
 	const TrackerEditor& tracker_editor;
+
+	// Mapping between tracks and regions
+	typedef std::map<boost::shared_ptr<ARDOUR::MidiTrack>, std::vector<boost::shared_ptr<ARDOUR::MidiRegion> > > TrackRegionsMap;
+	TrackRegionsMap regions_per_track;
 
 	// Pattern per midi track
 	std::vector<MidiTrackPattern*> mtps;

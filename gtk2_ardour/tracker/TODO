@@ -10,6 +10,8 @@
 * Fix including audio tracks in the selection to not crash
 * Fix clicking on the time column to not crash
 * Wrap the whole code in a Tracker namespace
+* Make step editing more visible (like switch editing cursor color to red
+  and add a red frame)
 * Add shortcut for parameters, steps, etc
 * Add copy/move, etc, notes + popup menu
 * Add hide popup menu when clicking on automation column
@@ -18,3 +20,4 @@
 * Add piano keyboard display (see gtk_pianokeyboard.h)
 * Support audio tracks and trim automation
 * Perhaps use one delay button for note and another delay button for automation
+* Create wscript under tracker folder

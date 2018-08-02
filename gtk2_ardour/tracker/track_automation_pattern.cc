@@ -41,8 +41,8 @@ TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::
 {
 	samplepos_t sample = event->when;
 
-	if (sample < _region->first_sample() || _region->last_sample() < sample)
-		return UNDEFINED_ROW;
+	if (sample < first_sample || last_sample < sample)
+		return INVALID_ROW;
 
 	uint32_t row = row_at_sample(sample);
 	if (automations[param].count(row) != 0)

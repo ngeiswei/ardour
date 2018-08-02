@@ -35,13 +35,29 @@ MultiTrackPattern::~MultiTrackPattern ()
 }
 
 void
-MultiTrackPattern::setup ()
+MultiTrackPattern::setup_regions_per_track ()
 {
-	// TODO: support multiple regions per same track
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
 		const MidiRegionView* mrv = dynamic_cast<const MidiRegionView*>(*it);
-		boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
-		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor.session, midi_region);
+		if (mrv) {                // Make sure it is midi region
+			boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
+			boost::shared_ptr<ARDOUR::MidiTrack> midi_track = mrv->midi_view()->midi_track();
+			regions_per_track[midi_track].push_back(midi_region);
+		}
+	}
+	for (TrackRegionsMap::iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++)
+	{
+		std::sort(it->second.begin(), it->second.end(), region_position_less());
+	}
+}
+
+void
+MultiTrackPattern::setup ()
+{
+	setup_regions_per_track ();
+
+	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
+		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor.session, it->second);
 		mtps.push_back(mtp);
 	}
 
@@ -116,7 +132,8 @@ bool
 MultiTrackPattern::is_defined (uint32_t rowi, size_t mti) const
 {
 	int rri = to_rri(rowi, mti);
-	return 0 <= rri and rri < (int)nrows[mti];
+	return (0 <= rri and rri < (int)nrows[mti]) // Within range
+		and mtps[mti]->is_defined (rri); // Defined within that range
 }
 
 Temporal::Beats
@@ -146,26 +163,26 @@ MultiTrackPattern::sample_at_row (uint32_t rowi, size_t mti, int32_t delay) cons
 size_t
 MultiTrackPattern::off_notes_count (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	return mtps[mti]->np.off_notes[cgi].count(to_rri(rowi, mti));
+	return mtps[mti]->mrp.np.off_notes[cgi].count(to_rri(rowi, mti));
 }
 
 size_t
 MultiTrackPattern::on_notes_count (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	return mtps[mti]->np.on_notes[cgi].count(to_rri(rowi, mti));
+	return mtps[mti]->mrp.np.on_notes[cgi].count(to_rri(rowi, mti));
 }
 
 bool
 MultiTrackPattern::is_note_displayable (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	return mtps[mti]->np.is_displayable (to_rri(rowi, mti), cgi);
+	return mtps[mti]->mrp.np.is_displayable (to_rri(rowi, mti), cgi);
 }
 
 NoteTypePtr
 MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	NotePattern::RowToNotes::const_iterator i_off = mtps[mti]->np.off_notes[cgi].find(to_rri(rowi, mti));
-	if (i_off != mtps[mti]->np.off_notes[cgi].end())
+	NotePattern::RowToNotes::const_iterator i_off = mtps[mti]->mrp.np.off_notes[cgi].find(to_rri(rowi, mti));
+	if (i_off != mtps[mti]->mrp.np.off_notes[cgi].end())
 		return i_off->second;
 	return NULL;
 }
@@ -173,8 +190,8 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t cgi) const
 NoteTypePtr
 MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t cgi) const
 {
-	NotePattern::RowToNotes::const_iterator i_on = mtps[mti]->np.on_notes[cgi].find(to_rri(rowi, mti));
-	if (i_on != mtps[mti]->np.on_notes[cgi].end())
+	NotePattern::RowToNotes::const_iterator i_on = mtps[mti]->mrp.np.on_notes[cgi].find(to_rri(rowi, mti));
+	if (i_on != mtps[mti]->mrp.np.on_notes[cgi].end())
 		return i_on->second;
 	return NULL;
 }
@@ -190,7 +207,7 @@ MultiTrackPattern::get_automation_pattern (size_t mti, const Evoral::Parameter& 
 {
 	if (!param)
 		return NULL;
-	return TrackerUtils::is_region_automation (param) ? (AutomationPattern*)&(mtps[mti]->rap) : (AutomationPattern*)&(mtps[mti]->tap);
+	return TrackerUtils::is_region_automation (param) ? (AutomationPattern*)&(mtps[mti]->mrp.rap) : (AutomationPattern*)&(mtps[mti]->tap);
 }
 
 const AutomationPattern*
@@ -198,7 +215,7 @@ MultiTrackPattern::get_automation_pattern (size_t mti, const Evoral::Parameter& 
 {
 	if (!param)
 		return NULL;
-	return TrackerUtils::is_region_automation (param) ? (const AutomationPattern*)&(mtps[mti]->rap) : (const AutomationPattern*)&(mtps[mti]->tap);
+	return TrackerUtils::is_region_automation (param) ? (const AutomationPattern*)&(mtps[mti]->mrp.rap) : (const AutomationPattern*)&(mtps[mti]->tap);
 }
 
 size_t
@@ -218,19 +235,19 @@ MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, cons
 NoteTypePtr
 MultiTrackPattern::find_prev_note(uint32_t rowi, size_t mti, int cgi) const
 {
-	return mtps[mti]->np.find_prev(to_rri(rowi, mti), cgi);
+	return mtps[mti]->mrp.np.find_prev(to_rri(rowi, mti), cgi);
 }
 
 NoteTypePtr
 MultiTrackPattern::find_next_note(uint32_t rowi, size_t mti, int cgi) const
 {
-	return mtps[mti]->np.find_next(to_rri(rowi, mti), cgi);
+	return mtps[mti]->mrp.np.find_next(to_rri(rowi, mti), cgi);
 }
 
 Temporal::Beats
 MultiTrackPattern::next_off(uint32_t rowi, size_t mti, int cgi) const
 {
-	return mtps[mti]->np.next_off(to_rri(rowi, mti), cgi);
+	return mtps[mti]->mrp.np.next_off(to_rri(rowi, mti), cgi);
 }
 
 int
