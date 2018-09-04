@@ -39,9 +39,9 @@ using Timecode::BBT_Time;
 // NotePattern //
 /////////////////
 
-NotePattern::NotePattern(ARDOUR::Session* session,
+NotePattern::NotePattern(const TrackerEditor& te,
                          boost::shared_ptr<ARDOUR::MidiRegion> region)
-	: BasePattern(session, region),
+	: BasePattern(te, region),
 	  ntracks(0), nreqtracks(0),
 	  _midi_model(region->midi_source(0)->model())
 {

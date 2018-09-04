@@ -223,10 +223,9 @@ TrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processor> p
 }
 
 void
-TrackerEditor::automation_connect (const Parameter2AutomationControl& p2a, const Evoral::Parameter& param)
+TrackerEditor::connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actl)
 {
-	Parameter2AutomationControl::const_iterator it = p2a.find(param);
-	boost::shared_ptr<AutomationList> alist = it->second->alist();
+	boost::shared_ptr<AutomationList> alist = actl->alist();
 	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 }
@@ -242,6 +241,7 @@ TrackerEditor::resize_width()
 void
 TrackerEditor::update_automation_patterns ()
 {
+	// NEXT TODO: remove param2actrls altogether
 	for (unsigned i = 0; i < param2actrls.size(); i++) {
 		MidiTrackPattern* mtp = grid.pattern.mtps[i];
 		// Insert automation controls in the automation patterns

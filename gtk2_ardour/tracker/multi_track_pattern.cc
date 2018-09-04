@@ -57,7 +57,7 @@ MultiTrackPattern::setup ()
 	setup_regions_per_track ();
 
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
-		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor.session, it->second);
+		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor.session, it->first, it->second);
 		mtps.push_back(mtp);
 	}
 

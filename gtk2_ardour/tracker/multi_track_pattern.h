@@ -86,6 +86,7 @@ public:
 	// Return the row index relative to the start of pattern at mti.
 	int to_rri (uint32_t rowi, size_t mti) const;
 
+	// Reference of the main tracker editor
 	const TrackerEditor& tracker_editor;
 
 	// Mapping between tracks and regions
