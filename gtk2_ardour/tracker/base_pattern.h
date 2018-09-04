@@ -29,6 +29,8 @@
 #include "ardour_window.h"
 #include "editing.h"
 
+class TrackerEditor;
+
 namespace ARDOUR {
 	class Region;
 	class Session;
@@ -41,14 +43,14 @@ namespace ARDOUR {
 
 class BasePattern {
 public:
-	BasePattern(ARDOUR::Session* session,
+	BasePattern(const TrackerEditor& te,
 	            boost::shared_ptr<ARDOUR::Region> region);
-	BasePattern(ARDOUR::Session* session,
-	            Temporal::samplepos_t _position,
-	            Temporal::samplepos_t _start,
-	            Temporal::samplecnt_t _length,
-	            Temporal::samplepos_t _first_sample,
-	            Temporal::samplepos_t _last_sample);
+	BasePattern(const TrackerEditor& te,
+	            Temporal::samplepos_t position,
+	            Temporal::samplepos_t start,
+	            Temporal::samplecnt_t length,
+	            Temporal::samplepos_t first_sample,
+	            Temporal::samplepos_t last_sample);
 
 	// A negative row index (i.e. max value) is considered invalid
 	static const uint32_t INVALID_ROW = -1;
@@ -123,6 +125,9 @@ public:
 	// Return the minimum and maximum number ticks allowed for delay
 	int32_t delay_ticks_min() const;
 	int32_t delay_ticks_max() const;
+
+	// Reference to main tracker editor
+	const TrackerEditor& tracker_editor;
 
 	// Samples corresponding to typical region
 	Temporal::samplepos_t position;

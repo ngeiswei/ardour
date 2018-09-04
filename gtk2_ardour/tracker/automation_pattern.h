@@ -24,6 +24,7 @@
 #include "ardour/automation_control.h"
 
 #include "base_pattern.h"
+#include "tracker_types.h"
 
 namespace ARDOUR {
 	class Session;
@@ -39,9 +40,14 @@ typedef std::set<boost::shared_ptr<ARDOUR::AutomationControl> > AutomationContro
  */
 class AutomationPattern : public BasePattern {
 public:
-	AutomationPattern(ARDOUR::Session* session,
-	                  boost::shared_ptr<ARDOUR::Region> region,
-	                  const AutomationControlSet& automation_controls=AutomationControlSet());
+	AutomationPattern(const TrackerEditor& te,
+	                  boost::shared_ptr<ARDOUR::Region> region);
+	AutomationPattern(const TrackerEditor& te,
+	                  Temporal::samplepos_t position,
+	                  Temporal::samplepos_t start,
+	                  Temporal::samplecnt_t length,
+	                  Temporal::samplepos_t first_sample,
+	                  Temporal::samplepos_t last_sample);
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
@@ -55,6 +61,12 @@ public:
 	// Add an automation control in the automation control set
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 
+	// Return automation control associated to the given parameter
+	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(const Evoral::Parameter& param);
+
+	// Return all automation controls
+	const AutomationControlSet& get_actls() const;
+	
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
 	bool is_displayable(uint32_t row, const Evoral::Parameter& param) const;
@@ -62,7 +74,7 @@ public:
 	// Map parameters to maps of row to automation range
 	std::map<Evoral::Parameter, RowToAutomationIt> automations;
 
-private:
+protected:
 	AutomationControlSet _automation_controls;
 };
 

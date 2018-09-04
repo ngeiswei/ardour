@@ -59,7 +59,12 @@ struct ProcessorAutomationInfo {
 class MidiTrackToolbar : public Gtk::HBox
 {
 public:
-	MidiTrackToolbar (TrackerEditor& mte, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, MidiTrackPattern& mtp, size_t mti);
+	MidiTrackToolbar (TrackerEditor& mte,
+	                  Parameter2AutomationControl& p2a,
+	                  boost::shared_ptr<ARDOUR::MidiTrack> mt,
+	                  boost::shared_ptr<ARDOUR::MidiModel> mm,
+	                  MidiTrackPattern& mtp,
+	                  size_t mti);
 	~MidiTrackToolbar ();
 
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;

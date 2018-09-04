@@ -88,7 +88,7 @@ public:
 
 	void update_automation_patterns ();
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
-	void automation_connect (const Parameter2AutomationControl& p2a, const Evoral::Parameter&);
+	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actl);
 	void resize_width ();
 
 	ARDOUR::Session* session;
@@ -105,14 +105,6 @@ public:
 	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models;
 	std::vector<MidiTimeAxisView*> midi_time_axis_views;
 
-	// Parameter to AutomationControl per region
-	// TODO: try to move this to multi_track_pattern.h
-	typedef std::map<boost::shared_ptr<ARDOUR::MidiRegion>, Parameter2AutomationControl> Region2Parameter2AutomationControl;
-	Region2Parameter2AutomationControl region2param2actrls;
-
-	// NEXT TODO: replace this by above (or something else) in order to support multi-region midi tracker pattern
-	std::vector<Parameter2AutomationControl> param2actrls;
-	
 	Gtk::ScrolledWindow          scroller;
 	Gtk::Table                   buttons;
 	TrackerGrid                  grid;

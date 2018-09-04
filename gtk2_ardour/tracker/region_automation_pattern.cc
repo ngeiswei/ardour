@@ -28,10 +28,9 @@ using namespace ARDOUR;
 // RegionAutomationPattern //
 /////////////////////////////
 
-RegionAutomationPattern::RegionAutomationPattern(ARDOUR::Session* session,
-                                                 boost::shared_ptr<ARDOUR::Region> region,
-                                                 const AutomationControlSet& auto_ctrls)
-	: AutomationPattern(session, region, auto_ctrls)
+RegionAutomationPattern::RegionAutomationPattern(const TrackerEditor& te,
+                                                 boost::shared_ptr<ARDOUR::Region> region)
+	: AutomationPattern(te, region)
 {
 }
 

@@ -29,10 +29,19 @@ using Timecode::BBT_Time;
 // AutomationPattern //
 ///////////////////////
 
-AutomationPattern::AutomationPattern(ARDOUR::Session* session,
-                                     boost::shared_ptr<ARDOUR::Region> region,
-                                     const AutomationControlSet& auto_ctrls)
-	: BasePattern(session, region), _automation_controls(auto_ctrls)
+AutomationPattern::AutomationPattern(const TrackerEditor& te,
+                                     boost::shared_ptr<ARDOUR::Region> region)
+	: BasePattern(te, region)
+{
+}
+
+AutomationPattern::AutomationPattern(const TrackerEditor& te,
+                                     Temporal::samplepos_t pos,
+                                     Temporal::samplepos_t sta,
+                                     Temporal::samplecnt_t len,
+                                     Temporal::samplepos_t fir,
+                                     Temporal::samplepos_t las)
+	: BasePattern(te, pos, sta, len, fir, las)
 {
 }
 
@@ -57,6 +66,19 @@ void AutomationPattern::update()
 void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
 {
 	_automation_controls.insert(actrl);
+}
+
+boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actl(const Evoral::Parameter& param)
+{
+	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
+		if (param == (*actrl)->parameter())
+			return *actrl;
+	return NULL;
+}
+
+const AutomationControlSet& AutomationPattern::get_actls() const
+{
+	return _automation_controls;
 }
 
 bool AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const

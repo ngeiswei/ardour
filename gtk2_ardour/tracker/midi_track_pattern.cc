@@ -20,49 +20,84 @@
 
 #include "midi_track_pattern.h"
 
-MidiTrackPattern::MidiTrackPattern (ARDOUR::Session* session,
-                                    const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
-	: BasePattern(session, regions.front()) // NEXT TODO: support multiple regions
-	, mrp(session, regions.front())
-	, tap(session, regions.front())
+Temporal::samplepos_t get_regions_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
+	return regions.front()->position();
+}
+
+Temporal::samplecnt_t get_regions_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.back()->position() - regions.front()->last_sample() + 1;
+}
+
+Temporal::samplepos_t get_regions_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.front()->first_sample();
+}
+
+Temporal::samplepos_t get_regions_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.back()->last_sample();
+}
+
+MidiTrackPattern::MidiTrackPattern (const TrackerEditor& te,
+                                    boost::shared_ptr<ARDOUR::MidiTrack> mt,
+                                    const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+	: BasePattern(te,
+	              get_regions_position(regions),
+	              0,
+	              get_regions_length(regions),
+	              get_regions_first_sample(regions),
+	              get_regions_last_sample(regions))
+	, midi_track(mt)
+	, tap(session,
+	      midi_track,
+	      get_regions_position(regions),
+	      get_regions_length(regions),
+	      get_regions_first_sample(regions),
+	      get_regions_last_sample(regions))
+{
+	for (size_t i = 0; i < regions.size(); i++)
+		mrps.push_back(MidiRegionPattern(te, regions[i]));
 }
 
 MidiTrackPattern::~MidiTrackPattern ()
 {
 }
 
+boost::shared_ptr<ARDOUR::AutomationControl> MidiTrackPattern::get_actl(Evoral::Parameter param)
+{
+	// NEXT TODO support regions somehow
+	return tap.get_actl(param);
+}
+
 void MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
 {
 	BasePattern::set_rows_per_beat(rpb);
-	mrp.set_rows_per_beat(rpb);
+	for (size_t i = 0; i < mrps.size(); i++)
+		mrps[i].set_rows_per_beat(rpb);
 	tap.set_rows_per_beat(rpb);
 }
 
 void MidiTrackPattern::set_row_range()
 {
 	BasePattern::set_row_range();
-	mrp.set_row_range();
+	for (size_t i = 0; i < mrps.size(); i++)
+		mrps[i].set_row_range();
 	tap.set_row_range();
-
-	// Make sure that midi and automation regions start at the same sample
-	assert (sample_at_row(0) == mrp.sample_at_row(0));
-	assert (sample_at_row(0) == tap.sample_at_row(0));
-
-	// Make sure all patterns have the same number of rows
-	assert (nrows == mrp.nrows);
-	assert (nrows == tap.nrows);
 }
 
 void MidiTrackPattern::update()
 {
 	set_row_range();
-	mrp.update();
+	for (size_t i = 0; i < mrps.size(); i++)
+		mrps[i].update();
 	tap.update();
 }
 
 bool MidiTrackPattern::is_defined (uint32_t rowi) const
 {
 	// NEXT TODO: return true iff there is an existing region at this rowi
+	// NEXT TODO: it actually depends on the param!!!
 	return true;
 }

@@ -36,7 +36,11 @@ using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace ARDOUR;
 
-MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, Parameter2AutomationControl& p2a, boost::shared_ptr<ARDOUR::MidiTrack> mt, boost::shared_ptr<ARDOUR::MidiModel> mm, MidiTrackPattern& mtp, size_t mti)
+MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te,
+                                    Parameter2AutomationControl& p2a,
+                                    boost::shared_ptr<ARDOUR::MidiTrack> mt,
+                                    boost::shared_ptr<ARDOUR::MidiModel> mm,
+                                    MidiTrackPattern& mtp, size_t mti)
 	: tracker_editor (te)
 	, param2actrl (p2a)
 	, midi_track (mt)
@@ -275,6 +279,7 @@ MidiTrackToolbar::build_automation_action_menu ()
 
 	// TODO could be optimized, no need to rebuild everything!
 	setup_processor_menu_and_curves ();
+	// NEXT TODO move that in the MidiTrackPattern
 	tracker_editor.build_param2actrl (param2actrl, midi_track, midi_model);
 	tracker_editor.update_automation_patterns ();
 
