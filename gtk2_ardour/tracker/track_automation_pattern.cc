@@ -29,11 +29,40 @@ using namespace ARDOUR;
 // TrackAutomationPattern //
 ////////////////////////////
 
-TrackAutomationPattern::TrackAutomationPattern(ARDOUR::Session* session,
-                                               boost::shared_ptr<ARDOUR::Region> region,
-                                               const AutomationControlSet& auto_ctrls)
-	: AutomationPattern(session, region, auto_ctrls)
+TrackAutomationPattern::TrackAutomationPattern(const TrackerEditor& te,
+                                               boost::shared_ptr<ARDOUR::MidiTrack> mt,
+                                               Temporal::samplepos_t pos,
+                                               Temporal::samplecnt_t len,
+                                               Temporal::samplepos_t fir,
+                                               Temporal::samplepos_t las)
+	: AutomationPattern(te, pos, 0, len, fir, las)
+	, midi_track(mt)
 {
+	setup_automation_controls ();
+}
+
+void TrackAutomationPattern::setup_automation_controls ()
+{
+	setup_main_automation_controls ();
+	setup_processors_automation_controls ();
+}
+
+void TrackAutomationPattern::setup_main_automation_controls ()
+{
+	// Gain
+	insert(midi_track->gain_control());
+	tracker_editor.automation_connect(midi_track->gain_control());
+
+	// Mute
+	insert(midi_track->mute_control());
+	tracker_editor.automation_connect(midi_track->mute_control());
+
+	// Pan
+	set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
+	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
+		insert(midi_track->pannable()->automation_control(*p));
+		tracker_editor.automation_connect(param2actrl, *p);
+	}
 }
 
 uint32_t

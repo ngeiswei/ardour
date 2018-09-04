@@ -26,12 +26,22 @@
  */
 class TrackAutomationPattern : public AutomationPattern {
 public:
-	TrackAutomationPattern(ARDOUR::Session* session,
-	                       boost::shared_ptr<ARDOUR::Region> region,
-	                       const AutomationControlSet& automation_controls=AutomationControlSet());
+	TrackAutomationPattern(const TrackerEditor& te,
+	                       Temporal::samplepos_t position,
+	                       Temporal::samplepos_t start,
+	                       Temporal::samplecnt_t length,
+	                       Temporal::samplepos_t first_sample,
+	                       Temporal::samplepos_t last_sample);
+
+	// Fill _automation_controls
+	void setup_automation_controls ();
+	void setup_main_automation_controls ();
+	void setup_processors_automation_controls ();
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 };
 
 #endif /* __ardour_tracker_track_automation_pattern_h_ */
