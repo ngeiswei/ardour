@@ -176,8 +176,9 @@ TrackerGrid::add_midi_automation_column (size_t mti, const Evoral::Parameter& pa
 {
 	// If not in param2actrl, add it.
 	if (!tracker_editor.param2actrls[mti][param]) {
+		// NEXT TODO: take care of param2actrl in automation_pattern or directly use/add methods for getting the automation_control
 		tracker_editor.param2actrls[mti][param] = TrackerUtils::is_region_automation (param) ?
-			tracker_editor.midi_models[mti]->automation_control(param, true) : tracker_editor.midi_tracks[mti]->automation_control(param, true); 
+			tracker_editor.midi_models[mti]->automation_control(param, true) : tracker_editor.midi_tracks[mti]->automation_control(param, true);
 		AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
 		ap->insert(tracker_editor.param2actrls[mti][param]);
 	}

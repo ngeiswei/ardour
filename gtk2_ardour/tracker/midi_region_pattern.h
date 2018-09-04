@@ -27,7 +27,7 @@
  */
 class MidiRegionPattern : public BasePattern {
 public:
-	MidiRegionPattern (ARDOUR::Session* session,
+	MidiRegionPattern (const TrackerEditor& te,
 	                   boost::shared_ptr<ARDOUR::MidiRegion> region);
 	virtual ~MidiRegionPattern ();
 

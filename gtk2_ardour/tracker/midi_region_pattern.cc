@@ -20,9 +20,9 @@
 
 #include "midi_region_pattern.h"
 
-MidiRegionPattern::MidiRegionPattern (ARDOUR::Session* session,
+MidiRegionPattern::MidiRegionPattern (const TrackerEditor& te,
                                       boost::shared_ptr<ARDOUR::MidiRegion> region)
-	: BasePattern(session, region)
+	: BasePattern(te, region)
 	, np(session, region)
 	, rap(session, region)
 {
