@@ -29,7 +29,8 @@
  */
 class MidiTrackPattern : public BasePattern {
 public:
-	MidiTrackPattern (ARDOUR::Session* session,
+	MidiTrackPattern (const TrackerEditor& te,
+	                  boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                  const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	virtual ~MidiTrackPattern ();
 
@@ -39,6 +40,8 @@ public:
 	// TODO attempt to move that sort of code here:
 	// int delay_ticks = is_region_automation (param) ?
 	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
+
+	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(Evoral::Parameter param);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
@@ -55,8 +58,9 @@ public:
 	// existing region.
 	bool is_defined (uint32_t rowi) const;
 
-	MidiRegionPattern mrp;
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	TrackAutomationPattern tap;
+	std::vector<MidiRegionPattern> mrps;
 };
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */

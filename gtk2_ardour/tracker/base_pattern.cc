@@ -34,30 +34,32 @@ using Timecode::BBT_Time;
 // BasePattern //
 /////////////////
 
-BasePattern::BasePattern(ARDOUR::Session* session,
+BasePattern::BasePattern(const TrackerEditor& te,
                          boost::shared_ptr<ARDOUR::Region> region)
-	: position(region->position())
+	: tracker_editor(te)
+	, position(region->position())
 	, start(region->start())
 	, length(region->length())
 	, first_sample(region->first_sample())
 	, last_sample(region->last_sample())
-	, _session(session)
+	, _session(tracker_editor.session)
 	, _conv(_session->tempo_map(), region->position())
 {
 }
 
-BasePattern::BasePattern(ARDOUR::Session* session,
-                         Temporal::samplepos_t _position,
-                         Temporal::samplepos_t _start,
-                         Temporal::samplecnt_t _length,
-                         Temporal::samplepos_t _first_sample,
-                         Temporal::samplepos_t _last_sample)
-	: position(_position)
-	, start(_start)
-	, length(_length)
-	, first_sample(_first_sample)
-	, last_sample(_last_sample)
-	, _session(session)
+BasePattern::BasePattern(const TrackerEditor& te,
+                         Temporal::samplepos_t pos,
+                         Temporal::samplepos_t sta,
+                         Temporal::samplecnt_t len,
+                         Temporal::samplepos_t fir,
+                         Temporal::samplepos_t las)
+	: tracker_editor(te)
+	, position(pos)
+	, start(sta)
+	, length(len)
+	, first_sample(fir)
+	, last_sample(las)
+	, _session(tracker_editor.session)
 	, _conv(_session->tempo_map(), _position)
 {
 }
