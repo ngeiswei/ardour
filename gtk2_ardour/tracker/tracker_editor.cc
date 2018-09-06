@@ -195,19 +195,6 @@ TrackerEditor::build_param2actrl (Parameter2AutomationControl& param2actrl,
 }
 
 void
-TrackerEditor::build_region2param2actrls ()
-{
-	// NEXT TODO
-	for (MultiTrackPattern::TrackRegionsMap::iterator it = grid.pattern.regions_per_track.begin(); it != grid.pattern.regions_per_track.end(); ++it) {
-		for (int i = 0; i < (int)it->second.size(); i++) {
-			Parameter2AutomationControl param2actrl;
-			build_param2actrl (param2actrl, it->first, to_model(it->second[i]));
-			param2actrls.push_back(param2actrl);
-		}
-	}
-}
-
-void
 TrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processor> p, Parameter2AutomationControl& p2a)
 {
 	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
@@ -236,23 +223,6 @@ TrackerEditor::resize_width()
 	int width, height;
 	get_size(width, height);
 	resize(1, height);
-}
-
-void
-TrackerEditor::update_automation_patterns ()
-{
-	// NEXT TODO: remove param2actrls altogether
-	for (unsigned i = 0; i < param2actrls.size(); i++) {
-		MidiTrackPattern* mtp = grid.pattern.mtps[i];
-		// Insert automation controls in the automation patterns
-		for (Parameter2AutomationControl::const_iterator it = param2actrls[i].begin(); it != param2actrls[i].end(); ++it) {
-			// Midi automation are attached to the region, not the track
-			if (TrackerUtils::is_region_automation (it->first))  // NEXT TODO wrap this conditional in a method of MidiTrackPattern
-				mtp->mrp.rap.insert(it->second);
-			else
-				mtp->tap.insert(it->second);
-		}
-	}
 }
 
 void
