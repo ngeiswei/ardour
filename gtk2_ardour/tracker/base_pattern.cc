@@ -177,6 +177,11 @@ int32_t BasePattern::delay_ticks_max() const
 	return (int32_t)_ticks_per_row - 1;
 }
 
+bool is_defined(int row_idx) const
+{
+	return 0 <= row_idx && row_idx < (int)nrows;
+}
+
 uint32_t BasePattern::clamp(double row) const
 {
 	return std::min(std::max(0.0, row), nrows - 1.0);

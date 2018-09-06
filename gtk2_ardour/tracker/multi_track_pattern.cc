@@ -131,9 +131,7 @@ MultiTrackPattern::update_global_nrows ()
 bool
 MultiTrackPattern::is_defined (uint32_t rowi, size_t mti) const
 {
-	int rri = to_rri(rowi, mti);
-	return (0 <= rri and rri < (int)nrows[mti]) // Within range
-		and mtps[mti]->is_defined (rri); // Defined within that range
+	return mtps[mti]->is_defined (to_rri (rowi, mti));
 }
 
 Temporal::Beats
@@ -254,4 +252,10 @@ int
 MultiTrackPattern::to_rri (uint32_t rowi, size_t mti) const
 {
 	return (int)rowi - row_offset[mti];
+}
+
+void
+MultiTrackPattern::insert(size_t mti, const Evoral::Parameter& param)
+{
+	mtps[mti]->insert(param);
 }

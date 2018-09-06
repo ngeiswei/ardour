@@ -65,6 +65,11 @@ void TrackAutomationPattern::setup_main_automation_controls ()
 	}
 }
 
+void TrackAutomationPattern::insert(const Evoral::Parameter& param)
+{
+	insert(midi_track->automation_control(param, true));
+}
+
 uint32_t
 TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {

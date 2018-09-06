@@ -38,6 +38,9 @@ public:
 	void setup_main_automation_controls ();
 	void setup_processors_automation_controls ();
 
+	// Insert the automation control corresponding to param in _automation_controls.
+	void insert(const Evoral::Parameter& param);
+
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 

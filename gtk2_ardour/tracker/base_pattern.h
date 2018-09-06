@@ -126,6 +126,10 @@ public:
 	int32_t delay_ticks_min() const;
 	int32_t delay_ticks_max() const;
 
+	// Return true iff the row index is within the defined range of
+	// rows. Specifially between 0 and nrow-1
+	bool is_defined(int row_idx) const;
+
 	// Reference to main tracker editor
 	const TrackerEditor& tracker_editor;
 
