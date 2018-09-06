@@ -41,7 +41,11 @@ public:
 	// int delay_ticks = is_region_automation (param) ?
 	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
 
-	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(Evoral::Parameter param);
+	// TODO: maybe need get_actls for region parameters
+	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(const Evoral::Parameter& param);
+
+	// Insert the automation control(s) corresponding to param
+	void insert(const Evoral::Parameter& param);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
@@ -56,11 +60,15 @@ public:
 
 	// Return true iff the row is defined, that is if such a row points to an
 	// existing region.
-	bool is_defined (uint32_t rowi) const;
+	bool is_defined (int rowi) const;
+
+	// Return the row index relative to the start of pattern at region index mri
+	int to_rrri (uint32_t rowi, size_t mri) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	TrackAutomationPattern tap;
 	std::vector<MidiRegionPattern> mrps;
+	std::vector<uint32_t> row_offset;
 };
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */
