@@ -31,7 +31,13 @@ using namespace ARDOUR;
 RegionAutomationPattern::RegionAutomationPattern(const TrackerEditor& te,
                                                  boost::shared_ptr<ARDOUR::Region> region)
 	: AutomationPattern(te, region)
+	, _midi_model(region->midi_source(0)->model())
 {
+}
+
+void RegionAutomationPattern::insert(const Evoral::Parameter& param)
+{
+	insert(_midi_model->automation_control(param, true));
 }
 
 uint32_t
