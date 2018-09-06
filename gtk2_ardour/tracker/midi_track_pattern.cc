@@ -56,6 +56,7 @@ MidiTrackPattern::MidiTrackPattern (const TrackerEditor& te,
 	      get_regions_length(regions),
 	      get_regions_first_sample(regions),
 	      get_regions_last_sample(regions))
+	, row_offset(regions.size(), 0)
 {
 	for (size_t i = 0; i < regions.size(); i++)
 		mrps.push_back(MidiRegionPattern(te, regions[i]));
@@ -65,10 +66,20 @@ MidiTrackPattern::~MidiTrackPattern ()
 {
 }
 
-boost::shared_ptr<ARDOUR::AutomationControl> MidiTrackPattern::get_actl(Evoral::Parameter param)
+// NEXT TODO: do I need that?
+boost::shared_ptr<ARDOUR::AutomationControl> MidiTrackPattern::get_actl(const Evoral::Parameter& param)
 {
-	// NEXT TODO support regions somehow
+	// NEXT TODO: support regions somehow
 	return tap.get_actl(param);
+}
+
+void MidiTrackPattern::insert(const Evoral::Parameter& param)
+{
+	if (TrackerUtils::is_region_automation (param))
+		for (size_t i = 0; i < mrps.size(); i++)
+			mrps[i].insert(param);
+	else
+		tap.insert(param);
 }
 
 void MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
@@ -93,11 +104,32 @@ void MidiTrackPattern::update()
 	for (size_t i = 0; i < mrps.size(); i++)
 		mrps[i].update();
 	tap.update();
+
+	update_row_offset ();
 }
 
-bool MidiTrackPattern::is_defined (uint32_t rowi) const
+void MidiTrackPattern::update_row_offset()
 {
-	// NEXT TODO: return true iff there is an existing region at this rowi
-	// NEXT TODO: it actually depends on the param!!!
-	return true;
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		row_offset[mri] = mrps[mri].row_distance(position_row_beats, mrps[mri].position_row_beats);
+}
+
+bool MidiTrackPattern::is_defined (int rowi) const
+{
+	// Disgard is out of midi track pattern range
+	if (!BasePattern::is_defined (rowi))
+		return false;
+
+	// Check if rowi points to an existing region
+	for (size_t mri = 0; i < mrps.size(); i++)
+		if (mrps[i].is_defined(to_rrri((uint32_t)rowi)))
+			return true;
+
+	// Within range but no region defined there
+	return false;
+}
+
+int MidiTrackPattern::to_rrri(uint32_t rowi, size_t mri) const
+{
+	return (int)rowi - (int)row_offset[mri];
 }

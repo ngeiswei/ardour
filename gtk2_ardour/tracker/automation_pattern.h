@@ -61,7 +61,8 @@ public:
 	// Add an automation control in the automation control set
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 
-	// Return automation control associated to the given parameter
+	// Return automation control associated to the given parameter. If absent,
+	// return NULL.
 	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(const Evoral::Parameter& param);
 
 	// Return all automation controls
