@@ -174,14 +174,8 @@ TrackerGrid::add_main_automation_column (size_t mti, const Evoral::Parameter& pa
 size_t
 TrackerGrid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 {
-	// If not in param2actrl, add it.
-	if (!tracker_editor.param2actrls[mti][param]) {
-		// NEXT TODO: take care of param2actrl in automation_pattern or directly use/add methods for getting the automation_control
-		tracker_editor.param2actrls[mti][param] = TrackerUtils::is_region_automation (param) ?
-			tracker_editor.midi_models[mti]->automation_control(param, true) : tracker_editor.midi_tracks[mti]->automation_control(param, true);
-		AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-		ap->insert(tracker_editor.param2actrls[mti][param]);
-	}
+	// Insert the corresponding automation control (if not already there)
+	pattern.insert(mti, param);
 
 	// Select the next available column
 	size_t column = select_available_automation_column (mti);
@@ -192,7 +186,7 @@ TrackerGrid::add_midi_automation_column (size_t mti, const Evoral::Parameter& pa
 	col2params[mti].insert(ColParamBimap::value_type(column, param));
 
 	// Set the column title
-	get_column(column)->set_title (tracker_editor.midi_tracks[mti]->describe_parameter (param));
+	get_column(column)->set_title (pattern.mtps[mti]->midi_track->describe_parameter (param));
 
 	return column;
 }

@@ -83,10 +83,8 @@ public:
 	                        boost::shared_ptr<ARDOUR::MidiModel> midi_model);
 
 	// Build parameter to automation control map for all track
-	void build_region2param2actrls ();
 	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor, Parameter2AutomationControl& p2a);
 
-	void update_automation_patterns ();
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
 	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actl);
 	void resize_width ();
