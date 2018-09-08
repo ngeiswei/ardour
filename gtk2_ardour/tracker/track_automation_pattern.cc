@@ -51,18 +51,32 @@ void TrackAutomationPattern::setup_main_automation_controls ()
 {
 	// Gain
 	insert(midi_track->gain_control());
-	tracker_editor.automation_connect(midi_track->gain_control());
 
 	// Mute
 	insert(midi_track->mute_control());
-	tracker_editor.automation_connect(midi_track->mute_control());
 
 	// Pan
 	set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
-	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
+	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p)
 		insert(midi_track->pannable()->automation_control(*p));
-		tracker_editor.automation_connect(param2actrl, *p);
-	}
+}
+
+void TrackAutomationPattern::setup_processors_automation_controls ()
+{
+	midi_track->foreach_processor (sigc::bind (sigc::mem_fun (*this, &TrackAutomationPattern::setup_processor_automation_control)));
+}
+
+void
+TrackAutomationPattern::setup_processor_automation_control(boost::weak_ptr<ARDOUR::Processor> p)
+{
+	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
+
+	if (!processor || !processor->display_to_user ())
+		return;
+
+	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
+	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait)
+		insert(boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait)));
 }
 
 void TrackAutomationPattern::insert(const Evoral::Parameter& param)

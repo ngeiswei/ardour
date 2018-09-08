@@ -63,9 +63,11 @@ void AutomationPattern::update()
 	}
 }
 
-void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
+void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actl)
 {
-	_automation_controls.insert(actrl);
+	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actl);
+	if (result.second)
+		tracker_editor.connect_automation(actl);
 }
 
 boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actl(const Evoral::Parameter& param)
