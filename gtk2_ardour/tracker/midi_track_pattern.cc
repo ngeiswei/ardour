@@ -59,7 +59,7 @@ MidiTrackPattern::MidiTrackPattern (const TrackerEditor& te,
 	, row_offset(regions.size(), 0)
 {
 	for (size_t i = 0; i < regions.size(); i++)
-		mrps.push_back(MidiRegionPattern(te, regions[i]));
+		mrps.push_back(MidiRegionPattern(te, midi_track, regions[i]));
 }
 
 MidiTrackPattern::~MidiTrackPattern ()

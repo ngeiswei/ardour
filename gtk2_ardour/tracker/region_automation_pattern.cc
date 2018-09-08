@@ -29,15 +29,25 @@ using namespace ARDOUR;
 /////////////////////////////
 
 RegionAutomationPattern::RegionAutomationPattern(const TrackerEditor& te,
+                                                 boost::shared_ptr<ARDOUR::MidiTrack> mt,
                                                  boost::shared_ptr<ARDOUR::Region> region)
 	: AutomationPattern(te, region)
-	, _midi_model(region->midi_source(0)->model())
+	, midi_track(mt)
+	, midi_model(region->midi_source(0)->model())
 {
+	setup_automation_controls ();
+}
+
+void RegionAutomationPattern::setup_automation_controls ()
+{
+	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
+	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i)
+		insert(midi_model->automation_control(*i));
 }
 
 void RegionAutomationPattern::insert(const Evoral::Parameter& param)
 {
-	insert(_midi_model->automation_control(param, true));
+	insert(midi_model->automation_control(param, true));
 }
 
 uint32_t

@@ -44,7 +44,8 @@ public:
 	// TODO: maybe need get_actls for region parameters
 	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(const Evoral::Parameter& param);
 
-	// Insert the automation control(s) corresponding to param
+	// Insert the automation control(s) corresponding to param (and connect it
+	// to the grid for changes)
 	void insert(const Evoral::Parameter& param);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
