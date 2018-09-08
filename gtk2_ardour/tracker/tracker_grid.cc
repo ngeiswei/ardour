@@ -174,7 +174,8 @@ TrackerGrid::add_main_automation_column (size_t mti, const Evoral::Parameter& pa
 size_t
 TrackerGrid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 {
-	// Insert the corresponding automation control (if not already there)
+	// Insert the corresponding automation control (and connect to the grid if
+	// not already there)
 	pattern.insert(mti, param);
 
 	// Select the next available column
@@ -1272,7 +1273,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int cgi)
 	if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
-		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname);
+		cmd = tracker_editor.midi_models[mti]->new_note_diff_command (opname); // VERY NEXT TODO: fix that
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
 	} else if (off_note) {
 		// Replace off note by another (non-off) note. Calculate the start
