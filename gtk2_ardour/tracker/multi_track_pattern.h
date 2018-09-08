@@ -86,7 +86,8 @@ public:
 	// Return the row index relative to the start of pattern at mti.
 	int to_rri (uint32_t rowi, size_t mti) const;
 
-	// Insert the automation control(s) associated to param at mti
+	// Insert the automation control(s) associated to param at mti (and connect
+	// it to the grid for changes)
 	void insert(size_t mti, const Evoral::Parameter& param);
 
 	// Reference of the main tracker editor

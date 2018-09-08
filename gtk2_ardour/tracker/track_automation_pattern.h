@@ -38,7 +38,8 @@ public:
 	void setup_main_automation_controls ();
 	void setup_processors_automation_controls ();
 
-	// Insert the automation control corresponding to param in _automation_controls.
+	// Insert the automation control corresponding to param in
+	// _automation_controls, and connect it to the grid for connect changes.
 	void insert(const Evoral::Parameter& param);
 
 	// Assign a control event to a row

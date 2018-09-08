@@ -74,19 +74,7 @@ public:
 
 	boost::shared_ptr<ARDOUR::MidiModel> to_model (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
 
-	// Build parameter to automation control map for the given midi track and
-	// region (or for now model).
-	//
-	// TODO: ultimately we want to disentangle region and track 
-	void build_param2actrl (Parameter2AutomationControl& param2actrl,
-	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-	                        boost::shared_ptr<ARDOUR::MidiModel> midi_model);
-
-	// Build parameter to automation control map for all track
-	void add_processor_to_param2actrl (boost::weak_ptr<ARDOUR::Processor> processor, Parameter2AutomationControl& p2a);
-
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
-	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actl);
 	void resize_width ();
 
 	ARDOUR::Session* session;
@@ -97,11 +85,9 @@ public:
 	// List of selected region considered at the creation of this class
 	RegionSelection region_selection;
 
-	// Hold regions, tracks, models, views and patterns for each midi track
-	std::vector<boost::shared_ptr<ARDOUR::MidiRegion> > midi_regions;
-	std::vector<boost::shared_ptr<ARDOUR::MidiTrack> > midi_tracks;
-	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models;
-	std::vector<MidiTimeAxisView*> midi_time_axis_views;
+	// Hold tracks, models, views and patterns for each midi track
+	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models; // NEXT TODO: probably doesn't need this
+	std::vector<MidiTimeAxisView*> midi_time_axis_views; // NEXT TODO: probably doesn't need this
 
 	Gtk::ScrolledWindow          scroller;
 	Gtk::Table                   buttons;

@@ -60,9 +60,6 @@ class MidiTrackToolbar : public Gtk::HBox
 {
 public:
 	MidiTrackToolbar (TrackerEditor& mte,
-	                  Parameter2AutomationControl& p2a,
-	                  boost::shared_ptr<ARDOUR::MidiTrack> mt,
-	                  boost::shared_ptr<ARDOUR::MidiModel> mm,
 	                  MidiTrackPattern& mtp,
 	                  size_t mti);
 	~MidiTrackToolbar ();
@@ -133,7 +130,7 @@ public:
 
 	TrackerEditor& tracker_editor;
 	Parameter2AutomationControl& param2actrl;
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track; // NEXT TODO: probably doesn't need midi_track because it should be in midi_track_pattern
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model; // NEXT TODO: remove if possible since there is a model per region
 	MidiTrackPattern& midi_track_pattern;
 	size_t midi_track_index;    // Corresponding index in multi-track

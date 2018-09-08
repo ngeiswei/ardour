@@ -27,16 +27,22 @@
 class RegionAutomationPattern : public AutomationPattern {
 public:
 	RegionAutomationPattern(const TrackerEditor& te,
+	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                        boost::shared_ptr<ARDOUR::Region> region);
 
-	// Insert the automation control corresponding to param in _automation_controls.
+	// Insert all existing region (midi) automation controls in
+	// _automation_controls and connect then to the grid
+	void setup_automation_controls ();
+
+	// Insert automation control corresponding to param in _automation_controls
+	// (and connect it to the grid for changes)
 	void insert(const Evoral::Parameter& param);
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
-private:
-	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
+	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
 };
 
 #endif /* __ardour_tracker_region_automation_pattern_h_ */
