@@ -58,7 +58,8 @@ public:
 	// Build or rebuild the pattern (implement BasePattern::update_pattern)
 	void update();
 
-	// Add an automation control in the automation control set
+	// Add an automation control in the automation control set and connect it to
+	// the grid to update it when some value changes
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 
 	// Return automation control associated to the given parameter. If absent,

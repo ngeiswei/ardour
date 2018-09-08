@@ -86,35 +86,29 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 {
 	set_session (s);
 
-	// Build regions, tracks, midi_models, midi_time_axis_views and routes
-	// TODO: support multi region per same track
+	// Build tracks, midi_time_axis_views and routes
 	int i = 0;
 	for (RegionSelection::const_iterator it = region_selection.begin();
 	     it != region_selection.end(); ++it) {
 		MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
 		if (mrv) {                // Make sure it is midi region
 			boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
-			boost::shared_ptr<ARDOUR::MidiTrack> midi_track = mrv->midi_view()->midi_track();
 			boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_region->midi_source(0)->model();
 			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
 
 			std::cout << "midi_region[" << i << "] = " << midi_region << std::endl;
-			std::cout << "midi_track[" << i << "] = " << midi_track << std::endl;
 			std::cout << "midi_model[" << i << "] = " << midi_model << std::endl;
 			i++;
 
 			// Make changing midi content re-render the grid
-			// TODO: move to tracker_grid
 			midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
 			                                     boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 
 			// Make changing the region time zone re-render the grid
-			// TODO: move to tracker_grid
 			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 			                                            boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 
-			midi_regions.push_back(midi_region);
-			midi_tracks.push_back(midi_track);
+			// VERY NEXT TODO: is this really necessary?
 			midi_models.push_back(midi_model);
 			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
@@ -155,58 +149,8 @@ TrackerEditor::to_model (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
 TrackerEditor::get_device_names ()
 {
-	// TODO: support mti
+	// NEXT TODO: support mti
 	return midi_time_axis_views.front()->get_device_names ();
-}
-
-void
-TrackerEditor::build_param2actrl (Parameter2AutomationControl& param2actrl,
-                                  boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-                                  boost::shared_ptr<ARDOUR::MidiModel> midi_model)
-{
-	// In case this is a rebuild
-	param2actrl.clear();
-
-	// Gain
-	param2actrl[Evoral::Parameter(GainAutomation)] = midi_track->gain_control();
-	automation_connect(param2actrl, Evoral::Parameter(GainAutomation));
-
-	// Mute
-	param2actrl[Evoral::Parameter(MuteAutomation)] = midi_track->mute_control();
-	automation_connect(param2actrl, Evoral::Parameter(MuteAutomation));
-
-	// Pan
-	set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
-	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		param2actrl[*p] = midi_track->pannable()->automation_control(*p);
-		automation_connect(param2actrl, *p);
-	}
-
-	// Midi
-	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
-	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i) {
-		param2actrl[*i] = midi_model->automation_control(*i);
-		std::cout << "TrackerEditor::build_param2actrl midi_model = " << midi_model
-		          << ", *i = " << *i << ", param2actrl[*i] = " << param2actrl[*i] << std::endl;
-	}
-
-	// Processors
-	midi_track->foreach_processor (sigc::bind (sigc::mem_fun (*this, &TrackerEditor::add_processor_to_param2actrl), param2actrl));
-}
-
-void
-TrackerEditor::add_processor_to_param2actrl(boost::weak_ptr<ARDOUR::Processor> p, Parameter2AutomationControl& p2a)
-{
-	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
-
-	if (!processor || !processor->display_to_user ())
-		return;
-
-	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
-	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait) {
-		p2a[*ait] = boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait));
-		automation_connect(p2a, *ait);
-	}
 }
 
 void
@@ -228,11 +172,8 @@ TrackerEditor::resize_width()
 void
 TrackerEditor::setup_toolbars ()
 {
-	for (size_t mti = 0; mti < midi_tracks.size(); mti++) {
-		Parameter2AutomationControl& param2actrl = param2actrls[mti];
-		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = midi_tracks[mti];
-		boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_models[mti];
-		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, param2actrl, midi_track, midi_model, *grid.pattern.mtps[mti], mti);
+	for (size_t mti = 0; mti < grid.pattern.mtps.size(); mti++) {
+		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *grid.pattern.mtps[mti], mti);
 		// TODO replace by emplace_back when supports C++11
 		midi_track_toolbars.push_back(mttb);
 	}
