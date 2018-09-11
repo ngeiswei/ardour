@@ -61,34 +61,51 @@ public:
 	// ticks
 	uint32_t sample_at_row (uint32_t rowi, size_t mti, int32_t delay=0) const;
 
-	size_t off_notes_count (uint32_t rowi, size_t mti, size_t cgi) const;
-	size_t on_notes_count (uint32_t rowi, size_t mti, size_t cgi) const;
-	bool is_note_displayable (uint32_t rowi, size_t mti, size_t cgi) const;
-	NoteTypePtr off_note (uint32_t rowi, size_t mti, size_t cgi) const;
-	NoteTypePtr on_note (uint32_t rowi, size_t mti, size_t cgi) const;
+	size_t off_notes_count (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
+	size_t on_notes_count (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
+	bool is_note_displayable (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
+	NoteTypePtr off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
+	NoteTypePtr on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
 
-	bool is_auto_displayable (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
+	bool is_auto_displayable (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
 	const AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param) const;
 	AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	size_t get_automation_list_count (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
-	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
+	size_t get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
-	NoteTypePtr find_prev_note(uint32_t rowi, size_t mti, int cgi) const;
-	NoteTypePtr find_next_note(uint32_t rowi, size_t mti, int cgi) const;
+	NoteTypePtr find_prev_note(uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NoteTypePtr find_next_note(uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
-	Temporal::Beats next_off(uint32_t rowi, size_t mti, int cgi) const;
+	Temporal::Beats next_off(uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
 	// Return the row index relative to the start of pattern at mti.
 	int to_rri (uint32_t rowi, size_t mti) const;
 
+	// Return the row index relative to the region pattern at mri of mti track
+	int to_rrri (uint32_t rowi, size_t mti, size_t mri) const;
+
+	// Given the row index, calculate the corresponding midi region index. This
+	// can only work assuming that regions do not overlap in time. If no such
+	// mri is defined, then return -1.
+	int to_mri (uint32_t rowi, size_t mti) const;
+
 	// Insert the automation control(s) associated to param at mti (and connect
 	// it to the grid for changes)
 	void insert(size_t mti, const Evoral::Parameter& param);
+
+	// Return the midi model at mti and mri
+	boost::shared_ptr<MidiModel> midi_model (size_t mti, size_t mri);
+
+	// Return the note pattern at mti and mri
+	NodePattern& note_pattern (size_t mti, size_t mri);
+
+	// Apply given command at mti
+	void apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd);
 
 	// Reference of the main tracker editor
 	const TrackerEditor& tracker_editor;
@@ -98,7 +115,7 @@ public:
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per midi track
-	std::vector<MidiTrackPattern*> mtps;
+	std::vector<MidiTrackPattern*> mtps; // TODO: can we avoid pointer
 
 	// Row index offset and number of valid rows per mti
 	MidiTrackPattern*            earliest_mtp;
