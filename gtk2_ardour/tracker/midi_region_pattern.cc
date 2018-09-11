@@ -25,6 +25,7 @@ MidiRegionPattern::MidiRegionPattern (const TrackerEditor& te,
 	: BasePattern(te, region)
 	, np(session, region)
 	, rap(session, region)
+	, midi_model(region->midi_source(0)->model())
 {
 }
 
