@@ -34,8 +34,6 @@ public:
 	                  const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	virtual ~MidiTrackPattern ();
 
-	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
-	// TODO attempt to move TrackerEditor::update_automation_patterns here
 	// TODO attempt to move TrackerEditor::get_automation_pattern here
 	// TODO attempt to move that sort of code here:
 	// int delay_ticks = is_region_automation (param) ?
@@ -65,6 +63,14 @@ public:
 
 	// Return the row index relative to the start of pattern at region index mri
 	int to_rrri (uint32_t rowi, size_t mri) const;
+
+	// Given the row index, calculate the corresponding midi region index. This
+	// can only work assuming that regions do not overlap in time. If no such
+	// mri is defined, then return -1.
+	int to_mri (uint32_t rowi) const;
+
+	// Number of note tracks
+	size_t get_ntracks () const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	TrackAutomationPattern tap;
