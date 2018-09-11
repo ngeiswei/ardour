@@ -86,7 +86,6 @@ public:
 	RegionSelection region_selection;
 
 	// Hold tracks, models, views and patterns for each midi track
-	std::vector<boost::shared_ptr<ARDOUR::MidiModel> > midi_models; // NEXT TODO: probably doesn't need this
 	std::vector<MidiTimeAxisView*> midi_time_axis_views; // NEXT TODO: probably doesn't need this
 
 	Gtk::ScrolledWindow          scroller;

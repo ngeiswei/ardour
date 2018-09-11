@@ -109,7 +109,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 			                                            boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 
 			// VERY NEXT TODO: is this really necessary?
-			midi_models.push_back(midi_model);
 			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
 	}
