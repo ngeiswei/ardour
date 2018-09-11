@@ -62,7 +62,7 @@ public:
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
 		Gtk::TreeModelColumn<std::string> time;
-		Gtk::TreeModelColumn<std::string> midi_track_name[MAX_NUMBER_OF_MIDI_TRACKS];
+		Gtk::TreeModelColumn<std::string> midi_region_name[MAX_NUMBER_OF_MIDI_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
@@ -138,14 +138,17 @@ public:
 	void read_colors ();         // Read colors from config
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_undefined (Gtk::TreeModel::Row& row, size_t mti);
-	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti);
+	void redisplay_undefined (Gtk::TreeModel::Row& row, size_t mti); // Display undefined row at mti
+	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
+	void redisplay_notes (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
+	void redisplay_automations (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_note (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi);
 	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_current_cursor ();
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi, const Evoral::Parameter& param);
@@ -174,11 +177,13 @@ public:
 
 	// Coordonates associated to current cursor
 	Gtk::TreeModel::Path         current_path;
-	int                          current_row;
+	int                          current_rowi;
+	TreeModel::Row*              current_row;
 	int                          current_col;
-	int                          current_mti;
-	MidiTrackPattern*            current_mtp;	
-	int                          current_cgi;
+	int                          current_mti; // multi track index
+	MidiTrackPattern*            current_mtp;
+	int                          current_mri; // midi region index
+	int                          current_cgi; // column group index
 
 	// TODO: probably not necessary
 	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
@@ -186,25 +191,29 @@ public:
 
 	// Coordonates associated to edit cursor
 	Gtk::TreeModel::Path         edit_path;
-	int                          edit_row;
+	int                          edit_rowi;
+	// TreeModel::Row*              edit_row;
 	int                          edit_col;
 	int                          edit_mti;
 	MidiTrackPattern*            edit_mtp;
+	int                          edit_mri;
 	int                          edit_cgi;
 	Gtk::CellEditable*           editing_editable;
 
 private:
 	void setup_time_column ();
 	void setup_midi_track_column (size_t mti);
-	void setup_note_column (size_t mti, size_t i);
-	void setup_note_channel_column (size_t mti, size_t i);
-	void setup_note_velocity_column (size_t mti, size_t i);
-	void setup_note_delay_column (size_t mti, size_t i);
+	void setup_note_column (size_t mti, size_t cgi);
+	void setup_note_channel_column (size_t mti, size_t cgi);
+	void setup_note_velocity_column (size_t mti, size_t cgi);
+	void setup_note_delay_column (size_t mti, size_t cgi);
 	void setup_note_separator_column (); // TODO: could be replaced by setup_separator
-	void setup_automation_column (size_t mti, size_t i);
-	void setup_automation_delay_column (size_t mti, size_t i);
+	void setup_automation_column (size_t mti, size_t cgi);
+	void setup_automation_delay_column (size_t mti, size_t cgi);
 	void setup_automation_separator_column (); // TODO: could be replaced by setup_separator
 
+	int to_mri (size_t mti);
+	
 	/////////////////////
 	// Action Utils    //
 	/////////////////////
@@ -298,20 +307,20 @@ private:
 	bool step_editing_set_automation_delay (int digit);
 
 	// Get note from path, mti and cgi
-	NoteTypePtr get_on_note (int rowi, int mti, int cgi);
-	NoteTypePtr get_on_note (const std::string& path, int mti, int cgi);
-	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
-	NoteTypePtr get_off_note (int rowi, int mti, int cgi);
-	NoteTypePtr get_off_note (const std::string& path, int mti, int cgi);
-	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	NoteTypePtr get_on_note (int rowi, int mti, int mri, int cgi);
+	NoteTypePtr get_on_note (const std::string& path, int mti, int mri, int cgi);
+	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path, int mti, int mri, int cgi);
+	NoteTypePtr get_off_note (int rowi, int mti, int mri, int cgi);
+	NoteTypePtr get_off_note (const std::string& path, int mti, int mri, int cgi);
+	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int mri, int cgi);
 
-	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
-	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
-	void editing_note_velocity_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
-	void editing_note_delay_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
-	void editing_automation_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
-	void editing_automation_delay_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
-	void editing_started (Gtk::CellEditable*, const std::string& path, int mti, int i);
+	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
+	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
+	void editing_note_velocity_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
+	void editing_note_delay_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
+	void editing_automation_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
+	void editing_automation_delay_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
+	void editing_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 
 	void clear_editables ();
 	void editing_canceled ();
@@ -341,7 +350,7 @@ private:
 	void set_automation_delay (int delay, int rowi, int mti, int automation_cgi);
 
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
-	void apply_command (int mti, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	// Map column index to automation track index and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;

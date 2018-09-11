@@ -116,20 +116,42 @@ void MidiTrackPattern::update_row_offset()
 
 bool MidiTrackPattern::is_defined (int rowi) const
 {
+	return -1 < to_mri (rowi);
+}
+
+int MidiTrackPattern::to_rrri (uint32_t rowi, size_t mri) const
+{
+	return (int)rowi - (int)row_offset[mri];
+}
+
+int MidiTrackPattern::to_mri (uint32_t rowi) const
+{
 	// Disgard is out of midi track pattern range
 	if (!BasePattern::is_defined (rowi))
-		return false;
+		return -1;
 
 	// Check if rowi points to an existing region
 	for (size_t mri = 0; i < mrps.size(); i++)
-		if (mrps[i].is_defined(to_rrri((uint32_t)rowi)))
-			return true;
+		if (mrps[mri].is_defined(to_rrri((uint32_t)rowi)))
+			return mri;
 
 	// Within range but no region defined there
-	return false;
+	return -1;
 }
 
-int MidiTrackPattern::to_rrri(uint32_t rowi, size_t mri) const
+size_t MidiTrackPattern::get_ntracks () const
 {
-	return (int)rowi - (int)row_offset[mri];
+	size_t ntracks = 0;
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		ntracks = std::max(ntracks, mrps[mri].np.ntracks);
+
+	if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK) {
+		// TODO: use Ardour's logger instead of stdout
+		std::cout << "Warning: Number of note tracks needed for "
+		          << "the tracker interface is too high, "
+		          << "some notes might be discarded" << std::endl;
+		ntracks = MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK;
+	}
+
+	return ntracks;
 }
