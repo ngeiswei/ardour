@@ -43,9 +43,9 @@ namespace ARDOUR {
 
 class BasePattern {
 public:
-	BasePattern(const TrackerEditor& te,
+	BasePattern(TrackerEditor& te,
 	            boost::shared_ptr<ARDOUR::Region> region);
-	BasePattern(const TrackerEditor& te,
+	BasePattern(TrackerEditor& te,
 	            Temporal::samplepos_t position,
 	            Temporal::samplepos_t start,
 	            Temporal::samplecnt_t length,
@@ -131,7 +131,7 @@ public:
 	bool is_defined(int row_idx) const;
 
 	// Reference to main tracker editor
-	const TrackerEditor& tracker_editor;
+	TrackerEditor& tracker_editor;
 
 	// Samples corresponding to typical region
 	Temporal::samplepos_t position;

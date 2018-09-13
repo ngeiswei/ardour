@@ -29,7 +29,7 @@
  */
 class MidiTrackPattern : public BasePattern {
 public:
-	MidiTrackPattern (const TrackerEditor& te,
+	MidiTrackPattern (TrackerEditor& te,
 	                  boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                  const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	virtual ~MidiTrackPattern ();
@@ -39,39 +39,52 @@ public:
 	// int delay_ticks = is_region_automation (param) ?
 	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
 
-	// TODO: maybe need get_actls for region parameters
-	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(const Evoral::Parameter& param);
+	// TODO: maybe need get_actrls for region parameters
+	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
 
 	// Insert the automation control(s) corresponding to param (and connect it
 	// to the grid for changes)
-	void insert(const Evoral::Parameter& param);
+	void insert (const Evoral::Parameter& param);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// see below.
-	void set_rows_per_beat(uint16_t rpb);
+	void set_rows_per_beat (uint16_t rpb);
 
 	// Set position_row_beats, end_row_beats and nrows
-	void set_row_range();
+	void set_row_range ();
 
 	// Build or rebuild note and automation pattern
-	void update();
+	void update ();
 
+	// Update row_offset (representing row offsets of region patterns)
+	void update_row_offset ();
+	
 	// Return true iff the row is defined, that is if such a row points to an
 	// existing region.
 	bool is_defined (int rowi) const;
 
 	// Return the row index relative to the start of pattern at region index mri
 	int to_rrri (uint32_t rowi, size_t mri) const;
-
+	int to_rrri (uint32_t rowi) const;
+	
 	// Given the row index, calculate the corresponding midi region index. This
 	// can only work assuming that regions do not overlap in time. If no such
 	// mri is defined, then return -1.
 	int to_mri (uint32_t rowi) const;
 
 	// Number of note tracks
-	size_t get_ntracks () const;
+	uint16_t get_ntracks () const;
 
+	// Size of automation list for param
+	size_t get_asize (const Evoral::Parameter& param) const;
+
+	// Return a pair with the automation value and whether it is defined or not	
+	std::pair<double, bool> get_automation_value (size_t rowi, const Evoral::Parameter& param);
+
+	// Set the automation value val at rowi for param
+	void set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay);
+	
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	TrackAutomationPattern tap;
 	std::vector<MidiRegionPattern> mrps;

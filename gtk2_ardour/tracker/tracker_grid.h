@@ -19,6 +19,8 @@
 #ifndef __ardour_tracker_tracker_grid_h_
 #define __ardour_tracker_tracker_grid_h_
 
+#include <boost/bimap/bimap.hpp>
+
 #include <gtkmm/treeview.h>
 #include <gtkmm/liststore.h>
 
@@ -178,7 +180,7 @@ public:
 	// Coordonates associated to current cursor
 	Gtk::TreeModel::Path         current_path;
 	int                          current_rowi;
-	TreeModel::Row*              current_row;
+	Gtk::TreeModel::Row*         current_row;
 	int                          current_col;
 	int                          current_mti; // multi track index
 	MidiTrackPattern*            current_mtp;
@@ -302,7 +304,7 @@ private:
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_set_note_delay (int digit);
 	bool step_editing_automation_key_press (GdkEventKey*);
-	bool step_editing_set_automation (int digit);
+	bool step_editing_set_automation_value (int digit);
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
 	bool step_editing_set_automation_delay (int digit);
 
@@ -342,14 +344,18 @@ private:
 	Evoral::Parameter get_parameter (int mti, int automation_cgi);
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
-	std::pair<double, bool> get_automation_value (int rowi, int mti, int cgi); // return zero if undefined!
-	void set_automation (double val, int rowi, int mti, int automation_cgi);
+	// TODO: can you make that const?
+	std::pair<double, bool> get_automation_value (int rowi, int mti, int cgi); // return <0.0, false> if undefined
+	void set_automation_value (double val, int rowi, int mti, int automation_cgi);
 	void delete_automation (int rowi, int mti, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);
 	std::pair<int, bool> get_automation_delay (int rowi, int mti, int cgi); // return zero if undefined!
 	void set_automation_delay (int delay, int rowi, int mti, int automation_cgi);
 
+public:
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
+
+private:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	// Map column index to automation track index and vice versa
