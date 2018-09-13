@@ -19,9 +19,11 @@
 #ifndef __ardour_tracker_multi_track_pattern_h_
 #define __ardour_tracker_multi_track_pattern_h_
 
-#include "midi_track_pattern.h"
+#include "ardour/midi_model.h"
 
 #include "tracker_utils.h"
+#include "midi_track_pattern.h"
+#include "note_pattern.h"
 
 class TrackerEditor;
 
@@ -31,7 +33,7 @@ class TrackerEditor;
 class MultiTrackPattern // : public BasePattern /* TODO: derive or not derive? */
 {
 public:
-	MultiTrackPattern (const TrackerEditor& te);
+	MultiTrackPattern (TrackerEditor& te);
 	~MultiTrackPattern ();
 
 	void setup_regions_per_track ();
@@ -69,8 +71,9 @@ public:
 
 	bool is_auto_displayable (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
-	const AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param) const;
-	AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
+	// VN TODO do we need that?
+	// const AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param) const;
+	// AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	size_t get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
@@ -88,6 +91,7 @@ public:
 
 	// Return the row index relative to the region pattern at mri of mti track
 	int to_rrri (uint32_t rowi, size_t mti, size_t mri) const;
+	int to_rrri (uint32_t rowi, size_t mti) const;
 
 	// Given the row index, calculate the corresponding midi region index. This
 	// can only work assuming that regions do not overlap in time. If no such
@@ -99,23 +103,29 @@ public:
 	void insert(size_t mti, const Evoral::Parameter& param);
 
 	// Return the midi model at mti and mri
-	boost::shared_ptr<MidiModel> midi_model (size_t mti, size_t mri);
+	boost::shared_ptr<ARDOUR::MidiModel> midi_model (size_t mti, size_t mri);
 
 	// Return the note pattern at mti and mri
-	NodePattern& note_pattern (size_t mti, size_t mri);
+	NotePattern& note_pattern (size_t mti, size_t mri);
 
 	// Apply given command at mti
-	void apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd);
+	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
+	// Return a pair with the automation value and whether it is defined or not
+	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, const Evoral::Parameter& param);
+
+	// Set the automation value val at rowi and mti for param
+	void set_automation_value (double val, int rowidx, int mti, const Evoral::Parameter& param, int delay);
 
 	// Reference of the main tracker editor
-	const TrackerEditor& tracker_editor;
+	TrackerEditor& tracker_editor;
 
 	// Mapping between tracks and regions
 	typedef std::map<boost::shared_ptr<ARDOUR::MidiTrack>, std::vector<boost::shared_ptr<ARDOUR::MidiRegion> > > TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per midi track
-	std::vector<MidiTrackPattern*> mtps; // TODO: can we avoid pointer
+	std::vector<MidiTrackPattern*> mtps; // TODO: can we avoid pointer?
 
 	// Row index offset and number of valid rows per mti
 	MidiTrackPattern*            earliest_mtp;

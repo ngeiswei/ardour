@@ -19,6 +19,10 @@
 #include <cmath>
 #include <map>
 
+#include "ardour/midi_region.h"
+#include "ardour/midi_source.h"
+#include "ardour/midi_playlist.h"
+
 #include "region_automation_pattern.h"
 
 using namespace std;
@@ -28,9 +32,9 @@ using namespace ARDOUR;
 // RegionAutomationPattern //
 /////////////////////////////
 
-RegionAutomationPattern::RegionAutomationPattern(const TrackerEditor& te,
+RegionAutomationPattern::RegionAutomationPattern(TrackerEditor& te,
                                                  boost::shared_ptr<ARDOUR::MidiTrack> mt,
-                                                 boost::shared_ptr<ARDOUR::Region> region)
+                                                 boost::shared_ptr<ARDOUR::MidiRegion> region)
 	: AutomationPattern(te, region)
 	, midi_track(mt)
 	, midi_model(region->midi_source(0)->model())
@@ -42,12 +46,12 @@ void RegionAutomationPattern::setup_automation_controls ()
 {
 	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
 	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i)
-		insert(midi_model->automation_control(*i));
+		AutomationPattern::insert(midi_model->automation_control(*i));
 }
 
 void RegionAutomationPattern::insert(const Evoral::Parameter& param)
 {
-	insert(midi_model->automation_control(param, true));
+	AutomationPattern::insert(midi_model->automation_control(param, true));
 }
 
 uint32_t

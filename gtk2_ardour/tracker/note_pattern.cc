@@ -39,7 +39,7 @@ using Timecode::BBT_Time;
 // NotePattern //
 /////////////////
 
-NotePattern::NotePattern(const TrackerEditor& te,
+NotePattern::NotePattern(TrackerEditor& te,
                          boost::shared_ptr<ARDOUR::MidiRegion> region)
 	: BasePattern(te, region),
 	  ntracks(0), nreqtracks(0),

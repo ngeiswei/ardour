@@ -25,6 +25,7 @@
 #include "ardour/tempo.h"
 
 #include "base_pattern.h"
+#include "tracker_editor.h"
 
 using namespace std;
 using namespace ARDOUR;
@@ -34,7 +35,7 @@ using Timecode::BBT_Time;
 // BasePattern //
 /////////////////
 
-BasePattern::BasePattern(const TrackerEditor& te,
+BasePattern::BasePattern(TrackerEditor& te,
                          boost::shared_ptr<ARDOUR::Region> region)
 	: tracker_editor(te)
 	, position(region->position())
@@ -47,7 +48,7 @@ BasePattern::BasePattern(const TrackerEditor& te,
 {
 }
 
-BasePattern::BasePattern(const TrackerEditor& te,
+BasePattern::BasePattern(TrackerEditor& te,
                          Temporal::samplepos_t pos,
                          Temporal::samplepos_t sta,
                          Temporal::samplecnt_t len,
@@ -60,7 +61,7 @@ BasePattern::BasePattern(const TrackerEditor& te,
 	, first_sample(fir)
 	, last_sample(las)
 	, _session(tracker_editor.session)
-	, _conv(_session->tempo_map(), _position)
+	, _conv(tracker_editor.session->tempo_map(), position)
 {
 }
 
@@ -177,7 +178,7 @@ int32_t BasePattern::delay_ticks_max() const
 	return (int32_t)_ticks_per_row - 1;
 }
 
-bool is_defined(int row_idx) const
+bool BasePattern::is_defined(int row_idx) const
 {
 	return 0 <= row_idx && row_idx < (int)nrows;
 }
