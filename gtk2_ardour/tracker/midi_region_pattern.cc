@@ -17,14 +17,16 @@
 */
 
 #include "ardour/midi_region.h"
+#include "ardour/midi_source.h"
 
 #include "midi_region_pattern.h"
 
-MidiRegionPattern::MidiRegionPattern (const TrackerEditor& te,
+MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
+                                      boost::shared_ptr<ARDOUR::MidiTrack> mt,
                                       boost::shared_ptr<ARDOUR::MidiRegion> region)
 	: BasePattern(te, region)
-	, np(session, region)
-	, rap(session, region)
+	, np(te, region)
+	, rap(te, mt, region)
 	, midi_model(region->midi_source(0)->model())
 {
 }
@@ -60,4 +62,9 @@ void MidiRegionPattern::update()
 	set_row_range();
 	np.update();
 	rap.update();
+}
+
+void MidiRegionPattern::insert(const Evoral::Parameter& param)
+{
+	rap.insert(param);
 }

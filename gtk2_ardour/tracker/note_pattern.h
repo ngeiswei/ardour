@@ -41,7 +41,7 @@ namespace ARDOUR {
  */
 class NotePattern : public BasePattern {
 public:
-	NotePattern(const TrackerEditor& te,
+	NotePattern(TrackerEditor& te,
 	            boost::shared_ptr<ARDOUR::MidiRegion> region);
 
 	// Holds a note and its associated track number (a maximum of 4096
