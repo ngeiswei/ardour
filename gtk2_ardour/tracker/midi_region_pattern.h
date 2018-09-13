@@ -19,6 +19,9 @@
 #ifndef __ardour_tracker_midi_region_pattern_h_
 #define __ardour_tracker_midi_region_pattern_h_
 
+#include "ardour/midi_track.h"
+#include "ardour/midi_model.h"
+
 #include "note_pattern.h"
 #include "region_automation_pattern.h"
 
@@ -27,7 +30,8 @@
  */
 class MidiRegionPattern : public BasePattern {
 public:
-	MidiRegionPattern (const TrackerEditor& te,
+	MidiRegionPattern (TrackerEditor& te,
+	                   boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                   boost::shared_ptr<ARDOUR::MidiRegion> region);
 	virtual ~MidiRegionPattern ();
 
@@ -49,9 +53,12 @@ public:
 	// Build or rebuild note and automation pattern
 	void update();
 
+	// Insert the automation control corresponding to param
+	void insert (const Evoral::Parameter& param);
+	
 	NotePattern np;
 	RegionAutomationPattern rap;
-	boost::shared_ptr<MidiModel> midi_model;
+	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
 };
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */

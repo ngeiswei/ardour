@@ -19,6 +19,10 @@
 #ifndef __ardour_tracker_region_automation_pattern_h_
 #define __ardour_tracker_region_automation_pattern_h_
 
+#include "ardour/midi_model.h"
+#include "ardour/midi_track.h"
+#include "ardour/region.h"
+
 #include "automation_pattern.h"
 
 /**
@@ -26,9 +30,9 @@
  */
 class RegionAutomationPattern : public AutomationPattern {
 public:
-	RegionAutomationPattern(const TrackerEditor& te,
+	RegionAutomationPattern(TrackerEditor& te,
 	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-	                        boost::shared_ptr<ARDOUR::Region> region);
+	                        boost::shared_ptr<ARDOUR::MidiRegion> region);
 
 	// Insert all existing region (midi) automation controls in
 	// _automation_controls and connect then to the grid

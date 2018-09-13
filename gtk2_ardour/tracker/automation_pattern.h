@@ -22,6 +22,8 @@
 #include <set>
 
 #include "ardour/automation_control.h"
+#include "ardour/automation_list.h"
+#include "evoral/ControlList.hpp"
 
 #include "base_pattern.h"
 #include "tracker_types.h"
@@ -40,9 +42,9 @@ typedef std::set<boost::shared_ptr<ARDOUR::AutomationControl> > AutomationContro
  */
 class AutomationPattern : public BasePattern {
 public:
-	AutomationPattern(const TrackerEditor& te,
+	AutomationPattern(TrackerEditor& te,
 	                  boost::shared_ptr<ARDOUR::Region> region);
-	AutomationPattern(const TrackerEditor& te,
+	AutomationPattern(TrackerEditor& te,
 	                  Temporal::samplepos_t position,
 	                  Temporal::samplepos_t start,
 	                  Temporal::samplecnt_t length,
@@ -62,16 +64,37 @@ public:
 	// the grid to update it when some value changes
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 
+	// Size of automation list for param
+	size_t get_asize (const Evoral::Parameter& param) const;
+	
 	// Return automation control associated to the given parameter. If absent,
 	// return NULL.
-	boost::shared_ptr<ARDOUR::AutomationControl> get_actl(const Evoral::Parameter& param);
+	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
+	const boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param) const;
 
-	// Return all automation controls
-	const AutomationControlSet& get_actls() const;
+	// Return automation list associated to the given parameter. If absent
+	// return NULL.
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
+	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param) const;
 	
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
 	bool is_displayable(uint32_t row, const Evoral::Parameter& param) const;
+
+	// Return the control list iterator associated to param at rowi if exists or
+	// end() pointer if it does not.
+	AutomationListIt get_alist_iterator (size_t rowi, const Evoral::Parameter& param);
+
+	// Return the control event associated to param at rowi if exists or null
+	// pointer if it does not.
+	Evoral::ControlEvent* get_control_event (size_t rowi, const Evoral::Parameter& param);
+	const Evoral::ControlEvent* get_control_event (size_t rowi, const Evoral::Parameter& param) const;
+	
+	// Return a pair with the automation value and whether it is defined or not	
+	std::pair<double, bool> get_automation_value (size_t rowi, const Evoral::Parameter& param);
+
+	// Set the automation value val at rowi for param
+	void set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay);
 
 	// Map parameters to maps of row to automation range
 	std::map<Evoral::Parameter, RowToAutomationIt> automations;
