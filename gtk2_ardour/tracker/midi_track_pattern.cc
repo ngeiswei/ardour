@@ -19,6 +19,7 @@
 #include "ardour/midi_region.h"
 
 #include "midi_track_pattern.h"
+#include "tracker_grid.h"
 
 Temporal::samplepos_t get_regions_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
@@ -40,7 +41,7 @@ Temporal::samplepos_t get_regions_last_sample(const std::vector<boost::shared_pt
 	return regions.back()->last_sample();
 }
 
-MidiTrackPattern::MidiTrackPattern (const TrackerEditor& te,
+MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     boost::shared_ptr<ARDOUR::MidiTrack> mt,
                                     const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 	: BasePattern(te,
@@ -50,7 +51,7 @@ MidiTrackPattern::MidiTrackPattern (const TrackerEditor& te,
 	              get_regions_first_sample(regions),
 	              get_regions_last_sample(regions))
 	, midi_track(mt)
-	, tap(session,
+	, tap(te,
 	      midi_track,
 	      get_regions_position(regions),
 	      get_regions_length(regions),
@@ -67,10 +68,10 @@ MidiTrackPattern::~MidiTrackPattern ()
 }
 
 // NEXT TODO: do I need that?
-boost::shared_ptr<ARDOUR::AutomationControl> MidiTrackPattern::get_actl(const Evoral::Parameter& param)
+boost::shared_ptr<ARDOUR::AutomationControl> MidiTrackPattern::get_actrl(const Evoral::Parameter& param)
 {
 	// NEXT TODO: support regions somehow
-	return tap.get_actl(param);
+	return tap.get_actrl(param);
 }
 
 void MidiTrackPattern::insert(const Evoral::Parameter& param)
@@ -124,6 +125,11 @@ int MidiTrackPattern::to_rrri (uint32_t rowi, size_t mri) const
 	return (int)rowi - (int)row_offset[mri];
 }
 
+int MidiTrackPattern::to_rrri (uint32_t rowi) const
+{
+	return (int)rowi - (int)row_offset[to_mri(rowi)];
+}
+
 int MidiTrackPattern::to_mri (uint32_t rowi) const
 {
 	// Disgard is out of midi track pattern range
@@ -131,17 +137,17 @@ int MidiTrackPattern::to_mri (uint32_t rowi) const
 		return -1;
 
 	// Check if rowi points to an existing region
-	for (size_t mri = 0; i < mrps.size(); i++)
-		if (mrps[mri].is_defined(to_rrri((uint32_t)rowi)))
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		if (mrps[mri].is_defined(to_rrri((uint32_t)rowi, mri)))
 			return mri;
 
 	// Within range but no region defined there
 	return -1;
 }
 
-size_t MidiTrackPattern::get_ntracks () const
+uint16_t MidiTrackPattern::get_ntracks () const
 {
-	size_t ntracks = 0;
+	uint16_t ntracks = 0;
 	for (size_t mri = 0; mri < mrps.size(); mri++)
 		ntracks = std::max(ntracks, mrps[mri].np.ntracks);
 
@@ -154,4 +160,31 @@ size_t MidiTrackPattern::get_ntracks () const
 	}
 
 	return ntracks;
+}
+
+size_t MidiTrackPattern::get_asize (const Evoral::Parameter& param) const
+{
+	if (TrackerUtils::is_region_automation (param)) {
+		size_t asize = 0;
+		for (size_t mri = 0; mri < mrps.size(); mri++)
+			asize += mrps[mri].rap.get_asize(param);
+		return asize;
+	}
+	return tap.get_asize(param);	
+}
+
+std::pair<double, bool>
+MidiTrackPattern::get_automation_value (size_t rowi, const Evoral::Parameter& param)
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[to_mri(rowi)].rap.get_automation_value (to_rrri(rowi), param)
+		: tap.get_automation_value (rowi, param);
+}
+
+void
+MidiTrackPattern::set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay)
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[to_mri(rowi)].rap.set_automation_value (val, to_rrri(rowi), param, delay)
+		: tap.set_automation_value (val, rowi, param, delay);
 }

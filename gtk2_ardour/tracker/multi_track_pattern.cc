@@ -22,7 +22,7 @@
 
 #include "midi_region_view.h"
 
-MultiTrackPattern::MultiTrackPattern (const TrackerEditor& te)
+MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
 	: tracker_editor (te)
 	, earliest_mtp (NULL)
 	, global_nrows (0)
@@ -56,8 +56,9 @@ MultiTrackPattern::setup ()
 {
 	setup_regions_per_track ();
 
+	// TODO: it would be better if it followed the order on the piano roll view!
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
-		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor.session, it->first, it->second);
+		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, it->first, it->second);
 		mtps.push_back(mtp);
 	}
 
@@ -134,12 +135,6 @@ MultiTrackPattern::is_defined (uint32_t rowi, size_t mti) const
 	return mtps[mti]->is_defined (to_rri (rowi, mti));
 }
 
-int
-MultiTrackPattern::to_mri (uint32_t rowi, size_t mti) const
-{
-	return mtps[mti]->to_mri (to_rri (rowi, mti));
-}
-
 Temporal::Beats
 MultiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mti, int32_t delay) const
 {
@@ -194,7 +189,7 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) 
 NoteTypePtr
 MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const
 {
-	NotePattern::RowToNotes::const_iterator i_on = mtps[mti]->mrps[mri].np.on_notes[cgi].find(to_rrri(rowi, mri, mti));
+	NotePattern::RowToNotes::const_iterator i_on = mtps[mti]->mrps[mri].np.on_notes[cgi].find(to_rrri(rowi, mti, mri));
 	if (i_on != mtps[mti]->mrps[mri].np.on_notes[cgi].end())
 		return i_on->second;
 	return NULL;
@@ -204,42 +199,42 @@ bool
 MultiTrackPattern::is_auto_displayable (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		mtps[mti]->mrps[mri].rap->is_displayable (to_rrri(rowi, mti, mri), param)
-		: mtps[mti]->tap->is_displayable (to_rri(rowi, mti), param);
+		mtps[mti]->mrps[mri].rap.is_displayable (to_rrri(rowi, mti, mri), param)
+		: mtps[mti]->tap.is_displayable (to_rri(rowi, mti), param);
 }
 
-// TODO: do you really need that?
-AutomationPattern*
-MultiTrackPattern::get_automation_pattern (size_t mti, const Evoral::Parameter& param)
-{
-	if (!param)
-		return NULL;
-	return TrackerUtils::is_region_automation (param) ? (AutomationPattern*)&(mtps[mti]->mrp.rap) : (AutomationPattern*)&(mtps[mti]->tap);
-}
+// // TODO: do you really need that?
+// AutomationPattern*
+// MultiTrackPattern::get_automation_pattern (size_t mti, const Evoral::Parameter& param)
+// {
+// 	if (!param)
+// 		return NULL;
+// 	return TrackerUtils::is_region_automation (param) ? (AutomationPattern*)&(mtps[mti]->mrps[mri].rap) : (AutomationPattern*)&(mtps[mti]->tap);
+// }
 
-// TODO: do you really need that?
-const AutomationPattern*
-MultiTrackPattern::get_automation_pattern (size_t mti, const Evoral::Parameter& param) const
-{
-	if (!param)
-		return NULL;
-	return TrackerUtils::is_region_automation (param) ? (const AutomationPattern*)&(mtps[mti]->mrp.rap) : (const AutomationPattern*)&(mtps[mti]->tap);
-}
+// // TODO: do you really need that?
+// const AutomationPattern*
+// MultiTrackPattern::get_automation_pattern (size_t mti, const Evoral::Parameter& param) const
+// {
+// 	if (!param)
+// 		return NULL;
+// 	return TrackerUtils::is_region_automation (param) ? (const AutomationPattern*)&(mtps[mti]->mrp.rap) : (const AutomationPattern*)&(mtps[mti]->tap);
+// }
 
 size_t
 MultiTrackPattern::get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		mtps[mti]->mrps[mri].rap->automations.find(param)->second.count(to_rrri(rowi, mti, mri))
-		: mtps[mti]->tap->automations.find(param)->second.count(to_rri(rowi, mti));
+		mtps[mti]->mrps[mri].rap.automations.find(param)->second.count(to_rrri(rowi, mti, mri))
+		: mtps[mti]->tap.automations.find(param)->second.count(to_rri(rowi, mti));
 }
 
 Evoral::ControlEvent*
 MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		*mtps[mti]->mrps[mri].rap->automations.find(param)->second.find(to_rrri(rowi, mti, mri))->second
-		: *mtps[mti]->tap->automations.find(param)->second.find(to_rri(rowi, mti))->second;
+		*mtps[mti]->mrps[mri].rap.automations.find(param)->second.find(to_rrri(rowi, mti, mri))->second
+		: *mtps[mti]->tap.automations.find(param)->second.find(to_rri(rowi, mti))->second;
 }
 
 NoteTypePtr
@@ -273,6 +268,12 @@ MultiTrackPattern::to_rrri(uint32_t rowi, size_t mti, size_t mri) const
 }
 
 int
+MultiTrackPattern::to_rrri(uint32_t rowi, size_t mti) const
+{
+	return (int)mtps[mti]->to_rrri(to_rri(rowi, mti));
+}
+
+int
 MultiTrackPattern::to_mri(uint32_t rowi, size_t mti) const
 {
 	return mtps[mti]->to_mri(to_rri(rowi, mti));
@@ -284,20 +285,32 @@ MultiTrackPattern::insert(size_t mti, const Evoral::Parameter& param)
 	mtps[mti]->insert(param);
 }
 
-boost::shared_ptr<MidiModel>
+boost::shared_ptr<ARDOUR::MidiModel>
 MultiTrackPattern::midi_model (size_t mti, size_t mri)
 {
-	return pattern.mtps[mti]->mrps[mri].midi_model;
+	return mtps[mti]->mrps[mri].midi_model;
 }
 
 NotePattern&
 MultiTrackPattern::note_pattern (size_t mti, size_t mri)
 {
-	return pattern.mtps[mti]->mrps[mri].np;
+	return mtps[mti]->mrps[mri].np;
 }
 
 void
-MultiTrackPattern::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
+MultiTrackPattern::apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
 	midi_model(mti, mri)->apply_command (tracker_editor.session, cmd);
+}
+
+std::pair<double, bool>
+MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, const Evoral::Parameter& param)
+{
+	return mtps[mti]->get_automation_value (to_rri(rowi, mti), param);
+}
+
+void
+MultiTrackPattern::set_automation_value (double val, int rowi, int mti, const Evoral::Parameter& param, int delay)
+{
+	return mtps[mti]->set_automation_value (val, to_rri(rowi, mti), param, delay);
 }

@@ -23,8 +23,6 @@
 
 #include <cmath>
 
-#include <boost/bimap/bimap.hpp>
-
 #include <gtkmm/table.h>
 #include <gtkmm/box.h>
 #include <gtkmm/scrolledwindow.h>
@@ -77,6 +75,8 @@ public:
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
 	void resize_width ();
 
+	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actrl);
+	
 	ARDOUR::Session* session;
 
 	// Reference to the unique editor

@@ -19,7 +19,10 @@
 #include <cmath>
 #include <map>
 
+#include "pbd/i18n.h"
+
 #include "automation_pattern.h"
+#include "tracker_editor.h"
 
 using namespace std;
 using namespace ARDOUR;
@@ -29,13 +32,13 @@ using Timecode::BBT_Time;
 // AutomationPattern //
 ///////////////////////
 
-AutomationPattern::AutomationPattern(const TrackerEditor& te,
+AutomationPattern::AutomationPattern(TrackerEditor& te,
                                      boost::shared_ptr<ARDOUR::Region> region)
 	: BasePattern(te, region)
 {
 }
 
-AutomationPattern::AutomationPattern(const TrackerEditor& te,
+AutomationPattern::AutomationPattern(TrackerEditor& te,
                                      Temporal::samplepos_t pos,
                                      Temporal::samplepos_t sta,
                                      Temporal::samplecnt_t len,
@@ -63,28 +66,142 @@ void AutomationPattern::update()
 	}
 }
 
-void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actl)
+void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
 {
-	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actl);
+	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actrl);
 	if (result.second)
-		tracker_editor.connect_automation(actl);
+		tracker_editor.connect_automation(actrl);
 }
 
-boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actl(const Evoral::Parameter& param)
+size_t AutomationPattern::get_asize (const Evoral::Parameter& param) const
 {
-	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
+	return get_alist(param)->size();
+}
+
+boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const Evoral::Parameter& param)
+{
+	if (!param)
+		return NULL;
+
+	for (AutomationControlSet::iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
 		if (param == (*actrl)->parameter())
 			return *actrl;
+
 	return NULL;
 }
 
-const AutomationControlSet& AutomationPattern::get_actls() const
+const boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const Evoral::Parameter& param) const
 {
-	return _automation_controls;
+	if (!param)
+		return NULL;
+
+	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
+		if (param == (*actrl)->parameter())
+			return *actrl;
+
+	return NULL;
+}
+
+boost::shared_ptr<AutomationList>
+AutomationPattern::get_alist (const Evoral::Parameter& param)
+{
+	if (boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param))
+		return actrl->alist();
+
+	return NULL;
+}
+
+const boost::shared_ptr<AutomationList>
+AutomationPattern::get_alist (const Evoral::Parameter& param) const
+{
+	if (const boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param))
+		return actrl->alist();
+
+	return NULL;
 }
 
 bool AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
 {
 	return automations.find(param) == automations.end()
 		|| automations.find(param)->second.count(row) <= 1;
+}
+
+AutomationPattern::AutomationListIt
+AutomationPattern::get_alist_iterator (size_t rowi, const Evoral::Parameter& param)
+{
+	return automations.find(param)->second.find(rowi)->second;
+}
+
+Evoral::ControlEvent*
+AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param)
+{
+	std::map<Evoral::Parameter, RowToAutomationIt>::iterator it = automations.find(param);
+	if (it == automations.end())
+		return NULL;
+
+	AutomationPattern::RowToAutomationIt::iterator auto_it = it->second.find(rowi);
+	if (auto_it != it->second.end())
+		return *auto_it->second;
+
+	return NULL;
+}
+
+const Evoral::ControlEvent*
+AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param) const
+{
+	std::map<Evoral::Parameter, RowToAutomationIt>::const_iterator it = automations.find(param);
+	if (it == automations.end())
+		return NULL;
+
+	AutomationPattern::RowToAutomationIt::const_iterator auto_it = it->second.find(rowi);
+	if (auto_it != it->second.end())
+		return *auto_it->second;
+
+	return NULL;
+}
+
+std::pair<double, bool>
+AutomationPattern::get_automation_value (size_t rowi, const Evoral::Parameter& param)
+{
+	if (const Evoral::ControlEvent* ce = get_control_event (rowi, param))
+		return std::make_pair(ce->value, true);
+
+	return std::make_pair(0.0, false);	
+}
+
+void
+AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay)
+{
+	// Fetch automation control and list
+	boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param);
+	if (!actrl)
+		return;
+	boost::shared_ptr<AutomationList> alist = actrl->alist();
+
+	// Clamp val to its range
+	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
+
+	// Save state for undo
+	XMLNode& before = alist->get_state ();
+
+	// Find control event at rowi, if any
+	Evoral::ControlEvent* ce = get_control_event (rowi, param);
+
+	// If no existing value, insert one
+	if (!ce) {
+		Temporal::Beats row_relative_beats = region_relative_beats_at_row(rowi, delay);
+		uint32_t row_sample = sample_at_row(rowi, delay);
+		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+		if (alist->editor_add (awhen, val, false)) {
+			XMLNode& after = alist->get_state ();
+			tracker_editor.grid.register_automation_undo (alist, _("add automation event"), before, after);
+		}
+		return;
+	}
+
+	// Change existing value
+	double awhen = ce->when;
+	alist->modify (get_alist_iterator(rowi, param), awhen, val);
+	XMLNode& after = alist->get_state ();
+	tracker_editor.grid.register_automation_undo (alist, _("change automation event"), before, after);
 }

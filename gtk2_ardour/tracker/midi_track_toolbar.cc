@@ -36,14 +36,9 @@ using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace ARDOUR;
 
-MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te,
-                                    Parameter2AutomationControl& p2a,
-                                    boost::shared_ptr<ARDOUR::MidiModel> mm,
-                                    MidiTrackPattern& mtp, size_t mti)
+MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp, size_t mti)
 	: tracker_editor (te)
-	, param2actrl (p2a)
 	, midi_track (mtp.midi_track)
-	, midi_model (mm)
 	, midi_track_pattern (mtp)
 	, midi_track_index (mti)
 	, grid (te.grid)
@@ -221,6 +216,7 @@ MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
 		return true;
 	}
 
+	// VTODO: propagate dec_ntracks and shit to patterns
 	midi_track_pattern.mrp.np.dec_ntracks ();
 	grid.redisplay_model ();
 	update_remove_note_column_button ();
@@ -848,12 +844,12 @@ void
 MidiTrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = param2actrl[Evoral::Parameter(GainAutomation)]->list()->size() > 0;
+	bool gain_visible = midi_track_pattern.get_asize(Evoral::Parameter(GainAutomation)) > 0;
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (midi_track_index);
 
 	// Mute
-	bool mute_visible = param2actrl[Evoral::Parameter(MuteAutomation)]->list()->size() > 0;
+	bool mute_visible = midi_track_pattern.get_asize(Evoral::Parameter(MuteAutomation)) > 0;
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility (midi_track_index);
 
@@ -861,7 +857,7 @@ MidiTrackToolbar::show_existing_main_automations ()
 	bool pan_visible = false;
 	std::set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		if (param2actrl[*p]->list()->size() > 0) {
+		if (midi_track_pattern.get_asize(*p) > 0) {
 			pan_visible = true;
 			break;
 		}
@@ -953,7 +949,7 @@ MidiTrackToolbar::show_existing_processor_automations ()
 	     i != processor_automation.end(); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
-			bool exist = param2actrl[(*ii)->what]->list()->size() > 0;
+			bool exist = midi_track_pattern.get_asize((*ii)->what) > 0;
 
 			// Create automation column if necessary
 			if (exist) {

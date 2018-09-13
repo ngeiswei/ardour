@@ -129,9 +129,7 @@ public:
 	void update_add_note_column_button ();
 
 	TrackerEditor& tracker_editor;
-	Parameter2AutomationControl& param2actrl;
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
-	boost::shared_ptr<ARDOUR::MidiModel> midi_model; // NEXT TODO: remove if possible since there is a model per region
 	MidiTrackPattern& midi_track_pattern;
 	size_t midi_track_index;    // Corresponding index in multi-track
 	TrackerGrid& grid;
