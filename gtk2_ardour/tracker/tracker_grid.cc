@@ -1657,6 +1657,7 @@ Evoral::Parameter TrackerGrid::get_parameter (int mti, int cgi)
 	return param;
 }
 
+// NEXT TODO: do we really that?
 boost::shared_ptr<AutomationList>
 TrackerGrid::get_alist (int mti, const Evoral::Parameter& param)
 {
@@ -1679,16 +1680,16 @@ TrackerGrid::automation_edited (const std::string& path, const std::string& text
 
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_mti, edit_cgi);
-	AutomationPattern* ap = pattern.get_automation_pattern (edit_mti, param);
-	if (!ap || not ap->is_displayable(edit_rowi, param)) {
+	if (!is_auto_displayable (edit_rowi, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
 	}
 
+	// Can edit
 	if (is_del)
 		delete_automation (edit_rowi, edit_mti, edit_cgi);
 	else
-		set_automation (nval, edit_rowi, edit_mti, edit_cgi);
+		set_automation_value (nval, edit_rowi, edit_mti, edit_cgi);
 
 	clear_editables ();
 }
@@ -1696,60 +1697,20 @@ TrackerGrid::automation_edited (const std::string& path, const std::string& text
 std::pair<double, bool>
 TrackerGrid::get_automation_value (int rowidx, int mti, int cgi)
 {
-	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (mti, cgi);
-	AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-	if (!ap)
-		return std::make_pair(0.0, false);
-
-	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
-	if (auto_it != r2at.end()) {
-		double aval = (*auto_it->second)->value;
-		return std::make_pair(aval, true);
-	}
-	return std::make_pair(0.0, false);
+	return pattern.get_automation_value (rowi, mti, param);
 }
 
 void
-TrackerGrid::set_automation (double val, int rowidx, int mti, int cgi)
+TrackerGrid::set_automation_value (double val, int rowidx, int mti, int cgi)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (mti, cgi);
-	boost::shared_ptr<AutomationList> alist = get_alist (mti, param);
-	if (!alist)
-		return;
 
-	// Clamp nval to its range
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrls[mti][param];
-	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
+	// Find delay in case the value has to be created
+	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
-	// Find the control iterator to change
-	AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
-
-	// Save state for undo
-	XMLNode& before = alist->get_state ();
-
-	// If no existing value, insert one
-	if (auto_it == r2at.end()) {
-		int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
-		Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowidx, mti, delay);
-		uint32_t row_sample = pattern.sample_at_row(rowidx, mti, delay);
-		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
-		if (alist->editor_add (awhen, val, false)) {
-			XMLNode& after = alist->get_state ();
-			register_automation_undo (alist, _("add automation event"), before, after);
-		}
-		return;
-	}
-
-	// Change existing value
-	double awhen = (*auto_it->second)->when;
-	alist->modify (auto_it->second, awhen, val);
-	XMLNode& after = alist->get_state ();
-	register_automation_undo (alist, _("change automation event"), before, after);
+	return pattern.set_automation_value (val, rowidx, mti, param, delay);
 }
 
 void
@@ -1792,12 +1753,12 @@ TrackerGrid::automation_delay_edited (const std::string& path, const std::string
 
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_mti, edit_cgi);
-	AutomationPattern* ap = pattern.get_automation_pattern (edit_mti, param);
-	if (!ap || !ap->is_displayable(edit_rowi, param)) {
+	if (!is_displayable(edit_rowi, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
 	}
 
+	// Can edit
 	set_automation_delay (delay, edit_rowi, edit_mti, edit_cgi);
 
 	clear_editables ();
@@ -2768,19 +2729,19 @@ TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
 	case GDK_asterisk:
 	case GDK_9:
 	case GDK_parenleft:
-		ret = step_editing_set_automation (digit_key_press (ev));
+		ret = step_editing_set_automation_value (digit_key_press (ev));
 		break;
 
 	// Minus
 	case GDK_minus:
 	case GDK_underscore:
-		ret = step_editing_set_automation (-1);
+		ret = step_editing_set_automation_value (-1);
 		break;
 
 	// Plus
 	case GDK_plus:
 	case GDK_equal:
-		ret = step_editing_set_automation (100);
+		ret = step_editing_set_automation_value (100);
 		break;
 
 	// Cursor movements
@@ -2804,7 +2765,7 @@ TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_automation (int digit)
+TrackerGrid::step_editing_set_automation_value (int digit)
 {
 	std::pair<double, bool> val_def = get_automation_value(current_rowi, current_mti, current_mri, current_cgi);
 	double oval = val_def.first;
@@ -2812,7 +2773,7 @@ TrackerGrid::step_editing_set_automation (int digit)
 	// Set new value
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 	double nval = TrackerUtils::change_digit_or_sign (oval, digit, position);
-	set_automation (nval, current_rowi, current_mti, current_mri, current_cgi);
+	set_automation_value (nval, current_rowi, current_mti, current_mri, current_cgi);
 
 	// Move cursor
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();

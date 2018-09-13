@@ -87,6 +87,9 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	set_session (s);
 
 	// Build tracks, midi_time_axis_views and routes
+	
+	// VERY NEXT TODO: try to understand how regions are ordered, to take
+	// advantage of it to order tracks and views
 	int i = 0;
 	for (RegionSelection::const_iterator it = region_selection.begin();
 	     it != region_selection.end(); ++it) {
@@ -113,7 +116,6 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 		}
 	}
 
-	build_region2param2actrls ();
 	update_automation_patterns ();
 	setup_scroller ();
 	setup_toolbars ();
@@ -153,9 +155,9 @@ TrackerEditor::get_device_names ()
 }
 
 void
-TrackerEditor::connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actl)
+TrackerEditor::connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actrl)
 {
-	boost::shared_ptr<AutomationList> alist = actl->alist();
+	boost::shared_ptr<AutomationList> alist = actrl->alist();
 	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 }

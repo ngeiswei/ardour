@@ -21,14 +21,16 @@
 
 #include "automation_pattern.h"
 
+#include "ardour/midi_track.h"
+
 /**
  * Data structure holding the automation list pattern held by a track.
  */
 class TrackAutomationPattern : public AutomationPattern {
 public:
-	TrackAutomationPattern(const TrackerEditor& te,
+	TrackAutomationPattern(TrackerEditor& te,
+	                       boost::shared_ptr<ARDOUR::MidiTrack> mt,
 	                       Temporal::samplepos_t position,
-	                       Temporal::samplepos_t start,
 	                       Temporal::samplecnt_t length,
 	                       Temporal::samplepos_t first_sample,
 	                       Temporal::samplepos_t last_sample);
@@ -37,6 +39,7 @@ public:
 	void setup_automation_controls ();
 	void setup_main_automation_controls ();
 	void setup_processors_automation_controls ();
+	void setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p);
 
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
