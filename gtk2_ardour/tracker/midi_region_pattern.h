@@ -59,6 +59,7 @@ public:
 	NotePattern np;
 	RegionAutomationPattern rap;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
+	boost::shared_ptr<ARDOUR::MidiRegion> midi_region;
 };
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */
