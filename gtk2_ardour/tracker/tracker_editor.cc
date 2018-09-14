@@ -88,7 +88,7 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 
 	// Build tracks, midi_time_axis_views and routes
 	
-	// VERY NEXT TODO: try to understand how regions are ordered, to take
+	// NT: try to understand how regions are ordered, to take
 	// advantage of it to order tracks and views
 	int i = 0;
 	for (RegionSelection::const_iterator it = region_selection.begin();
@@ -111,12 +111,11 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 			                                            boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
 
-			// VERY NEXT TODO: is this really necessary?
+			// NT: is this really necessary?
 			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
 	}
 
-	update_automation_patterns ();
 	setup_scroller ();
 	setup_toolbars ();
 

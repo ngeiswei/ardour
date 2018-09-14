@@ -34,13 +34,7 @@ public:
 	                  const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	virtual ~MidiTrackPattern ();
 
-	// TODO attempt to move TrackerEditor::get_automation_pattern here
-	// TODO attempt to move that sort of code here:
-	// int delay_ticks = is_region_automation (param) ?
-	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
-
-	// TODO: maybe need get_actrls for region parameters
-	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mri, const Evoral::Parameter& param);
 
 	// Insert the automation control(s) corresponding to param (and connect it
 	// to the grid for changes)
@@ -57,6 +51,9 @@ public:
 	// Build or rebuild note and automation pattern
 	void update ();
 
+	// Update midi region patterns
+	void update_midi_regions ();
+	
 	// Update row_offset (representing row offsets of region patterns)
 	void update_row_offset ();
 	
@@ -76,15 +73,38 @@ public:
 	// Number of note tracks
 	uint16_t get_ntracks () const;
 
+	// Set the number of note tracks
+	void set_ntracks (uint16_t);
+	
+	// Increase the number of note tracks
+	void inc_ntracks ();
+
+	// Decrease the number of note tracks, if possible
+	void dec_ntracks ();
+
+	// Minimum number of note tracks required
+	uint16_t get_nreqtracks () const;
+	
 	// Size of automation list for param
 	size_t get_asize (const Evoral::Parameter& param) const;
 
 	// Return a pair with the automation value and whether it is defined or not	
-	std::pair<double, bool> get_automation_value (size_t rowi, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
 
-	// Set the automation value val at rowi for param
-	void set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay);
-	
+	// Set the automation value val at rowi and mri for param
+	void set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay);
+
+	// Delete automation value at rowi and mri for param
+	void delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
+
+	// Return pair with automation delay in tick at rowi of param as first
+	// element and whether it is defined as second element. Return (0, false) if
+	// undefined.
+	std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
+
+	// Set the automation delay in tick at rowi, mri and mri for param
+	void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
+
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	TrackAutomationPattern tap;
 	std::vector<MidiRegionPattern> mrps;
