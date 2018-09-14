@@ -83,6 +83,8 @@ public:
 
 	// Return the control list iterator associated to param at rowi if exists or
 	// end() pointer if it does not.
+	//
+	// Warning: it assumes the iterator exists, otherwise it crashes!
 	AutomationListIt get_alist_iterator (size_t rowi, const Evoral::Parameter& param);
 
 	// Return the control event associated to param at rowi if exists or null
@@ -95,6 +97,17 @@ public:
 
 	// Set the automation value val at rowi for param
 	void set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay);
+
+	// Delete automation value at rowi for param
+	void delete_automation_value (int rowi, const Evoral::Parameter& param);
+
+	// Return pair with automation delay in tick at rowi of param as first
+	// element and whether it is defined as second element. Return (0, false) if
+	// undefined.
+	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param);
+
+	// Set the automation delay in tick at rowi, mri and mri for param
+	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
 
 	// Map parameters to maps of row to automation range
 	std::map<Evoral::Parameter, RowToAutomationIt> automations;

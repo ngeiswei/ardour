@@ -146,6 +146,12 @@ void NotePattern::update_row_to_notes()
 	}
 }
 
+void NotePattern::set_ntracks(uint16_t n)
+{
+	if (nreqtracks <= n)
+		ntracks = n;
+}
+
 void NotePattern::inc_ntracks()
 {
 	ntracks++;
@@ -153,7 +159,8 @@ void NotePattern::inc_ntracks()
 
 void NotePattern::dec_ntracks()
 {
-	ntracks--;
+	if (nreqtracks < ntracks)
+		ntracks--;
 }
 
 NoteTypePtr NotePattern::find_prev(uint32_t row, int cgi) const
