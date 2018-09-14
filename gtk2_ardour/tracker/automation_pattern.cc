@@ -69,8 +69,9 @@ void AutomationPattern::update()
 void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
 {
 	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actrl);
-	if (result.second)
-		tracker_editor.connect_automation(actrl);
+	// VT: re-enable connecting automation
+	// if (result.second)
+	// 	tracker_editor.connect_automation(actrl);
 }
 
 size_t AutomationPattern::get_asize (const Evoral::Parameter& param) const
@@ -204,4 +205,57 @@ AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::
 	alist->modify (get_alist_iterator(rowi, param), awhen, val);
 	XMLNode& after = alist->get_state ();
 	tracker_editor.grid.register_automation_undo (alist, _("change automation event"), before, after);
+}
+
+void
+AutomationPattern::delete_automation_value(int rowi, const Evoral::Parameter& param)
+{
+	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	if (!alist)
+		return;
+
+		// Save state for undo
+	XMLNode& before = alist->get_state ();
+
+	alist->erase (get_alist_iterator (rowi, param));
+	XMLNode& after = alist->get_state ();
+	tracker_editor.grid.register_automation_undo (alist, _("delete automation event"), before, after);
+}
+
+std::pair<int, bool>
+AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& param)
+{
+	if (Evoral::ControlEvent* ce = get_control_event(rowi, param)) {
+		double awhen = ce->when;
+		int delay = TrackerUtils::is_region_automation (param) ?
+			region_relative_delay_ticks(Temporal::Beats(awhen), rowi)
+			: delay_ticks((samplepos_t)awhen, rowi);
+		return std::make_pair(delay, true);
+	}
+	return std::make_pair(0, false);
+}
+
+void
+AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Parameter& param)
+{
+	// Check if within acceptable boundaries
+	if (delay < delay_ticks_min() || delay_ticks_max() < delay)
+		return;
+
+	Temporal::Beats row_relative_beats = region_relative_beats_at_row(rowi, delay);
+	uint32_t row_sample = sample_at_row(rowi, delay);
+
+	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	if (!alist)
+		return;
+
+	// Change existing delay
+	XMLNode& before = alist->get_state ();
+	double awhen = TrackerUtils::is_region_automation (param) ?
+		(row_relative_beats < start_beats ? start_beats : row_relative_beats).to_double()
+		: row_sample;
+	AutomationPattern::AutomationListIt auto_lst_it = get_alist_iterator (rowi, param);
+	alist->modify (auto_lst_it, awhen, (*auto_lst_it)->value);
+	XMLNode& after = alist->get_state ();
+	tracker_editor.grid.register_automation_undo (alist, _("change automation event delay"), before, after);
 }

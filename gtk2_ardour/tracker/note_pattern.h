@@ -67,6 +67,7 @@ public:
 	void update_row_to_notes();
 
 	// Increase and decrease the number of tracks
+	void set_ntracks(uint16_t n);
 	void inc_ntracks();
 	void dec_ntracks();
 
