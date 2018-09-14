@@ -84,8 +84,8 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, current_col (2)
 	, current_mti (0)
 	, current_mtp (NULL)
-	, current_cgi (0)
 	, current_mri (0)
+	, current_cgi (0)
 	, current_note_type (TrackerColumn::NOTE)
 	, current_auto_type (TrackerColumn::AUTOMATION_SEPARATOR)
 	, edit_rowi (-1)
@@ -93,8 +93,8 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, edit_col (-1)
 	, edit_mti (-1)
 	, edit_mtp (NULL)
-	, edit_cgi (-1)
 	, edit_mri (-1)
+	, edit_cgi (-1)
 	, editing_editable (NULL)
 {
 	setup ();
@@ -164,12 +164,12 @@ TrackerGrid::add_main_automation_column (size_t mti, const Evoral::Parameter& pa
 		return column;
 
 	// Associate that column to the parameter
-	col2params[mti].insert(ColParamBimap::value_type(column, param));
+	col2params[mti].insert(ColParamBimap::value_type(column, param)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title
 	string name = TrackerUtils::is_pan_type(param) ?
-		tracker_editor.midi_tracks[mti]->panner()->describe_parameter (param)
-		: tracker_editor.midi_tracks[mti]->describe_parameter (param);
+		pattern.mtps[mti]->midi_track->panner()->describe_parameter (param)
+		: pattern.mtps[mti]->midi_track->describe_parameter (param);
 	get_column(column)->set_title (name);
 
 	return column;
@@ -236,7 +236,7 @@ TrackerGrid::add_processor_automation_column (size_t mti, boost::shared_ptr<Proc
 void
 TrackerGrid::change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param)
 {
-	const uint16_t selected_channels = tracker_editor.midi_tracks[mti]->get_playback_channel_mask();
+	const uint16_t selected_channels = pattern.mtps[mti]->midi_track->get_playback_channel_mask();
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
 		if (selected_channels & (0x0001 << chn)) {
@@ -390,7 +390,7 @@ TrackerGrid::update_pan_columns_visibility (size_t mti)
 	const bool showit = tracker_editor.midi_track_toolbars[mti]->pan_automation_item->get_active();
 
 	if (pan_columns[mti].empty()) {
-		set<Evoral::Parameter> const & params = tracker_editor.midi_tracks[mti]->panner()->what_can_be_automated ();
+		set<Evoral::Parameter> const & params = pattern.mtps[mti]->midi_track->panner()->what_can_be_automated ();
 		for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
 			pan_columns[mti].push_back(add_main_automation_column(mti, *p));
 		}
@@ -416,7 +416,7 @@ TrackerGrid::redisplay_visible_note()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks and tracker_editor.midi_track_toolbars[mti]->visible_note;
+			bool visible = i < pattern.mtps[mti]->get_ntracks() and tracker_editor.midi_track_toolbars[mti]->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_note_button ();
@@ -446,7 +446,7 @@ TrackerGrid::redisplay_visible_channel()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks
+			bool visible = i < pattern.mtps[mti]->get_ntracks()
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
@@ -469,7 +469,7 @@ TrackerGrid::redisplay_visible_velocity()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks
+			bool visible = i < pattern.mtps[mti]->get_ntracks()
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
@@ -492,7 +492,7 @@ TrackerGrid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->mrp.np.ntracks
+			bool visible = i < pattern.mtps[mti]->get_ntracks()
 				and tracker_editor.midi_track_toolbars[mti]->visible_note
 				and tracker_editor.midi_track_toolbars[mti]->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
@@ -518,7 +518,7 @@ TrackerGrid::redisplay_visible_note_separator()
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		bool is_last_mti = mti == (pattern.mtps.size() - 1);
 		bool hva = has_visible_automation(mti);
-		size_t ntracks = pattern.mtps[mti]->mrp.np.ntracks;
+		size_t ntracks = pattern.mtps[mti]->get_ntracks();
 		bool visible_note = tracker_editor.midi_track_toolbars[mti]->visible_note and 0 < ntracks;
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool is_first_gci = (i == 0);
@@ -733,7 +733,7 @@ void
 TrackerGrid::redisplay_undefined (TreeModel::Row& row, size_t mti)
 {
 	// Number of column groups
-	size_t ntracks = pattern.mtps[mti]->mrp.np.ntracks;
+	size_t ntracks = pattern.mtps[mti]->get_ntracks();
 	row[columns.midi_region_name[mti]] = "";
 	for (size_t cgi = 0; cgi < ntracks; cgi++) {
 		// cgi stands from column group index
@@ -758,7 +758,7 @@ TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t m
 {
 	// Render midi region name (for now midi track name). Display names
 	// vertically.
-	const std::string& name = pattern.midi_model(mti, mri)->name();
+	const std::string& name = pattern.midi_region(mti, mri)->name();
 	uint32_t name_offset_idx = pattern.to_rrri(rowi, mti, mri) % (name.size() + 1);
 	const static std::string name_sep(" ");
 	std::string cell_str = " ";
@@ -771,7 +771,7 @@ void
 TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
 	// Render midi notes pattern
-	for (size_t cgi = 0; cgi < ntracks; cgi++) { // cgi stands from column group index
+	for (size_t cgi = 0; cgi < pattern.mtps[mti]->get_ntracks(); cgi++) { // cgi stands from column group index
 
 		// Fill background colors
 		redisplay_note_background (row, mti, cgi);
@@ -817,9 +817,9 @@ TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t m
 		redisplay_blank_auto_foreground (row, mti, cgi);
 
 		if (auto_count > 0) {
-			redisplay_automation (row, rowi, mti, cgi, param);
+			redisplay_automation (row, rowi, mti, mri, cgi, param);
 		} else {
-			redisplay_auto_interpolation (row, rowi, mti, cgi, param);
+			redisplay_auto_interpolation (row, rowi, mti, mri, cgi, param);
 		}
 	}
 }
@@ -837,6 +837,7 @@ TrackerGrid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t 
 void
 TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
+	std::cout << "TrackerGrid::redisplay_current_note_cursor row = " << &row << std::endl;
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
 		row[columns._note_background_color[mti][cgi]] = cursor_color;
@@ -885,7 +886,7 @@ TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 {
 	if (pattern.is_note_displayable(rowi, mti, mri, cgi)) {
 		// Notes off
-		NoteTypePtr note = pattern.off_note(rowi, mti, cgi);
+		NoteTypePtr note = pattern.off_note(rowi, mti, mri, cgi);
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
@@ -899,7 +900,7 @@ TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 		}
 
 		// Notes on
-		note = pattern.on_note (rowi, mti, cgi);
+		note = pattern.on_note (rowi, mti, mri, cgi);
 		if (note) {
 			row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
@@ -940,7 +941,7 @@ TrackerGrid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, siz
 }
 
 void
-TrackGrid::redisplay_current_cursor ()
+TrackerGrid::redisplay_current_cursor ()
 {
 	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
 		redisplay_current_note_cursor (*current_row, current_mti, current_cgi);
@@ -960,10 +961,10 @@ TrackerGrid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, s
 }
 
 void
-TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi, const Evoral::Parameter& param)
+TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
-	if (pattern.is_auto_displayable(rowi, mti, param)) {
-		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, param);
+	if (pattern.is_auto_displayable(rowi, mti, mti, param)) {
+		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, mri, param);
 		double aval = ctl_event->value;
 		row[columns.automation[mti][cgi]] = to_string (aval);
 		double awhen = ctl_event->when;
@@ -981,20 +982,19 @@ TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mt
 }
 
 void
-TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t cgi, const Evoral::Parameter& param)
+TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
 	double inter_auto_val = 0;
-	if (tracker_editor.param2actrls[mti][param]) {
-		boost::shared_ptr<AutomationList> alist = tracker_editor.param2actrls[mti][param]->alist();
+	if (boost::shared_ptr<AutomationList> alist = pattern.get_alist (mti, mri, param)) {
 		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
-		bool ok;
 		// Get corresponding beats and samples
 		Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowi, mti);
 		uint32_t row_sample = pattern.sample_at_row(rowi, mti);
 		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		// Get interpolation
+		bool ok;
 		inter_auto_val = alist->rt_safe_eval(awhen, ok);
 	}
 	row[columns.automation[mti][cgi]] = to_string (inter_auto_val);
@@ -1032,19 +1032,10 @@ TrackerGrid::redisplay_model ()
 			// Get row
 			TreeModel::Row row = *row_it++;
 
-			// Used to draw the background of the cursor
-			if ((int)rowi == current_rowi)
-				current_row = &row;
-
 			// Get corresponding background color
 			std::string row_background_color = row[columns._background_color];
 
 			for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
-				MidiTrackPattern* mtp = pattern.mtps[mti];
-
-				// Number of column groups
-				size_t ntracks = mtp->get_ntracks ();
-
 				// Undefined
 				// NEXT TODO: take track automation into account
 				if (!pattern.is_defined (rowi, mti)) {
@@ -1056,18 +1047,21 @@ TrackerGrid::redisplay_model ()
 				assert (-1 < mri);
 
 				redisplay_region_name (row, rowi, mti, mri);
-
 				redisplay_notes (row, rowi, mti, mri);
-
 				redisplay_automations (row, rowi, mti, mri);	
+			}
+
+			// Used to draw the background of the cursor
+			if ((int)rowi == current_rowi) {
+				current_row = &row;
+				std::cout << "TrackerGrid::redisplay_model, rowi = " << rowi << ", current_rowi = " << current_rowi << ", current_row = " << current_row << std::endl;
+				redisplay_current_cursor ();
 			}
 		}
 		// Remove unused rows
 		for (; row_it != model->children().end();)
 			row_it = model->erase(row_it);
 	}
-
-	redisplay_current_cursor ();
 
 	set_model (model);
 
@@ -1281,8 +1275,6 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int mri, int cgi)
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
-	MidiTrackPattern* mtp = pattern.mtps[mti];
-
 	if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
@@ -1453,7 +1445,7 @@ TrackerGrid::note_channel_edited (const std::string& path, const std::string& te
 	int  ch;
 	if (sscanf (text.c_str(), "%d", &ch) == 1) {
 		ch--;  // Adjust for zero-based counting
-		set_note_channel(edit_mti, note, ch);
+		set_note_channel(edit_mti, edit_mri, note, ch);
 	}
 
 	clear_editables ();
@@ -1473,7 +1465,7 @@ TrackerGrid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
 		cmd->change (note, MidiModel::NoteDiffCommand::Channel, ch);
 
 		// Apply change command
-		apply_command (mti, cmd);
+		apply_command (mti, mri, cmd);
 	}
 }
 
@@ -1495,14 +1487,14 @@ TrackerGrid::note_velocity_edited (const std::string& path, const std::string& t
 	int  vel;
 	// Parse the edited velocity and set the note velocity
 	if (sscanf (text.c_str(), "%d", &vel) == 1) {
-		set_note_velocity (edit_mti, note, vel);
+		set_note_velocity (edit_mti, edit_mri, note, vel);
 	}
 
 	clear_editables ();
 }
 
 void
-TrackerGrid::set_note_velocity (int mti, NoteTypePtr note, int vel)
+TrackerGrid::set_note_velocity (int mti, int mri, NoteTypePtr note, int vel)
 {
 	if (!note)
 		return;
@@ -1517,7 +1509,7 @@ TrackerGrid::set_note_velocity (int mti, NoteTypePtr note, int vel)
 		cmd->change (note, MidiModel::NoteDiffCommand::Velocity, vel);
 
 		// Apply change command
-		apply_command (mti, cmd);
+		apply_command (mti, mri, cmd);
 	}
 }
 
@@ -1533,14 +1525,14 @@ TrackerGrid::note_delay_edited (const std::string& path, const std::string& text
 	// Parse the edited delay and set note delay
 	int delay;
 	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) == 1) {
-		set_note_delay (delay, edit_rowi, edit_mti, edit_cgi);
+		set_note_delay (delay, edit_rowi, edit_mti, edit_mri, edit_cgi);
 	}
 
 	clear_editables ();
 }
 
 void
-TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int cgi)
+TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int mri, int cgi)
 {
 	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
 	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
@@ -1595,7 +1587,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int cgi)
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
 
-	apply_command (mti, cmd);
+	apply_command (mti, mri, cmd);
 }
 
 void TrackerGrid::play_note(int mti, uint8_t pitch)
@@ -1606,7 +1598,7 @@ void TrackerGrid::play_note(int mti, uint8_t pitch)
 	event[0] = (MIDI_CMD_NOTE_ON | chan);
 	event[1] = pitch;
 	event[2] = vel;
-	tracker_editor.midi_tracks[mti]->write_immediate_event (3, event);
+	pattern.mtps[mti]->midi_track->write_immediate_event (3, event);
 }
 
 void TrackerGrid::release_note(int mti, uint8_t pitch)
@@ -1616,7 +1608,7 @@ void TrackerGrid::release_note(int mti, uint8_t pitch)
 	event[0] = (MIDI_CMD_NOTE_OFF | chan);
 	event[1] = pitch;
 	event[2] = 0;
-	tracker_editor.midi_tracks[mti]->write_immediate_event (3, event);
+	pattern.mtps[mti]->midi_track->write_immediate_event (3, event);
 }
 
 void
@@ -1625,6 +1617,7 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	// Set current row
 	current_path = path;
 	current_rowi = get_row_index (path);
+	std::cout << "TrackerGrid::set_current_cursor, current_rowi = " << current_rowi << std::endl;
 
 	// Set current col
 	current_col = get_col_index (col);
@@ -1657,15 +1650,10 @@ Evoral::Parameter TrackerGrid::get_parameter (int mti, int cgi)
 	return param;
 }
 
-// NEXT TODO: do we really that?
 boost::shared_ptr<AutomationList>
-TrackerGrid::get_alist (int mti, const Evoral::Parameter& param)
+TrackerGrid::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
-	if (!param)
-		return NULL;
-	boost::shared_ptr<ARDOUR::AutomationControl> actrl = tracker_editor.param2actrls[mti][param];
-	boost::shared_ptr<AutomationList> alist = actrl->alist();
-	return alist;
+	return pattern.get_alist (mti, mri, param);
 }
 
 void
@@ -1680,29 +1668,29 @@ TrackerGrid::automation_edited (const std::string& path, const std::string& text
 
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_mti, edit_cgi);
-	if (!is_auto_displayable (edit_rowi, edit_mti, edit_mri, param)) {
+	if (!pattern.is_auto_displayable (edit_rowi, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
 	}
 
 	// Can edit
 	if (is_del)
-		delete_automation (edit_rowi, edit_mti, edit_cgi);
+		delete_automation_value (edit_rowi, edit_mti, edit_mri, edit_cgi);
 	else
-		set_automation_value (nval, edit_rowi, edit_mti, edit_cgi);
+		set_automation_value (nval, edit_rowi, edit_mti, edit_mri, edit_cgi);
 
 	clear_editables ();
 }
 
 std::pair<double, bool>
-TrackerGrid::get_automation_value (int rowidx, int mti, int cgi)
+TrackerGrid::get_automation_value (int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_parameter (mti, cgi);
-	return pattern.get_automation_value (rowi, mti, param);
+	return pattern.get_automation_value (rowi, mti, mri, param);
 }
 
 void
-TrackerGrid::set_automation_value (double val, int rowidx, int mti, int cgi)
+TrackerGrid::set_automation_value (double val, int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (mti, cgi);
@@ -1710,29 +1698,15 @@ TrackerGrid::set_automation_value (double val, int rowidx, int mti, int cgi)
 	// Find delay in case the value has to be created
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
-	return pattern.set_automation_value (val, rowidx, mti, param, delay);
+	return pattern.set_automation_value (val, rowi, mti, mri, param, delay);
 }
 
+// VT: propagate across pattern classes
 void
-TrackerGrid::delete_automation(int rowidx, int mti, int cgi)
+TrackerGrid::delete_automation_value(int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_parameter (mti, cgi);
-	boost::shared_ptr<AutomationList> alist = get_alist (mti, param);
-	if (!alist)
-		return;
-
-	// Find the control iterator to change
-	AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-
-	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
-
-	// Save state for undo
-	XMLNode& before = alist->get_state ();
-
-	alist->erase (auto_it->second);
-	XMLNode& after = alist->get_state ();
-	register_automation_undo (alist, _("delete automation event"), before, after);
+	return pattern.delete_automation_value (rowi, mti, mri, param);
 }
 
 void
@@ -1753,72 +1727,30 @@ TrackerGrid::automation_delay_edited (const std::string& path, const std::string
 
 	// Can't edit ***
 	Evoral::Parameter param = get_parameter (edit_mti, edit_cgi);
-	if (!is_displayable(edit_rowi, edit_mti, edit_mri, param)) {
+	if (!pattern.is_auto_displayable(edit_rowi, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
 	}
 
 	// Can edit
-	set_automation_delay (delay, edit_rowi, edit_mti, edit_cgi);
+	set_automation_delay (delay, edit_rowi, edit_mti, edit_mri, edit_cgi);
 
 	clear_editables ();
 }
 
 std::pair<int, bool>
-TrackerGrid::get_automation_delay (int rowidx, int mti, int cgi)
+TrackerGrid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (mti, cgi);
-	AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-	if (!ap)
-		return std::make_pair(0, false);
-
-	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rowidx);
-	if (auto_it != r2at.end()) {
-		double awhen = (*auto_it->second)->when;
-		int delay_ticks = TrackerUtils::is_region_automation (param) ?
-			pattern.mtps[mti]->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : pattern.mtps[mti]->delay_ticks((samplepos_t)awhen, rowidx);
-		return std::make_pair(delay_ticks, true);
-	}
-	return std::make_pair(0, false);
+	return pattern.get_automation_delay (rowi, mti, mri, param);
 }
 
 void
-TrackerGrid::set_automation_delay (int delay, int rowidx, int mti, int cgi)
+TrackerGrid::set_automation_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
-	// Check if within acceptable boundaries
-	if (delay < pattern.mtps[mti]->delay_ticks_min() || pattern.mtps[mti]->delay_ticks_max() < delay)
-		return;
-
-	int rri = (int)rowidx - pattern.row_offset[mti];
-	Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowidx, mti, delay);
-	uint32_t row_sample = pattern.sample_at_row(rowidx, mti, delay);
-
-	// Find the parameter to change delay
 	Evoral::Parameter param = get_parameter (mti, cgi);
-	boost::shared_ptr<AutomationList> alist = get_alist (mti, param);
-	if (!alist)
-		return;
-
-	// Find the control iterator to change
-	AutomationPattern* ap = pattern.get_automation_pattern (mti, param);
-
-	const AutomationPattern::RowToAutomationIt& r2at = ap->automations[param];
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = r2at.find(rri);
-
-	// If no existing value, abort
-	if (auto_it == r2at.end())
-		return;
-
-	// Change existing delay
-	XMLNode& before = alist->get_state ();
-	double awhen = TrackerUtils::is_region_automation (param) ?
-		(row_relative_beats < ap->start_beats ? ap->start_beats : row_relative_beats).to_double()
-		: row_sample;
-	alist->modify (auto_it->second, awhen, (*auto_it->second)->value);
-	XMLNode& after = alist->get_state ();
-	register_automation_undo (alist, _("change automation event delay"), before, after);
+	return pattern.set_automation_delay (delay, rowi, mti, mri, param);
 }
 
 void
@@ -1985,7 +1917,7 @@ TrackerGrid::setup_automation_column (size_t mti, size_t cgi)
 
 	size_t column = get_columns().size();
 	append_column (*automation_column);
-	col2autotracks[mti].insert(ColAutoTrackBimap::value_type(column, i));
+	col2autotracks[mti].insert(ColAutoTrackBimap::value_type(column, cgi));
 	available_automation_columns[mti].insert(column);
 	get_column(column)->set_visible (false);
 }
@@ -2538,7 +2470,7 @@ TrackerGrid::step_editing_set_note_channel (int digit)
 		int ch = note->channel();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, position);
-		set_note_channel (current_mti, note, new_ch - 1);
+		set_note_channel (current_mti, current_mri, note, new_ch - 1);
 	}
 
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -2605,7 +2537,7 @@ TrackerGrid::step_editing_set_note_velocity (int digit)
 		int vel = note->velocity();
 		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 		int new_vel = TrackerUtils::change_digit (vel, digit, position);
-		set_note_velocity (current_mti, note, new_vel);
+		set_note_velocity (current_mti, current_mri, note, new_vel);
 	}
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_current_cursor (steps);

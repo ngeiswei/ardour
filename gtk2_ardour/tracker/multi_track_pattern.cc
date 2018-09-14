@@ -291,6 +291,12 @@ MultiTrackPattern::midi_model (size_t mti, size_t mri)
 	return mtps[mti]->mrps[mri].midi_model;
 }
 
+boost::shared_ptr<ARDOUR::MidiRegion>
+MultiTrackPattern::midi_region (size_t mti, size_t mri)
+{
+	return mtps[mti]->mrps[mri].midi_region;
+}
+
 NotePattern&
 MultiTrackPattern::note_pattern (size_t mti, size_t mri)
 {
@@ -303,14 +309,38 @@ MultiTrackPattern::apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::Not
 	midi_model(mti, mri)->apply_command (tracker_editor.session, cmd);
 }
 
-std::pair<double, bool>
-MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, const Evoral::Parameter& param)
+boost::shared_ptr<ARDOUR::AutomationList>
+MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
-	return mtps[mti]->get_automation_value (to_rri(rowi, mti), param);
+	return mtps[mti]->get_alist (mri, param);
+}
+
+std::pair<double, bool>
+MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
+{
+	return mtps[mti]->get_automation_value (to_rri(rowi, mti), mri, param);
 }
 
 void
-MultiTrackPattern::set_automation_value (double val, int rowi, int mti, const Evoral::Parameter& param, int delay)
+MultiTrackPattern::set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay)
 {
-	return mtps[mti]->set_automation_value (val, to_rri(rowi, mti), param, delay);
+	return mtps[mti]->set_automation_value (val, to_rri(rowi, mti), mri, param, delay);
+}
+
+void
+MultiTrackPattern::delete_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param)
+{
+	return mtps[mti]->delete_automation_value (to_rri(rowi, mti), mri, param);
+}
+
+std::pair<int, bool>
+MultiTrackPattern::get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
+{
+	return mtps[mti]->get_automation_delay (to_rri(rowi, mti), mri, param);
+}
+
+void
+MultiTrackPattern::set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param)
+{
+	return mtps[mti]->set_automation_delay (delay, to_rri(rowi, mti), mri, param);
 }

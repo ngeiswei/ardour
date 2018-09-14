@@ -105,17 +105,33 @@ public:
 	// Return the midi model at mti and mri
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model (size_t mti, size_t mri);
 
+	// Return the midi region at mti and mri
+	boost::shared_ptr<ARDOUR::MidiRegion> midi_region (size_t mti, size_t mri);
+	
 	// Return the note pattern at mti and mri
 	NotePattern& note_pattern (size_t mti, size_t mri);
 
 	// Apply given command at mti
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
+	
 	// Return a pair with the automation value and whether it is defined or not
-	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
-	// Set the automation value val at rowi and mti for param
-	void set_automation_value (double val, int rowidx, int mti, const Evoral::Parameter& param, int delay);
+	// Set the automation value val at rowi, mti and mri for param
+	void set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay);
+
+	// Delete automation value at rowi, mti and mri for param
+	void delete_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param);
+
+	// Get a pair with automation delay in tick at rowi of param as first
+	// element and whether it is defined as second element. Return (0, false) if
+	// undefined.
+	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
+
+	// Set the automation delay in tick at rowi, mri and mri for param
+	void set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param);
 
 	// Reference of the main tracker editor
 	TrackerEditor& tracker_editor;
