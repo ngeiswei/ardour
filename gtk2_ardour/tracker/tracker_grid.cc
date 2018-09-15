@@ -889,9 +889,9 @@ TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			int64_t delay_ticks = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti);
-			if (delay_ticks != 0) {
-				row[columns.delay[mti][cgi]] = to_string (delay_ticks);
+			int64_t delay = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti, mri);
+			if (delay != 0) {
+				row[columns.delay[mti][cgi]] = to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 			// Keep the note off around for playing and editing
@@ -908,9 +908,9 @@ TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 
-			int64_t delay_ticks = pattern.region_relative_delay_ticks(note->time(), rowi, mti);
-			if (delay_ticks != 0) {
-				row[columns.delay[mti][cgi]] = to_string (delay_ticks);
+			int64_t delay = pattern.region_relative_delay_ticks(note->time(), rowi, mti, mri);
+			if (delay != 0) {
+				row[columns.delay[mti][cgi]] = to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 			// Keep the note around for playing and editing
@@ -967,11 +967,11 @@ TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mt
 		double aval = ctl_event->value;
 		row[columns.automation[mti][cgi]] = to_string (aval);
 		double awhen = ctl_event->when;
-		int64_t delay_ticks = TrackerUtils::is_region_automation (param) ?
-			pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti)
+		int64_t delay = TrackerUtils::is_region_automation (param) ?
+			pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti, mri)
 			: pattern.delay_ticks((samplepos_t)awhen, rowi, mti);
-		if (delay_ticks != 0) {
-			row[columns.automation_delay[mti][cgi]] = to_string (delay_ticks);
+		if (delay != 0) {
+			row[columns.automation_delay[mti][cgi]] = to_string (delay);
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
 		}
 	} else {
@@ -1546,7 +1546,7 @@ TrackerGrid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int delta = delay - pattern.region_relative_delay_ticks(on_note->time(), rowi, mti);
+		int delta = delay - pattern.region_relative_delay_ticks(on_note->time(), rowi, mti, mri);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_start = on_note->time() + relative_beats;
 		// Make sure the new_start is still within the visible region
@@ -1569,7 +1569,7 @@ TrackerGrid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int delta = delay - pattern.region_relative_delay_ticks(off_note->end_time(), rowi, mti);
+		int delta = delay - pattern.region_relative_delay_ticks(off_note->end_time(), rowi, mti, mri);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_length = off_note->length() + relative_beats;
 		// Make sure the off note is after the on note
@@ -2613,8 +2613,8 @@ TrackerGrid::step_editing_set_note_delay (int digit)
 	}
 
 	// Fetch delay
-	int old_delay = on_note ? pattern.region_relative_delay_ticks(on_note->time(), current_rowi, current_mti)
-		: pattern.region_relative_delay_ticks(off_note->end_time(), current_rowi, current_mti);
+	int old_delay = on_note ? pattern.region_relative_delay_ticks(on_note->time(), current_rowi, current_mti, current_mri)
+		: pattern.region_relative_delay_ticks(off_note->end_time(), current_rowi, current_mti, current_mri);
 
 	// Update delay
 	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, position);
