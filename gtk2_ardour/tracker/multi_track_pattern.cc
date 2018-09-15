@@ -102,16 +102,12 @@ MultiTrackPattern::update_earliest_mtp ()
 	for (size_t mti = 0; mti < mtps.size(); mti++) {
 		MidiTrackPattern* mtp = mtps[mti];
 
-		std::cout << "position_row_beats[" << mti << "] = "
-		          << mtp->position_row_beats << std::endl;
-
 		// Get min position beat
 		if (mtp->position_row_beats < min_position_beats) {
 			min_position_beats = mtp->position_row_beats;
 			earliest_mtp = mtp;
 		}
 	}
-	std::cout << "min_position_beats = " << min_position_beats << std::endl;
 }
 
 void
@@ -121,12 +117,9 @@ MultiTrackPattern::update_global_nrows ()
 	for (size_t mti = 0; mti < mtps.size(); mti++) {
 		MidiTrackPattern* mtp = mtps[mti];
 		row_offset[mti] = (int32_t)mtp->row_distance(earliest_mtp->position_row_beats, mtp->position_row_beats);
-		std::cout << "row_offset[" << mti << "] = " << row_offset[mti] << std::endl;
 		nrows[mti] = mtp->nrows;
-		std::cout << "nrows[" << mti << "] = " << nrows[mti] << std::endl;
 		global_nrows = std::max(global_nrows, row_offset[mti] + nrows[mti]);
 	}
-	std::cout << "global_nrows = " << global_nrows << std::endl;
 }
 
 bool
@@ -136,9 +129,9 @@ MultiTrackPattern::is_defined (uint32_t rowi, size_t mti) const
 }
 
 Temporal::Beats
-MultiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mti, int32_t delay) const
+MultiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mti, size_t mri, int32_t delay) const
 {
-	return mtps[mti]->region_relative_beats_at_row(to_rri(rowi, mti), delay);
+	return mtps[mti]->region_relative_beats_at_row(to_rri(rowi, mti), mri, delay);
 }
 
 int64_t

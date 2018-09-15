@@ -268,3 +268,9 @@ MidiTrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evor
 		mrps[mri].rap.set_automation_delay (delay, to_rrri(rowi, mri), param)
 		: tap.set_automation_delay (delay, rowi, param);
 }
+
+Temporal::Beats
+MidiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mri, int32_t delay) const
+{
+	return mrps[mri].np.region_relative_beats_at_row (to_rrri(rowi, mri), delay);
+}
