@@ -135,9 +135,9 @@ MultiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mti, size
 }
 
 int64_t
-MultiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti) const
+MultiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti, size_t mri) const
 {
-	return mtps[mti]->region_relative_delay_ticks(event_time, to_rri(rowi, mti));
+	return mtps[mti]->region_relative_delay_ticks(event_time, to_rri(rowi, mti), mri);
 }
 
 int64_t
