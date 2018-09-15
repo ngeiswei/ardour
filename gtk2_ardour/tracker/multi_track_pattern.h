@@ -54,7 +54,7 @@ public:
 	Temporal::Beats region_relative_beats_at_row (uint32_t rowi, size_t mti, size_t mri, int32_t delay=0) const;
 
 	// Like delay_ticks but the event_time is relative to the region position of a given mti
-	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti) const;
+	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti, size_t mri) const;
 
 	// Return an event's delay in a certain row and mti in ticks
 	int64_t delay_ticks (samplepos_t when, uint32_t rowi, size_t mti) const;
