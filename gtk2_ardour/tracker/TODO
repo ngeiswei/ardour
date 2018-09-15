@@ -1,4 +1,3 @@
-* Support multiple regions in the same track
 * Underlie the digit to be edited
 * Support tab in horizontal_move_cursor (for multi-track grid)
 * Grey out Automation button when no longer automation column
