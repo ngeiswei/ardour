@@ -837,7 +837,6 @@ TrackerGrid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t 
 void
 TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::cout << "TrackerGrid::redisplay_current_note_cursor row = " << &row << std::endl;
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
 		row[columns._note_background_color[mti][cgi]] = cursor_color;
@@ -990,7 +989,7 @@ TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, s
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
 		// Get corresponding beats and samples
-		Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowi, mti);
+		Temporal::Beats row_relative_beats = pattern.region_relative_beats_at_row(rowi, mti, mri);
 		uint32_t row_sample = pattern.sample_at_row(rowi, mti);
 		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		// Get interpolation
@@ -1054,7 +1053,6 @@ TrackerGrid::redisplay_model ()
 			// Used to draw the background of the cursor
 			if ((int)rowi == current_rowi) {
 				current_row = &row;
-				std::cout << "TrackerGrid::redisplay_model, rowi = " << rowi << ", current_rowi = " << current_rowi << ", current_row = " << current_row << std::endl;
 				redisplay_current_cursor ();
 			}
 		}
@@ -1094,23 +1092,19 @@ TrackerGrid::get_row_index(const TreeModel::Path& path) const
 int
 TrackerGrid::get_col_index(TreeViewColumn* col)
 {
-	std::cout << "TrackerGrid::get_col_index col = " << col << std::endl;
-	std::vector<TreeViewColumn*> cols =
-		(std::vector<TreeViewColumn*>)get_columns();
-	for (int i = 0; i < (int)cols.size(); i++) {
-		if (cols[i] == col) {
-			std::cout << "TrackerGrid::get_col_index return " << i << std::endl;
+	std::vector<TreeViewColumn*> cols = (std::vector<TreeViewColumn*>)get_columns();
+
+	for (int i = 0; i < (int)cols.size(); i++)
+		if (cols[i] == col)
 			return i;
-		}
-	}
-	std::cout << "TrackerGrid::get_col_index return -1" << std::endl;
+
 	return -1;
 }
 
 NoteTypePtr
-TrackerGrid::get_on_note (int rowidx, int mti, int cgi)
+TrackerGrid::get_on_note (int rowi, int mti, int cgi)
 {
-	return get_on_note (TreeModel::Path (1U, rowidx), mti, cgi);
+	return get_on_note (TreeModel::Path (1U, rowi), mti, cgi);
 }
 
 NoteTypePtr
@@ -1129,9 +1123,9 @@ TrackerGrid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
 }
 
 NoteTypePtr
-TrackerGrid::get_off_note(int rowidx, int mti, int cgi)
+TrackerGrid::get_off_note(int rowi, int mti, int cgi)
 {
-	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowidx), mti, cgi);
+	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowi), mti, cgi);
 }
 
 NoteTypePtr
@@ -1260,14 +1254,14 @@ TrackerGrid::note_edited (const std::string& path, const std::string& text)
 }
 
 void
-TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int mri, int cgi)
+TrackerGrid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 {
 	// Abort if the new pitch is invalid
 	if (127 < pitch)
 		return;
 
-	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
+	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
+	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int();
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1284,7 +1278,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int mri, int cgi)
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time();
-		Temporal::Beats end = pattern.next_off(rowidx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_off(rowi, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
 		NoteTypePtr new_note(new NoteType(chan, start, length, pitch, vel));
@@ -1297,8 +1291,8 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int mri, int cgi)
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = pattern.region_relative_beats_at_row(rowidx, mti, delay);
-		NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, mri, cgi);
+		Temporal::Beats here = pattern.region_relative_beats_at_row(rowi, mti, mri, delay);
+		NoteTypePtr prev_note = pattern.find_prev_note(rowi, mti, mri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1319,7 +1313,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int mri, int cgi)
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = pattern.next_off(rowidx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_off(rowi, mti, mri, cgi);
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 		cmd->add (new_note);
@@ -1334,10 +1328,10 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowidx, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::set_off_note (int rowidx, int mti, int mri, int cgi)
+TrackerGrid::set_off_note (int rowi, int mti, int mri, int cgi)
 {
-	NoteTypePtr on_note = get_on_note(rowidx, mti, cgi);
-	NoteTypePtr off_note = get_off_note(rowidx, mti, cgi);
+	NoteTypePtr on_note = get_on_note(rowi, mti, cgi);
+	NoteTypePtr off_note = get_off_note(rowi, mti, cgi);
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int();
 
@@ -1352,7 +1346,7 @@ TrackerGrid::set_off_note (int rowidx, int mti, int mri, int cgi)
 		// If there is no off note, update the length of the preceding node
 		// to match the new off note (smart off note).
 		if (!off_note) {
-			NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, mri, cgi);
+			NoteTypePtr prev_note = pattern.find_prev_note(rowi, mti, mri, cgi);
 			if (prev_note) {
 				Temporal::Beats length = on_note->time() - prev_note->time();
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -1361,8 +1355,8 @@ TrackerGrid::set_off_note (int rowidx, int mti, int mri, int cgi)
 	} else {
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
-		Temporal::Beats here = pattern.region_relative_beats_at_row(rowidx, mti, delay);
-		NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, mri, cgi);
+		Temporal::Beats here = pattern.region_relative_beats_at_row(rowi, mti, mri, delay);
+		NoteTypePtr prev_note = pattern.find_prev_note(rowi, mti, mri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -1386,10 +1380,10 @@ TrackerGrid::set_off_note (int rowidx, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::delete_note (int rowidx, int mti, int mri, int cgi)
+TrackerGrid::delete_note (int rowi, int mti, int mri, int cgi)
 {
-	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
+	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
+	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
 
 	MidiModel::NoteDiffCommand* cmd = NULL;
 
@@ -1402,11 +1396,11 @@ TrackerGrid::delete_note (int rowidx, int mti, int mri, int cgi)
 		// If there is an off note, update the length of the preceding note
 		// to match the next note or the end of the region.
 		if (off_note) {
-			NoteTypePtr prev_note = pattern.find_prev_note(rowidx, mti, mri, cgi);
+			NoteTypePtr prev_note = pattern.find_prev_note(rowi, mti, mri, cgi);
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Temporal::Beats start = prev_note->time();
-				Temporal::Beats end = pattern.next_off(rowidx, mti, mri, cgi);
+				Temporal::Beats end = pattern.next_off(rowi, mti, mri, cgi);
 				Temporal::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
@@ -1415,7 +1409,7 @@ TrackerGrid::delete_note (int rowidx, int mti, int mri, int cgi)
 		// Update the length of the corresponding on note so the off note
 		// matches the next note or the end of the region.
 		Temporal::Beats start = off_note->time();
-		Temporal::Beats end = pattern.next_off(rowidx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_off(rowi, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
 		cmd = pattern.midi_model(mti, mri)->new_note_diff_command (opname);
@@ -1532,10 +1526,10 @@ TrackerGrid::note_delay_edited (const std::string& path, const std::string& text
 }
 
 void
-TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int mri, int cgi)
+TrackerGrid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
-	NoteTypePtr on_note = get_on_note (rowidx, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowidx, mti, cgi);
+	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
+	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
 	if (!on_note && !off_note)
 		return;
 
@@ -1552,7 +1546,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int mri, int cgi)
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int delta = delay - pattern.region_relative_delay_ticks(on_note->time(), rowidx, mti);
+		int delta = delay - pattern.region_relative_delay_ticks(on_note->time(), rowi, mti);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_start = on_note->time() + relative_beats;
 		// Make sure the new_start is still within the visible region
@@ -1575,7 +1569,7 @@ TrackerGrid::set_note_delay (int delay, int rowidx, int mti, int mri, int cgi)
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int delta = delay - pattern.region_relative_delay_ticks(off_note->end_time(), rowidx, mti);
+		int delta = delay - pattern.region_relative_delay_ticks(off_note->end_time(), rowi, mti);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks(delta);
 		Temporal::Beats new_length = off_note->length() + relative_beats;
 		// Make sure the off note is after the on note
@@ -1617,7 +1611,6 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	// Set current row
 	current_path = path;
 	current_rowi = get_row_index (path);
-	std::cout << "TrackerGrid::set_current_cursor, current_rowi = " << current_rowi << std::endl;
 
 	// Set current col
 	current_col = get_col_index (col);
@@ -1625,6 +1618,7 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	// Set mti, mtp, cgi and types
 	current_mti = get_mti(col);
 	current_mtp = pattern.mtps[current_mti];
+	current_mri = pattern.to_mri(current_rowi, current_mti);
 	current_cgi = get_cgi(col);
 	current_note_type = get_note_type(col);
 	current_auto_type = get_auto_type(col);
@@ -1701,7 +1695,6 @@ TrackerGrid::set_automation_value (double val, int rowi, int mti, int mri, int c
 	return pattern.set_automation_value (val, rowi, mti, mri, param, delay);
 }
 
-// VT: propagate across pattern classes
 void
 TrackerGrid::delete_automation_value(int rowi, int mti, int mri, int cgi)
 {
@@ -2819,7 +2812,6 @@ TrackerGrid::horizontal_move_current_cursor (int steps, bool tab)
 bool
 TrackerGrid::move_current_cursor_key_press (GdkEventKey* ev)
 {
-	std::cout << "TrackerGrid::move_current_cursor_key_press (ev=" << ev << ")" << std::endl;
 	bool ret = false;
 
 	switch (ev->keyval) {
