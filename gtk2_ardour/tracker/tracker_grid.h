@@ -214,8 +214,6 @@ private:
 	void setup_automation_delay_column (size_t mti, size_t cgi);
 	void setup_automation_separator_column (); // TODO: could be replaced by setup_separator
 
-	int to_mri (size_t mti);
-	
 	/////////////////////
 	// Action Utils    //
 	/////////////////////
