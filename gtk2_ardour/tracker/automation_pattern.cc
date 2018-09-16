@@ -245,8 +245,14 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	Temporal::Beats row_relative_beats = region_relative_beats_at_row(rowi, delay);
 	uint32_t row_sample = sample_at_row(rowi, delay);
 
+	// Make sure alist is defined
 	boost::shared_ptr<AutomationList> alist = get_alist (param);
 	if (!alist)
+		return;
+
+	// Make sure a value is defined
+	Evoral::ControlEvent* ce = get_control_event (rowi, param);
+	if (!ce)
 		return;
 
 	// Change existing delay
@@ -255,7 +261,7 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 		(row_relative_beats < start_beats ? start_beats : row_relative_beats).to_double()
 		: row_sample;
 	AutomationPattern::AutomationListIt auto_lst_it = get_alist_iterator (rowi, param);
-	alist->modify (auto_lst_it, awhen, (*auto_lst_it)->value);
+	alist->modify (auto_lst_it, awhen, ce->value);
 	XMLNode& after = alist->get_state ();
 	tracker_editor.grid.register_automation_undo (alist, _("change automation event delay"), before, after);
 }
