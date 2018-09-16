@@ -89,7 +89,6 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, current_note_type (TrackerColumn::NOTE)
 	, current_auto_type (TrackerColumn::AUTOMATION_SEPARATOR)
 	, edit_rowi (-1)
-	// , edit_row (NULL)
 	, edit_col (-1)
 	, edit_mti (-1)
 	, edit_mtp (NULL)
@@ -1760,10 +1759,6 @@ TrackerGrid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* 
 {
 	// Apply change command
 	pattern.apply_command (mti, mri, cmd);
-
-	// reset edit info, since we're done
-	// TODO: is this really necessary since clear_editables does that
-	edit_cgi = -1;
 }
 
 void
