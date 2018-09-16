@@ -84,7 +84,7 @@ public:
 	// Return the control list iterator associated to param at rowi if exists or
 	// end() pointer if it does not.
 	//
-	// Warning: it assumes the iterator exists, otherwise it crashes!
+	// Warning: it assumes the iterator exists, otherwise it crashes or returns garbage!
 	AutomationListIt get_alist_iterator (size_t rowi, const Evoral::Parameter& param);
 
 	// Return the control event associated to param at rowi if exists or null
