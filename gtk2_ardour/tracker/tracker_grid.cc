@@ -1036,7 +1036,7 @@ TrackerGrid::redisplay_model ()
 
 			for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 				// Undefined
-				// NEXT TODO: take track automation into account
+				// NT: take track automation into account
 				if (!pattern.is_defined (rowi, mti)) {
 					redisplay_undefined (row, mti);
 					continue;
