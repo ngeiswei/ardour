@@ -1967,27 +1967,55 @@ TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int mti, int step
 void
 TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab)
 {
-	// TODO: make sure it doesn't loop forever
+	// Keep track of the init column type to support tab and detect infinit loops
+	TreeViewColumn* init_col = get_column (colnum);
+	size_t pre_mti = get_mti(init_col);
 
-	// TODO support tab == true, to move from one ardour track to the next
 	const int n_col = get_columns().size();
 	TreeViewColumn* col;
 
+	// Move to left
 	while (steps < 0) {
 		--colnum;
 		if (colnum < 1)
 			colnum = n_col - 1;
 		col = get_column (colnum);
-		if (col->get_visible () and is_editable (col) and is_defined (path, col))
-			++steps;
+		if (col->get_visible () and is_editable (col) and is_defined (path, col)) {
+			if (tab) {
+				size_t col_mti = get_mti(col);
+				if (pre_mti != col_mti) {
+					pre_mti = col_mti;
+					++steps;
+				}
+			} else {
+				++steps;
+			}
+		}
+		// Exit the infinite loop
+		if (init_col == col)
+			break;
 	}
+
+	// Move to right
 	while (0 < steps) {
 		++colnum;
 		if (n_col <= colnum)
 			colnum = 1;         // colnum 0 is time
 		col = get_column (colnum);
-		if (col->get_visible () and is_editable (col) and is_defined (path, col))
-			--steps;
+		if (col->get_visible () and is_editable (col) and is_defined (path, col)) {
+			if (tab) {
+				size_t col_mti = get_mti(col);
+				if (pre_mti != col_mti) {
+					pre_mti = col_mti;
+					--steps;
+				}
+			} else {
+				--steps;
+			}
+		}
+		// Exit the infinite loop
+		if (init_col == col)
+			break;
 	}
 }
 
