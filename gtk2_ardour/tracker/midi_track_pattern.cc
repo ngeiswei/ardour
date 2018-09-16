@@ -28,7 +28,7 @@ Temporal::samplepos_t get_regions_position(const std::vector<boost::shared_ptr<A
 
 Temporal::samplecnt_t get_regions_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
-	return regions.back()->position() - regions.front()->last_sample() + 1;
+	return regions.front()->last_sample() + 1 - regions.back()->position();
 }
 
 Temporal::samplepos_t get_regions_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
