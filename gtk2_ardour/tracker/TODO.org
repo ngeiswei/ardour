@@ -1,3 +1,4 @@
+- Support arbitrary number of tracks
 - Underlie the digit to be edited
 - Support shift-tab to move from right to left
 - Grey out Automation button when no longer automation column
@@ -5,12 +6,12 @@
 - Fix focus. When mouse click on grid, it should be enough to have the
   focus on it.
 - Support layered regions
-- Support arbitrary number of tracks
+- Add color hint (maybe as region name column background)
 - Fix including audio tracks in the selection to not crash
 - Fix clicking on the time column to not crash
 - Wrap the whole code in a Tracker namespace
-- Make step editing more visible (like switch editing cursor color to red
-  and add a red frame)
+- Make step editing more visible (like switch editing cursor color to red and
+  add a red frame)
 - Add shortcut for parameters, steps, etc
 - Add copy/move, etc, notes + popup menu
 - Add hide popup menu when clicking on automation column
@@ -20,4 +21,4 @@
 - Support audio tracks and trim automation
 - Perhaps use one delay button for note and another delay button for automation
 - Create wscript under tracker folder
-- Sort out the int types, maybe use int everywhere!
+- Sort out the int types, maybe use int everywhere! Or simply int vs unsigned
