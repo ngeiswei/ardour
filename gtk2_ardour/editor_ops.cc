@@ -2945,7 +2945,7 @@ Editor::show_tracker_editor ()
 {
 	if (_session) {
 		RegionSelection rs = get_regions_from_selection_and_entered ();
-		TrackerEditor* tracker_editor = new TrackerEditor (_session, rs);
+		Tracker::TrackerEditor* tracker_editor = new Tracker::TrackerEditor (_session, rs);
 		tracker_editor->present ();
 	}
 }

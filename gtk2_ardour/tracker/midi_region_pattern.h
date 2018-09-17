@@ -25,6 +25,8 @@
 #include "note_pattern.h"
 #include "region_automation_pattern.h"
 
+namespace Tracker {
+
 /**
  * Represent pattern of midi notes and midi automations of a given region.
  */
@@ -61,5 +63,7 @@ public:
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
 	boost::shared_ptr<ARDOUR::MidiRegion> midi_region;
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */

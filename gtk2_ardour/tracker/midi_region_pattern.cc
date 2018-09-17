@@ -21,6 +21,8 @@
 
 #include "midi_region_pattern.h"
 
+using namespace Tracker;
+
 MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
                                       boost::shared_ptr<ARDOUR::MidiTrack> mt,
                                       boost::shared_ptr<ARDOUR::MidiRegion> region)

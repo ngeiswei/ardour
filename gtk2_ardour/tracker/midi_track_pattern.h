@@ -22,6 +22,8 @@
 #include "midi_region_pattern.h"
 #include "track_automation_pattern.h"
 
+namespace Tracker {
+
 /**
  * Represent patterns, midi notes, midi automations and track automations of a
  * given track, with possibly multiple regions, possibly overlapping, as long
@@ -115,5 +117,7 @@ public:
 	std::vector<MidiRegionPattern> mrps;
 	std::vector<uint32_t> row_offset;
 };
+
+} // ~namespace Tracker
 
 #endif /* __ardour_tracker_midi_track_pattern_h_ */

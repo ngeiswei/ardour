@@ -30,6 +30,8 @@
 #include "midi_track_pattern.h"
 #include "tracker_types.h"
 
+namespace Tracker {
+
 class TrackerEditor;
 class TrackerGrid;
 
@@ -168,5 +170,7 @@ public:
 	Gtk::CheckMenuItem* mute_automation_item;
 	Gtk::CheckMenuItem* pan_automation_item;
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_midi_track_toolbar_h_ */

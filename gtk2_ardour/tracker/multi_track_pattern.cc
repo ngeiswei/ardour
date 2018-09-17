@@ -22,6 +22,8 @@
 
 #include "midi_region_view.h"
 
+using namespace Tracker;
+
 MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
 	: tracker_editor (te)
 	, earliest_mtp (NULL)
