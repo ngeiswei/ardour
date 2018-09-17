@@ -30,6 +30,7 @@
 
 using namespace Editing;
 using namespace PBD;
+using namespace Tracker;
 
 #define COMBO_TRIANGLE_WIDTH 25
 

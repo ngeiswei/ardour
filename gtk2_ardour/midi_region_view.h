@@ -53,6 +53,10 @@ namespace MIDI {
 	};
 };
 
+namespace Tracker {
+	class TrackerEditor;
+}
+
 class SysEx;
 class Note;
 class Hit;
@@ -63,7 +67,6 @@ class AutomationTimeAxisView;
 class AutomationRegionView;
 class MidiCutBuffer;
 class MidiListEditor;
-class TrackerEditor;
 class EditNoteDialog;
 class PatchChange;
 class ItemCounts;
@@ -524,7 +527,7 @@ public:
 	void update_ghost_note (double, double, uint32_t state);
 
 	MidiListEditor* _list_editor;
-	TrackerEditor* _tracker_editor;
+	Tracker::TrackerEditor* _tracker_editor;
 	bool _no_sound_notes;
 
 	void snap_changed ();

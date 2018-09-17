@@ -28,10 +28,7 @@
 #include "base_pattern.h"
 #include "tracker_types.h"
 
-namespace ARDOUR {
-	class Session;
-	class AutomationControl;
-};
+namespace Tracker {
 
 // AutomationControl as opposed to AutomationList is used to easily retrieve
 // the associated Parameter of each AutomationList.
@@ -115,5 +112,7 @@ public:
 protected:
 	AutomationControlSet _automation_controls;
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_automation_pattern_h_ */

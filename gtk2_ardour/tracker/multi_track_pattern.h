@@ -25,6 +25,8 @@
 #include "midi_track_pattern.h"
 #include "note_pattern.h"
 
+namespace Tracker {
+
 class TrackerEditor;
 
 /**
@@ -149,5 +151,7 @@ public:
 	std::vector<uint32_t>        nrows;
 	uint32_t                     global_nrows;
 };
+
+} // ~namespace Tracker
 
 #endif /* __ardour_tracker_multi_track_pattern_h_ */

@@ -23,6 +23,8 @@
 #include <gtkmm/treeviewcolumn.h>
 #include <gtkmm/treemodelcolumn.h>
 
+namespace Tracker {
+
 class TrackerColumn : public Gtk::TreeViewColumn
 {
 public:
@@ -90,5 +92,7 @@ class AutomationDelayColumn : public TrackerColumn
 public:
 	AutomationDelayColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
+
+} // ~namespace Tracker
 
 #endif /* __ardour_tracker_tracker_column_h_ */

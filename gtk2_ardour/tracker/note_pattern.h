@@ -32,6 +32,8 @@ namespace ARDOUR {
 	class Session;
 };
 
+namespace Tracker {
+
 /**
  * Data structure holding the pattern of midi notes for the pattern editor.
  * Plus some goodies method to generate a pattern given a midi region. The
@@ -167,5 +169,7 @@ typename NoteContainer::iterator NotePattern::find_eq_id(NoteContainer& notes, N
 			return it;
 	return notes.end();
 }
+
+} // ~namespace Tracker
 
 #endif /* __ardour_tracker_note_pattern_h_ */

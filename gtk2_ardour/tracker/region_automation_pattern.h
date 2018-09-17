@@ -25,6 +25,8 @@
 
 #include "automation_pattern.h"
 
+namespace Tracker {
+
 /**
  * Data structure holding the automation list pattern held by a region.
  */
@@ -48,5 +50,7 @@ public:
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
 };
+
+} // ~namespace Tracker
 
 #endif /* __ardour_tracker_region_automation_pattern_h_ */
