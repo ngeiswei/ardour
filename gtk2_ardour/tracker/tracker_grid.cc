@@ -1607,10 +1607,14 @@ void TrackerGrid::release_note(int mti, uint8_t pitch)
 void
 TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 {
+	// Make sure the cell is defined
+	if (!is_defined(path, col))
+		return;
+
 	// Set current row
 	current_path = path;
 	current_rowi = get_row_index (path);
-
+	
 	// Set current col
 	current_col = get_col_index (col);
 
@@ -2029,7 +2033,8 @@ TrackerGrid::is_editable (TreeViewColumn* col) const
 bool
 TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col) const
 {
-	return is_defined (path, get_mti(col));
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
+	return tc && is_defined (path, get_mti(col));
 }
 
 bool
