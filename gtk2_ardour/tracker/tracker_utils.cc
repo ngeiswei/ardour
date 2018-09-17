@@ -99,7 +99,7 @@ size_t
 TrackerUtils::locate (const std::string& str, int position)
 {
 	std::pair<int, int> pr = position_range (str);
-	if (pr.first <= position and position <= pr.second) {
+	if (pr.first <= position && position <= pr.second) {
 		if (0 <= position) {
 			return pr.second - position;
 		} else {
