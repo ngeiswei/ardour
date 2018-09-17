@@ -1,7 +1,7 @@
 - Use Ardour's logger instead of stdout
 - Support audio tracks and trim automation
 - Support arbitrary number of tracks (put all properties in tracker_column)
-- Underlie the digit to be edited
+- Underline the digit to be edited
 - Support shift-tab to move from right to left
 - Fix focus. When mouse click on grid, it should be enough to have the
   focus on it.

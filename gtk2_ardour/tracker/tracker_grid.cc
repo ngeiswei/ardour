@@ -316,10 +316,10 @@ TrackerGrid::is_mute_visible(size_t mti) const
 bool
 TrackerGrid::is_pan_visible(size_t mti) const
 {
-	bool visible = not pan_columns[mti].empty();
+	bool visible = !pan_columns[mti].empty();
 	for (vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
 		visible = visible_automation_columns.find(*it) != visible_automation_columns.end();
-		if (not visible)
+		if (!visible)
 			break;
 	}
 	return visible;
@@ -415,7 +415,7 @@ TrackerGrid::redisplay_visible_note()
 {
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.mtps[mti]->get_ntracks() and tracker_editor.midi_track_toolbars[mti]->visible_note;
+			bool visible = i < pattern.mtps[mti]->get_ntracks() && tracker_editor.midi_track_toolbars[mti]->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_note_button ();
@@ -446,8 +446,8 @@ TrackerGrid::redisplay_visible_channel()
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = i < pattern.mtps[mti]->get_ntracks()
-				and tracker_editor.midi_track_toolbars[mti]->visible_note
-				and tracker_editor.midi_track_toolbars[mti]->visible_channel;
+				&& tracker_editor.midi_track_toolbars[mti]->visible_note
+				&& tracker_editor.midi_track_toolbars[mti]->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_channel_button ();
@@ -469,8 +469,8 @@ TrackerGrid::redisplay_visible_velocity()
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = i < pattern.mtps[mti]->get_ntracks()
-				and tracker_editor.midi_track_toolbars[mti]->visible_note
-				and tracker_editor.midi_track_toolbars[mti]->visible_velocity;
+				&& tracker_editor.midi_track_toolbars[mti]->visible_note
+				&& tracker_editor.midi_track_toolbars[mti]->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_velocity_button ();
@@ -492,8 +492,8 @@ TrackerGrid::redisplay_visible_delay()
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = i < pattern.mtps[mti]->get_ntracks()
-				and tracker_editor.midi_track_toolbars[mti]->visible_note
-				and tracker_editor.midi_track_toolbars[mti]->visible_delay;
+				&& tracker_editor.midi_track_toolbars[mti]->visible_note
+				&& tracker_editor.midi_track_toolbars[mti]->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
 		}
 		tracker_editor.midi_track_toolbars[mti]->update_visible_delay_button ();
@@ -518,14 +518,14 @@ TrackerGrid::redisplay_visible_note_separator()
 		bool is_last_mti = mti == (pattern.mtps.size() - 1);
 		bool hva = has_visible_automation(mti);
 		size_t ntracks = pattern.mtps[mti]->get_ntracks();
-		bool visible_note = tracker_editor.midi_track_toolbars[mti]->visible_note and 0 < ntracks;
+		bool visible_note = tracker_editor.midi_track_toolbars[mti]->visible_note && 0 < ntracks;
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool is_first_gci = (i == 0);
 			bool visible;
-			if (is_last_mti and !hva and !visible_note) {
+			if (is_last_mti && !hva && !visible_note) {
 				visible = is_first_gci;
 			} else {
-				visible = visible_note and (i < ntracks - ((hva or is_last_mti) ? 0 : 1));
+				visible = visible_note && (i < ntracks - ((hva || is_last_mti) ? 0 : 1));
 			}
 			get_column(note_separator_colnum(mti, i))->set_visible (visible);
 		}
@@ -575,7 +575,7 @@ TrackerGrid::redisplay_visible_automation_delay()
 	for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_delay_colnum(mti, i);
-			bool visible = tracker_editor.midi_track_toolbars[mti]->visible_delay and TrackerUtils::is_in(col - 1, visible_automation_columns);
+			bool visible = tracker_editor.midi_track_toolbars[mti]->visible_delay && TrackerUtils::is_in(col - 1, visible_automation_columns);
 			get_column(col)->set_visible (visible);
 		}
 	}
@@ -602,7 +602,7 @@ TrackerGrid::redisplay_visible_automation_separator()
 				greatest_visible_col = std::max(greatest_visible_col, col);
 			get_column(col)->set_visible (visible);
 		}
-		if (0 < greatest_visible_col and mti != (pattern.mtps.size() - 1))
+		if (0 < greatest_visible_col && mti != (pattern.mtps.size() - 1))
 			get_column(greatest_visible_col)->set_visible (false);
 	}
 
@@ -1231,7 +1231,7 @@ TrackerGrid::note_edited (const string& path, const string& text)
 {
 	string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
-	bool is_off = !is_del and (norm_text[0] == note_off_str[0]);
+	bool is_off = !is_del && (norm_text[0] == note_off_str[0]);
 	uint8_t pitch = parse_pitch (norm_text);
 	bool is_on = pitch <= 127;
 
@@ -1517,7 +1517,7 @@ TrackerGrid::note_delay_edited (const string& path, const string& text)
 
 	// Parse the edited delay and set note delay
 	int delay;
-	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) == 1) {
+	if (!text.empty() && sscanf (text.c_str(), "%d", &delay) == 1) {
 		set_note_delay (delay, edit_rowi, edit_mti, edit_mri, edit_cgi);
 	}
 
@@ -1658,7 +1658,7 @@ TrackerGrid::automation_edited (const string& path, const string& text)
 {
 	bool is_del = text.empty();
 	double nval;
-	if (!is_del and sscanf (text.c_str(), "%lg", &nval) != 1) {
+	if (!is_del && sscanf (text.c_str(), "%lg", &nval) != 1) {
 		clear_editables ();
 		return;
 	}
@@ -1710,7 +1710,7 @@ TrackerGrid::automation_delay_edited (const string& path, const string& text)
 {
 	int delay = 0;
 	// Parse the edited delay
-	if (!text.empty() and sscanf (text.c_str(), "%d", &delay) != 1) {
+	if (!text.empty() && sscanf (text.c_str(), "%d", &delay) != 1) {
 		clear_editables ();
 		return;
 	}
@@ -1984,7 +1984,7 @@ TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Pat
 		if (colnum < 1)
 			colnum = n_col - 1;
 		col = get_column (colnum);
-		if (col->get_visible () and is_editable (col) and is_defined (path, col)) {
+		if (col->get_visible () && is_editable (col) && is_defined (path, col)) {
 			if (tab) {
 				size_t col_mti = get_mti(col);
 				if (pre_mti != col_mti) {
@@ -2006,7 +2006,7 @@ TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Pat
 		if (n_col <= colnum)
 			colnum = 1;         // colnum 0 is time
 		col = get_column (colnum);
-		if (col->get_visible () and is_editable (col) and is_defined (path, col)) {
+		if (col->get_visible () && is_editable (col) && is_defined (path, col)) {
 			if (tab) {
 				size_t col_mti = get_mti(col);
 				if (pre_mti != col_mti) {
