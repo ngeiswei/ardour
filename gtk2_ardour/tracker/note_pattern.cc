@@ -31,9 +31,8 @@
 
 #include "note_pattern.h"
 
-using namespace std;
 using namespace ARDOUR;
-using Timecode::BBT_Time;
+using namespace Tracker;
 
 /////////////////
 // NotePattern //
@@ -68,10 +67,10 @@ void NotePattern::update_track_to_notes()
 
 	// Remove missing notes
 	for (size_t cgi = 0; cgi < track_to_notes.size(); ++cgi) {
-		ARDOUR::MidiModel::Notes& track_notes = track_to_notes[cgi];
-		ARDOUR::MidiModel::Notes::iterator track_notes_it = track_notes.begin();
+		MidiModel::Notes& track_notes = track_to_notes[cgi];
+		MidiModel::Notes::iterator track_notes_it = track_notes.begin();
 		for (; track_notes_it != track_notes.end();) {
-			ARDOUR::MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
+			MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
 			if (notes_it == strict_notes.end())
 				track_notes.erase(track_notes_it++);
 			else
@@ -235,12 +234,12 @@ int NotePattern::find_eq_id(NoteTypePtr note) const
 	return -1;
 }
 
-ARDOUR::MidiModel::Notes::const_iterator NotePattern::find_eq_id(int cgi, NoteTypePtr note) const
+MidiModel::Notes::const_iterator NotePattern::find_eq_id(int cgi, NoteTypePtr note) const
 {
 	return find_eq_id(track_to_notes[cgi], note);
 }
 
-ARDOUR::MidiModel::Notes::iterator NotePattern::find_eq_id(int cgi, NoteTypePtr note)
+MidiModel::Notes::iterator NotePattern::find_eq_id(int cgi, NoteTypePtr note)
 {
 	return find_eq_id(track_to_notes[cgi], note);
 }
@@ -250,15 +249,15 @@ void NotePattern::erase_eq_id(int cgi, NoteTypePtr note)
 	erase_eq_id(track_to_notes[cgi], note);
 }
 
-void NotePattern::erase_eq_id(ARDOUR::MidiModel::Notes& notes, NoteTypePtr note)
+void NotePattern::erase_eq_id(MidiModel::Notes& notes, NoteTypePtr note)
 {
 	notes.erase(find_eq_id(notes, note));
 }
 
 bool NotePattern::is_free(int cgi, NoteTypePtr note) const
 {
-	const ARDOUR::MidiModel::Notes& notes = track_to_notes[cgi];
-	ARDOUR::MidiModel::Notes::iterator it = notes.begin();
+	const MidiModel::Notes& notes = track_to_notes[cgi];
+	MidiModel::Notes::iterator it = notes.begin();
 	for (; it != notes.end(); ++it)
 		if (overlap(*it, note))
 			return false;
