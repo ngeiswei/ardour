@@ -64,6 +64,8 @@ namespace ARDOUR {
 
 class AutomationTimeAxisView;
 
+namespace Tracker {
+
 class TrackerEditor : public ArdourWindow
 {
 public:
@@ -106,8 +108,9 @@ private:
 	void setup_scroller ();
 };
 
-
 // Determine the window name of a selection of regions.
 std::string window_name(RegionSelection& rs);
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_tracker_editor_h_ */

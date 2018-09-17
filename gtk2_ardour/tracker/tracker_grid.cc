@@ -70,10 +70,10 @@ using namespace ARDOUR;
 using namespace ARDOUR_UI_UTILS;
 using namespace PBD;
 using namespace Editing;
-using Timecode::BBT_Time;
+using namespace Tracker;
 
-const std::string TrackerGrid::note_off_str = "===";
-const std::string TrackerGrid::undefined_str = "***";
+const string TrackerGrid::note_off_str = "===";
+const string TrackerGrid::undefined_str = "***";
 
 TrackerGrid::TrackerGrid (TrackerEditor& te)
 	: tracker_editor (te)
@@ -144,10 +144,10 @@ TrackerGrid::select_available_automation_column (size_t mti)
 {
 	// Find the next available column
 	if (available_automation_columns[mti].empty()) {
-		std::cout << "Warning: no more available automation column" << std::endl;
+		cout << "Warning: no more available automation column" << endl;
 		return 0;
 	}
-	std::set<size_t>::iterator it = available_automation_columns[mti].begin();
+	set<size_t>::iterator it = available_automation_columns[mti].begin();
 	size_t column = *it;
 	available_automation_columns[mti].erase(it);
 
@@ -317,7 +317,7 @@ bool
 TrackerGrid::is_pan_visible(size_t mti) const
 {
 	bool visible = not pan_columns[mti].empty();
-	for (std::vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
+	for (vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
 		visible = visible_automation_columns.find(*it) != visible_automation_columns.end();
 		if (not visible)
 			break;
@@ -399,7 +399,7 @@ TrackerGrid::update_pan_columns_visibility (size_t mti)
 	if (pan_columns[mti].empty())
 		return;
 
-	for (std::vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
+	for (vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
 		if (showit)
 			visible_automation_columns.insert (*it);
 		else
@@ -636,8 +636,8 @@ TrackerGrid::setup ()
 		mute_columns.push_back(0);
 		col2params.push_back(ColParamBimap());
 		col2autotracks.push_back(ColAutoTrackBimap());
-		pan_columns.push_back(std::vector<size_t>());
-		available_automation_columns.push_back(std::set<size_t>());
+		pan_columns.push_back(vector<size_t>());
+		available_automation_columns.push_back(set<size_t>());
 
 		// Instantiate note tracks
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; cgi++) {
@@ -713,7 +713,7 @@ TrackerGrid::redisplay_global_columns ()
 		// If the row is on a bar, beat or otherwise, the color differs
 		bool is_row_beat = row_beats == row_beats.round_up_to_beat();
 		bool is_row_bar = row_bbt.beats == 1;
-		std::string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
+		string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
 		row[columns._background_color] = row_background_color;
 
 		// Set font family to Monospace
@@ -757,10 +757,10 @@ TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t m
 {
 	// Render midi region name (for now midi track name). Display names
 	// vertically.
-	const std::string& name = pattern.midi_region(mti, mri)->name();
+	const string& name = pattern.midi_region(mti, mri)->name();
 	uint32_t name_offset_idx = pattern.to_rrri(rowi, mti, mri) % (name.size() + 1);
-	const static std::string name_sep(" ");
-	std::string cell_str = " ";
+	const static string name_sep(" ");
+	string cell_str = " ";
 	cell_str += name_offset_idx == name.size() ? name_sep : string{name[name_offset_idx]};
 	cell_str += " ";
 	row[columns.midi_region_name[mti]] = cell_str;
@@ -803,9 +803,9 @@ TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t m
 
 		if (cgi >= MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK) {
 			// TODO: use Ardour log
-			std::cout << "Warning: The automation track number " << cgi
+			cout << "Warning: The automation track number " << cgi
 			          << " exceeds the maximum number of automation tracks "
-			          << MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK << std::endl;
+			          << MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK << endl;
 			continue;
 		}
 
@@ -826,7 +826,7 @@ TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t m
 void
 TrackerGrid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::string row_background_color = row[columns._background_color];
+	string row_background_color = row[columns._background_color];
 	row[columns._note_background_color[mti][cgi]] = row_background_color;
 	row[columns._channel_background_color[mti][cgi]] = row_background_color;
 	row[columns._velocity_background_color[mti][cgi]] = row_background_color;
@@ -851,7 +851,7 @@ TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, siz
 		break;
 	default:
 		// TODO use Ardour log
-		std::cout << "Error";
+		cout << "Error";
 	}
 }
 
@@ -874,7 +874,7 @@ TrackerGrid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, s
 void
 TrackerGrid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::string row_background_color = row[columns._background_color];
+	string row_background_color = row[columns._background_color];
 	row[columns._automation_background_color[mti][cgi]] = row_background_color;
 	row[columns._automation_delay_background_color[mti][cgi]] = row_background_color;
 }
@@ -934,7 +934,7 @@ TrackerGrid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, siz
 		break;
 	default:
 		// TODO use Ardour log
-		std::cout << "Error";
+		cout << "Error";
 	}
 }
 
@@ -1031,7 +1031,7 @@ TrackerGrid::redisplay_model ()
 			TreeModel::Row row = *row_it++;
 
 			// Get corresponding background color
-			std::string row_background_color = row[columns._background_color];
+			string row_background_color = row[columns._background_color];
 
 			for (size_t mti = 0; mti < pattern.mtps.size(); mti++) {
 				// Undefined
@@ -1077,7 +1077,7 @@ TrackerGrid::redisplay_model ()
 /////////////////////
 
 uint32_t
-TrackerGrid::get_row_index(const std::string& path) const
+TrackerGrid::get_row_index(const string& path) const
 {
 	return get_row_index (TreeModel::Path (path));
 }
@@ -1091,7 +1091,7 @@ TrackerGrid::get_row_index(const TreeModel::Path& path) const
 int
 TrackerGrid::get_col_index(TreeViewColumn* col)
 {
-	std::vector<TreeViewColumn*> cols = (std::vector<TreeViewColumn*>)get_columns();
+	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns();
 
 	for (int i = 0; i < (int)cols.size(); i++)
 		if (cols[i] == col)
@@ -1107,7 +1107,7 @@ TrackerGrid::get_on_note (int rowi, int mti, int cgi)
 }
 
 NoteTypePtr
-TrackerGrid::get_on_note (const std::string& path, int mti, int cgi)
+TrackerGrid::get_on_note (const string& path, int mti, int cgi)
 {
 	return get_on_note (TreeModel::Path (path), mti, cgi);
 }
@@ -1128,7 +1128,7 @@ TrackerGrid::get_off_note(int rowi, int mti, int cgi)
 }
 
 NoteTypePtr
-TrackerGrid::get_off_note(const std::string& path, int mti, int cgi)
+TrackerGrid::get_off_note(const string& path, int mti, int cgi)
 {
 	return get_off_note (TreeModel::Path (path), mti, cgi);
 }
@@ -1221,15 +1221,15 @@ TrackerGrid::editing_canceled ()
 }
 
 uint8_t
-TrackerGrid::parse_pitch (const std::string& text) const
+TrackerGrid::parse_pitch (const string& text) const
 {
 	return TrackerUtils::parse_pitch(text, tracker_editor.main_toolbar.octave_spinner.get_value_as_int());
 }
 
 void
-TrackerGrid::note_edited (const std::string& path, const std::string& text)
+TrackerGrid::note_edited (const string& path, const string& text)
 {
-	std::string norm_text = boost::erase_all_copy(text, " ");
+	string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
 	bool is_off = !is_del and (norm_text[0] == note_off_str[0]);
 	uint8_t pitch = parse_pitch (norm_text);
@@ -1421,7 +1421,7 @@ TrackerGrid::delete_note (int rowi, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::note_channel_edited (const std::string& path, const std::string& text)
+TrackerGrid::note_channel_edited (const string& path, const string& text)
 {
 	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty() || !note) {
@@ -1463,7 +1463,7 @@ TrackerGrid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
 }
 
 void
-TrackerGrid::note_velocity_edited (const std::string& path, const std::string& text)
+TrackerGrid::note_velocity_edited (const string& path, const string& text)
 {
 	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty() || !note) {
@@ -1507,7 +1507,7 @@ TrackerGrid::set_note_velocity (int mti, int mri, NoteTypePtr note, int vel)
 }
 
 void
-TrackerGrid::note_delay_edited (const std::string& path, const std::string& text)
+TrackerGrid::note_delay_edited (const string& path, const string& text)
 {
 	// Can't edit ***
 	if (!pattern.is_note_displayable(edit_rowi, edit_mti, edit_mri, edit_cgi)) {
@@ -1650,7 +1650,7 @@ TrackerGrid::get_alist (int mti, int mri, const Evoral::Parameter& param)
 }
 
 void
-TrackerGrid::automation_edited (const std::string& path, const std::string& text)
+TrackerGrid::automation_edited (const string& path, const string& text)
 {
 	bool is_del = text.empty();
 	double nval;
@@ -1675,7 +1675,7 @@ TrackerGrid::automation_edited (const std::string& path, const std::string& text
 	clear_editables ();
 }
 
-std::pair<double, bool>
+pair<double, bool>
 TrackerGrid::get_automation_value (int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_parameter (mti, cgi);
@@ -1702,7 +1702,7 @@ TrackerGrid::delete_automation_value(int rowi, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::automation_delay_edited (const std::string& path, const std::string& text)
+TrackerGrid::automation_delay_edited (const string& path, const string& text)
 {
 	int delay = 0;
 	// Parse the edited delay
@@ -1730,7 +1730,7 @@ TrackerGrid::automation_delay_edited (const std::string& path, const std::string
 	clear_editables ();
 }
 
-std::pair<int, bool>
+pair<int, bool>
 TrackerGrid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
@@ -1746,10 +1746,10 @@ TrackerGrid::set_automation_delay (int delay, int rowi, int mti, int mri, int cg
 }
 
 void
-TrackerGrid::register_automation_undo (boost::shared_ptr<AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after)
+TrackerGrid::register_automation_undo (boost::shared_ptr<AutomationList> alist, const string& opname, XMLNode& before, XMLNode& after)
 {
 	tracker_editor.public_editor.begin_reversible_command (opname);
-	tracker_editor.session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
+	tracker_editor.session->add_command (new MementoCommand<AutomationList> (*alist.get (), &before, &after));
 	tracker_editor.public_editor.commit_reversible_command ();
 	tracker_editor.session->set_dirty ();
 }
@@ -1776,7 +1776,7 @@ TrackerGrid::setup_time_column()
 void
 TrackerGrid::setup_midi_track_column(size_t mti)
 {
-	std::string label("");
+	string label("");
 	TreeViewColumn* viewcolumn_midi_track  = new TreeViewColumn (label, columns.midi_region_name[mti]);
 	CellRendererText* cellrenderer_midi_track = dynamic_cast<CellRendererText*> (viewcolumn_midi_track->get_first_cell_renderer ());
 
@@ -2715,7 +2715,7 @@ TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_automation_value (int digit)
 {
-	std::pair<double, bool> val_def = get_automation_value(current_rowi, current_mti, current_mri, current_cgi);
+	pair<double, bool> val_def = get_automation_value(current_rowi, current_mti, current_mri, current_cgi);
 	double oval = val_def.first;
 
 	// Set new value
@@ -2796,7 +2796,7 @@ TrackerGrid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::step_editing_set_automation_delay (int digit)
 {
-	std::pair<int, bool> val_def = get_automation_delay (current_rowi, current_mti, current_mri, current_cgi);
+	pair<int, bool> val_def = get_automation_delay (current_rowi, current_mti, current_mri, current_cgi);
 	int old_delay = val_def.first;
 
 	// Set new value
@@ -3077,7 +3077,7 @@ TrackerGrid::key_press (GdkEventKey* ev)
 				return step_editing_note_delay_key_press (ev);
 			default:
 				// TODO use Ardour log
-				std::cout << "Error";
+				cout << "Error";
 			}
 		case TrackerColumn::AUTOMATION:
 			return step_editing_automation_key_press (ev);
@@ -3085,7 +3085,7 @@ TrackerGrid::key_press (GdkEventKey* ev)
 			return step_editing_automation_delay_key_press (ev);
 		default:
 			// TODO use Ardour log
-			std::cout << "Error";
+			cout << "Error";
 		}
 	}
 	else return non_editing_key_press (ev);

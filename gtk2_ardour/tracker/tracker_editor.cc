@@ -70,13 +70,14 @@ using namespace ARDOUR;
 using namespace ARDOUR_UI_UTILS;
 using namespace PBD;
 using namespace Editing;
-using Timecode::BBT_Time;
+
+namespace Tracker {
 
 ///////////////////
 // TrackerEditor //
 ///////////////////
 
-TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
+TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	: ArdourWindow (window_name(rs))
 	, session(s)
 	, public_editor(dynamic_cast<MidiRegionView*>(rs.front())->midi_view ()->editor ())
@@ -95,12 +96,12 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	     it != region_selection.end(); ++it) {
 		MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
 		if (mrv) {                // Make sure it is midi region
-			boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
-			boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_region->midi_source(0)->model();
+			boost::shared_ptr<MidiRegion> midi_region = mrv->midi_region();
+			boost::shared_ptr<MidiModel> midi_model = midi_region->midi_source(0)->model();
 			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
 
-			std::cout << "midi_region[" << i << "] = " << midi_region << std::endl;
-			std::cout << "midi_model[" << i << "] = " << midi_model << std::endl;
+			cout << "midi_region[" << i << "] = " << midi_region << endl;
+			cout << "midi_model[" << i << "] = " << midi_model << endl;
 			i++;
 
 			// Make changing midi content re-render the grid
@@ -126,7 +127,7 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
-	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
+	for (vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
 		vbox.pack_start (**it, false, false);
 	vbox.pack_start (scroller, true, true);
 
@@ -136,12 +137,12 @@ TrackerEditor::TrackerEditor (ARDOUR::Session* s, RegionSelection& rs)
 
 TrackerEditor::~TrackerEditor ()
 {
-	for (std::vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
+	for (vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
 		delete *it;
 }
 
-boost::shared_ptr<ARDOUR::MidiModel>
-TrackerEditor::to_model (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
+boost::shared_ptr<MidiModel>
+TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
 {
 	return midi_region->midi_source(0)->model();
 }
@@ -154,7 +155,7 @@ TrackerEditor::get_device_names ()
 }
 
 void
-TrackerEditor::connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actrl)
+TrackerEditor::connect_automation (boost::shared_ptr<AutomationControl> actrl)
 {
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
 	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
@@ -186,7 +187,7 @@ void
 TrackerEditor::setup_midi_track_toolbars ()
 {
 	for (unsigned i = 0; i < midi_track_toolbars.size(); i++) {
-		std::cout << "TrackerEditor::setup_midi_track_toolbars () midi_track_toolbars[" << i << "] = " << midi_track_toolbars[i] << std::endl;
+		cout << "TrackerEditor::setup_midi_track_toolbars () midi_track_toolbars[" << i << "] = " << midi_track_toolbars[i] << endl;
 		midi_track_toolbars[i]->setup_processor_menu_and_curves ();
 		midi_track_toolbars[i]->setup ();
 	}
@@ -200,17 +201,17 @@ TrackerEditor::setup_scroller ()
 	scroller.show ();
 }
 
-std::string
+string
 window_name(RegionSelection& rs)
 {
-	std::string wn("Tracker Editor:");
+	string wn("Tracker Editor:");
 	static const unsigned wn_max_size = 64;
 	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
 		wn += " ";
 		if (wn.size() <= wn_max_size) {
 			MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
 			if (mrv) {
-				boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
+				boost::shared_ptr<MidiRegion> midi_region = mrv->midi_region();
 				wn += midi_region->name();
 			}
 		} else {
@@ -220,3 +221,5 @@ window_name(RegionSelection& rs)
 	}
 	return wn;
 }
+
+} // ~namespace tracker
