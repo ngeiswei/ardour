@@ -24,9 +24,7 @@
 #include "automation_pattern.h"
 #include "tracker_editor.h"
 
-using namespace std;
-using namespace ARDOUR;
-using Timecode::BBT_Time;
+using namespace Tracker;
 
 ///////////////////////
 // AutomationPattern //
@@ -55,10 +53,10 @@ void AutomationPattern::update()
 	automations.clear();
 
 	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl) {
-		boost::shared_ptr<AutomationList> al = (*actrl)->alist();
+		boost::shared_ptr<ARDOUR::AutomationList> al = (*actrl)->alist();
 		const Evoral::Parameter& param = (*actrl)->parameter();
 		// Build automation pattern
-		for (AutomationList::iterator it = al->begin(); it != al->end(); ++it) {
+		for (ARDOUR::AutomationList::iterator it = al->begin(); it != al->end(); ++it) {
 			uint32_t row = event2row(param, *it);
 			if (row != INVALID_ROW)
 				automations[param].insert(RowToAutomationIt::value_type(row, it));
@@ -103,7 +101,7 @@ const boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(
 	return NULL;
 }
 
-boost::shared_ptr<AutomationList>
+boost::shared_ptr<ARDOUR::AutomationList>
 AutomationPattern::get_alist (const Evoral::Parameter& param)
 {
 	if (boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param))
@@ -112,7 +110,7 @@ AutomationPattern::get_alist (const Evoral::Parameter& param)
 	return NULL;
 }
 
-const boost::shared_ptr<AutomationList>
+const boost::shared_ptr<ARDOUR::AutomationList>
 AutomationPattern::get_alist (const Evoral::Parameter& param) const
 {
 	if (const boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param))
@@ -177,7 +175,7 @@ AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::
 	boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param);
 	if (!actrl)
 		return;
-	boost::shared_ptr<AutomationList> alist = actrl->alist();
+	boost::shared_ptr<ARDOUR::AutomationList> alist = actrl->alist();
 
 	// Clamp val to its range
 	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
@@ -210,7 +208,7 @@ AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::
 void
 AutomationPattern::delete_automation_value(int rowi, const Evoral::Parameter& param)
 {
-	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	boost::shared_ptr<ARDOUR::AutomationList> alist = get_alist (param);
 	if (!alist)
 		return;
 
@@ -246,7 +244,7 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	uint32_t row_sample = sample_at_row(rowi, delay);
 
 	// Make sure alist is defined
-	boost::shared_ptr<AutomationList> alist = get_alist (param);
+	boost::shared_ptr<ARDOUR::AutomationList> alist = get_alist (param);
 	if (!alist)
 		return;
 

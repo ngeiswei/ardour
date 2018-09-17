@@ -27,14 +27,15 @@
 
 using namespace std;
 using namespace ARDOUR;
+using namespace Tracker;
 
 /////////////////////////////
 // RegionAutomationPattern //
 /////////////////////////////
 
 RegionAutomationPattern::RegionAutomationPattern(TrackerEditor& te,
-                                                 boost::shared_ptr<ARDOUR::MidiTrack> mt,
-                                                 boost::shared_ptr<ARDOUR::MidiRegion> region)
+                                                 boost::shared_ptr<MidiTrack> mt,
+                                                 boost::shared_ptr<MidiRegion> region)
 	: AutomationPattern(te, region)
 	, midi_track(mt)
 	, midi_model(region->midi_source(0)->model())

@@ -29,6 +29,8 @@
 #include "ardour/parameter_descriptor.h"
 #include "ardour/midi_region.h"
 
+namespace Tracker {
+
 typedef Evoral::Note<Temporal::Beats> NoteType;
 typedef boost::shared_ptr<NoteType> NoteTypePtr;
 
@@ -193,5 +195,7 @@ public:
 	// number is missing then the default one is used.
 	static uint8_t parse_pitch (std::string text, int default_octave);
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_tracker_utils_h_ */

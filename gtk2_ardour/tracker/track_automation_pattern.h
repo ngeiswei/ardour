@@ -23,6 +23,8 @@
 
 #include "ardour/midi_track.h"
 
+namespace Tracker {
+
 /**
  * Data structure holding the automation list pattern held by a track.
  */
@@ -50,5 +52,7 @@ public:
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_track_automation_pattern_h_ */

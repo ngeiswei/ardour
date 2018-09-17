@@ -21,6 +21,8 @@
 #include "midi_track_pattern.h"
 #include "tracker_grid.h"
 
+using namespace Tracker;
+
 Temporal::samplepos_t get_regions_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
 	return regions.front()->position();

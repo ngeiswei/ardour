@@ -29,12 +29,14 @@
 #include "ardour_window.h"
 #include "editing.h"
 
-class TrackerEditor;
-
 namespace ARDOUR {
 	class Region;
 	class Session;
 };
+
+namespace Tracker {
+
+class TrackerEditor;
 
 /**
  * Shared methods for storing and handling data for the midi, audio and
@@ -169,5 +171,7 @@ protected:
 	// Make sure a given row is clamped to be in [0, nrows)
 	uint32_t clamp(double row) const;
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_base_pattern_h_ */

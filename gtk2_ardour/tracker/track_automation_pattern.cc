@@ -26,6 +26,7 @@
 
 using namespace std;
 using namespace ARDOUR;
+using namespace Tracker;
 
 ////////////////////////////
 // TrackAutomationPattern //
