@@ -28,6 +28,8 @@
 #include "multi_track_pattern.h"
 #include "tracker_utils.h"
 
+namespace Tracker {
+
 // Maximum number of note and automation tracks. Temporary limit before a
 // dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
 
@@ -381,5 +383,7 @@ private:
 	std::string passive_foreground_color;
 	std::string cursor_color;
 };
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_tracker_grid_h_ */

@@ -20,6 +20,8 @@
 
 #include "ardour/parameter_types.h"
 
+using namespace Tracker;
+
 bool region_position_less::operator()(boost::shared_ptr<ARDOUR::MidiRegion> lhs, boost::shared_ptr<ARDOUR::MidiRegion> rhs)
 {
 	return lhs->position() < rhs->position();

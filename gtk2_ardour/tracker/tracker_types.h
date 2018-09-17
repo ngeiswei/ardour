@@ -19,7 +19,11 @@
 #ifndef __ardour_tracker_tracker_types_h_
 #define __ardour_tracker_tracker_types_h_
 
+namespace Tracker {
+
 // Map Parameter to AutomationControl
 typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
+
+} // ~namespace tracker
 
 #endif /* __ardour_tracker_tracker_types_h_ */

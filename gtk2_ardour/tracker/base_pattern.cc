@@ -27,9 +27,7 @@
 #include "base_pattern.h"
 #include "tracker_editor.h"
 
-using namespace std;
-using namespace ARDOUR;
-using Timecode::BBT_Time;
+using namespace Tracker;
 
 /////////////////
 // BasePattern //
@@ -70,7 +68,7 @@ void BasePattern::set_rows_per_beat(uint16_t rpb)
 	rows_per_beat = rpb;
 	// TODO: deal with rpb == 0 which would mean one row per bar
 	beats_per_row = Temporal::Beats(1.0 / rows_per_beat);
-	_ticks_per_row = BBT_Time::ticks_per_beat/rows_per_beat;
+	_ticks_per_row = Timecode::BBT_Time::ticks_per_beat/rows_per_beat;
 }
 
 Temporal::Beats BasePattern::find_position_row_beats() const

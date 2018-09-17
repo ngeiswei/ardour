@@ -32,6 +32,8 @@
 
 #include "editing.h"
 
+namespace Tracker {
+
 class TrackerEditor;
 
 class MainToolbar : public Gtk::HBox
@@ -95,5 +97,7 @@ public:
 	Gtk::Adjustment              steps_adjustment;
 	Gtk::SpinButton              steps_spinner;
 };
+
+} // ~namespace Tracker
 
 #endif /* __ardour_tracker_main_toolbar_h_ */
