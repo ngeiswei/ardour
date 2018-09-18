@@ -306,6 +306,7 @@
       <menuitem action='show-region-properties'/>
       <menuitem action='loudness-analyze-region'/>
       <menuitem action='spectral-analyze-region'/>
+      <menuitem action='tracker-editor'/>
       <menu action='RegionMenuEdit'>
 #ifndef MIXBUS
         <menuitem action='combine-regions'/>
@@ -335,7 +336,6 @@
         <menuitem action='transform-region'/>
         <menuitem action='fork-region'/>
         <menuitem action='show-region-list-editor'/>
-        <menuitem action='show-region-tracker-editor'/>
       </menu>
       <menu action='RegionMenuGain'>
         <menuitem action='toggle-opaque-region'/>
@@ -798,7 +798,6 @@
       <menuitem action='transform-region'/>
       <menuitem action='fork-region'/>
       <menuitem action='show-region-list-editor'/>
-      <menuitem action='show-region-tracker-editor'/>
     </menu>
     <menu action='RegionMenuPosition'>
       <menuitem action='naturalize-region'/>
@@ -862,6 +861,7 @@
 #endif
     <menuitem action='loudness-analyze-region'/>
     <menuitem action='spectral-analyze-region'/>
+    <menuitem action='tracker-editor'/>
     <separator/>
     <menuitem action='remove-region'/>
   </popup>
