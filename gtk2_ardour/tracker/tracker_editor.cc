@@ -100,8 +100,6 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			boost::shared_ptr<MidiModel> midi_model = midi_region->midi_source(0)->model();
 			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
 
-			cout << "midi_region[" << i << "] = " << midi_region << endl;
-			cout << "midi_model[" << i << "] = " << midi_model << endl;
 			i++;
 
 			// Make changing midi content re-render the grid
@@ -187,7 +185,6 @@ void
 TrackerEditor::setup_midi_track_toolbars ()
 {
 	for (unsigned i = 0; i < midi_track_toolbars.size(); i++) {
-		cout << "TrackerEditor::setup_midi_track_toolbars () midi_track_toolbars[" << i << "] = " << midi_track_toolbars[i] << endl;
 		midi_track_toolbars[i]->setup_processor_menu_and_curves ();
 		midi_track_toolbars[i]->setup ();
 	}
