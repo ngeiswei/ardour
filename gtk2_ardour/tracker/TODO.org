@@ -9,10 +9,8 @@
   add a red frame)
 - Add shortcut for parameters, steps, etc
 - Add copy/move, etc, notes + popup menu
-- Add hide popup menu when clicking on automation column
 - Transfer Ardour shortcuts, spacebar, etc
 - Add piano keyboard display (see gtk_pianokeyboard.h)
 - Perhaps use one delay button for note and another delay button for automation
 - Create wscript under tracker folder
-- Sort out the int types, maybe use int everywhere! Or simply int vs unsigned
 - Support layered regions
