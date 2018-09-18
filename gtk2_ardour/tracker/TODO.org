@@ -1,4 +1,3 @@
-- Use Ardour's logger instead of stdout
 - Support audio tracks and trim automation
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Underline the digit to be edited
