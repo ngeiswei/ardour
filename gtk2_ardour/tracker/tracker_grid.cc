@@ -850,8 +850,7 @@ TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, siz
 		row[columns._delay_background_color[mti][cgi]] = cursor_color;
 		break;
 	default:
-		// TODO use Ardour log
-		cout << "Error";
+		cerr << "TrackerGrid::redisplay_current_note_cursor: Implementation Error!" << endl;
 	}
 }
 
@@ -933,8 +932,7 @@ TrackerGrid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, siz
 		row[columns._automation_delay_background_color[mti][cgi]] = cursor_color;
 		break;
 	default:
-		// TODO use Ardour log
-		cout << "Error";
+		cerr << "TrackerGrid::redisplay_current_auto_cursor: Implementation Error!" << endl;
 	}
 }
 
@@ -3081,16 +3079,14 @@ TrackerGrid::key_press (GdkEventKey* ev)
 			case TrackerColumn::DELAY:
 				return step_editing_note_delay_key_press (ev);
 			default:
-				// TODO use Ardour log
-				cout << "Error";
+				cerr << "TrackerGrid::key_press: Implementation Error!" << endl;
 			}
 		case TrackerColumn::AUTOMATION:
 			return step_editing_automation_key_press (ev);
 		case TrackerColumn::AUTOMATION_DELAY:
 			return step_editing_automation_delay_key_press (ev);
 		default:
-			// TODO use Ardour log
-			cout << "Error";
+			cerr << "TrackerGrid::key_press: Implementation Error!" << endl;
 		}
 	}
 	else return non_editing_key_press (ev);
