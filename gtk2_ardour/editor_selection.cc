@@ -1545,7 +1545,6 @@ Editor::sensitize_the_right_region_actions (bool because_canvas_crossing)
 	if (!have_midi) {
 		editor_menu_actions->get_action("RegionMenuMIDI")->set_sensitive (false);
 		_region_actions->get_action("show-region-list-editor")->set_sensitive (false);
-		_region_actions->get_action("show-region-tracker-editor")->set_sensitive (false);
 		_region_actions->get_action("quantize-region")->set_sensitive (false);
 		_region_actions->get_action("legatize-region")->set_sensitive (false);
 		_region_actions->get_action("remove-overlap")->set_sensitive (false);
