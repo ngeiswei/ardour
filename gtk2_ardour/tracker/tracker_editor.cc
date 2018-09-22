@@ -113,6 +113,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			// NT: is this really necessary?
 			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
+		// VT: take care of audio tracks
 	}
 
 	setup_scroller ();

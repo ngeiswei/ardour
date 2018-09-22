@@ -19,19 +19,19 @@
 #ifndef __ardour_tracker_track_automation_pattern_h_
 #define __ardour_tracker_track_automation_pattern_h_
 
-#include "automation_pattern.h"
+#include "track_pattern.h"
 
-#include "ardour/midi_track.h"
+#include "ardour/track.h"
 
 namespace Tracker {
 
 /**
  * Data structure holding the automation list pattern held by a track.
  */
-class TrackAutomationPattern : public AutomationPattern {
+class TrackAutomationPattern : public TrackPattern {
 public:
 	TrackAutomationPattern(TrackerEditor& te,
-	                       boost::shared_ptr<ARDOUR::MidiTrack> mt,
+	                       boost::shared_ptr<ARDOUR::Track> track,
 	                       Temporal::samplepos_t position,
 	                       Temporal::samplecnt_t length,
 	                       Temporal::samplepos_t first_sample,
@@ -49,8 +49,6 @@ public:
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
-
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 };
 
 } // ~namespace tracker
