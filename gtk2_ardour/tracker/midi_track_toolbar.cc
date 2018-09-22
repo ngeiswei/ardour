@@ -109,13 +109,6 @@ MidiTrackToolbar::setup_layout ()
 	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::visible_delay_press), false);
 	pack_start (visible_delay_button, false, false);
 
-	// Add automation button
-	automation_button.set_name ("automation button");
-	automation_button.set_text (S_("Automation|A"));
-	update_automation_button ();
-	automation_button.show ();
-	pack_start (automation_button, false, false);
-
 	// Remove/add note column
 	rm_add_note_column_separator.show ();
 	pack_start (rm_add_note_column_separator, false, false);
@@ -130,6 +123,13 @@ MidiTrackToolbar::setup_layout ()
 	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::add_note_column_press), false);
 	add_note_column_button.show ();
 	pack_start (add_note_column_button, false, false);
+
+	// Add automation button
+	automation_button.set_name ("automation button");
+	automation_button.set_text (S_("Automation|A"));
+	update_automation_button ();
+	automation_button.show ();
+	pack_start (automation_button, false, false);
 
 	show ();
 }
@@ -385,7 +385,7 @@ MidiTrackToolbar::build_controller_menu ()
 	}
 
 	using namespace MIDI::Name;
-	boost::shared_ptr<MasterDeviceNames> device_names = tracker_editor.get_device_names();
+	boost::shared_ptr<MasterDeviceNames> device_names = tracker_editor.get_device_names(); // VT: move this here!
 
 	if (device_names && !device_names->controls().empty()) {
 		/* Controllers names available in midnam file, generate fancy menu */
@@ -844,12 +844,12 @@ void
 MidiTrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = midi_track_pattern.get_asize(Evoral::Parameter(GainAutomation)) > 0;
+	bool gain_visible = !midi_track_pattern.is_empty(Evoral::Parameter(GainAutomation));
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (midi_track_index);
 
 	// Mute
-	bool mute_visible = midi_track_pattern.get_asize(Evoral::Parameter(MuteAutomation)) > 0;
+	bool mute_visible = !midi_track_pattern.is_empty(Evoral::Parameter(MuteAutomation));
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility (midi_track_index);
 
@@ -857,7 +857,7 @@ MidiTrackToolbar::show_existing_main_automations ()
 	bool pan_visible = false;
 	std::set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		if (midi_track_pattern.get_asize(*p) > 0) {
+		if (!midi_track_pattern.is_empty(*p)) {
 			pan_visible = true;
 			break;
 		}
@@ -949,7 +949,7 @@ MidiTrackToolbar::show_existing_processor_automations ()
 	     i != processor_automation.end(); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
-			bool exist = midi_track_pattern.get_asize((*ii)->what) > 0;
+			bool exist = !midi_track_pattern.is_empty((*ii)->what);
 
 			// Create automation column if necessary
 			if (exist) {

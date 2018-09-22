@@ -139,7 +139,7 @@ public:
 	TrackerEditor& tracker_editor;
 
 	// Mapping between tracks and regions
-	typedef std::map<boost::shared_ptr<ARDOUR::MidiTrack>, std::vector<boost::shared_ptr<ARDOUR::MidiRegion> > > TrackRegionsMap;
+	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> > > TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per midi track
