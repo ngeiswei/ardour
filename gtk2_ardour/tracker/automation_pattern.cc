@@ -46,6 +46,14 @@ AutomationPattern::AutomationPattern(TrackerEditor& te,
 {
 }
 
+uint32_t
+AutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+{
+	std::cerr << "AutomationPattern::event2row not implemented" << std::endl;
+	assert (false);
+	return 0;
+}
+
 void AutomationPattern::update()
 {
 	set_row_range();
@@ -72,9 +80,9 @@ void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actr
 	// 	tracker_editor.connect_automation(actrl);
 }
 
-size_t AutomationPattern::get_asize (const Evoral::Parameter& param) const
+bool AutomationPattern::is_empty (const Evoral::Parameter& param) const
 {
-	return get_alist(param)->size();
+	return get_alist(param)->size() == 0;
 }
 
 boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const Evoral::Parameter& param)
