@@ -21,6 +21,7 @@
 #include "tracker_editor.h"
 
 #include "midi_region_view.h"
+#include "audio_region_view.h"
 
 using namespace Tracker;
 
@@ -39,18 +40,15 @@ MultiTrackPattern::~MultiTrackPattern ()
 void
 MultiTrackPattern::setup_regions_per_track ()
 {
+	// Associate track to its regions
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
-		const MidiRegionView* mrv = dynamic_cast<const MidiRegionView*>(*it);
-		if (mrv) {                // Make sure it is midi region
-			boost::shared_ptr<ARDOUR::MidiRegion> midi_region = mrv->midi_region();
-			boost::shared_ptr<ARDOUR::MidiTrack> midi_track = mrv->midi_view()->midi_track();
-			regions_per_track[midi_track].push_back(midi_region);
-		}
+		boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
+		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
+		regions_per_track[track].push_back(region);
 	}
+	// Chronologically sort regions per track 
 	for (TrackRegionsMap::iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++)
-	{
 		std::sort(it->second.begin(), it->second.end(), region_position_less());
-	}
 }
 
 void
@@ -58,10 +56,14 @@ MultiTrackPattern::setup ()
 {
 	setup_regions_per_track ();
 
-	// TODO: it would be better if it followed the order on the piano roll view!
+	// TODO: it should follow the order on the piano roll view!
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
-		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, it->first, it->second);
-		mtps.push_back(mtp);
+		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(it->first);
+		if (midi_track) {
+			MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, it->first, it->second);
+			mtps.push_back(mtp);
+		}
+		// VT: support audio tracks
 	}
 
 	for (size_t mti = 0; mti < mtps.size(); mti++) {

@@ -18,51 +18,27 @@
 
 #include "ardour/midi_region.h"
 
+#include "tracker_utils.h"
 #include "midi_track_pattern.h"
 #include "tracker_grid.h"
 
 using namespace Tracker;
 
-Temporal::samplepos_t get_regions_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
-{
-	return regions.front()->position();
-}
-
-Temporal::samplecnt_t get_regions_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
-{
-	return regions.front()->last_sample() + 1 - regions.back()->position();
-}
-
-Temporal::samplepos_t get_regions_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
-{
-	return regions.front()->first_sample();
-}
-
-Temporal::samplepos_t get_regions_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
-{
-	return regions.back()->last_sample();
-}
-
 MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
-                                    boost::shared_ptr<ARDOUR::MidiTrack> mt,
-                                    const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
-	: BasePattern(te,
-	              get_regions_position(regions),
-	              0,
-	              get_regions_length(regions),
-	              get_regions_first_sample(regions),
-	              get_regions_last_sample(regions))
-	, midi_track(mt)
+                                    boost::shared_ptr<ARDOUR::Track> trk,
+                                    const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+	: TrackPattern(te, trk, regions)
+	, midi_track(boost::static_pointer_cast<ARDOUR::MidiTrack>(trk))
 	, tap(te,
 	      midi_track,
-	      get_regions_position(regions),
-	      get_regions_length(regions),
-	      get_regions_first_sample(regions),
-	      get_regions_last_sample(regions))
+	      TrackerUtils::get_position(regions),
+	      TrackerUtils::get_length(regions),
+	      TrackerUtils::get_first_sample(regions),
+	      TrackerUtils::get_last_sample(regions))
 	, row_offset(regions.size(), 0)
 {
 	for (size_t i = 0; i < regions.size(); i++)
-		mrps.push_back(MidiRegionPattern(te, midi_track, regions[i]));
+		mrps.push_back(MidiRegionPattern(te, midi_track, boost::static_pointer_cast<ARDOUR::MidiRegion>(regions[i])));
 }
 
 MidiTrackPattern::~MidiTrackPattern ()
@@ -219,16 +195,16 @@ MidiTrackPattern::get_nreqtracks () const
 	return nreqtracks;
 }
 
-size_t
-MidiTrackPattern::get_asize (const Evoral::Parameter& param) const
+bool
+MidiTrackPattern::is_empty (const Evoral::Parameter& param) const
 {
 	if (TrackerUtils::is_region_automation (param)) {
-		size_t asize = 0;
 		for (size_t mri = 0; mri < mrps.size(); mri++)
-			asize += mrps[mri].rap.get_asize(param);
-		return asize;
+			if (!mrps[mri].rap.is_empty(param))
+				return false;
+		return true;
 	}
-	return tap.get_asize(param);	
+	return tap.is_empty(param);
 }
 
 std::pair<double, bool>
