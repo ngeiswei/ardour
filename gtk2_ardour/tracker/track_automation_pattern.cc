@@ -33,13 +33,12 @@ using namespace Tracker;
 ////////////////////////////
 
 TrackAutomationPattern::TrackAutomationPattern(TrackerEditor& te,
-                                               boost::shared_ptr<ARDOUR::MidiTrack> mt,
+                                               boost::shared_ptr<ARDOUR::Track> trk,
                                                Temporal::samplepos_t pos,
                                                Temporal::samplecnt_t len,
-                                               Temporal::samplepos_t fir,
-                                               Temporal::samplepos_t las)
-	: AutomationPattern(te, pos, 0, len, fir, las)
-	, midi_track(mt)
+                                               Temporal::samplepos_t fst,
+                                               Temporal::samplepos_t lst)
+	: TrackPattern(te, trk, pos, len, fst, lst)
 {
 	setup_automation_controls ();
 }
@@ -53,20 +52,20 @@ void TrackAutomationPattern::setup_automation_controls ()
 void TrackAutomationPattern::setup_main_automation_controls ()
 {
 	// Gain
-	AutomationPattern::insert(midi_track->gain_control());
+	AutomationPattern::insert(track->gain_control());
 
 	// Mute
-	AutomationPattern::insert(midi_track->mute_control());
+	AutomationPattern::insert(track->mute_control());
 
 	// Pan
-	set<Evoral::Parameter> const & pan_params = midi_track->pannable()->what_can_be_automated ();
+	set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p)
-		AutomationPattern::insert(midi_track->pannable()->automation_control(*p));
+		AutomationPattern::insert(track->pannable()->automation_control(*p));
 }
 
 void TrackAutomationPattern::setup_processors_automation_controls ()
 {
-	midi_track->foreach_processor (sigc::mem_fun (*this, &TrackAutomationPattern::setup_processor_automation_control));
+	track->foreach_processor (sigc::mem_fun (*this, &TrackAutomationPattern::setup_processor_automation_control));
 }
 
 void
@@ -84,7 +83,7 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 
 void TrackAutomationPattern::insert(const Evoral::Parameter& param)
 {
-	AutomationPattern::insert(midi_track->automation_control(param, true));
+	AutomationPattern::insert(track->automation_control(param, true));
 }
 
 uint32_t

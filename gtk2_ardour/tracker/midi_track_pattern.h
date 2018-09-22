@@ -20,6 +20,7 @@
 #define __ardour_tracker_midi_track_pattern_h_
 
 #include "midi_region_pattern.h"
+#include "track_pattern.h"
 #include "track_automation_pattern.h"
 
 namespace Tracker {
@@ -29,11 +30,11 @@ namespace Tracker {
  * given track, with possibly multiple regions, possibly overlapping, as long
  * as they all come from the same track.
  */
-class MidiTrackPattern : public BasePattern {
+class MidiTrackPattern : public TrackPattern {
 public:
 	MidiTrackPattern (TrackerEditor& te,
-	                  boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-	                  const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	                  boost::shared_ptr<ARDOUR::Track> track,
+	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	virtual ~MidiTrackPattern ();
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mri, const Evoral::Parameter& param);
@@ -87,8 +88,8 @@ public:
 	// Minimum number of note tracks required
 	uint16_t get_nreqtracks () const;
 	
-	// Size of automation list for param
-	size_t get_asize (const Evoral::Parameter& param) const;
+	// Return whether the automation associated to param is empty
+	bool is_empty (const Evoral::Parameter& param) const;
 
 	// Return a pair with the automation value and whether it is defined or not	
 	std::pair<double, bool> get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
@@ -113,7 +114,7 @@ public:
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
-	TrackAutomationPattern tap;
+	TrackAutomationPattern tap;  // TODO: maybe directly inherit
 	std::vector<MidiRegionPattern> mrps;
 	std::vector<uint32_t> row_offset;
 };
