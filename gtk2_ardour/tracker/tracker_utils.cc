@@ -22,7 +22,7 @@
 
 using namespace Tracker;
 
-bool region_position_less::operator()(boost::shared_ptr<ARDOUR::MidiRegion> lhs, boost::shared_ptr<ARDOUR::MidiRegion> rhs)
+bool region_position_less::operator()(boost::shared_ptr<ARDOUR::Region> lhs, boost::shared_ptr<ARDOUR::Region> rhs)
 {
 	return lhs->position() < rhs->position();
 }
@@ -124,4 +124,52 @@ TrackerUtils::parse_pitch (std::string text, int default_octave)
 
 	// Parse the note per se
 	return ARDOUR::ParameterDescriptor::midi_note_num(text);
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_position(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+{
+	return regions.front()->position();
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.front()->position();
+}
+
+Temporal::samplecnt_t
+TrackerUtils::get_length(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+{
+	return regions.front()->last_sample() + 1 - regions.back()->position();
+}
+
+Temporal::samplecnt_t
+TrackerUtils::get_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.front()->last_sample() + 1 - regions.back()->position();
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.front()->first_sample();
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+{
+	return regions.front()->first_sample();
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+{
+	return regions.back()->last_sample();
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+{
+	return regions.back()->last_sample();
 }

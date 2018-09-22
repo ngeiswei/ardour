@@ -39,7 +39,7 @@ typedef boost::shared_ptr<NoteType> NoteTypePtr;
  */
 struct region_position_less
 {
-	bool operator()(boost::shared_ptr<ARDOUR::MidiRegion> lhs, boost::shared_ptr<ARDOUR::MidiRegion> rhs);
+	bool operator()(boost::shared_ptr<ARDOUR::Region> lhs, boost::shared_ptr<ARDOUR::Region> rhs);
 };
 
 class TrackerUtils
@@ -194,6 +194,26 @@ public:
 	// Get the pitch of a note given its textual description. If the octave
 	// number is missing then the default one is used.
 	static uint8_t parse_pitch (std::string text, int default_octave);
+
+	// Given a list of chronologically ordered, non overlapping regions, return
+	// the position of the earliest one
+	static Temporal::samplepos_t get_position(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplepos_t get_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+
+	// Given a list of chronologically ordered, non overlapping regions, return
+	// the length between the very first position of the position very last + 1
+	static Temporal::samplecnt_t get_length(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplecnt_t get_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+
+	// Given a list of chronologically ordered, non overlapping regions, return
+	// the very first sample (it looks identical to get_regions_position
+	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+
+	// Given a list of chronologically ordered, non overlapping regions, return
+	// the position of the last sample.
+	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 };
 
 } // ~namespace tracker

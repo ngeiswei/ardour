@@ -52,7 +52,7 @@ public:
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
 
 	// Assign a control event to a row
-	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event) = 0;
+	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// Build or rebuild the pattern (implement BasePattern::update_pattern)
 	void update();
@@ -61,8 +61,8 @@ public:
 	// the grid to update it when some value changes
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 
-	// Size of automation list for param
-	size_t get_asize (const Evoral::Parameter& param) const;
+	// Return whether the automation associated to param is empty
+	bool is_empty (const Evoral::Parameter& param) const;
 	
 	// Return automation control associated to the given parameter. If absent,
 	// return NULL.
