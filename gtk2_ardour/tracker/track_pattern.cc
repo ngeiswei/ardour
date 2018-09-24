@@ -18,6 +18,8 @@
 
 #include "tracker_utils.h"
 #include "track_pattern.h"
+#include "midi_track_pattern.h"
+#include "audio_track_pattern.h"
 
 using namespace Tracker;
 
@@ -47,4 +49,63 @@ TrackPattern::TrackPattern (TrackerEditor& te,
 
 TrackPattern::~TrackPattern ()
 {
+}
+
+boost::shared_ptr<ARDOUR::MidiTrack>
+TrackPattern::midi_track ()
+{
+	return boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(track);
+}
+
+boost::shared_ptr<ARDOUR::AudioTrack>
+TrackPattern::audio_track ()
+{
+	return boost::dynamic_pointer_cast<ARDOUR::AudioTrack>(track);
+}
+
+bool
+TrackPattern::is_midi_track_pattern () const
+{
+	return (bool)midi_track_pattern ();
+}
+
+bool
+TrackPattern::is_audio_track_pattern () const
+{
+	return (bool)audio_track_pattern ();
+}
+
+const MidiTrackPattern*
+TrackPattern::midi_track_pattern () const
+{
+	return dynamic_cast<const MidiTrackPattern*>(this);
+}
+
+const AudioTrackPattern*
+TrackPattern::audio_track_pattern () const
+{
+	return dynamic_cast<const AudioTrackPattern*>(this);
+}
+
+MidiTrackPattern*
+TrackPattern::midi_track_pattern ()
+{
+	return dynamic_cast<MidiTrackPattern*>(this);
+}
+
+AudioTrackPattern*
+TrackPattern::audio_track_pattern ()
+{
+	return dynamic_cast<AudioTrackPattern*>(this);
+}
+
+Temporal::Beats
+TrackPattern::region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const
+{
+	return Temporal::Beats();
+}
+
+int64_t TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const
+{
+	return 0;
 }
