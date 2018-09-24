@@ -109,7 +109,7 @@ public:
 	void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
 
 	// Get the relative beats w.r.t. region position at rowi, and region mri
-	Temporal::Beats region_relative_beats_at_row (uint32_t rowi, size_t mri, int32_t delay) const;
+	Temporal::Beats region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const;
 
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const;
 

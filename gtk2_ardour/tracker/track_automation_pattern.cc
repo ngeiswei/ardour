@@ -22,6 +22,7 @@
 #include "ardour/region.h"
 #include "ardour/pannable.h"
 
+#include "tracker_utils.h"
 #include "track_automation_pattern.h"
 
 using namespace std;
@@ -31,6 +32,18 @@ using namespace Tracker;
 ////////////////////////////
 // TrackAutomationPattern //
 ////////////////////////////
+
+TrackAutomationPattern::TrackAutomationPattern(TrackerEditor& te,
+                                               boost::shared_ptr<ARDOUR::Track> trk,
+                                               const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+	: TrackPattern(te, trk,
+	               TrackerUtils::get_position(regions),
+	               TrackerUtils::get_length(regions),
+	               TrackerUtils::get_first_sample(regions),
+	               TrackerUtils::get_last_sample(regions))
+{
+	setup_automation_controls ();
+}
 
 TrackAutomationPattern::TrackAutomationPattern(TrackerEditor& te,
                                                boost::shared_ptr<ARDOUR::Track> trk,
