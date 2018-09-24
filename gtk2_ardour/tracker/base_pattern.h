@@ -60,7 +60,7 @@ public:
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update().
-	void set_rows_per_beat(uint16_t rpb);
+	virtual void set_rows_per_beat(uint16_t rpb);
 
 	// Build or rebuild the pattern
 	virtual void update() = 0;
@@ -75,7 +75,7 @@ public:
 	uint32_t find_nrows() const;
 
 	// Set position_row_beats, end_row_beats and nrows
-	void set_row_range();
+	virtual void set_row_range();
 
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
@@ -116,13 +116,13 @@ public:
 	uint32_t row_at_sample_max_delay(Temporal::samplepos_t sample) const;
 
 	// Return an event's delay in a certain row in ticks
-	int64_t delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const;
+	int64_t delay_ticks_at_row(const Temporal::Beats& event_time, uint32_t rowi) const;
 
 	// Like delay_ticks above but uses sample instead of beats
-	int64_t delay_ticks(Temporal::samplepos_t sample, uint32_t rowi) const;
+	int64_t delay_ticks_at_row(Temporal::samplepos_t sample, uint32_t rowi) const;
 
 	// Like delay_ticks but the event_time is relative to the region position
-	int64_t region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const;
+	int64_t region_relative_delay_ticks_at_row(const Temporal::Beats& event_time, uint32_t rowi) const;
 
 	// Return the minimum and maximum number ticks allowed for delay
 	int32_t delay_ticks_min() const;
@@ -130,7 +130,7 @@ public:
 
 	// Return true iff the row index is within the defined range of
 	// rows. Specifially between 0 and nrow-1
-	bool is_defined(int row_idx) const;
+	virtual bool is_defined(int row_idx) const;
 
 	// Reference to main tracker editor
 	TrackerEditor& tracker_editor;

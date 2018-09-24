@@ -169,6 +169,7 @@ gtk2_ardour_sources = [
         'tracker/region_automation_pattern.cc',
         'tracker/midi_region_pattern.cc',    
         'tracker/midi_track_pattern.cc',
+        'tracker/audio_track_pattern.cc',
         'tracker/multi_track_pattern.cc',
         'tracker/main_toolbar.cc',
         'tracker/track_toolbar.cc',
