@@ -23,6 +23,7 @@
 
 #include "tracker_utils.h"
 #include "midi_track_pattern.h"
+#include "audio_track_pattern.h"
 #include "note_pattern.h"
 
 namespace Tracker {
@@ -53,7 +54,7 @@ public:
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
-	Temporal::Beats region_relative_beats_at_row (uint32_t rowi, size_t mti, size_t mri, int32_t delay=0) const;
+	Temporal::Beats region_relative_beats (uint32_t rowi, size_t mti, size_t mri, int32_t delay=0) const;
 
 	// Like delay_ticks but the event_time is relative to the region position of a given mti
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti, size_t mri) const;
@@ -143,10 +144,10 @@ public:
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per midi track
-	std::vector<MidiTrackPattern*> mtps; // TODO: can we avoid pointer?
+	std::vector<TrackPattern*> tps;
 
 	// Row index offset and number of valid rows per mti
-	MidiTrackPattern*            earliest_mtp;
+	TrackPattern*                earliest_tp;
 	std::vector<uint32_t>        row_offset;
 	std::vector<uint32_t>        nrows;
 	uint32_t                     global_nrows;
