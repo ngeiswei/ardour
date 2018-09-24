@@ -55,14 +55,15 @@ public:
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// Build or rebuild the pattern (implement BasePattern::update_pattern)
-	void update();
+	virtual void update();
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
+	virtual void insert(const Evoral::Parameter& param) = 0;
 
 	// Return whether the automation associated to param is empty
-	bool is_empty (const Evoral::Parameter& param) const;
+	virtual bool is_empty (const Evoral::Parameter& param) const;
 	
 	// Return automation control associated to the given parameter. If absent,
 	// return NULL.
