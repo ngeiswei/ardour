@@ -20,11 +20,19 @@
 #define __ardour_tracker_track_pattern_h_
 
 #include "ardour/track.h"
+#include "ardour/midi_track.h"
+#include "ardour/audio_track.h"
 #include "ardour/region.h"
 
 #include "automation_pattern.h"
 
 namespace Tracker {
+
+class MidiTrackPattern;
+class AudioTrackPattern;
+
+// TODO: maybe implement some MultiRegionPattern class that deals with mri and
+// have TrackPattern inherits that one as well.
 
 /**
  * Abstract class to represent track patterns (midi, audio, etc).
@@ -41,6 +49,22 @@ public:
 	              Temporal::samplepos_t fst,
 	              Temporal::samplepos_t lst);
 	virtual ~TrackPattern ();
+
+	// TODO: do we need this
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
+	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
+
+	// Self cast classes
+	bool is_midi_track_pattern () const;
+	bool is_audio_track_pattern () const;
+	const MidiTrackPattern* midi_track_pattern () const;
+	const AudioTrackPattern* audio_track_pattern () const;
+	MidiTrackPattern* midi_track_pattern ();
+	AudioTrackPattern* audio_track_pattern ();
+
+	// Default implementation is for tracks not supporting regions
+	virtual Temporal::Beats	region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const;
+	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const;
 
 	boost::shared_ptr<ARDOUR::Track> track;
 };

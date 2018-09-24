@@ -29,12 +29,7 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 	: TrackPattern(te, trk, regions)
 	, midi_track(boost::static_pointer_cast<ARDOUR::MidiTrack>(trk))
-	, tap(te,
-	      midi_track,
-	      TrackerUtils::get_position(regions),
-	      TrackerUtils::get_length(regions),
-	      TrackerUtils::get_first_sample(regions),
-	      TrackerUtils::get_last_sample(regions))
+	, tap(te, midi_track, regions)
 	, row_offset(regions.size(), 0)
 {
 	for (size_t i = 0; i < regions.size(); i++)
@@ -248,7 +243,7 @@ MidiTrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evor
 }
 
 Temporal::Beats
-MidiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mri, int32_t delay) const
+MidiTrackPattern::region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const
 {
 	return mrps[mri].region_relative_beats_at_row (to_rrri(rowi, mri), delay);
 }
@@ -256,5 +251,5 @@ MidiTrackPattern::region_relative_beats_at_row (uint32_t rowi, size_t mri, int32
 int64_t
 MidiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const
 {
-	return mrps[mri].region_relative_delay_ticks(event_time, to_rrri(rowi, mri));
+	return mrps[mri].region_relative_delay_ticks_at_row (event_time, to_rrri(rowi, mri));
 }

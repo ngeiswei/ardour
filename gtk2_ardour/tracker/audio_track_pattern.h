@@ -32,8 +32,8 @@ namespace Tracker {
 class AudioTrackPattern : public TrackAutomationPattern {
 public:
 	AudioTrackPattern(TrackerEditor& te,
-	                  boost::shared_ptr<ARDOUR::AudioTrack> audio_track,
-	                  const std::vector<boost::shared_ptr<ARDOUR::AudioRegion> >& regions);
+	                  boost::shared_ptr<ARDOUR::Track> track,
+	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	virtual ~AudioTrackPattern ();
 };
 

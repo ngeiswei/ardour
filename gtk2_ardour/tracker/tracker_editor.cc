@@ -172,8 +172,8 @@ TrackerEditor::resize_width()
 void
 TrackerEditor::setup_toolbars ()
 {
-	for (size_t mti = 0; mti < grid.pattern.mtps.size(); mti++) {
-		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *grid.pattern.mtps[mti], mti);
+	for (size_t mti = 0; mti < grid.pattern.tps.size(); mti++) {
+		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *grid.pattern.tps[mti], mti);
 		// TODO replace by emplace_back when supports C++11
 		midi_track_toolbars.push_back(mttb);
 	}

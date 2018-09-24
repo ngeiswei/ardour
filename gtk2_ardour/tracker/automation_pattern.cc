@@ -234,8 +234,8 @@ AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& para
 	if (Evoral::ControlEvent* ce = get_control_event(rowi, param)) {
 		double awhen = ce->when;
 		int delay = TrackerUtils::is_region_automation (param) ?
-			region_relative_delay_ticks(Temporal::Beats(awhen), rowi)
-			: delay_ticks((samplepos_t)awhen, rowi);
+			region_relative_delay_ticks_at_row(Temporal::Beats(awhen), rowi)
+			: delay_ticks_at_row((samplepos_t)awhen, rowi);
 		return std::make_pair(delay, true);
 	}
 	return std::make_pair(0, false);

@@ -151,19 +151,19 @@ uint32_t BasePattern::row_at_sample_max_delay(Temporal::samplepos_t sample) cons
 	return row_at_beats_max_delay (_conv.from (sample));
 }
 
-int64_t BasePattern::delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const
+int64_t BasePattern::delay_ticks_at_row(const Temporal::Beats& event_time, uint32_t rowi) const
 {
 	return (event_time - beats_at_row(rowi)).to_ticks();
 }
 
-int64_t BasePattern::delay_ticks(Temporal::samplepos_t sample, uint32_t rowi) const
+int64_t BasePattern::delay_ticks_at_row(Temporal::samplepos_t sample, uint32_t rowi) const
 {
-	return delay_ticks(_conv.from (sample), rowi);
+	return delay_ticks_at_row(_conv.from (sample), rowi);
 }
 
-int64_t BasePattern::region_relative_delay_ticks(const Temporal::Beats& event_time, uint32_t rowi) const
+int64_t BasePattern::region_relative_delay_ticks_at_row (const Temporal::Beats& event_time, uint32_t rowi) const
 {
-	return delay_ticks(event_time + position_beats - start_beats, rowi);
+	return delay_ticks_at_row (event_time + position_beats - start_beats, rowi);
 }
 
 int32_t BasePattern::delay_ticks_min() const
