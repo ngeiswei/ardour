@@ -134,7 +134,7 @@ public:
 	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
 	// Reference of the main tracker editor
 	TrackerEditor& tracker_editor;

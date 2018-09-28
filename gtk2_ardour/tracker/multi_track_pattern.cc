@@ -204,25 +204,19 @@ MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) c
 bool
 MultiTrackPattern::is_auto_displayable (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
-	return TrackerUtils::is_region_automation (param) ?
-		tps[mti]->midi_track_pattern()->mrps[mri].rap.is_displayable (to_rrri(rowi, mti, mri), param)
-		: tps[mti]->tap.is_displayable (to_rri(rowi, mti), param); // VT: deal with that!
+	return tps[mti]->is_auto_displayable (to_rri(rowi, mti), mri, param);
 }
 
 size_t
 MultiTrackPattern::get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
-	return TrackerUtils::is_region_automation (param) ?
-		tps[mti]->midi_track_pattern()->mrps[mri].rap.automations.find(param)->second.count(to_rrri(rowi, mti, mri))
-		: tps[mti]->tap.automations.find(param)->second.count(to_rri(rowi, mti));
+	return tps[mti]->get_automation_list_count (to_rri(rowi, mti), mri, param);
 }
 
 Evoral::ControlEvent*
 MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
-	return TrackerUtils::is_region_automation (param) ?
-		*tps[mti]->midi_track_pattern()->mrps[mri].rap.automations.find(param)->second.find(to_rrri(rowi, mti, mri))->second
-		: *tps[mti]->tap.automations.find(param)->second.find(to_rri(rowi, mti))->second;
+	return tps[mti]->get_automation_control_event (to_rri(rowi, mti), mri, param);
 }
 
 NoteTypePtr
@@ -300,7 +294,7 @@ MultiTrackPattern::apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::Not
 boost::shared_ptr<ARDOUR::AutomationList>
 MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
-	return tps[mti]->get_alist (mri, param);
+	return tps[mti]->get_alist_at_mri (mri, param);
 }
 
 std::pair<double, bool>
@@ -328,7 +322,7 @@ MultiTrackPattern::get_automation_delay (size_t rowi, size_t mti, size_t mri, co
 }
 
 void
-MultiTrackPattern::set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param)
+MultiTrackPattern::set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri(rowi, mti), mri, param);
 }
