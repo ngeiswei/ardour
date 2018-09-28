@@ -109,3 +109,80 @@ int64_t TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_
 {
 	return 0;
 }
+
+bool
+TrackPattern::is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+{
+	return is_displayable (rowi, param);
+}
+
+size_t
+TrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+{
+	return automations.find(param)->second.count(rowi);
+}
+
+Evoral::ControlEvent* TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+{
+	return *automations.find(param)->second.find(rowi)->second;
+}
+
+int
+TrackPattern::to_rrri (uint32_t rowi, size_t mri) const
+{
+	return (int)rowi;
+}
+
+int
+TrackPattern::to_rrri (uint32_t rowi) const
+{
+	return (int)rowi;
+}
+
+int
+TrackPattern::to_mri (uint32_t rowi) const
+{
+	return -1;
+}
+
+boost::shared_ptr<ARDOUR::AutomationList>
+TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
+{
+	return AutomationPattern::get_alist(param);
+}
+
+const boost::shared_ptr<ARDOUR::AutomationList>
+TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
+{
+	return AutomationPattern::get_alist(param);
+}
+
+std::pair<double, bool>
+TrackPattern::get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param)
+{
+	return AutomationPattern::get_automation_value (rowi, param);
+}
+
+void
+TrackPattern::set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay)
+{
+	return AutomationPattern::set_automation_value (val, rowi, param, delay);
+}
+
+void
+TrackPattern::delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param)
+{
+	return AutomationPattern::delete_automation_value (rowi, param);
+}
+
+std::pair<int, bool>
+TrackPattern::get_automation_delay (size_t rowi, size_t mri, const Evoral::Parameter& param)
+{
+	return AutomationPattern::get_automation_delay (rowi, param);
+}
+
+void
+TrackPattern::set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param)
+{
+	return AutomationPattern::set_automation_delay (delay, rowi, param);
+}
