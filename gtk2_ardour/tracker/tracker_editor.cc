@@ -173,6 +173,7 @@ void
 TrackerEditor::setup_toolbars ()
 {
 	for (size_t mti = 0; mti < grid.pattern.tps.size(); mti++) {
+		// VT: handle AudioTrackToolbar
 		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *grid.pattern.tps[mti], mti);
 		// TODO replace by emplace_back when supports C++11
 		midi_track_toolbars.push_back(mttb);
