@@ -30,14 +30,15 @@ namespace Tracker {
  * given track, with possibly multiple regions, possibly overlapping, as long
  * as they all come from the same track.
  */
-class MidiTrackPattern : public TrackPattern {
+class MidiTrackPattern : public TrackAutomationPattern {
 public:
 	MidiTrackPattern (TrackerEditor& te,
 	                  boost::shared_ptr<ARDOUR::Track> track,
 	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	virtual ~MidiTrackPattern ();
 
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mri, const Evoral::Parameter& param);
+	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
+	const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 
 	// Insert the automation control(s) corresponding to param (and connect it
 	// to the grid for changes)
@@ -103,18 +104,20 @@ public:
 	// Return pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
+	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mri, const Evoral::Parameter& param);
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param);
 
 	// Get the relative beats w.r.t. region position at rowi, and region mri
 	Temporal::Beats region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const;
 
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const;
+	bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+	size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
-	TrackAutomationPattern tap;  // TODO: maybe directly inherit
 	std::vector<MidiRegionPattern> mrps;
 	std::vector<uint32_t> row_offset;
 };
