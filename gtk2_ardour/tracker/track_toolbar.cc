@@ -17,6 +17,8 @@
 */
 
 #include "track_toolbar.h"
+#include "midi_track_toolbar.h"
+#include "audio_track_toolbar.h"
 #include "tracker_editor.h"
 #include "tracker_grid.h"
 #include "tracker_utils.h"
@@ -55,17 +57,33 @@ TrackToolbar::~TrackToolbar ()
 }
 
 void
-TrackToolbar::setup_layout ()
+TrackToolbar::setup ()
 {
 	set_spacing (2);
 
+	setup_label ();
+	setup_delay ();
+	setup_automation ();
+
+	show ();
+
+	setup_tooltips ();
+}
+
+void
+TrackToolbar::setup_label ()
+{
 	// Add label
 	std::string label = track->name();
 	label += ":\t";
 	Gtk::Label* mtt_label = new Gtk::Label (label.c_str());
 	mtt_label->show ();
 	pack_start (*mtt_label, false, false);
+}
 
+void
+TrackToolbar::setup_delay ()
+{
 	// Add visible delay button
 	visible_delay_button.set_name ("visible delay button");
 	visible_delay_button.set_text (S_("Delay|D"));
@@ -73,15 +91,17 @@ TrackToolbar::setup_layout ()
 	visible_delay_button.show ();
 	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &TrackToolbar::visible_delay_press), false);
 	pack_start (visible_delay_button, false, false);
+}
 
+void
+TrackToolbar::setup_automation ()
+{
 	// Add automation button
 	automation_button.set_name ("automation button");
 	automation_button.set_text (S_("Automation|A"));
 	update_automation_button ();
 	automation_button.show ();
 	pack_start (automation_button, false, false);
-
-	show ();
 }
 
 void
@@ -107,18 +127,14 @@ TrackToolbar::visible_delay_press(GdkEventButton* ev)
 void
 TrackToolbar::automation_click ()
 {
-	build_automation_action_menu ();
+	build_automation_menu ();
 	automation_action_menu->popup (1, gtk_get_current_event_time());
 }
 
 void
-TrackToolbar::build_automation_action_menu ()
+TrackToolbar::build_automation_menu ()
 {
 	using namespace Menu_Helpers;
-
-	/* detach subplugin_menu from automation_action_menu before we delete automation_action_menu,
-	   otherwise bad things happen (see comment for similar case in MidiTimeAxisView::build_automation_action_menu)
-	*/
 
 	detach_menu (subplugin_menu);
 
@@ -159,6 +175,7 @@ TrackToolbar::build_automation_action_menu ()
 		gain_automation_item->set_active (grid.is_gain_visible(track_index));
 	}
 
+	// VT: add audio_track_toolbar check
 	if (false /*trim_track*/ /* TODO: support audio track */) {
 		items.push_back (CheckMenuElem (_("Trim"), sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_trim_column_visibility), track_index)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
@@ -360,6 +377,8 @@ TrackToolbar::show_all_main_automations ()
 	gain_automation_item->set_active (true);
 	grid.update_gain_column_visibility (track_index);
 
+	// VT: add trim (and make sure it is only active for audio)
+
 	// Mute
 	mute_automation_item->set_active (true);
 	grid.update_mute_column_visibility (track_index);
@@ -376,6 +395,8 @@ TrackToolbar::show_existing_main_automations ()
 	bool gain_visible = !track_pattern->is_empty(Evoral::Parameter(GainAutomation));
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
+
+	// VT: add trim (and make sure it is only active for audio)
 
 	// Mute
 	bool mute_visible = !track_pattern->is_empty(Evoral::Parameter(MuteAutomation));
@@ -401,6 +422,8 @@ TrackToolbar::hide_main_automations ()
 	// Gain
 	gain_automation_item->set_active (false);
 	grid.update_gain_column_visibility (track_index);
+
+	// VT: add trim (and make sure it is only active for audio)
 
 	// Mute
 	mute_automation_item->set_active (false);
@@ -486,4 +509,40 @@ void
 TrackToolbar::update_automation_button()
 {
 	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &TrackToolbar::automation_click));
+}
+
+bool
+TrackToolbar::is_midi_track_toolbar() const
+{
+	return (bool)midi_track_toolbar();
+}
+
+bool
+TrackToolbar::is_audio_track_toolbar() const
+{
+	return (bool)audio_track_toolbar();
+}
+
+const MidiTrackToolbar*
+TrackToolbar::midi_track_toolbar() const
+{
+	return dynamic_cast<const MidiTrackToolbar*>(this);
+}
+
+MidiTrackToolbar*
+TrackToolbar::midi_track_toolbar()
+{
+	return dynamic_cast<MidiTrackToolbar*>(this);
+}
+
+const AudioTrackToolbar*
+TrackToolbar::audio_track_toolbar() const
+{
+	return dynamic_cast<const AudioTrackToolbar*>(this);
+}
+
+AudioTrackToolbar*
+TrackToolbar::audio_track_toolbar()
+{
+	return dynamic_cast<AudioTrackToolbar*>(this);
 }

@@ -185,7 +185,7 @@ public:
 	Gtk::TreeModel::Row*         current_row;
 	int                          current_col;
 	int                          current_mti; // multi track index
-	MidiTrackPattern*            current_mtp;
+	TrackPattern*                current_mtp;
 	int                          current_mri; // midi region index
 	int                          current_cgi; // column group index
 
@@ -199,7 +199,7 @@ public:
 	// TreeModel::Row*              edit_row;
 	int                          edit_col;
 	int                          edit_mti;
-	MidiTrackPattern*            edit_mtp;
+	TrackPattern*                edit_mtp;
 	int                          edit_mri;
 	int                          edit_cgi;
 	Gtk::CellEditable*           editing_editable;
