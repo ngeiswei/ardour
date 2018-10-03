@@ -34,6 +34,8 @@ namespace Tracker {
 
 class TrackerEditor;
 class TrackerGrid;
+class MidiTrackToolbar;
+class AudioTrackToolbar;
 
 struct ProcessorAutomationNode {
 	ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem)
@@ -71,7 +73,9 @@ public:
 	/**
 	 * Build the toolbar layout
 	 */
-	void setup_layout ();
+	void setup_label ();
+	void setup_delay ();
+	void setup_automation ();
 	void setup_tooltips ();
 
 	/**
@@ -83,7 +87,7 @@ public:
 	/**
 	 * Helpers for building automation menu.
 	 */
-	void build_automation_action_menu ();
+	void build_automation_menu ();
 	void build_controller_menu ();
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
@@ -110,6 +114,13 @@ public:
 	 */
 	void update_visible_delay_button();
 	void update_automation_button();
+
+	bool is_midi_track_toolbar() const;
+	bool is_audio_track_toolbar() const;
+	const MidiTrackToolbar* midi_track_toolbar() const;
+	MidiTrackToolbar* midi_track_toolbar();
+	const AudioTrackToolbar* audio_track_toolbar() const;
+	AudioTrackToolbar* audio_track_toolbar();
 
 	TrackerEditor& tracker_editor;
 	boost::shared_ptr<ARDOUR::Track> track;
