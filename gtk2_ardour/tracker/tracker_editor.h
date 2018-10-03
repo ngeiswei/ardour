@@ -41,6 +41,7 @@
 #include "tracker_types.h"
 #include "main_toolbar.h"
 #include "midi_track_toolbar.h"
+#include "audio_track_toolbar.h"
 #include "tracker_grid.h"
 
 namespace Evoral {
@@ -94,7 +95,7 @@ public:
 	Gtk::Table                   buttons;
 	TrackerGrid                  grid;
 	MainToolbar                  main_toolbar;
-	std::vector<MidiTrackToolbar*> midi_track_toolbars; // TODO: maybe replace that with a map from track to toolbar
+	std::vector<TrackToolbar*>   track_toolbars; // TODO: maybe replace that with a map from track to toolbar
 	Gtk::VBox                    vbox;
 
 	/** connection used to connect to model's ContentsChanged signal */
@@ -103,7 +104,7 @@ public:
 private:
 	void setup_toolbars ();
 	void setup_main_toolbar ();
-	void setup_midi_track_toolbars ();
+	void setup_track_toolbars ();
 	void setup_grid ();
 	void setup_scroller ();
 };

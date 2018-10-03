@@ -329,6 +329,9 @@ MainToolbar::beats_per_row_chosen (GridType st)
 
 	if (ract && ract->get_active()) {
 		set_beats_per_row_to (st);
+
+		// TODO: alternatively send signal to TrackerEditor
+		tracker_editor.grid.redisplay_model ();
 	}
 }
 
@@ -365,9 +368,6 @@ MainToolbar::set_beats_per_row_to (GridType st)
 		/* relax */
 		break;
 	}
-
-	// TODO: alternatively send signal to TrackerEditor
-	tracker_editor.grid.redisplay_model ();
 }
 
 bool
