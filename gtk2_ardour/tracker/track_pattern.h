@@ -50,7 +50,6 @@ public:
 	              Temporal::samplepos_t lst);
 	virtual ~TrackPattern ();
 
-	// TODO: do we need this
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
 	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
 
