@@ -113,7 +113,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			// NT: is this really necessary?
 			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
-		// VT: take care of audio tracks
+		// NT: take care of audio tracks
 	}
 
 	setup_scroller ();
@@ -126,7 +126,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
-	for (vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
+	for (vector<TrackToolbar*>::iterator it = track_toolbars.begin(); it != track_toolbars.end(); ++it)
 		vbox.pack_start (**it, false, false);
 	vbox.pack_start (scroller, true, true);
 
@@ -136,7 +136,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 TrackerEditor::~TrackerEditor ()
 {
-	for (vector<MidiTrackToolbar*>::iterator it = midi_track_toolbars.begin(); it != midi_track_toolbars.end(); ++it)
+	for (vector<TrackToolbar*>::iterator it = track_toolbars.begin(); it != track_toolbars.end(); ++it)
 		delete *it;
 }
 
@@ -172,23 +172,31 @@ TrackerEditor::resize_width()
 void
 TrackerEditor::setup_toolbars ()
 {
-	for (size_t mti = 0; mti < grid.pattern.tps.size(); mti++) {
-		// VT: handle AudioTrackToolbar
-		MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *grid.pattern.tps[mti], mti);
-		// TODO replace by emplace_back when supports C++11
-		midi_track_toolbars.push_back(mttb);
-	}
-
 	main_toolbar.setup ();
-	setup_midi_track_toolbars ();
+	setup_track_toolbars ();
 }
 
 void
-TrackerEditor::setup_midi_track_toolbars ()
+TrackerEditor::setup_track_toolbars ()
 {
-	for (unsigned i = 0; i < midi_track_toolbars.size(); i++) {
-		midi_track_toolbars[i]->setup_processor_menu_and_curves ();
-		midi_track_toolbars[i]->setup ();
+	// Construct track_toolbars
+	for (size_t mti = 0; mti < grid.pattern.tps.size(); mti++) {
+		TrackPattern* tp = grid.pattern.tps[mti];
+		if (tp->is_midi_track_pattern ()) {
+			MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *tp->midi_track_pattern(), mti);
+			track_toolbars.push_back(mttb);
+		} else if (tp->is_midi_track_pattern ()) {
+			AudioTrackToolbar* attb = new AudioTrackToolbar (*this, *tp->audio_track_pattern(), mti);
+			track_toolbars.push_back(attb);
+		} else {
+			cerr << "[ERROR] TrackerEditor::setup_toolbars track type not implemented" << std::endl;
+		}
+	}
+
+	// Setup track_toolbars
+	for (unsigned i = 0; i < track_toolbars.size(); i++) {
+		track_toolbars[i]->setup_processor_menu_and_curves ();
+		track_toolbars[i]->setup ();
 	}
 }
 
