@@ -75,7 +75,7 @@ void AutomationPattern::update()
 void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
 {
 	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actrl);
-	// VT: re-enable connecting automation
+	// NT: re-enable connecting automation
 	// if (result.second)
 	// 	tracker_editor.connect_automation(actrl);
 }
