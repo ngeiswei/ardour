@@ -121,7 +121,7 @@ MidiTrackPattern::update_row_offset()
 }
 
 bool
-MidiTrackPattern::is_defined (int rowi) const
+MidiTrackPattern::is_region_defined (int rowi) const
 {
 	return -1 < to_mri (rowi);
 }
