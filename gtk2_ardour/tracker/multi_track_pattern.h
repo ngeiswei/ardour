@@ -39,8 +39,11 @@ public:
 	MultiTrackPattern (TrackerEditor& te);
 	~MultiTrackPattern ();
 
-	void setup_regions_per_track ();
 	void setup ();
+	void setup_positions ();
+	void setup_regions_per_track ();
+	void setup_track_patterns ();
+	void setup_row_offset ();
 
 	void update ();
 	void update_rows_per_beat ();
@@ -48,9 +51,8 @@ public:
 	void update_earliest_mtp ();  // earliest midi track
 	void update_global_nrows ();  // row_offset, nrows, global_nrows
 
-	// Return true iff the row at mti is defined, that is if such a row and mti
-	// points to an existing region.
-	bool is_defined (uint32_t rowi, size_t mti) const;
+	// Return true iff the row at mti belongs to a region
+	bool is_region_defined (uint32_t rowi, size_t mti) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
@@ -148,9 +150,14 @@ public:
 
 	// Row index offset and number of valid rows per mti
 	TrackPattern*                earliest_tp;
-	std::vector<uint32_t>        row_offset;
-	std::vector<uint32_t>        nrows;
-	uint32_t                     global_nrows;
+	std::vector<uint32_t>        row_offset; // NT: useless
+	std::vector<uint32_t>        nrows;      // NT: useless
+	uint32_t                     global_nrows; // NT: Rename to nrows
+
+	Temporal::samplepos_t position;
+	Temporal::samplecnt_t length;
+	Temporal::samplepos_t first_sample;
+	Temporal::samplepos_t last_sample;
 };
 
 } // ~namespace Tracker

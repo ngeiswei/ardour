@@ -38,6 +38,32 @@ MultiTrackPattern::~MultiTrackPattern ()
 }
 
 void
+MultiTrackPattern::setup ()
+{
+	setup_positions ();
+	setup_regions_per_track ();
+	setup_track_patterns ();
+	setup_row_offset ();
+}
+
+void
+MultiTrackPattern::setup_positions ()
+{
+	// Sort all regions to get the positions
+	std::vector<boost::shared_ptr<ARDOUR::Region> > regions;
+	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
+		boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
+		regions.push_back(region);
+	}
+	std::sort(regions.begin(), regions.end(), region_position_less());
+
+	position = TrackerUtils::get_position(regions);
+	length = TrackerUtils::get_length(regions);
+	first_sample = TrackerUtils::get_first_sample(regions);
+	last_sample = TrackerUtils::get_last_sample(regions);
+}
+
+void
 MultiTrackPattern::setup_regions_per_track ()
 {
 	// Associate track to its regions
@@ -52,24 +78,28 @@ MultiTrackPattern::setup_regions_per_track ()
 }
 
 void
-MultiTrackPattern::setup ()
+MultiTrackPattern::setup_track_patterns()
 {
-	setup_regions_per_track ();
-
 	// TODO: it should follow the order on the piano roll view!
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
 		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(it->first);
 		if (midi_track) {
-			MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, it->first, it->second);
+			MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, it->first, it->second,
+			                                             position, length, first_sample, last_sample);
 			tps.push_back(mtp);
 		}
 		boost::shared_ptr<ARDOUR::AudioTrack> audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack>(it->first);
 		if (audio_track) {
-			AudioTrackPattern* atp = new AudioTrackPattern(tracker_editor, it->first, it->second);
+			AudioTrackPattern* atp = new AudioTrackPattern(tracker_editor, it->first, it->second,
+			                                               position, length, first_sample, last_sample);
 			tps.push_back(atp);
 		}
 	}
+}
 
+void
+MultiTrackPattern::setup_row_offset()
+{
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		row_offset.push_back(0);
 		nrows.push_back(0);
@@ -131,7 +161,7 @@ MultiTrackPattern::update_global_nrows ()
 }
 
 bool
-MultiTrackPattern::is_defined (uint32_t rowi, size_t mti) const
+MultiTrackPattern::is_region_defined (uint32_t rowi, size_t mti) const
 {
 	return tps[mti]->is_defined (to_rri (rowi, mti));
 }
