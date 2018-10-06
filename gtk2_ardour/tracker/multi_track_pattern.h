@@ -54,6 +54,9 @@ public:
 	// Return true iff the row at mti belongs to a region
 	bool is_region_defined (uint32_t rowi, size_t mti) const;
 
+	// Return true iff the row at mti is defined for param
+	bool is_automation_defined (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
+
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
 	Temporal::Beats region_relative_beats (uint32_t rowi, size_t mti, size_t mri, int32_t delay=0) const;
