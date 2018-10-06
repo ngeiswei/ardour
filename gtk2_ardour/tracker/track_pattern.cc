@@ -127,6 +127,12 @@ Evoral::ControlEvent* TrackPattern::get_automation_control_event (uint32_t rowi,
 	return *automations.find(param)->second.find(rowi)->second;
 }
 
+bool
+TrackPattern::is_region_defined (int rowi) const
+{
+	return BasePattern::is_defined (rowi);
+}
+
 int
 TrackPattern::to_rrri (uint32_t rowi, size_t mri) const
 {

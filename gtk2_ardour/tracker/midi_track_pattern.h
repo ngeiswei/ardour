@@ -67,7 +67,7 @@ public:
 	
 	// Return true iff the row is defined, that is if such a row points to an
 	// existing region.
-	bool is_defined (int rowi) const;
+	bool is_region_defined (int rowi) const;
 
 	// Return the row index relative to the start of pattern at region index mri
 	int to_rrri (uint32_t rowi, size_t mri) const;
