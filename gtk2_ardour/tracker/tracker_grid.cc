@@ -785,7 +785,7 @@ void
 TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
 	// If no region then display undefined region
-	if (!pattern.is_region_defined (rowi, mti)) {
+	if (!is_region_defined (rowi, mti)) {
 		redisplay_undefined_region_name (row, mti);
 		return;
 	}
@@ -807,7 +807,7 @@ TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, si
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
 
-	if (!pattern.is_region_defined (rowi, mti)) {
+	if (!is_region_defined (rowi, mti)) {
 		redisplay_undefined_notes (row, mti);
 		return;
 	}
@@ -1150,7 +1150,7 @@ TrackerGrid::get_row_index(const TreeModel::Path& path) const
 }
 
 int
-TrackerGrid::get_col_index(TreeViewColumn* col)
+TrackerGrid::get_col_index(const TreeViewColumn* col)
 {
 	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns();
 
@@ -2009,14 +2009,15 @@ void
 TrackerGrid::vertical_move_edit_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
-	wrap_around_vertical_move (path, edit_mti, steps);
 	TreeViewColumn* col = get_column (edit_col);
+	wrap_around_vertical_move (path, col, steps);
 	set_cursor (path, *col, true);
 }
 
 void
-TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int mti, int steps)
+TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps)
 {
+	int mti = get_mti(col);
 	// TODO: make sure that steps is equal to or lower than nrows[mti]
 	assert (std::abs(steps) <= pattern.nrows[mti]);
 
@@ -2026,7 +2027,7 @@ TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int mti, int step
 		if (path[0] < 0)
 			path[0] += pattern.global_nrows;
 		path[0] %= pattern.global_nrows;
-	} while (!is_region_defined (path, mti)); // VT: use finer grain is_defined
+	} while (!is_defined (path, col));
 }
 
 void
@@ -2092,17 +2093,31 @@ TrackerGrid::is_editable (TreeViewColumn* col) const
 }
 
 bool
-TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col) const
+TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 {
-	// VT: use something finer that is_region_defined
-	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
-	return tc && is_region_defined (path, get_mti(col));
+	int rowi = get_row_index (path);
+	int mti = get_mti(col);
+	if (is_note_type (col)) {
+		const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
+		return tc && is_region_defined (rowi, mti);
+	} else {
+		size_t coli = get_col_index (col);
+		ColParamBimap::left_const_iterator it = col2params[mti].left.find(coli);
+		Evoral::Parameter param = it->second;
+		return pattern.is_automation_defined (rowi, mti, param);
+	}
 }
 
 bool
 TrackerGrid::is_region_defined (const Gtk::TreeModel::Path& path, int mti) const
 {
-	return pattern.is_region_defined (get_row_index (path), mti);
+	return is_region_defined (get_row_index (path), mti);
+}
+
+bool
+TrackerGrid::is_region_defined (uint32_t rowi, int mti) const
+{
+	return pattern.is_region_defined (rowi, mti);
 }
 
 size_t
@@ -2131,6 +2146,13 @@ TrackerGrid::get_auto_type(const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 	return tc->auto_type;
+}
+
+bool
+TrackerGrid::is_note_type(const Gtk::TreeViewColumn* col) const
+{
+	return get_note_type(col) != TrackerColumn::SEPARATOR
+		&& get_auto_type(col) == TrackerColumn::AUTOMATION_SEPARATOR;
 }
 
 void
@@ -2884,8 +2906,8 @@ void
 TrackerGrid::vertical_move_current_cursor (int steps)
 {
 	TreeModel::Path path = current_path;
-	wrap_around_vertical_move (path, current_mti, steps);
 	TreeViewColumn* col = get_column (current_col);
+	wrap_around_vertical_move (path, col, steps);
 	set_current_cursor (path, col);
 }
 
