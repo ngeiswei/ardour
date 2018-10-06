@@ -34,7 +34,11 @@ class MidiTrackPattern : public TrackAutomationPattern {
 public:
 	MidiTrackPattern (TrackerEditor& te,
 	                  boost::shared_ptr<ARDOUR::Track> track,
-	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
+	                  Temporal::samplepos_t position,
+	                  Temporal::samplecnt_t length,
+	                  Temporal::samplepos_t first_sample,
+	                  Temporal::samplepos_t last_sample);
 	virtual ~MidiTrackPattern ();
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);

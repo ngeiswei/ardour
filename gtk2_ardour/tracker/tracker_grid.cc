@@ -750,14 +750,13 @@ TrackerGrid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
 }
 
 void
-TrackerGrid::redisplay_undefined (TreeModel::Row& row, size_t mti)
+TrackerGrid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
 
 	// Number of column groups
 	size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
-	row[columns.midi_region_name[mti]] = "";
 	for (size_t cgi = 0; cgi < ntracks; cgi++) {
 		// cgi stands from column group index
 		row[columns.note_name[mti][cgi]] = "";
@@ -777,8 +776,20 @@ TrackerGrid::redisplay_undefined (TreeModel::Row& row, size_t mti)
 }
 
 void
+TrackerGrid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
+{
+	row[columns.midi_region_name[mti]] = "";
+}
+
+void
 TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
+	// If no region then display undefined region
+	if (!pattern.is_region_defined (rowi, mti)) {
+		redisplay_undefined_region_name (row, mti);
+		return;
+	}
+
 	// Render midi region name (for now midi track name). Display names
 	// vertically.
 	const string& name = pattern.midi_region(mti, mri)->name();
@@ -795,6 +806,11 @@ TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, si
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
+
+	if (!pattern.is_region_defined (rowi, mti)) {
+		redisplay_undefined_notes (row, mti);
+		return;
+	}
 
 	// Render midi notes pattern
 	for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks(); cgi++) { // cgi stands from column group index
@@ -819,6 +835,11 @@ TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, si
 void
 TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
+	if (!pattern.is_region_defined (rowi, mti)) {
+		// VT: support fined grain redisplay_undefined_automations
+		return;
+	}
+
 	// Render automation pattern
 	for (ColParamBimap::left_const_iterator cp_it = col2params[mti].left.begin(); cp_it != col2params[mti].left.end(); ++cp_it) {
 		size_t col_idx = cp_it->first;
@@ -1025,6 +1046,22 @@ TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, s
 }
 
 void
+TrackerGrid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
+{
+	// Get corresponding background color
+	string row_background_color = row[columns._background_color];
+
+	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		// Get the region's index, -1 if undefined
+		int mri = pattern.to_mri (rowi, mti);
+
+		redisplay_region_name (row, rowi, mti, mri);
+		redisplay_notes (row, rowi, mti, mri);
+		redisplay_automations (row, rowi, mti, mri);
+	}
+}
+
+void
 TrackerGrid::redisplay_model ()
 {
 	if (editing_editable)
@@ -1055,23 +1092,8 @@ TrackerGrid::redisplay_model ()
 			// Get row
 			TreeModel::Row row = *row_it++;
 
-			// Get corresponding background color
-			string row_background_color = row[columns._background_color];
-
-			for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-				// Undefined
-				// VT: take track automation into account, for that multi track offset should be set to 0 and all track automations should be defined accross all rows
-				if (!pattern.is_defined (rowi, mti)) {
-					redisplay_undefined (row, mti);
-					continue;
-				}
-
-				int mri = pattern.to_mri (rowi, mti);
-
-				redisplay_region_name (row, rowi, mti, mri);
-				redisplay_notes (row, rowi, mti, mri);
-				redisplay_automations (row, rowi, mti, mri);	
-			}
+			// Display row
+			redisplay_row(row, rowi);
 
 			// Used to draw the background of the cursor
 			if ((int)rowi == current_rowi) {
@@ -1990,7 +2012,7 @@ TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, int mti, int step
 		if (path[0] < 0)
 			path[0] += pattern.global_nrows;
 		path[0] %= pattern.global_nrows;
-	} while (!is_defined (path, mti));
+	} while (!is_region_defined (path, mti)); // VT: use finer grain is_defined
 }
 
 void
@@ -2058,14 +2080,15 @@ TrackerGrid::is_editable (TreeViewColumn* col) const
 bool
 TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col) const
 {
+	// VT: use something finer that is_region_defined
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
-	return tc && is_defined (path, get_mti(col));
+	return tc && is_region_defined (path, get_mti(col));
 }
 
 bool
-TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, int mti) const
+TrackerGrid::is_region_defined (const Gtk::TreeModel::Path& path, int mti) const
 {
-	return pattern.is_defined (get_row_index (path), mti);
+	return pattern.is_region_defined (get_row_index (path), mti);
 }
 
 size_t
