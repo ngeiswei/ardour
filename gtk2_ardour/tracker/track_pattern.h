@@ -67,6 +67,7 @@ public:
 	virtual bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	virtual size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	virtual Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+	virtual bool is_region_defined (int rowi) const;
 	virtual int to_rrri (uint32_t rowi, size_t mri) const;
 	virtual int to_rrri (uint32_t rowi) const;
 	virtual int to_mri (uint32_t rowi) const;

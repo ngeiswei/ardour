@@ -146,6 +146,7 @@ public:
 	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
 	void redisplay_notes (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
+	void redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_automations (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);

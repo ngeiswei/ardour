@@ -833,22 +833,25 @@ TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, si
 }
 
 void
+TrackerGrid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	// Set undefined background color
+	row[columns._automation_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._automation_delay_background_color[mti][cgi]] = gtk_bases_color;
+
+	// Set empty forground
+	row[columns.automation[mti][cgi]] = "";
+	row[columns.automation_delay[mti][cgi]] = "";
+}
+
+void
 TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
-	if (!pattern.is_region_defined (rowi, mti)) {
-		// VT: support fined grain redisplay_undefined_automations
-		return;
-	}
-
 	// Render automation pattern
 	for (ColParamBimap::left_const_iterator cp_it = col2params[mti].left.begin(); cp_it != col2params[mti].left.end(); ++cp_it) {
 		size_t col_idx = cp_it->first;
 		ColAutoTrackBimap::left_const_iterator ca_it = col2autotracks[mti].left.find(col_idx);
 		size_t cgi = ca_it->second;
-
-		const Evoral::Parameter& param = cp_it->second;
-		size_t auto_count = pattern.get_automation_list_count(rowi, mti, mri, param);
-
 		if (cgi >= MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK) {
 			// TODO: use Ardour log
 			cout << "Warning: The automation track number " << cgi
@@ -856,6 +859,17 @@ TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t m
 			          << MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK << endl;
 			continue;
 		}
+
+		const Evoral::Parameter& param = cp_it->second;
+
+		// Display undefined
+		if (!pattern.is_automation_defined (rowi, mti, param)) {
+			redisplay_undefined_automation (row, mti, cgi);
+			continue;
+		}
+
+		// Display defined
+		size_t auto_count = pattern.get_automation_list_count(rowi, mti, mri, param);
 
 		// Fill background colors
 		redisplay_auto_background (row, mti, cgi);
