@@ -88,7 +88,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	set_session (s);
 
 	// Build tracks, midi_time_axis_views and routes
-	
+
 	// NT: try to understand how regions are ordered, to take
 	// advantage of it to order tracks and views
 	int i = 0;

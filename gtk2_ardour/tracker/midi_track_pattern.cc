@@ -26,8 +26,12 @@ using namespace Tracker;
 
 MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     boost::shared_ptr<ARDOUR::Track> trk,
-                                    const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
-	: TrackAutomationPattern(te, trk, regions)
+                                    const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
+                                    Temporal::samplepos_t position,
+                                    Temporal::samplecnt_t length,
+                                    Temporal::samplepos_t first_sample,
+                                    Temporal::samplepos_t last_sample)
+	: TrackAutomationPattern(te, trk, position, length, first_sample, last_sample)
 	, midi_track(boost::static_pointer_cast<ARDOUR::MidiTrack>(trk))
 	, row_offset(regions.size(), 0)
 {

@@ -142,8 +142,9 @@ public:
 	void read_colors ();         // Read colors from config
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_undefined (Gtk::TreeModel::Row& row, size_t mti); // Display undefined row at mti
+	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
+	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
 	void redisplay_notes (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_automations (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
@@ -156,7 +157,8 @@ public:
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
-	void redisplay_model ();    // TODO rename
+	void redisplay_row (Gtk::TreeModel::Row& row, uint32_t rowi);
+	void redisplay_model ();
 
 	TrackerEditor& tracker_editor;
 
@@ -279,7 +281,7 @@ private:
 
 	// Check if the cell is defined at all
 	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
-	bool is_defined (const Gtk::TreeModel::Path& path, int mti) const;
+	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 
 	size_t get_mti(const Gtk::TreeViewColumn* col) const;
 	size_t get_cgi(const Gtk::TreeViewColumn* col) const;
