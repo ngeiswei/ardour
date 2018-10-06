@@ -163,7 +163,13 @@ MultiTrackPattern::update_global_nrows ()
 bool
 MultiTrackPattern::is_region_defined (uint32_t rowi, size_t mti) const
 {
-	return tps[mti]->is_defined (to_rri (rowi, mti));
+	return tps[mti]->is_region_defined (to_rri (rowi, mti));
+}
+
+bool
+MultiTrackPattern::is_automation_defined (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ? is_region_defined (rowi, mti) : tps[mti]->is_defined (to_rri (rowi, mti));
 }
 
 Temporal::Beats
