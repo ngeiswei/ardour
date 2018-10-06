@@ -192,7 +192,6 @@ public:
 	int                          current_mri; // midi region index
 	int                          current_cgi; // column group index
 
-	// TODO: probably not necessary
 	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
 	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
 
@@ -224,7 +223,7 @@ private:
 	/////////////////////
 
 	// Move a path by s steps, wrapping around so that is remains [0, nrows).
-	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, int mti, int s);
+	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s);
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns
@@ -260,7 +259,8 @@ private:
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.
-	int get_col_index (Gtk::TreeViewColumn* col);
+	// Warning: can't be const because of a get_columns()
+	int get_col_index (const Gtk::TreeViewColumn* col);
 
 	// Play note
 	void play_note(int mti, uint8_t pitch);
@@ -281,13 +281,16 @@ private:
 	bool is_editable (Gtk::TreeViewColumn* col) const;
 
 	// Check if the cell is defined at all
-	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
+	// Warning: can't be const because of get_col_index
+	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
+	bool is_region_defined (uint32_t rowi, int mti) const;
 
 	size_t get_mti(const Gtk::TreeViewColumn* col) const;
 	size_t get_cgi(const Gtk::TreeViewColumn* col) const;
 	TrackerColumn::midi_note_type get_note_type(const Gtk::TreeViewColumn* col) const;
 	TrackerColumn::automation_type get_auto_type(const Gtk::TreeViewColumn* col) const;
+	bool is_note_type(const Gtk::TreeViewColumn* col) const;
 
 	// Move the editing cursor steps columns rightwards, or leftwards if steps
 	// is negative.
