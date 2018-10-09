@@ -45,6 +45,8 @@ MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp, si
 	, visible_channel (false)
 	, visible_velocity (false)
 {
+	setup_processor_menu_and_curves ();
+	setup ();
 }
 
 MidiTrackToolbar::~MidiTrackToolbar ()
@@ -122,6 +124,17 @@ MidiTrackToolbar::setup_rm_add_note_col ()
 	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::add_note_column_press), false);
 	add_note_column_button.show ();
 	pack_start (add_note_column_button, false, false);
+}
+
+void
+MidiTrackToolbar::setup_automation ()
+{
+	// Add automation button
+	automation_button.set_name ("automation button");
+	automation_button.set_text (S_("Automation|A"));
+	update_automation_button ();
+	automation_button.show ();
+	pack_start (automation_button, false, false);
 }
 
 void
@@ -667,4 +680,10 @@ void
 MidiTrackToolbar::update_add_note_column_button ()
 {
 	add_note_column_button.set_sensitive (midi_track_pattern.get_ntracks() < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK);
+}
+
+void
+MidiTrackToolbar::update_automation_button()
+{
+	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackToolbar::automation_click));
 }

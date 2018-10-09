@@ -79,10 +79,6 @@ public:
 
 	bool is_auto_displayable (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
-	// VN TODO do we need that?
-	// const AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param) const;
-	// AutomationPattern* get_automation_pattern (size_t mti, const Evoral::Parameter& param);
-
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	size_t get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
