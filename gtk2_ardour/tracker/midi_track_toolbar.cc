@@ -59,11 +59,11 @@ MidiTrackToolbar::setup ()
 	set_spacing (2);
 
 	setup_label ();
+	setup_rm_add_note_col ();
 	setup_note ();
 	setup_channel ();
 	setup_velocity ();
 	setup_delay ();
-	setup_rm_add_note_col ();
 	setup_automation ();
 
 	show ();
@@ -111,8 +111,6 @@ void
 MidiTrackToolbar::setup_rm_add_note_col ()
 {
 	// Remove/add note column
-	rm_add_note_column_separator.show ();
-	pack_start (rm_add_note_column_separator, false, false);
 	remove_note_column_button.set_name ("remove note column");
 	remove_note_column_button.set_text (S_("Remove|-"));
 	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::remove_note_column_press), false);
@@ -124,11 +122,19 @@ MidiTrackToolbar::setup_rm_add_note_col ()
 	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::add_note_column_press), false);
 	add_note_column_button.show ();
 	pack_start (add_note_column_button, false, false);
+
+	// Separator
+	pack_start (rm_add_note_column_separator, false, false);
+	rm_add_note_column_separator.show ();
 }
 
 void
 MidiTrackToolbar::setup_automation ()
 {
+	// Separator
+	pack_start (automation_separator, false, false);
+	automation_separator.show ();
+
 	// Add automation button
 	automation_button.set_name ("automation button");
 	automation_button.set_text (S_("Automation|A"));
@@ -143,6 +149,7 @@ MidiTrackToolbar::setup_tooltips ()
 	set_tooltip (visible_note_button, _("Toggle note visibility"));
 	set_tooltip (visible_channel_button, _("Toggle channel visibility"));
 	set_tooltip (visible_velocity_button, _("Toggle velocity visibility"));
+	set_tooltip (visible_delay_button, _("Toggle delay visibility"));
 	set_tooltip (remove_note_column_button, _("Remove note column"));
 	set_tooltip (add_note_column_button, _("Add note column"));
 	set_tooltip (automation_button, _("MIDI Controllers and Automation"));
@@ -235,6 +242,20 @@ MidiTrackToolbar::build_automation_menu ()
 {
 	TrackToolbar::build_automation_menu ();
 	build_midi_automation_menu ();
+}
+
+void
+MidiTrackToolbar::build_show_hide_automations (Menu_Helpers::MenuList& items)
+{
+	using namespace Menu_Helpers;
+	items.push_back (MenuElem (_("Show All Automation"),
+	                           sigc::mem_fun (*this, &MidiTrackToolbar::show_all_automation)));
+
+	items.push_back (MenuElem (_("Show Existing Automation"),
+	                           sigc::mem_fun (*this, &MidiTrackToolbar::show_existing_automation)));
+
+	items.push_back (MenuElem (_("Hide All Automation"),
+	                           sigc::mem_fun (*this, &MidiTrackToolbar::hide_all_automation)));
 }
 
 void
