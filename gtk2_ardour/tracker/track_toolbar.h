@@ -88,6 +88,7 @@ public:
 	 * Helpers for building automation menu.
 	 */
 	void build_automation_menu ();
+	virtual void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void build_controller_menu ();
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
@@ -130,6 +131,7 @@ public:
 
 	ArdourWidgets::ArdourButton  visible_delay_button;
 	bool                         visible_delay;
+	Gtk::VSeparator              automation_separator;
 	ArdourWidgets::ArdourButton  automation_button;
 	Gtk::Menu                    subplugin_menu;
 	Gtk::Menu*                   automation_action_menu;
