@@ -70,6 +70,7 @@ public:
 	 * Helpers for building automation menu.
 	 */
 	void build_automation_menu ();
+	void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void build_midi_automation_menu ();
 	void build_controller_menu ();
 	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items,

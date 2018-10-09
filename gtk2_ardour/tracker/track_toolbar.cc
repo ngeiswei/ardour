@@ -96,6 +96,10 @@ TrackToolbar::setup_delay ()
 void
 TrackToolbar::setup_automation ()
 {
+	// Separator
+	pack_start (automation_separator, false, false);
+	automation_separator.show ();
+
 	// Add automation button
 	automation_button.set_name ("automation button");
 	automation_button.set_text (S_("Automation|A"));
@@ -145,14 +149,7 @@ TrackToolbar::build_automation_menu ()
 
 	automation_action_menu->set_name ("ArdourContextMenu");
 
-	items.push_back (MenuElem (_("Show All Automation"),
-	                           sigc::mem_fun (*this, &TrackToolbar::show_all_automation)));
-
-	items.push_back (MenuElem (_("Show Existing Automation"),
-	                           sigc::mem_fun (*this, &TrackToolbar::show_existing_automation)));
-
-	items.push_back (MenuElem (_("Hide All Automation"),
-	                           sigc::mem_fun (*this, &TrackToolbar::hide_all_automation)));
+	build_show_hide_automations (items);
 
 	/* Attach the plugin submenu. It may have previously been used elsewhere,
 	   so it was detached above
@@ -193,6 +190,20 @@ TrackToolbar::build_automation_menu ()
 		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		pan_automation_item->set_active (grid.is_pan_visible(track_index));
 	}
+}
+
+void
+TrackToolbar::build_show_hide_automations (Menu_Helpers::MenuList& items)
+{
+	using namespace Menu_Helpers;
+	items.push_back (MenuElem (_("Show All Automation"),
+	                           sigc::mem_fun (*this, &TrackToolbar::show_all_automation)));
+
+	items.push_back (MenuElem (_("Show Existing Automation"),
+	                           sigc::mem_fun (*this, &TrackToolbar::show_existing_automation)));
+
+	items.push_back (MenuElem (_("Hide All Automation"),
+	                           sigc::mem_fun (*this, &TrackToolbar::hide_all_automation)));
 }
 
 /** Set up the processor menu for the current set of processors, and
