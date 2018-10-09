@@ -26,6 +26,8 @@ AudioTrackToolbar::AudioTrackToolbar (TrackerEditor& te,
 	// : TrackToolbar(te, dynamic_cast<TrackPattern*>(&atp), mti)
 	: TrackToolbar(te, &atp, mti)
 {
+	setup_processor_menu_and_curves ();
+	setup ();
 }
 
 AudioTrackToolbar::~AudioTrackToolbar ()
