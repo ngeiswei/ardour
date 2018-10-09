@@ -80,7 +80,7 @@ namespace Tracker {
 TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	: ArdourWindow (window_name(rs))
 	, session(s)
-	, public_editor(dynamic_cast<MidiRegionView*>(rs.front())->midi_view ()->editor ())
+	, public_editor(dynamic_cast<RouteTimeAxisView&>(rs.front()->get_time_axis_view ()).editor ())
 	, region_selection(rs)
 	, grid (*this)
 	, main_toolbar (*this)
@@ -126,8 +126,9 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
-	for (vector<TrackToolbar*>::iterator it = track_toolbars.begin(); it != track_toolbars.end(); ++it)
+	for (vector<TrackToolbar*>::iterator it = track_toolbars.begin(); it != track_toolbars.end(); ++it) {
 		vbox.pack_start (**it, false, false);
+	}
 	vbox.pack_start (scroller, true, true);
 
 	add (vbox);
@@ -183,20 +184,14 @@ TrackerEditor::setup_track_toolbars ()
 	for (size_t mti = 0; mti < grid.pattern.tps.size(); mti++) {
 		TrackPattern* tp = grid.pattern.tps[mti];
 		if (tp->is_midi_track_pattern ()) {
-			MidiTrackToolbar* mttb = new MidiTrackToolbar (*this, *tp->midi_track_pattern(), mti);
+			TrackToolbar* mttb = new MidiTrackToolbar (*this, *tp->midi_track_pattern(), mti);
 			track_toolbars.push_back(mttb);
-		} else if (tp->is_midi_track_pattern ()) {
-			AudioTrackToolbar* attb = new AudioTrackToolbar (*this, *tp->audio_track_pattern(), mti);
+		} else if (tp->is_audio_track_pattern ()) {
+			TrackToolbar* attb = new AudioTrackToolbar (*this, *tp->audio_track_pattern(), mti);
 			track_toolbars.push_back(attb);
 		} else {
 			cerr << "[ERROR] TrackerEditor::setup_toolbars track type not implemented" << std::endl;
 		}
-	}
-
-	// Setup track_toolbars
-	for (unsigned i = 0; i < track_toolbars.size(); i++) {
-		track_toolbars[i]->setup_processor_menu_and_curves ();
-		track_toolbars[i]->setup ();
 	}
 }
 
@@ -216,11 +211,8 @@ window_name(RegionSelection& rs)
 	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
 		wn += " ";
 		if (wn.size() <= wn_max_size) {
-			MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
-			if (mrv) {
-				boost::shared_ptr<MidiRegion> midi_region = mrv->midi_region();
-				wn += midi_region->name();
-			}
+			boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
+			wn += region->name();
 		} else {
 			wn += "...";
 			break;
