@@ -421,15 +421,14 @@ void
 TrackerGrid::redisplay_visible_note()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (!pattern.tps[mti]->is_midi_track_pattern())
-			continue;
-
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
+			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
-		tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_note_button ();
+		if (tracker_editor.track_toolbars[mti]->is_midi_track_toolbar())
+			tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_note_button ();
 	}
 
 	// Keep the window width to its minimum
@@ -455,16 +454,15 @@ void
 TrackerGrid::redisplay_visible_channel()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (!pattern.tps[mti]->is_midi_track_pattern())
-			continue;
-
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
+			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
 		}
-		tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_channel_button ();
+		if (tracker_editor.track_toolbars[mti]->is_midi_track_toolbar())
+			tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_channel_button ();
 	}
 
 	// Keep the window width to its minimum
@@ -481,16 +479,15 @@ void
 TrackerGrid::redisplay_visible_velocity()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (!pattern.tps[mti]->is_midi_track_pattern())
-			continue;
-
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool visible = i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
+			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
 		}
-		tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_velocity_button ();
+		if (tracker_editor.track_toolbars[mti]->is_midi_track_toolbar())
+			tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_velocity_button ();
 	}
 
 	// Keep the window width to its minimum
@@ -508,8 +505,7 @@ TrackerGrid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			// VT: support audio tracks
-			bool visible = tracker_editor.track_toolbars[mti]->is_midi_track_toolbar()
+			bool visible = pattern.tps[mti]->is_midi_track_pattern()
 				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
 				&& tracker_editor.track_toolbars[mti]->visible_delay;
@@ -534,20 +530,19 @@ void
 TrackerGrid::redisplay_visible_note_separator()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (!pattern.tps[mti]->is_midi_track_pattern())
-			continue;
-
-		bool is_last_mti = mti == (pattern.tps.size() - 1);
-		bool hva = has_visible_automation(mti);
-		size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
-		bool visible_note = tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note && 0 < ntracks;
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
-			bool is_first_gci = (i == 0);
-			bool visible;
-			if (is_last_mti && !hva && !visible_note) {
-				visible = is_first_gci;
-			} else {
-				visible = visible_note && (i < ntracks - ((hva || is_last_mti) ? 0 : 1));
+			bool visible = false;
+			if (pattern.tps[mti]->is_midi_track_pattern()) {
+				bool is_last_mti = mti == (pattern.tps.size() - 1);
+				bool hva = has_visible_automation(mti);
+				size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
+				bool visible_note = tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note && 0 < ntracks;
+				bool is_first_gci = (i == 0);
+				if (is_last_mti && !hva && !visible_note) {
+					visible = is_first_gci;
+				} else {
+					visible = visible_note && (i < ntracks - ((hva || is_last_mti) ? 0 : 1));
+				}
 			}
 			get_column(note_separator_colnum(mti, i))->set_visible (visible);
 		}
@@ -785,6 +780,7 @@ TrackerGrid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 void
 TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
+	// VT: use track name for audio
 	// If no region then display undefined region
 	if (!is_region_defined (rowi, mti)) {
 		redisplay_undefined_region_name (row, mti);
