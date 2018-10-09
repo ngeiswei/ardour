@@ -52,6 +52,7 @@ public:
 	void setup_channel ();
 	void setup_velocity ();
 	void setup_rm_add_note_col ();
+	void setup_automation ();
 	void setup_tooltips ();
 
 	/**
@@ -71,9 +72,13 @@ public:
 	void build_automation_menu ();
 	void build_midi_automation_menu ();
 	void build_controller_menu ();
-	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, ARDOUR::AutomationType auto_type, uint8_t cmd);
-	void add_single_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
-	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items, int ctl, const std::string& name);
+	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items,
+	                                    const std::string& label,
+	                                    ARDOUR::AutomationType auto_type, uint8_t cmd);
+	void add_single_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items,
+	                                         int ctl, const std::string& name);
+	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items,
+	                                        int ctl, const std::string& name);
 	Gtk::CheckMenuItem* automation_child_menu_item (const Evoral::Parameter& param);
 
 	/**
@@ -95,6 +100,7 @@ public:
 	void update_visible_velocity_button();
 	void update_remove_note_column_button ();
 	void update_add_note_column_button ();
+	void update_automation_button();
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	MidiTrackPattern& midi_track_pattern;

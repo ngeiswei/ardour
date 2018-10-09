@@ -130,7 +130,7 @@ Evoral::ControlEvent* TrackPattern::get_automation_control_event (uint32_t rowi,
 bool
 TrackPattern::is_region_defined (int rowi) const
 {
-	return BasePattern::is_defined (rowi);
+	return false;
 }
 
 int
