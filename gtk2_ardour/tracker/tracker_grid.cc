@@ -508,6 +508,7 @@ TrackerGrid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
+			// VT: support audio tracks
 			bool visible = tracker_editor.track_toolbars[mti]->is_midi_track_toolbar()
 				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
@@ -790,8 +791,7 @@ TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t m
 		return;
 	}
 
-	// Render midi region name (for now midi track name). Display names
-	// vertically.
+	// Render midi region name. Display names vertically
 	const string& name = pattern.midi_region(mti, mri)->name();
 	uint32_t name_offset_idx = pattern.to_rrri(rowi, mti, mri) % (name.size() + 1);
 	const static string name_sep(" ");
