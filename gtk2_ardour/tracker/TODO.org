@@ -1,4 +1,4 @@
-- Have track automations defined all the way
+- Support super-header with track name and track toolbar in it
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix focus. When mouse click on grid, it should be enough to have the focus on it.
 - Create wscript under tracker folder
@@ -9,6 +9,5 @@
 - Add shortcut for parameters, steps, etc
 - Add copy/move, etc, notes + popup menu
 - Transfer Ardour shortcuts, spacebar, etc
-- Add piano keyboard display (see gtk_pianokeyboard.h)
-- Perhaps use one delay button for note and another delay button for automation
 - Support layered regions
+- Add piano keyboard display (see gtk_pianokeyboard.h)
