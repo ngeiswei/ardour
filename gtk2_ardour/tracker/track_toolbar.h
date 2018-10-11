@@ -101,7 +101,7 @@ public:
 	void show_all_automation ();
 	void show_existing_automation ();
 	void hide_all_automation ();
-	// Show/hide gain, mute and pan
+	// Show/hide gain, trim, mute and pan
 	void show_all_main_automations ();
 	void show_existing_main_automations ();
 	void hide_main_automations ();

@@ -108,6 +108,7 @@ public:
 
 	// Return true if the gain column is visible
 	bool is_gain_visible (size_t mti) const;
+	bool is_trim_visible (size_t mti) const;
 	bool is_mute_visible (size_t mti) const;
 	bool is_pan_visible (size_t mti) const;
 	void update_gain_column_visibility (size_t mti);
