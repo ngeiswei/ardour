@@ -67,6 +67,9 @@ void TrackAutomationPattern::setup_main_automation_controls ()
 	// Gain
 	AutomationPattern::insert(track->gain_control());
 
+	// Trim
+	AutomationPattern::insert(track->trim_control());
+
 	// Mute
 	AutomationPattern::insert(track->mute_control());
 
