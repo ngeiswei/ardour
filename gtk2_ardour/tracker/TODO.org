@@ -1,4 +1,3 @@
-- Support audio tracks and trim automation
 - Have track automations defined all the way
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix focus. When mouse click on grid, it should be enough to have the focus on it.

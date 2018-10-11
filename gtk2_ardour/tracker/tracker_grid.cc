@@ -313,6 +313,13 @@ TrackerGrid::is_gain_visible(size_t mti) const
 };
 
 bool
+TrackerGrid::is_trim_visible(size_t mti) const
+{
+	return visible_automation_columns.find(trim_columns[mti])
+		!= visible_automation_columns.end();
+};
+
+bool
 TrackerGrid::is_mute_visible(size_t mti) const
 {
 	return visible_automation_columns.find(mute_columns[mti])
@@ -352,21 +359,25 @@ TrackerGrid::update_gain_column_visibility (size_t mti)
 	redisplay_model ();
 }
 
-// VT: support trim
 void
 TrackerGrid::update_trim_column_visibility (size_t mti)
 {
-	// bool const showit = trim_automation_item->get_active();
+	const bool showit = tracker_editor.track_toolbars[mti]->trim_automation_item->get_active();
 
-	// if (showit != string_is_affirmative (trim_track->gui_property ("visible"))) {
-	// 	trim_track->set_marked_for_display (showit);
+	if (trim_columns[mti] == 0)
+		trim_columns[mti] = add_main_automation_column(mti, Evoral::Parameter(TrimAutomation));
 
-	// 	/* now trigger a redisplay */
+	// Still no column available, abort
+	if (trim_columns[mti] == 0)
+		return;
 
-	// 	if (!no_redraw) {
-	// 		 track_editor.midi_tracks.front()->gui_changed (X_("visible_tracks"), (void *) 0); /* EMIT_SIGNAL */
-	// 	}
-	// }
+	if (showit)
+		visible_automation_columns.insert (trim_columns[mti]);
+	else
+		visible_automation_columns.erase (trim_columns[mti]);
+
+	/* now trigger a redisplay */
+	redisplay_model ();
 }
 
 void
@@ -3063,6 +3074,10 @@ TrackerGrid::non_editing_key_press (GdkEventKey* ev)
 bool
 TrackerGrid::non_editing_key_release (GdkEventKey* ev)
 {
+	// Make sure the current mti is a midi track
+	if (!pattern.tps[current_mti]->is_midi_track_pattern())
+		return false;
+
 	bool ret = false;
 
 	switch (ev->keyval) {
