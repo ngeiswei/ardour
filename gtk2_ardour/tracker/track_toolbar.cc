@@ -172,11 +172,10 @@ TrackToolbar::build_automation_menu ()
 		gain_automation_item->set_active (grid.is_gain_visible(track_index));
 	}
 
-	// VT: add audio_track_toolbar check
-	if (false /*trim_track*/ /* TODO: support audio track */) {
+	if (is_audio_track_toolbar() /*trim_track*/) {
 		items.push_back (CheckMenuElem (_("Trim"), sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_trim_column_visibility), track_index)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		trim_automation_item->set_active (false);
+		trim_automation_item->set_active (grid.is_trim_visible(track_index));
 	}
 
 	if (true /*mute_track*/) {
@@ -388,7 +387,11 @@ TrackToolbar::show_all_main_automations ()
 	gain_automation_item->set_active (true);
 	grid.update_gain_column_visibility (track_index);
 
-	// VT: add trim (and make sure it is only active for audio)
+	// Trim
+	if (is_audio_track_toolbar()) {
+		trim_automation_item->set_active (true);
+		grid.update_trim_column_visibility (track_index);
+	}
 
 	// Mute
 	mute_automation_item->set_active (true);
@@ -407,7 +410,12 @@ TrackToolbar::show_existing_main_automations ()
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
 
-	// VT: add trim (and make sure it is only active for audio)
+	// Trim
+	if (is_audio_track_toolbar()) {
+		bool trim_visible = !track_pattern->is_empty(Evoral::Parameter(GainAutomation));
+		trim_automation_item->set_active (trim_visible);
+		grid.update_gain_column_visibility (track_index);
+	}
 
 	// Mute
 	bool mute_visible = !track_pattern->is_empty(Evoral::Parameter(MuteAutomation));
@@ -434,7 +442,11 @@ TrackToolbar::hide_main_automations ()
 	gain_automation_item->set_active (false);
 	grid.update_gain_column_visibility (track_index);
 
-	// VT: add trim (and make sure it is only active for audio)
+	// Trim
+	if (is_audio_track_toolbar()) {
+		trim_automation_item->set_active (false);
+		grid.update_trim_column_visibility (track_index);
+	}
 
 	// Mute
 	mute_automation_item->set_active (false);
