@@ -66,7 +66,7 @@ public:
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
 		Gtk::TreeModelColumn<std::string> time;
-		Gtk::TreeModelColumn<std::string> midi_region_name[MAX_NUMBER_OF_MIDI_TRACKS];
+		Gtk::TreeModelColumn<std::string> region_name[MAX_NUMBER_OF_MIDI_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];
 		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_MIDI_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS];

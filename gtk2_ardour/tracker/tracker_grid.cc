@@ -109,7 +109,7 @@ TrackerGrid::TrackerGridModelColumns::TrackerGridModelColumns()
 	add (_family);
 	add (time);
 	for (size_t mti /* midi track index */ = 0; mti < MAX_NUMBER_OF_MIDI_TRACKS; mti++) {
-		add (midi_region_name[mti]);
+		add (region_name[mti]);
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			add (note_name[mti][i]);
 			add (_note_background_color[mti][i]);
@@ -785,13 +785,24 @@ TrackerGrid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
 void
 TrackerGrid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 {
-	row[columns.midi_region_name[mti]] = "";
+	row[columns.region_name[mti]] = "";
 }
 
 void
 TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
-	// VT: use track name for audio
+	// TODO: for now (till it gets displayed as super header) use track name for audio
+	if (pattern.tps[mti]->is_audio_track_pattern()) {
+		const string& name = pattern.tps[mti]->audio_track()->name();
+		uint32_t name_offset_idx = rowi % (name.size() + 1);
+		const static string name_sep(" ");
+		string cell_str = " ";
+		cell_str += name_offset_idx == name.size() ? name_sep : string{name[name_offset_idx]};
+		cell_str += " ";
+		row[columns.region_name[mti]] = cell_str;
+		return;
+	}
+
 	// If no region then display undefined region
 	if (!is_region_defined (rowi, mti)) {
 		redisplay_undefined_region_name (row, mti);
@@ -805,7 +816,7 @@ TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t m
 	string cell_str = " ";
 	cell_str += name_offset_idx == name.size() ? name_sep : string{name[name_offset_idx]};
 	cell_str += " ";
-	row[columns.midi_region_name[mti]] = cell_str;
+	row[columns.region_name[mti]] = cell_str;
 }
 
 void
@@ -1849,16 +1860,16 @@ void
 TrackerGrid::setup_midi_track_column(size_t mti)
 {
 	string label("");
-	TreeViewColumn* viewcolumn_midi_track  = new TreeViewColumn (label, columns.midi_region_name[mti]);
-	CellRendererText* cellrenderer_midi_track = dynamic_cast<CellRendererText*> (viewcolumn_midi_track->get_first_cell_renderer ());
+	TreeViewColumn* viewcolumn_region_name  = new TreeViewColumn (label, columns.region_name[mti]);
+	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (viewcolumn_region_name->get_first_cell_renderer ());
 
 	// Link to font attributes
-	viewcolumn_midi_track->add_attribute(cellrenderer_midi_track->property_family (), columns._family);
+	viewcolumn_region_name->add_attribute(cellrenderer_region_name->property_family (), columns._family);
 
 	// // Link to color attributes
-	// viewcolumn_midi_track->add_attribute(cellrenderer_midi_track->property_cell_background (), columns._background_color);
+	// viewcolumn_region_name->add_attribute(cellrenderer_region_name->property_cell_background (), columns._background_color);
 
-	append_column (*viewcolumn_midi_track);
+	append_column (*viewcolumn_region_name);
 }
 
 void
