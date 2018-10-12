@@ -88,25 +88,25 @@ bool AutomationPattern::is_empty (const Evoral::Parameter& param) const
 boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const Evoral::Parameter& param)
 {
 	if (!param)
-		return NULL;
+		return 0;
 
 	for (AutomationControlSet::iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
 		if (param == (*actrl)->parameter())
 			return *actrl;
 
-	return NULL;
+	return 0;
 }
 
 const boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const Evoral::Parameter& param) const
 {
 	if (!param)
-		return NULL;
+		return 0;
 
 	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
 		if (param == (*actrl)->parameter())
 			return *actrl;
 
-	return NULL;
+	return 0;
 }
 
 boost::shared_ptr<ARDOUR::AutomationList>
@@ -115,7 +115,7 @@ AutomationPattern::get_alist (const Evoral::Parameter& param)
 	if (boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param))
 		return actrl->alist();
 
-	return NULL;
+	return 0;
 }
 
 const boost::shared_ptr<ARDOUR::AutomationList>
@@ -124,7 +124,7 @@ AutomationPattern::get_alist (const Evoral::Parameter& param) const
 	if (const boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param))
 		return actrl->alist();
 
-	return NULL;
+	return 0;
 }
 
 bool AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
@@ -144,13 +144,13 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 {
 	std::map<Evoral::Parameter, RowToAutomationIt>::iterator it = automations.find(param);
 	if (it == automations.end())
-		return NULL;
+		return 0;
 
 	AutomationPattern::RowToAutomationIt::iterator auto_it = it->second.find(rowi);
 	if (auto_it != it->second.end())
 		return *auto_it->second;
 
-	return NULL;
+	return 0;
 }
 
 const Evoral::ControlEvent*
@@ -158,13 +158,13 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 {
 	std::map<Evoral::Parameter, RowToAutomationIt>::const_iterator it = automations.find(param);
 	if (it == automations.end())
-		return NULL;
+		return 0;
 
 	AutomationPattern::RowToAutomationIt::const_iterator auto_it = it->second.find(rowi);
 	if (auto_it != it->second.end())
 		return *auto_it->second;
 
-	return NULL;
+	return 0;
 }
 
 std::pair<double, bool>

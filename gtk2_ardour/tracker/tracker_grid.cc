@@ -80,10 +80,10 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, pattern (te)
 	, current_path (1)
 	, current_rowi (0)
-	, current_row (NULL)
+	, current_row (0)
 	, current_col (2)
 	, current_mti (0)
-	, current_mtp (NULL)
+	, current_mtp (0)
 	, current_mri (0)
 	, current_cgi (0)
 	, current_note_type (TrackerColumn::NOTE)
@@ -91,10 +91,10 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	, edit_rowi (-1)
 	, edit_col (-1)
 	, edit_mti (-1)
-	, edit_mtp (NULL)
+	, edit_mtp (0)
 	, edit_mri (-1)
 	, edit_cgi (-1)
-	, editing_editable (NULL)
+	, editing_editable (0)
 {
 	setup ();
 }
@@ -752,8 +752,8 @@ TrackerGrid::redisplay_global_columns ()
 void
 TrackerGrid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	row[columns._off_note[mti][cgi]] = NULL;
-	row[columns._on_note[mti][cgi]] = NULL;
+	row[columns._off_note[mti][cgi]] = 0;
+	row[columns._on_note[mti][cgi]] = 0;
 }
 
 void
@@ -1285,10 +1285,10 @@ TrackerGrid::clear_editables ()
 	edit_rowi = -1;
 	edit_col = -1;
 	edit_mti = -1;
-	edit_mtp = NULL;
+	edit_mtp = 0;
 	edit_mri = -1;
 	edit_cgi = -1;
-	editing_editable = NULL;
+	editing_editable = 0;
 
 	redisplay_model ();
 }
@@ -1345,7 +1345,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
 	uint8_t vel = tracker_editor.main_toolbar.velocity_spinner.get_value_as_int();
 
-	MidiModel::NoteDiffCommand* cmd = NULL;
+	MidiModel::NoteDiffCommand* cmd = 0;
 
 	if (on_note) {
 		// Change the pitch of the on note
@@ -1413,7 +1413,7 @@ TrackerGrid::set_off_note (int rowi, int mti, int mri, int cgi)
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int();
 
-	MidiModel::NoteDiffCommand* cmd = NULL;
+	MidiModel::NoteDiffCommand* cmd = 0;
 
 	if (on_note) {
 		// Replace the on note by an off note, that is remove the on note
@@ -1463,7 +1463,7 @@ TrackerGrid::delete_note (int rowi, int mti, int mri, int cgi)
 	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
 	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
 
-	MidiModel::NoteDiffCommand* cmd = NULL;
+	MidiModel::NoteDiffCommand* cmd = 0;
 
 	if (on_note) {
 		// Delete on note and change
