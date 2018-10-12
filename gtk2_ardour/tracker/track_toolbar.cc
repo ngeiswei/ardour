@@ -45,8 +45,8 @@ TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti)
 	, track_index (mti)
 	, grid (te.grid)
 	, visible_delay (false)
-	, automation_action_menu (NULL)
-	, controller_menu (NULL)
+	, automation_action_menu (0)
+	, controller_menu (0)
 {
 }
 
@@ -272,7 +272,7 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 
 	for (std::set<Evoral::Parameter>::const_iterator i = automatable.begin(); i != automatable.end(); ++i) {
 
-		ProcessorAutomationNode* pan = NULL;
+		ProcessorAutomationNode* pan = 0;
 		CheckMenuItem* mitem;
 
 		std::string name = processor->describe_parameter (*i);

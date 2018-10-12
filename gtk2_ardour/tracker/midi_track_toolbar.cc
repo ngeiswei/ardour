@@ -351,7 +351,7 @@ MidiTrackToolbar::build_controller_menu ()
 		for (MasterDeviceNames::ControlNameLists::const_iterator l = device_names->controls().begin();
 		     l != device_names->controls().end(); ++l) {
 			boost::shared_ptr<ControlNameList> name_list = l->second;
-			Menu*                              ctl_menu  = NULL;
+			Menu*                              ctl_menu  = 0;
 
 			for (ControlNameList::Controls::const_iterator c = name_list->controls().begin();
 			     c != name_list->controls().end();) {
@@ -378,7 +378,7 @@ MidiTrackToolbar::build_controller_menu ()
 						Menu_Helpers::MenuElem(string_compose(_("Controllers %1-%2"),
 						                                      (16 * n_groups), (16 * n_groups) + n_items - 1),
 						         *ctl_menu));
-					ctl_menu = NULL;
+					ctl_menu = 0;
 					n_items  = 0;
 					++n_groups;
 				}
@@ -591,7 +591,7 @@ CheckMenuItem* MidiTrackToolbar::automation_child_menu_item(const Evoral::Parame
 {
 	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find(param);
 	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find(param);
-	CheckMenuItem* mitem = NULL;
+	CheckMenuItem* mitem = 0;
 	if (cmm_it != _controller_menu_map.end())
 		mitem = cmm_it->second;
 	else if (ccmm_it != _channel_command_menu_map.end())
