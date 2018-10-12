@@ -1,4 +1,6 @@
-- Support super-header with track name and track toolbar in it
+- Support super-header with track name and track toolbar in it (Gtk::Expander cpuload_expander)
+- add space between function and argument call
+- const when possible
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix focus. When mouse click on grid, it should be enough to have the focus on it.
 - Create wscript under tracker folder
@@ -11,3 +13,5 @@
 - Transfer Ardour shortcuts, spacebar, etc
 - Support layered regions
 - Add piano keyboard display (see gtk_pianokeyboard.h)
+- Support midi input
+- Make virtual keyboard keys not hardcoded
