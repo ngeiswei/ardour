@@ -27,7 +27,7 @@ using namespace Tracker;
 
 MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
 	: tracker_editor (te)
-	, earliest_tp (NULL)
+	, earliest_tp (0)
 	, global_nrows (0)
 {}
 
@@ -224,7 +224,7 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) 
 	NotePattern::RowToNotes::const_iterator i_off = mtp->mrps[mri].np.off_notes[cgi].find(to_rrri(rowi, mti, mri));
 	if (i_off != mtp->mrps[mri].np.off_notes[cgi].end())
 		return i_off->second;
-	return NULL;
+	return 0;
 }
 
 NoteTypePtr
@@ -234,7 +234,7 @@ MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) c
 	NotePattern::RowToNotes::const_iterator i_on = mtp->mrps[mri].np.on_notes[cgi].find(to_rrri(rowi, mti, mri));
 	if (i_on != mtp->mrps[mri].np.on_notes[cgi].end())
 		return i_on->second;
-	return NULL;
+	return 0;
 }
 
 bool

@@ -66,12 +66,12 @@ public:
 	virtual bool is_empty (const Evoral::Parameter& param) const;
 	
 	// Return automation control associated to the given parameter. If absent,
-	// return NULL.
+	// return 0.
 	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param) const;
 
 	// Return automation list associated to the given parameter. If absent
-	// return NULL.
+	// return 0.
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param) const;
 	
