@@ -58,7 +58,6 @@ MidiTrackToolbar::setup ()
 {
 	set_spacing (2);
 
-	setup_label ();
 	setup_rm_add_note_col ();
 	setup_note ();
 	setup_channel ();

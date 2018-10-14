@@ -1,0 +1,59 @@
+/*
+    Copyright (C) 2018 Nil Geisweiller
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
+
+#ifndef __ardour_tracker_track_header_h_
+#define __ardour_tracker_track_header_h_
+
+#include <gtkmm/frame.h>
+
+#include "track_pattern.h"
+#include "track_toolbar.h"
+
+namespace Tracker {
+
+class TrackerEditor;
+
+class TrackHeader : public Gtk::Frame
+{
+	// VT:
+	//
+	// 1. Add the track title as frame title
+	//
+	// 2. Have a Gtk::Table as single child (see Gtk::grid as well)
+	//
+	// 3. Add TrackToolbar in that Table
+	//
+	// 4. Possibly have TrackToolbar itself inherit from Gtk::Table
+	//
+	// 5. In the lower part of the table add more frames to distiguish between
+	//    column groups such as Notes, Midi Automations, Main Automations,
+	//    Processors Automations.
+	//
+	// 6. Try to find a way to delete the lower bar of the frame (maybe another
+	//    Gtk:: Widget should be used).
+
+public:
+	TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti);
+	~TrackHeader ();
+
+	TrackToolbar* track_toolbar;
+};
+
+} // ~namespace tracker
+
+#endif /* __ardour_tracker_super_header_h_ */
