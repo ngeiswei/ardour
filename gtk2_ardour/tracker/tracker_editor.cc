@@ -118,6 +118,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 	setup_scroller ();
 	setup_toolbars ();
+	setup_grid_header ();
 
 	grid.redisplay_model ();
 
@@ -126,9 +127,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
-	for (vector<TrackToolbar*>::iterator it = track_toolbars.begin(); it != track_toolbars.end(); ++it) {
-		vbox.pack_start (**it, false, false);
-	}
+	vbox.pack_start (*grid_header, false, false);
 	vbox.pack_start (scroller, true, true);
 
 	add (vbox);
@@ -137,8 +136,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 TrackerEditor::~TrackerEditor ()
 {
-	for (vector<TrackToolbar*>::iterator it = track_toolbars.begin(); it != track_toolbars.end(); ++it)
-		delete *it;
+	delete grid_header;
 }
 
 boost::shared_ptr<MidiModel>
@@ -174,25 +172,12 @@ void
 TrackerEditor::setup_toolbars ()
 {
 	main_toolbar.setup ();
-	setup_track_toolbars ();
 }
 
 void
-TrackerEditor::setup_track_toolbars ()
+TrackerEditor::setup_grid_header()
 {
-	// Construct track_toolbars
-	for (size_t mti = 0; mti < grid.pattern.tps.size(); mti++) {
-		TrackPattern* tp = grid.pattern.tps[mti];
-		if (tp->is_midi_track_pattern ()) {
-			TrackToolbar* mttb = new MidiTrackToolbar (*this, *tp->midi_track_pattern(), mti);
-			track_toolbars.push_back(mttb);
-		} else if (tp->is_audio_track_pattern ()) {
-			TrackToolbar* attb = new AudioTrackToolbar (*this, *tp->audio_track_pattern(), mti);
-			track_toolbars.push_back(attb);
-		} else {
-			cerr << "[ERROR] TrackerEditor::setup_toolbars track type not implemented" << std::endl;
-		}
-	}
+	grid_header = new GridHeader (*this);
 }
 
 void
