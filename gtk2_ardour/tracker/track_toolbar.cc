@@ -61,7 +61,6 @@ TrackToolbar::setup ()
 {
 	set_spacing (2);
 
-	setup_label ();
 	setup_delay ();
 	setup_automation ();
 
