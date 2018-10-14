@@ -15,3 +15,4 @@
 - Add piano keyboard display (see gtk_pianokeyboard.h)
 - Support midi input
 - Make virtual keyboard keys not hardcoded
+- Only have Octave, Ch, Vel in main toolbar is there is a midi track

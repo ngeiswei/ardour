@@ -204,7 +204,7 @@ TrackerGrid::add_processor_automation_column (size_t mti, boost::shared_ptr<Proc
 {
 	ProcessorAutomationNode* pan;
 
-	if ((pan = tracker_editor.track_toolbars[mti]->find_processor_automation_node (processor, what)) == 0) {
+	if ((pan = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, what)) == 0) {
 		/* session state may never have been saved with new plugin */
 		error << _("programming error: ")
 		      << string_compose (X_("processor automation column for %1:%2/%3/%4 not registered with track!"),
@@ -244,7 +244,7 @@ TrackerGrid::change_all_channel_tracks_visibility (size_t mti, bool yn, const Ev
 		if (selected_channels & (0x0001 << chn)) {
 
 			Evoral::Parameter fully_qualified_param (param.type(), chn, param.id());
-			CheckMenuItem* menu = tracker_editor.track_toolbars[mti]->midi_track_toolbar()->automation_child_menu_item (fully_qualified_param);
+			CheckMenuItem* menu = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->automation_child_menu_item (fully_qualified_param);
 
 			if (menu) {
 				menu->set_active (yn);
@@ -263,7 +263,7 @@ TrackerGrid::update_automation_column_visibility (size_t mti, const Evoral::Para
 		return;
 
 	// Find menu item associated to this parameter
-	CheckMenuItem* mitem = tracker_editor.track_toolbars[mti]->midi_track_toolbar()->automation_child_menu_item(param);
+	CheckMenuItem* mitem = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->automation_child_menu_item(param);
 	assert (mitem);
 	const bool showit = mitem->get_active();
 
@@ -341,7 +341,7 @@ TrackerGrid::is_pan_visible(size_t mti) const
 void
 TrackerGrid::update_gain_column_visibility (size_t mti)
 {
-	const bool showit = tracker_editor.track_toolbars[mti]->gain_automation_item->get_active();
+	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->gain_automation_item->get_active();
 
 	if (gain_columns[mti] == 0)
 		gain_columns[mti] = add_main_automation_column(mti, Evoral::Parameter(GainAutomation));
@@ -362,7 +362,7 @@ TrackerGrid::update_gain_column_visibility (size_t mti)
 void
 TrackerGrid::update_trim_column_visibility (size_t mti)
 {
-	const bool showit = tracker_editor.track_toolbars[mti]->trim_automation_item->get_active();
+	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->trim_automation_item->get_active();
 
 	if (trim_columns[mti] == 0)
 		trim_columns[mti] = add_main_automation_column(mti, Evoral::Parameter(TrimAutomation));
@@ -383,7 +383,7 @@ TrackerGrid::update_trim_column_visibility (size_t mti)
 void
 TrackerGrid::update_mute_column_visibility (size_t mti)
 {
-	const bool showit = tracker_editor.track_toolbars[mti]->mute_automation_item->get_active();
+	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->mute_automation_item->get_active();
 
 	if (mute_columns[mti] == 0)
 		mute_columns[mti] = add_main_automation_column(mti, Evoral::Parameter(MuteAutomation));
@@ -404,7 +404,7 @@ TrackerGrid::update_mute_column_visibility (size_t mti)
 void
 TrackerGrid::update_pan_columns_visibility (size_t mti)
 {
-	const bool showit = tracker_editor.track_toolbars[mti]->pan_automation_item->get_active();
+	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->pan_automation_item->get_active();
 
 	if (pan_columns[mti].empty()) {
 		set<Evoral::Parameter> const & params = pattern.tps[mti]->track->panner()->what_can_be_automated ();
@@ -435,11 +435,11 @@ TrackerGrid::redisplay_visible_note()
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = pattern.tps[mti]->is_midi_track_pattern()
 				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
-				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note;
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note;
 			get_column(note_colnum(mti, i))->set_visible (visible);
 		}
-		if (tracker_editor.track_toolbars[mti]->is_midi_track_toolbar())
-			tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_note_button ();
+		if (tracker_editor.grid_header->track_headers[mti]->track_toolbar->is_midi_track_toolbar())
+			tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->update_visible_note_button ();
 	}
 
 	// Keep the window width to its minimum
@@ -468,12 +468,12 @@ TrackerGrid::redisplay_visible_channel()
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = pattern.tps[mti]->is_midi_track_pattern()
 				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
-				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
-				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_channel;
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_channel;
 			get_column(note_channel_colnum(mti, i))->set_visible (visible);
 		}
-		if (tracker_editor.track_toolbars[mti]->is_midi_track_toolbar())
-			tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_channel_button ();
+		if (tracker_editor.grid_header->track_headers[mti]->track_toolbar->is_midi_track_toolbar())
+			tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->update_visible_channel_button ();
 	}
 
 	// Keep the window width to its minimum
@@ -493,12 +493,12 @@ TrackerGrid::redisplay_visible_velocity()
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = pattern.tps[mti]->is_midi_track_pattern()
 				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
-				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
-				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_velocity;
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_velocity;
 			get_column(note_velocity_colnum(mti, i))->set_visible (visible);
 		}
-		if (tracker_editor.track_toolbars[mti]->is_midi_track_toolbar())
-			tracker_editor.track_toolbars[mti]->midi_track_toolbar()->update_visible_velocity_button ();
+		if (tracker_editor.grid_header->track_headers[mti]->track_toolbar->is_midi_track_toolbar())
+			tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->update_visible_velocity_button ();
 	}
 
 	// Keep the window width to its minimum
@@ -518,11 +518,11 @@ TrackerGrid::redisplay_visible_delay()
 		for (size_t i = 0; i < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK; i++) {
 			bool visible = pattern.tps[mti]->is_midi_track_pattern()
 				&& i < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
-				&& tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note
-				&& tracker_editor.track_toolbars[mti]->visible_delay;
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay;
 			get_column(note_delay_colnum(mti, i))->set_visible (visible);
 		}
-		tracker_editor.track_toolbars[mti]->update_visible_delay_button ();
+		tracker_editor.grid_header->track_headers[mti]->track_toolbar->update_visible_delay_button ();
 	}
 	// Do the same for automations
 	redisplay_visible_automation_delay ();
@@ -547,7 +547,7 @@ TrackerGrid::redisplay_visible_note_separator()
 				bool is_last_mti = mti == (pattern.tps.size() - 1);
 				bool hva = has_visible_automation(mti);
 				size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
-				bool visible_note = tracker_editor.track_toolbars[mti]->midi_track_toolbar()->visible_note && 0 < ntracks;
+				bool visible_note = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note && 0 < ntracks;
 				bool is_first_gci = (i == 0);
 				if (is_last_mti && !hva && !visible_note) {
 					visible = is_first_gci;
@@ -603,7 +603,7 @@ TrackerGrid::redisplay_visible_automation_delay()
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t i = 0; i < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_MIDI_TRACK; i++) {
 			size_t col = automation_delay_colnum(mti, i);
-			bool visible = tracker_editor.track_toolbars[mti]->visible_delay && TrackerUtils::is_in(col - 1, visible_automation_columns);
+			bool visible = tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay && TrackerUtils::is_in(col - 1, visible_automation_columns);
 			get_column(col)->set_visible (visible);
 		}
 	}
