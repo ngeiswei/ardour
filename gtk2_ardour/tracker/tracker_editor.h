@@ -43,6 +43,7 @@
 #include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
 #include "tracker_grid.h"
+#include "grid_header.h"
 
 namespace Evoral {
 	template<typename Time> class Note;
@@ -92,10 +93,9 @@ public:
 	std::vector<MidiTimeAxisView*> midi_time_axis_views; // NEXT TODO: probably doesn't need this
 
 	Gtk::ScrolledWindow          scroller;
-	Gtk::Table                   buttons;
 	TrackerGrid                  grid;
 	MainToolbar                  main_toolbar;
-	std::vector<TrackToolbar*>   track_toolbars; // TODO: maybe replace that with a map from track to toolbar
+	GridHeader*                  grid_header;
 	Gtk::VBox                    vbox;
 
 	/** connection used to connect to model's ContentsChanged signal */
@@ -104,7 +104,7 @@ public:
 private:
 	void setup_toolbars ();
 	void setup_main_toolbar ();
-	void setup_track_toolbars ();
+	void setup_grid_header ();
 	void setup_grid ();
 	void setup_scroller ();
 };
