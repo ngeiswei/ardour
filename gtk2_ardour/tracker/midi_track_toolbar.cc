@@ -699,7 +699,7 @@ MidiTrackToolbar::update_remove_note_column_button ()
 void
 MidiTrackToolbar::update_add_note_column_button ()
 {
-	add_note_column_button.set_sensitive (midi_track_pattern.get_ntracks() < MAX_NUMBER_OF_NOTE_TRACKS_PER_MIDI_TRACK);
+	add_note_column_button.set_sensitive (midi_track_pattern.get_ntracks() < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK);
 }
 
 void
