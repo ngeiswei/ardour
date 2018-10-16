@@ -1187,6 +1187,14 @@ TrackerGrid::redisplay_model ()
 	redisplay_visible_note_separator();
 	redisplay_visible_automation();
 	redisplay_visible_automation_separator();
+
+	// VT: feedback get_time_width and get_track_width into the grid header to
+	// align the track headers.
+	std::cout << "TrackerGrid::get_time_width() = " << get_time_width() << std::endl;
+	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		size_t w = get_track_width(mti);
+		std::cout << "TrackerGrid::get_track_width(" << mti << ") = " << w << std::endl;
+	}
 }
 
 int
@@ -1198,8 +1206,30 @@ TrackerGrid::get_time_width() const
 int
 TrackerGrid::get_track_width(size_t mti) const
 {
-	// VT:
-	return 0;
+	int width = 0;
+	if (region_name_columns[mti]->get_visible())
+		width += region_name_columns[mti]->get_width();
+	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+		if (note_columns[mti][cgi]->get_visible())
+			width += note_columns[mti][cgi]->get_width();
+		if (channel_columns[mti][cgi]->get_visible())
+			width += channel_columns[mti][cgi]->get_width();
+		if (velocity_columns[mti][cgi]->get_visible())
+			width += velocity_columns[mti][cgi]->get_width();
+		if (delay_columns[mti][cgi]->get_visible())
+			width += delay_columns[mti][cgi]->get_width();
+		if (note_separator_columns[mti][cgi]->get_visible())
+			width += note_separator_columns[mti][cgi]->get_width();
+	}
+	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		if (automation_columns[mti][cgi]->get_visible())
+			width += automation_columns[mti][cgi]->get_width();
+		if (automation_delay_columns[mti][cgi]->get_visible())
+			width += automation_delay_columns[mti][cgi]->get_width();
+		if (automation_separator_columns[mti][cgi]->get_visible())
+			width += automation_separator_columns[mti][cgi]->get_width();
+	}
+	return width;
 }
 
 /////////////////////
