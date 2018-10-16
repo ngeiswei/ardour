@@ -30,23 +30,6 @@ class TrackerEditor;
 
 class TrackHeader : public Gtk::Frame
 {
-	// VT:
-	//
-	// 1. Add the track title as frame title
-	//
-	// 2. Have a Gtk::Table as single child (see Gtk::grid as well)
-	//
-	// 3. Add TrackToolbar in that Table
-	//
-	// 4. Possibly have TrackToolbar itself inherit from Gtk::Table
-	//
-	// 5. In the lower part of the table add more frames to distiguish between
-	//    column groups such as Notes, Midi Automations, Main Automations,
-	//    Processors Automations.
-	//
-	// 6. Try to find a way to delete the lower bar of the frame (maybe another
-	//    Gtk:: Widget should be used).
-
 public:
 	TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti);
 	~TrackHeader ();
