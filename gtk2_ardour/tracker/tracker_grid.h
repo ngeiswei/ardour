@@ -368,7 +368,6 @@ private:
 	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
 
 	// Columns
-	// VT: actually need cgi as well
 	Gtk::TreeViewColumn* time_column;
 	std::vector<Gtk::TreeViewColumn*> region_name_columns;
 	std::vector<std::vector<NoteColumn*> > note_columns;
