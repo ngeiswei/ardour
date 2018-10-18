@@ -33,7 +33,7 @@
 namespace Tracker {
 
 class TrackerEditor;
-class TrackerGrid;
+class Grid;
 class MidiTrackToolbar;
 class AudioTrackToolbar;
 
@@ -127,7 +127,7 @@ public:
 	boost::shared_ptr<ARDOUR::Track> track;
 	TrackPattern* track_pattern;
 	size_t track_index;
-	TrackerGrid& grid;
+	Grid& grid;
 
 	ArdourWidgets::ArdourButton  visible_delay_button;
 	bool                         visible_delay;

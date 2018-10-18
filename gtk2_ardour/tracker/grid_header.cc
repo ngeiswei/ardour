@@ -22,7 +22,10 @@
 using namespace Tracker;
 
 GridHeader::GridHeader(TrackerEditor& te)
+	: tracker_editor(te)
 {
+	time_header.show();
+	add (time_header);
 	for (size_t mti = 0; mti < te.grid.pattern.tps.size(); mti++) {
 		TrackPattern* tp = te.grid.pattern.tps[mti];
 		TrackHeader* th = new TrackHeader (te, tp, mti);
@@ -36,4 +39,24 @@ GridHeader::~GridHeader()
 {
 	for (std::vector<TrackHeader*>::iterator it = track_headers.begin(); it != track_headers.end(); ++it)
 		delete *it;
+}
+
+void
+GridHeader::set_time_header_size(int width, int height)
+{
+	time_header.set_size_request(width, height);
+}
+
+void
+GridHeader::set_track_header_size(size_t mti, int width, int height)
+{
+	track_headers[mti]->set_size_request(width, height);
+}
+
+void
+GridHeader::align()
+{
+	set_time_header_size(tracker_editor.grid.get_time_width());
+	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size(); mti++)
+		set_track_header_size(mti, tracker_editor.grid.get_track_width(mti));
 }
