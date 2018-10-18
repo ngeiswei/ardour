@@ -20,7 +20,7 @@
 #include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
 #include "tracker_editor.h"
-#include "tracker_grid.h"
+#include "grid.h"
 #include "tracker_utils.h"
 
 #include "widgets/tooltips.h"
@@ -166,25 +166,25 @@ TrackToolbar::build_automation_menu ()
 	/* Add any route automation */
 
 	if (true) {
-		items.push_back (CheckMenuElem (_("Fader"), sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_gain_column_visibility), track_index)));
+		items.push_back (CheckMenuElem (_("Fader"), sigc::bind (sigc::mem_fun (grid, &Grid::update_gain_column_visibility), track_index)));
 		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		gain_automation_item->set_active (grid.is_gain_visible(track_index));
 	}
 
 	if (is_audio_track_toolbar() /*trim_track*/) {
-		items.push_back (CheckMenuElem (_("Trim"), sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_trim_column_visibility), track_index)));
+		items.push_back (CheckMenuElem (_("Trim"), sigc::bind (sigc::mem_fun (grid, &Grid::update_trim_column_visibility), track_index)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		trim_automation_item->set_active (grid.is_trim_visible(track_index));
 	}
 
 	if (true /*mute_track*/) {
-		items.push_back (CheckMenuElem (_("Mute"), sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_mute_column_visibility), track_index)));
+		items.push_back (CheckMenuElem (_("Mute"), sigc::bind (sigc::mem_fun (grid, &Grid::update_mute_column_visibility), track_index)));
 		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		mute_automation_item->set_active (grid.is_mute_visible(track_index));
 	}
 
 	if (true /*pan_tracks*/) {
-		items.push_back (CheckMenuElem (_("Pan"), sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_pan_columns_visibility), track_index)));
+		items.push_back (CheckMenuElem (_("Pan"), sigc::bind (sigc::mem_fun (grid, &Grid::update_pan_columns_visibility), track_index)));
 		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
 		pan_automation_item->set_active (grid.is_pan_visible(track_index));
 	}

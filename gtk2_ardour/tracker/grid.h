@@ -47,14 +47,14 @@ namespace Tracker {
 
 class TrackerEditor;
 
-class TrackerGrid : public Gtk::TreeView
+class Grid : public Gtk::TreeView
 {
 public:
-	TrackerGrid(TrackerEditor& te);
-	~TrackerGrid();
+	Grid(TrackerEditor& te);
+	~Grid();
 
-	struct TrackerGridModelColumns : public Gtk::TreeModel::ColumnRecord {
-		TrackerGridModelColumns();
+	struct GridModelColumns : public Gtk::TreeModel::ColumnRecord {
+		GridModelColumns();
 		// TODO: add empty columns to separate between each note track and each automations
 		Gtk::TreeModelColumn<std::string> _background_color;
 		Gtk::TreeModelColumn<std::string> _family; // font family
@@ -178,7 +178,7 @@ public:
 	// same row, then this string is printed.
 	static const std::string undefined_str;
 
-	TrackerGridModelColumns      columns;
+	GridModelColumns             columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 
 	// Coordonates associated to current cursor

@@ -27,7 +27,7 @@
 namespace Tracker {
 
 /**
- * Widget to place on top of TrackerGrid, contains general tools on top of the
+ * Widget to place on top of Grid, contains general tools on top of the
  * Time column such as resolution, number of steps, etc, and per track tools
  * such as -+ note tracks, Note, Channel, Velocity, Delay and Automation.
  *
@@ -38,6 +38,16 @@ class GridHeader : public Gtk::HBox
 public:
 	GridHeader(TrackerEditor& te);
 	~GridHeader();
+
+	void set_time_header_size(int width=-1, int height=-1);
+	void set_track_header_size(size_t mti, int width=-1, int height=-1);
+
+	/**
+	 * Align the time and track headers with the time and track columns.
+	 */
+	void align();
+
+	TrackerEditor& tracker_editor;
 
 	TimeHeader time_header;
 	std::vector<TrackHeader*> track_headers;
