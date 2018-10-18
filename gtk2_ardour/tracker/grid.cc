@@ -72,10 +72,10 @@ using namespace PBD;
 using namespace Editing;
 using namespace Tracker;
 
-const string TrackerGrid::note_off_str = "===";
-const string TrackerGrid::undefined_str = "***";
+const string Grid::note_off_str = "===";
+const string Grid::undefined_str = "***";
 
-TrackerGrid::TrackerGrid (TrackerEditor& te)
+Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
 	, pattern (te)
 	, current_path (1)
@@ -100,7 +100,7 @@ TrackerGrid::TrackerGrid (TrackerEditor& te)
 	setup ();
 }
 
-TrackerGrid::~TrackerGrid ()
+Grid::~Grid ()
 {
 	delete time_column;
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
@@ -120,7 +120,7 @@ TrackerGrid::~TrackerGrid ()
 	}
 }
 
-TrackerGrid::TrackerGridModelColumns::TrackerGridModelColumns()
+Grid::GridModelColumns::GridModelColumns()
 {
 	// The background color differs when the row is on beats and
 	// bars. This is to keep track of it.
@@ -159,7 +159,7 @@ TrackerGrid::TrackerGridModelColumns::TrackerGridModelColumns()
 }
 
 size_t
-TrackerGrid::select_available_automation_column (size_t mti)
+Grid::select_available_automation_column (size_t mti)
 {
 	// Find the next available column
 	if (available_automation_columns[mti].empty()) {
@@ -174,7 +174,7 @@ TrackerGrid::select_available_automation_column (size_t mti)
 }
 
 size_t
-TrackerGrid::add_main_automation_column (size_t mti, const Evoral::Parameter& param)
+Grid::add_main_automation_column (size_t mti, const Evoral::Parameter& param)
 {
 	// Select the next available column
 	size_t column = select_available_automation_column (mti);
@@ -194,7 +194,7 @@ TrackerGrid::add_main_automation_column (size_t mti, const Evoral::Parameter& pa
 }
 
 size_t
-TrackerGrid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
+Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 {
 	// Insert the corresponding automation control (and connect to the grid if
 	// not already there)
@@ -219,7 +219,7 @@ TrackerGrid::add_midi_automation_column (size_t mti, const Evoral::Parameter& pa
  * parameter.
  */
 void
-TrackerGrid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
+Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
 {
 	ProcessorAutomationNode* pan;
 
@@ -252,7 +252,7 @@ TrackerGrid::add_processor_automation_column (size_t mti, boost::shared_ptr<Proc
 }
 
 void
-TrackerGrid::change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param)
+Grid::change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
@@ -276,7 +276,7 @@ TrackerGrid::change_all_channel_tracks_visibility (size_t mti, bool yn, const Ev
  *  Will add column if necessary.
  */
 void
-TrackerGrid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& param)
+Grid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& param)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
@@ -305,7 +305,7 @@ TrackerGrid::update_automation_column_visibility (size_t mti, const Evoral::Para
 }
 
 bool
-TrackerGrid::is_automation_visible(size_t mti, const Evoral::Parameter& param) const
+Grid::is_automation_visible(size_t mti, const Evoral::Parameter& param) const
 {
 	ColParamBimap::right_const_iterator it = col2params[mti].right.find(param);
 	return it != col2params[mti].right.end() &&
@@ -313,7 +313,7 @@ TrackerGrid::is_automation_visible(size_t mti, const Evoral::Parameter& param) c
 }
 
 bool
-TrackerGrid::has_visible_automation(size_t mti) const
+Grid::has_visible_automation(size_t mti) const
 {
 	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 		size_t col = automation_colnum(mti, cgi);
@@ -325,28 +325,28 @@ TrackerGrid::has_visible_automation(size_t mti) const
 }
 
 bool
-TrackerGrid::is_gain_visible(size_t mti) const
+Grid::is_gain_visible(size_t mti) const
 {
 	return visible_automation_columns.find(gain_columns[mti])
 		!= visible_automation_columns.end();
 };
 
 bool
-TrackerGrid::is_trim_visible(size_t mti) const
+Grid::is_trim_visible(size_t mti) const
 {
 	return visible_automation_columns.find(trim_columns[mti])
 		!= visible_automation_columns.end();
 };
 
 bool
-TrackerGrid::is_mute_visible(size_t mti) const
+Grid::is_mute_visible(size_t mti) const
 {
 	return visible_automation_columns.find(mute_columns[mti])
 		!= visible_automation_columns.end();
 };
 
 bool
-TrackerGrid::is_pan_visible(size_t mti) const
+Grid::is_pan_visible(size_t mti) const
 {
 	bool visible = !pan_columns[mti].empty();
 	for (vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
@@ -358,7 +358,7 @@ TrackerGrid::is_pan_visible(size_t mti) const
 };
 
 void
-TrackerGrid::update_gain_column_visibility (size_t mti)
+Grid::update_gain_column_visibility (size_t mti)
 {
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->gain_automation_item->get_active();
 
@@ -379,7 +379,7 @@ TrackerGrid::update_gain_column_visibility (size_t mti)
 }
 
 void
-TrackerGrid::update_trim_column_visibility (size_t mti)
+Grid::update_trim_column_visibility (size_t mti)
 {
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->trim_automation_item->get_active();
 
@@ -400,7 +400,7 @@ TrackerGrid::update_trim_column_visibility (size_t mti)
 }
 
 void
-TrackerGrid::update_mute_column_visibility (size_t mti)
+Grid::update_mute_column_visibility (size_t mti)
 {
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->mute_automation_item->get_active();
 
@@ -421,7 +421,7 @@ TrackerGrid::update_mute_column_visibility (size_t mti)
 }
 
 void
-TrackerGrid::update_pan_columns_visibility (size_t mti)
+Grid::update_pan_columns_visibility (size_t mti)
 {
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->pan_automation_item->get_active();
 
@@ -448,7 +448,7 @@ TrackerGrid::update_pan_columns_visibility (size_t mti)
 }
 
 void
-TrackerGrid::redisplay_visible_note()
+Grid::redisplay_visible_note()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -466,7 +466,7 @@ TrackerGrid::redisplay_visible_note()
 }
 
 int
-TrackerGrid::mti_col_offset(size_t mti) const
+Grid::mti_col_offset(size_t mti) const
 {
 	return 1 /* time */ + 1 /* first track name */
 		+ mti * (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK
@@ -475,13 +475,13 @@ TrackerGrid::mti_col_offset(size_t mti) const
 }
 
 int
-TrackerGrid::note_colnum(size_t mti, size_t cgi) const
+Grid::note_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::NOTE;
 }
 
 void
-TrackerGrid::redisplay_visible_channel()
+Grid::redisplay_visible_channel()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -500,13 +500,13 @@ TrackerGrid::redisplay_visible_channel()
 }
 
 int
-TrackerGrid::note_channel_colnum(size_t mti, size_t cgi) const
+Grid::note_channel_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::CHANNEL;
 }
 
 void
-TrackerGrid::redisplay_visible_velocity()
+Grid::redisplay_visible_velocity()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -525,13 +525,13 @@ TrackerGrid::redisplay_visible_velocity()
 }
 
 int
-TrackerGrid::note_velocity_colnum(size_t mti, size_t cgi) const
+Grid::note_velocity_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::VELOCITY;
 }
 
 void
-TrackerGrid::redisplay_visible_delay()
+Grid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -551,13 +551,13 @@ TrackerGrid::redisplay_visible_delay()
 }
 
 int
-TrackerGrid::note_delay_colnum(size_t mti, size_t cgi) const
+Grid::note_delay_colnum(size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::DELAY;
 }
 
 void
-TrackerGrid::redisplay_visible_note_separator()
+Grid::redisplay_visible_note_separator()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -583,13 +583,13 @@ TrackerGrid::redisplay_visible_note_separator()
 }
 
 int
-TrackerGrid::note_separator_colnum (size_t mti, size_t cgi) const
+Grid::note_separator_colnum (size_t mti, size_t cgi) const
 {
 	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::SEPARATOR;
 }
 
 void
-TrackerGrid::redisplay_visible_automation()
+Grid::redisplay_visible_automation()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
@@ -604,20 +604,21 @@ TrackerGrid::redisplay_visible_automation()
 	tracker_editor.resize_width();
 }
 
-size_t TrackerGrid::automation_col_offset(size_t mti) const
+size_t
+Grid::automation_col_offset(size_t mti) const
 {
 	return mti_col_offset(mti)
 		+ MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK;
 }
 
 int
-TrackerGrid::automation_colnum(size_t mti, size_t cgi) const
+Grid::automation_colnum(size_t mti, size_t cgi) const
 {
 	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION;
 }
 
 void
-TrackerGrid::redisplay_visible_automation_delay()
+Grid::redisplay_visible_automation_delay()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
@@ -632,13 +633,13 @@ TrackerGrid::redisplay_visible_automation_delay()
 }
 
 int
-TrackerGrid::automation_delay_colnum(size_t mti, size_t cgi) const
+Grid::automation_delay_colnum(size_t mti, size_t cgi) const
 {
 	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION_DELAY;
 }
 
 void
-TrackerGrid::redisplay_visible_automation_separator()
+Grid::redisplay_visible_automation_separator()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		size_t greatest_visible_col = 0;
@@ -658,13 +659,13 @@ TrackerGrid::redisplay_visible_automation_separator()
 }
 
 int
-TrackerGrid::automation_separator_colnum (size_t mti, size_t cgi) const
+Grid::automation_separator_colnum (size_t mti, size_t cgi) const
 {
 	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION_SEPARATOR;
 }
 
 void
-TrackerGrid::init_columns ()
+Grid::init_columns ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		region_name_columns.push_back(0);
@@ -680,7 +681,7 @@ TrackerGrid::init_columns ()
 }
 
 void
-TrackerGrid::setup ()
+Grid::setup ()
 {
 	pattern.setup ();
 
@@ -723,15 +724,15 @@ TrackerGrid::setup ()
 	}
 
 	// Connect to key press events
-	signal_key_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::key_press), false);
-	signal_key_release_event().connect (sigc::mem_fun (*this, &TrackerGrid::key_release), false);
+	signal_key_press_event().connect (sigc::mem_fun (*this, &Grid::key_press), false);
+	signal_key_release_event().connect (sigc::mem_fun (*this, &Grid::key_release), false);
 
 	// Connect to mouse button events
 	//
 	// Disabled for now because it doesn't work as expected
 	//
-	signal_button_press_event().connect (sigc::mem_fun (*this, &TrackerGrid::button_event), false);
-	// signal_scroll_event().connect (sigc::mem_fun (*this, &TrackerGrid::scroll_event), false);
+	signal_button_press_event().connect (sigc::mem_fun (*this, &Grid::button_event), false);
+	// signal_scroll_event().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
 	set_headers_visible (true);
 	set_rules_hint (true);
@@ -743,7 +744,7 @@ TrackerGrid::setup ()
 }
 
 void
-TrackerGrid::read_colors ()
+Grid::read_colors ()
 {
 	gtk_bases_color = UIConfiguration::instance().color_str ("gtk_bases");
 	beat_background_color = UIConfiguration::instance().color_str ("tracker editor: beat background");
@@ -756,7 +757,7 @@ TrackerGrid::read_colors ()
 }
 
 void
-TrackerGrid::redisplay_global_columns ()
+Grid::redisplay_global_columns ()
 {
 	// Set Time column, row background color, font
 	TreeModel::Children::iterator row_it = model->children().begin();
@@ -788,14 +789,14 @@ TrackerGrid::redisplay_global_columns ()
 }
 
 void
-TrackerGrid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	row[columns._off_note[mti][cgi]] = 0;
 	row[columns._on_note[mti][cgi]] = 0;
 }
 
 void
-TrackerGrid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
+Grid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
@@ -821,13 +822,13 @@ TrackerGrid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
 }
 
 void
-TrackerGrid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
+Grid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 {
 	row[columns.region_name[mti]] = "";
 }
 
 void
-TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
+Grid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
 	// TODO: for now (till it gets displayed as super header) use track name for audio
 	if (pattern.tps[mti]->is_audio_track_pattern()) {
@@ -858,7 +859,7 @@ TrackerGrid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t m
 }
 
 void
-TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
+Grid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
@@ -889,7 +890,7 @@ TrackerGrid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, si
 }
 
 void
-TrackerGrid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	// Set undefined background color
 	row[columns._automation_background_color[mti][cgi]] = gtk_bases_color;
@@ -901,7 +902,7 @@ TrackerGrid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mt
 }
 
 void
-TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
+Grid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
 	// Render automation pattern
 	for (ColParamBimap::left_const_iterator cp_it = col2params[mti].left.begin(); cp_it != col2params[mti].left.end(); ++cp_it) {
@@ -942,7 +943,7 @@ TrackerGrid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t m
 }
 
 void
-TrackerGrid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	string row_background_color = row[columns._background_color];
 	row[columns._note_background_color[mti][cgi]] = row_background_color;
@@ -952,7 +953,7 @@ TrackerGrid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t 
 }
 
 void
-TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
@@ -968,12 +969,12 @@ TrackerGrid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, siz
 		row[columns._delay_background_color[mti][cgi]] = cursor_color;
 		break;
 	default:
-		cerr << "TrackerGrid::redisplay_current_note_cursor: Implementation Error!" << endl;
+		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
 	}
 }
 
 void
-TrackerGrid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	// Fill with blank
 	row[columns.note_name[mti][cgi]] = "----";
@@ -989,7 +990,7 @@ TrackerGrid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, s
 }
 
 void
-TrackerGrid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	string row_background_color = row[columns._background_color];
 	row[columns._automation_background_color[mti][cgi]] = row_background_color;
@@ -997,7 +998,7 @@ TrackerGrid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t 
 }
 
 void
-TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi)
+Grid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi)
 {
 	if (pattern.is_note_displayable(rowi, mti, mri, cgi)) {
 		// Notes off
@@ -1040,7 +1041,7 @@ TrackerGrid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 }
 
 void
-TrackerGrid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION:
@@ -1050,12 +1051,12 @@ TrackerGrid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, siz
 		row[columns._automation_delay_background_color[mti][cgi]] = cursor_color;
 		break;
 	default:
-		cerr << "TrackerGrid::redisplay_current_auto_cursor: Implementation Error!" << endl;
+		cerr << "Grid::redisplay_current_auto_cursor: Implementation Error!" << endl;
 	}
 }
 
 void
-TrackerGrid::redisplay_current_cursor ()
+Grid::redisplay_current_cursor ()
 {
 	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
 		redisplay_current_note_cursor (*current_row, current_mti, current_cgi);
@@ -1064,7 +1065,7 @@ TrackerGrid::redisplay_current_cursor ()
 }
 
 void
-TrackerGrid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
+Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	// Fill with blank
 	row[columns.automation[mti][cgi]] = "---";
@@ -1075,7 +1076,7 @@ TrackerGrid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, s
 }
 
 void
-TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
+Grid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
 	if (pattern.is_auto_displayable(rowi, mti, mti, param)) {
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, mri, param);
@@ -1096,7 +1097,7 @@ TrackerGrid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mt
 }
 
 void
-TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
+Grid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
 	double inter_auto_val = 0;
 	if (boost::shared_ptr<AutomationList> alist = pattern.get_alist (mti, mri, param)) {
@@ -1116,7 +1117,7 @@ TrackerGrid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, s
 }
 
 void
-TrackerGrid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
+Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
 	// Get corresponding background color
 	string row_background_color = row[columns._background_color];
@@ -1132,7 +1133,7 @@ TrackerGrid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 }
 
 void
-TrackerGrid::redisplay_model ()
+Grid::redisplay_model ()
 {
 	if (editing_editable)
 		return;
@@ -1190,21 +1191,26 @@ TrackerGrid::redisplay_model ()
 
 	// VT: feedback get_time_width and get_track_width into the grid header to
 	// align the track headers.
-	std::cout << "TrackerGrid::get_time_width() = " << get_time_width() << std::endl;
+	//
+	// See Widget::set_size_request
+	std::cout << "Grid::get_time_width() = " << get_time_width() << std::endl;
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		size_t w = get_track_width(mti);
-		std::cout << "TrackerGrid::get_track_width(" << mti << ") = " << w << std::endl;
+		std::cout << "Grid::get_track_width(" << mti << ") = " << w << std::endl;
 	}
+
+	// Experiment
+	tracker_editor.grid_header->align();
 }
 
 int
-TrackerGrid::get_time_width() const
+Grid::get_time_width() const
 {
 	return time_column->get_width();
 }
 
 int
-TrackerGrid::get_track_width(size_t mti) const
+Grid::get_track_width(size_t mti) const
 {
 	int width = 0;
 	if (region_name_columns[mti]->get_visible())
@@ -1237,19 +1243,19 @@ TrackerGrid::get_track_width(size_t mti) const
 /////////////////////
 
 uint32_t
-TrackerGrid::get_row_index(const string& path) const
+Grid::get_row_index(const string& path) const
 {
 	return get_row_index (TreeModel::Path (path));
 }
 
 uint32_t
-TrackerGrid::get_row_index(const TreeModel::Path& path) const
+Grid::get_row_index(const TreeModel::Path& path) const
 {
 	return path.front();
 }
 
 int
-TrackerGrid::get_col_index(const TreeViewColumn* col)
+Grid::get_col_index(const TreeViewColumn* col)
 {
 	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns();
 
@@ -1261,19 +1267,19 @@ TrackerGrid::get_col_index(const TreeViewColumn* col)
 }
 
 NoteTypePtr
-TrackerGrid::get_on_note (int rowi, int mti, int cgi)
+Grid::get_on_note (int rowi, int mti, int cgi)
 {
 	return get_on_note (TreeModel::Path (1U, rowi), mti, cgi);
 }
 
 NoteTypePtr
-TrackerGrid::get_on_note (const string& path, int mti, int cgi)
+Grid::get_on_note (const string& path, int mti, int cgi)
 {
 	return get_on_note (TreeModel::Path (path), mti, cgi);
 }
 
 NoteTypePtr
-TrackerGrid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
+Grid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -1282,19 +1288,19 @@ TrackerGrid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
 }
 
 NoteTypePtr
-TrackerGrid::get_off_note(int rowi, int mti, int cgi)
+Grid::get_off_note(int rowi, int mti, int cgi)
 {
 	return get_off_note(TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowi), mti, cgi);
 }
 
 NoteTypePtr
-TrackerGrid::get_off_note(const string& path, int mti, int cgi)
+Grid::get_off_note(const string& path, int mti, int cgi)
 {
 	return get_off_note (TreeModel::Path (path), mti, cgi);
 }
 
 NoteTypePtr
-TrackerGrid::get_off_note(const TreeModel::Path& path, int mti, int cgi)
+Grid::get_off_note(const TreeModel::Path& path, int mti, int cgi)
 {
 	TreeModel::iterator iter = model->get_iter (path);
 	if (!iter)
@@ -1303,49 +1309,49 @@ TrackerGrid::get_off_note(const TreeModel::Path& path, int mti, int cgi)
 }
 
 void
-TrackerGrid::editing_note_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_col = note_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-TrackerGrid::editing_note_channel_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_channel_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_col = note_channel_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-TrackerGrid::editing_note_velocity_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_velocity_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_col = note_velocity_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-TrackerGrid::editing_note_delay_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_delay_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_col = note_delay_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-TrackerGrid::editing_automation_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_automation_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_col = automation_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-TrackerGrid::editing_automation_delay_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_automation_delay_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_col = automation_delay_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-TrackerGrid::editing_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
 	edit_path = TreePath (path);
 	edit_rowi = get_row_index (edit_path);
@@ -1360,7 +1366,7 @@ TrackerGrid::editing_started (CellEditable* ed, const string& path, int mti, int
 }
 
 void
-TrackerGrid::clear_editables ()
+Grid::clear_editables ()
 {
 	edit_path.clear ();
 	edit_rowi = -1;
@@ -1375,19 +1381,19 @@ TrackerGrid::clear_editables ()
 }
 
 void
-TrackerGrid::editing_canceled ()
+Grid::editing_canceled ()
 {
 	clear_editables ();
 }
 
 uint8_t
-TrackerGrid::parse_pitch (const string& text) const
+Grid::parse_pitch (const string& text) const
 {
 	return TrackerUtils::parse_pitch(text, tracker_editor.main_toolbar.octave_spinner.get_value_as_int());
 }
 
 void
-TrackerGrid::note_edited (const string& path, const string& text)
+Grid::note_edited (const string& path, const string& text)
 {
 	string norm_text = boost::erase_all_copy(text, " ");
 	bool is_del = norm_text.empty();
@@ -1413,7 +1419,7 @@ TrackerGrid::note_edited (const string& path, const string& text)
 }
 
 void
-TrackerGrid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
+Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 {
 	// Abort if the new pitch is invalid
 	if (127 < pitch)
@@ -1487,7 +1493,7 @@ TrackerGrid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::set_off_note (int rowi, int mti, int mri, int cgi)
+Grid::set_off_note (int rowi, int mti, int mri, int cgi)
 {
 	NoteTypePtr on_note = get_on_note(rowi, mti, cgi);
 	NoteTypePtr off_note = get_off_note(rowi, mti, cgi);
@@ -1539,7 +1545,7 @@ TrackerGrid::set_off_note (int rowi, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::delete_note (int rowi, int mti, int mri, int cgi)
+Grid::delete_note (int rowi, int mti, int mri, int cgi)
 {
 	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
 	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
@@ -1581,7 +1587,7 @@ TrackerGrid::delete_note (int rowi, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::note_channel_edited (const string& path, const string& text)
+Grid::note_channel_edited (const string& path, const string& text)
 {
 	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty() || !note) {
@@ -1605,7 +1611,7 @@ TrackerGrid::note_channel_edited (const string& path, const string& text)
 }
 
 void
-TrackerGrid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
+Grid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
 {
 	if (!note)
 		return;
@@ -1623,7 +1629,7 @@ TrackerGrid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
 }
 
 void
-TrackerGrid::note_velocity_edited (const string& path, const string& text)
+Grid::note_velocity_edited (const string& path, const string& text)
 {
 	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty() || !note) {
@@ -1647,7 +1653,7 @@ TrackerGrid::note_velocity_edited (const string& path, const string& text)
 }
 
 void
-TrackerGrid::set_note_velocity (int mti, int mri, NoteTypePtr note, int vel)
+Grid::set_note_velocity (int mti, int mri, NoteTypePtr note, int vel)
 {
 	if (!note)
 		return;
@@ -1667,7 +1673,7 @@ TrackerGrid::set_note_velocity (int mti, int mri, NoteTypePtr note, int vel)
 }
 
 void
-TrackerGrid::note_delay_edited (const string& path, const string& text)
+Grid::note_delay_edited (const string& path, const string& text)
 {
 	// Can't edit ***
 	if (!pattern.is_note_displayable(edit_rowi, edit_mti, edit_mri, edit_cgi)) {
@@ -1685,7 +1691,7 @@ TrackerGrid::note_delay_edited (const string& path, const string& text)
 }
 
 void
-TrackerGrid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
+Grid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
 	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
 	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
@@ -1743,7 +1749,7 @@ TrackerGrid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 	apply_command (mti, mri, cmd);
 }
 
-void TrackerGrid::play_note(int mti, uint8_t pitch)
+void Grid::play_note(int mti, uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1754,7 +1760,7 @@ void TrackerGrid::play_note(int mti, uint8_t pitch)
 	pattern.tps[mti]->midi_track()->write_immediate_event (3, event);
 }
 
-void TrackerGrid::release_note(int mti, uint8_t pitch)
+void Grid::release_note(int mti, uint8_t pitch)
 {
 	uint8_t event[3];
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int() - 1;
@@ -1765,7 +1771,7 @@ void TrackerGrid::release_note(int mti, uint8_t pitch)
 }
 
 void
-TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
+Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 {
 	// Make sure the cell is defined
 	if (!is_defined(path, col))
@@ -1794,7 +1800,8 @@ TrackerGrid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* co
 	scroll_to_row(path);
 }
 
-Evoral::Parameter TrackerGrid::get_parameter (int mti, int cgi)
+Evoral::Parameter
+Grid::get_parameter (int mti, int cgi)
 {
 	ColAutoTrackBimap::right_const_iterator ac_it = col2autotracks[mti].right.find(cgi);
 	if (ac_it == col2autotracks[mti].right.end())
@@ -1808,13 +1815,13 @@ Evoral::Parameter TrackerGrid::get_parameter (int mti, int cgi)
 }
 
 boost::shared_ptr<AutomationList>
-TrackerGrid::get_alist (int mti, int mri, const Evoral::Parameter& param)
+Grid::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
 	return pattern.get_alist (mti, mri, param);
 }
 
 void
-TrackerGrid::automation_edited (const string& path, const string& text)
+Grid::automation_edited (const string& path, const string& text)
 {
 	bool is_del = text.empty();
 	double nval;
@@ -1840,14 +1847,14 @@ TrackerGrid::automation_edited (const string& path, const string& text)
 }
 
 pair<double, bool>
-TrackerGrid::get_automation_value (int rowi, int mti, int mri, int cgi)
+Grid::get_automation_value (int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_parameter (mti, cgi);
 	return pattern.get_automation_value (rowi, mti, mri, param);
 }
 
 void
-TrackerGrid::set_automation_value (double val, int rowi, int mti, int mri, int cgi)
+Grid::set_automation_value (double val, int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (mti, cgi);
@@ -1859,14 +1866,14 @@ TrackerGrid::set_automation_value (double val, int rowi, int mti, int mri, int c
 }
 
 void
-TrackerGrid::delete_automation_value(int rowi, int mti, int mri, int cgi)
+Grid::delete_automation_value(int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_parameter (mti, cgi);
 	return pattern.delete_automation_value (rowi, mti, mri, param);
 }
 
 void
-TrackerGrid::automation_delay_edited (const string& path, const string& text)
+Grid::automation_delay_edited (const string& path, const string& text)
 {
 	int delay = 0;
 	// Parse the edited delay
@@ -1895,7 +1902,7 @@ TrackerGrid::automation_delay_edited (const string& path, const string& text)
 }
 
 pair<int, bool>
-TrackerGrid::get_automation_delay (int rowi, int mti, int mri, int cgi)
+Grid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_parameter (mti, cgi);
@@ -1903,14 +1910,14 @@ TrackerGrid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 }
 
 void
-TrackerGrid::set_automation_delay (int delay, int rowi, int mti, int mri, int cgi)
+Grid::set_automation_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_parameter (mti, cgi);
 	return pattern.set_automation_delay (delay, rowi, mti, mri, param);
 }
 
 void
-TrackerGrid::register_automation_undo (boost::shared_ptr<AutomationList> alist, const string& opname, XMLNode& before, XMLNode& after)
+Grid::register_automation_undo (boost::shared_ptr<AutomationList> alist, const string& opname, XMLNode& before, XMLNode& after)
 {
 	tracker_editor.public_editor.begin_reversible_command (opname);
 	tracker_editor.session->add_command (new MementoCommand<AutomationList> (*alist.get (), &before, &after));
@@ -1919,14 +1926,14 @@ TrackerGrid::register_automation_undo (boost::shared_ptr<AutomationList> alist, 
 }
 
 void
-TrackerGrid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
+Grid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
 	pattern.apply_command (mti, mri, cmd);
 }
 
 void
-TrackerGrid::setup_time_column()
+Grid::setup_time_column()
 {
 	time_column = new TreeViewColumn (_("Time"), columns.time);
 	CellRenderer* cellrenderer_time = time_column->get_first_cell_renderer ();
@@ -1938,7 +1945,7 @@ TrackerGrid::setup_time_column()
 }
 
 void
-TrackerGrid::setup_midi_track_column(size_t mti)
+Grid::setup_midi_track_column(size_t mti)
 {
 	string label("");
 	region_name_columns[mti] = new TreeViewColumn (label, columns.region_name[mti]);
@@ -1954,7 +1961,7 @@ TrackerGrid::setup_midi_track_column(size_t mti)
 }
 
 void
-TrackerGrid::setup_note_column (size_t mti, size_t cgi)
+Grid::setup_note_column (size_t mti, size_t cgi)
 {
 	// TODO: maybe put the information of the mti, cgi, midi_note_type or automation_type in the TreeViewColumn
 	note_columns[mti][cgi] = new NoteColumn (columns.note_name[mti][cgi], mti, cgi);
@@ -1973,16 +1980,16 @@ TrackerGrid::setup_note_column (size_t mti, size_t cgi)
 	note_columns[mti][cgi]->add_attribute(note_cellrenderer->property_foreground (), columns._note_foreground_color[mti][cgi]);
 
 	// Link to editing methods
-	note_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerGrid::editing_note_started), mti, cgi));
-	note_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerGrid::editing_canceled));
-	note_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &TrackerGrid::note_edited));
+	note_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_started), mti, cgi));
+	note_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
+	note_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &Grid::note_edited));
 	note_cellrenderer->property_editable() = true;
 
 	append_column (*note_columns[mti][cgi]);
 }
 
 void
-TrackerGrid::setup_note_channel_column (size_t mti, size_t cgi)
+Grid::setup_note_channel_column (size_t mti, size_t cgi)
 {
 	channel_columns[mti][cgi] = new ChannelColumn (columns.channel[mti][cgi], mti, cgi);
 	CellRendererText* channel_cellrenderer = dynamic_cast<CellRendererText*> (channel_columns[mti][cgi]->get_first_cell_renderer ());
@@ -1992,16 +1999,16 @@ TrackerGrid::setup_note_channel_column (size_t mti, size_t cgi)
 	channel_columns[mti][cgi]->add_attribute(channel_cellrenderer->property_foreground (), columns._channel_foreground_color[mti][cgi]);
 
 	// Link to editing methods
-	channel_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerGrid::editing_note_channel_started), mti, cgi));
-	channel_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerGrid::editing_canceled));
-	channel_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &TrackerGrid::note_channel_edited));
+	channel_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_channel_started), mti, cgi));
+	channel_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
+	channel_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &Grid::note_channel_edited));
 	channel_cellrenderer->property_editable() = true;
 
 	append_column (*channel_columns[mti][cgi]);
 }
 
 void
-TrackerGrid::setup_note_velocity_column (size_t mti, size_t cgi)
+Grid::setup_note_velocity_column (size_t mti, size_t cgi)
 {
 	velocity_columns[mti][cgi] = new VelocityColumn (columns.velocity[mti][cgi], mti, cgi);
 	CellRendererText* velocity_cellrenderer = dynamic_cast<CellRendererText*> (velocity_columns[mti][cgi]->get_first_cell_renderer ());
@@ -2011,16 +2018,16 @@ TrackerGrid::setup_note_velocity_column (size_t mti, size_t cgi)
 	velocity_columns[mti][cgi]->add_attribute(velocity_cellrenderer->property_foreground (), columns._velocity_foreground_color[mti][cgi]);
 
 	// Link to editing methods
-	velocity_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerGrid::editing_note_velocity_started), mti, cgi));
-	velocity_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerGrid::editing_canceled));
-	velocity_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &TrackerGrid::note_velocity_edited));
+	velocity_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_velocity_started), mti, cgi));
+	velocity_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
+	velocity_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &Grid::note_velocity_edited));
 	velocity_cellrenderer->property_editable() = true;
 
 	append_column (*velocity_columns[mti][cgi]);
 }
 
 void
-TrackerGrid::setup_note_delay_column (size_t mti, size_t cgi)
+Grid::setup_note_delay_column (size_t mti, size_t cgi)
 {
 	delay_columns[mti][cgi] = new DelayColumn (columns.delay[mti][cgi], mti, cgi);
 	CellRendererText* delay_cellrenderer = dynamic_cast<CellRendererText*> (delay_columns[mti][cgi]->get_first_cell_renderer ());
@@ -2030,23 +2037,23 @@ TrackerGrid::setup_note_delay_column (size_t mti, size_t cgi)
 	delay_columns[mti][cgi]->add_attribute(delay_cellrenderer->property_foreground (), columns._delay_foreground_color[mti][cgi]);
 
 	// Link to editing methods
-	delay_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerGrid::editing_note_delay_started), mti, cgi));
-	delay_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerGrid::editing_canceled));
-	delay_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &TrackerGrid::note_delay_edited));
+	delay_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_delay_started), mti, cgi));
+	delay_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
+	delay_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &Grid::note_delay_edited));
 	delay_cellrenderer->property_editable() = true;
 
 	append_column (*delay_columns[mti][cgi]);
 }
 
 void
-TrackerGrid::setup_note_separator_column (size_t mti, size_t cgi)
+Grid::setup_note_separator_column (size_t mti, size_t cgi)
 {
 	note_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
 	append_column (*note_separator_columns[mti][cgi]);
 }
 
 void
-TrackerGrid::setup_automation_column (size_t mti, size_t cgi)
+Grid::setup_automation_column (size_t mti, size_t cgi)
 {
 	automation_columns[mti][cgi] = new AutomationColumn (columns.automation[mti][cgi], mti, cgi);
 	CellRendererText* automation_cellrenderer = dynamic_cast<CellRendererText*> (automation_columns[mti][cgi]->get_first_cell_renderer ());
@@ -2056,9 +2063,9 @@ TrackerGrid::setup_automation_column (size_t mti, size_t cgi)
 	automation_columns[mti][cgi]->add_attribute(automation_cellrenderer->property_foreground (), columns._automation_foreground_color[mti][cgi]);
 
 	// Link to editing methods
-	automation_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerGrid::editing_automation_started), mti, cgi));
-	automation_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerGrid::editing_canceled));
-	automation_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &TrackerGrid::automation_edited));
+	automation_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_automation_started), mti, cgi));
+	automation_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
+	automation_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &Grid::automation_edited));
 	automation_cellrenderer->property_editable() = true;
 
 	size_t column = get_columns().size();
@@ -2069,7 +2076,7 @@ TrackerGrid::setup_automation_column (size_t mti, size_t cgi)
 }
 
 void
-TrackerGrid::setup_automation_delay_column (size_t mti, size_t cgi)
+Grid::setup_automation_delay_column (size_t mti, size_t cgi)
 {
 	automation_delay_columns[mti][cgi] = new AutomationDelayColumn (columns.automation_delay[mti][cgi], mti, cgi);
 	CellRendererText* automation_delay_cellrenderer = dynamic_cast<CellRendererText*> (automation_delay_columns[mti][cgi]->get_first_cell_renderer ());
@@ -2079,9 +2086,9 @@ TrackerGrid::setup_automation_delay_column (size_t mti, size_t cgi)
 	automation_delay_columns[mti][cgi]->add_attribute(automation_delay_cellrenderer->property_foreground (), columns._automation_delay_foreground_color[mti][cgi]);
 
 	// Link to editing methods
-	automation_delay_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &TrackerGrid::editing_automation_delay_started), mti, cgi));
-	automation_delay_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &TrackerGrid::editing_canceled));
-	automation_delay_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &TrackerGrid::automation_delay_edited));
+	automation_delay_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_automation_delay_started), mti, cgi));
+	automation_delay_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
+	automation_delay_cellrenderer->signal_edited().connect (sigc::mem_fun (*this, &Grid::automation_delay_edited));
 	automation_delay_cellrenderer->property_editable() = true;
 
 	size_t column = get_columns().size();
@@ -2090,14 +2097,14 @@ TrackerGrid::setup_automation_delay_column (size_t mti, size_t cgi)
 }
 
 void
-TrackerGrid::setup_automation_separator_column (size_t mti, size_t cgi)
+Grid::setup_automation_separator_column (size_t mti, size_t cgi)
 {
 	automation_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
 	append_column (*automation_separator_columns[mti][cgi]);
 }
 
 void
-TrackerGrid::vertical_move_edit_cursor (int steps)
+Grid::vertical_move_edit_cursor (int steps)
 {
 	TreeModel::Path path = edit_path;
 	TreeViewColumn* col = get_column (edit_col);
@@ -2106,7 +2113,7 @@ TrackerGrid::vertical_move_edit_cursor (int steps)
 }
 
 void
-TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps)
+Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps)
 {
 	int mti = get_mti(col);
 	// TODO: make sure that steps is equal to or lower than nrows[mti]
@@ -2122,7 +2129,7 @@ TrackerGrid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewCol
 }
 
 void
-TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab)
+Grid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab)
 {
 	// Keep track of the init column type to support tab and detect infinit loops
 	TreeViewColumn* init_col = get_column (colnum);
@@ -2177,14 +2184,14 @@ TrackerGrid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Pat
 }
 
 bool
-TrackerGrid::is_editable (TreeViewColumn* col) const
+Grid::is_editable (TreeViewColumn* col) const
 {
 	CellRendererText* cellrenderer = dynamic_cast<CellRendererText*> (col->get_first_cell_renderer ());
 	return cellrenderer->property_editable ();
 }
 
 bool
-TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
+Grid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 {
 	int rowi = get_row_index (path);
 	int mti = get_mti(col);
@@ -2200,54 +2207,54 @@ TrackerGrid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn*
 }
 
 bool
-TrackerGrid::is_region_defined (const Gtk::TreeModel::Path& path, int mti) const
+Grid::is_region_defined (const Gtk::TreeModel::Path& path, int mti) const
 {
 	return is_region_defined (get_row_index (path), mti);
 }
 
 bool
-TrackerGrid::is_region_defined (uint32_t rowi, int mti) const
+Grid::is_region_defined (uint32_t rowi, int mti) const
 {
 	return pattern.is_region_defined (rowi, mti);
 }
 
 size_t
-TrackerGrid::get_mti(const TreeViewColumn* col) const
+Grid::get_mti(const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 	return tc->midi_track_idx;
 }
 
 size_t
-TrackerGrid::get_cgi(const TreeViewColumn* col) const
+Grid::get_cgi(const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 	return tc->col_group_idx;
 }
 
 TrackerColumn::midi_note_type
-TrackerGrid::get_note_type(const Gtk::TreeViewColumn* col) const
+Grid::get_note_type(const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 	return tc->note_type;
 }
 
 TrackerColumn::automation_type
-TrackerGrid::get_auto_type(const Gtk::TreeViewColumn* col) const
+Grid::get_auto_type(const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 	return tc->auto_type;
 }
 
 bool
-TrackerGrid::is_note_type(const Gtk::TreeViewColumn* col) const
+Grid::is_note_type(const Gtk::TreeViewColumn* col) const
 {
 	return get_note_type(col) != TrackerColumn::SEPARATOR
 		&& get_auto_type(col) == TrackerColumn::AUTOMATION_SEPARATOR;
 }
 
 void
-TrackerGrid::horizontal_move_edit_cursor (int steps, bool tab)
+Grid::horizontal_move_edit_cursor (int steps, bool tab)
 {
 	int colnum = edit_col;
 	TreeModel::Path path = edit_path;
@@ -2257,7 +2264,7 @@ TrackerGrid::horizontal_move_edit_cursor (int steps, bool tab)
 }
 
 bool
-TrackerGrid::move_edit_cursor_key_press (GdkEventKey* ev)
+Grid::move_edit_cursor_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2293,7 +2300,7 @@ TrackerGrid::move_edit_cursor_key_press (GdkEventKey* ev)
 }
 
 int
-TrackerGrid::digit_key_press (GdkEventKey* ev)
+Grid::digit_key_press (GdkEventKey* ev)
 {
 	switch (ev->keyval) {
 	// Num keys
@@ -2333,7 +2340,7 @@ TrackerGrid::digit_key_press (GdkEventKey* ev)
 }
 
 uint8_t
-TrackerGrid::pitch_key (GdkEventKey* ev)
+Grid::pitch_key (GdkEventKey* ev)
 {
 	int octave = tracker_editor.main_toolbar.octave_spinner.get_value_as_int();
 
@@ -2445,7 +2452,7 @@ TrackerGrid::pitch_key (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_note_key_press (GdkEventKey* ev)
+Grid::step_editing_note_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2580,7 +2587,7 @@ TrackerGrid::step_editing_note_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_on_note (uint8_t pitch)
+Grid::step_editing_set_on_note (uint8_t pitch)
 {
 	play_note (current_mti, pitch);
 	set_on_note (pitch, current_rowi, current_mti, current_mri, current_cgi);
@@ -2590,7 +2597,7 @@ TrackerGrid::step_editing_set_on_note (uint8_t pitch)
 }
 
 bool
-TrackerGrid::step_editing_set_off_note ()
+Grid::step_editing_set_off_note ()
 {
 	set_off_note (current_rowi, current_mti, current_mri, current_cgi);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -2599,7 +2606,7 @@ TrackerGrid::step_editing_set_off_note ()
 }
 
 bool
-TrackerGrid::step_editing_delete_note ()
+Grid::step_editing_delete_note ()
 {
 	delete_note (current_rowi, current_mti, current_mri, current_cgi);
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -2608,7 +2615,7 @@ TrackerGrid::step_editing_delete_note ()
 }
 
 bool
-TrackerGrid::step_editing_note_channel_key_press (GdkEventKey* ev)
+Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2659,7 +2666,7 @@ TrackerGrid::step_editing_note_channel_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_note_channel (int digit)
+Grid::step_editing_set_note_channel (int digit)
 {
 	NoteTypePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
@@ -2675,7 +2682,7 @@ TrackerGrid::step_editing_set_note_channel (int digit)
 }
 
 bool
-TrackerGrid::step_editing_note_velocity_key_press (GdkEventKey* ev)
+Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2726,7 +2733,7 @@ TrackerGrid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_note_velocity (int digit)
+Grid::step_editing_set_note_velocity (int digit)
 {
 	NoteTypePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
@@ -2741,7 +2748,7 @@ TrackerGrid::step_editing_set_note_velocity (int digit)
 }
 
 bool
-TrackerGrid::step_editing_note_delay_key_press (GdkEventKey* ev)
+Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2804,7 +2811,7 @@ TrackerGrid::step_editing_note_delay_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_note_delay (int digit)
+Grid::step_editing_set_note_delay (int digit)
 {
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -2830,7 +2837,7 @@ TrackerGrid::step_editing_set_note_delay (int digit)
 }
 
 bool
-TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
+Grid::step_editing_automation_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2893,7 +2900,7 @@ TrackerGrid::step_editing_automation_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_automation_value (int digit)
+Grid::step_editing_set_automation_value (int digit)
 {
 	pair<double, bool> val_def = get_automation_value(current_rowi, current_mti, current_mri, current_cgi);
 	double oval = val_def.first;
@@ -2911,7 +2918,7 @@ TrackerGrid::step_editing_set_automation_value (int digit)
 }
 
 bool
-TrackerGrid::step_editing_automation_delay_key_press (GdkEventKey* ev)
+Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -2974,7 +2981,7 @@ TrackerGrid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::step_editing_set_automation_delay (int digit)
+Grid::step_editing_set_automation_delay (int digit)
 {
 	pair<int, bool> val_def = get_automation_delay (current_rowi, current_mti, current_mri, current_cgi);
 	int old_delay = val_def.first;
@@ -2994,7 +3001,7 @@ TrackerGrid::step_editing_set_automation_delay (int digit)
 }
 
 void
-TrackerGrid::vertical_move_current_cursor (int steps)
+Grid::vertical_move_current_cursor (int steps)
 {
 	TreeModel::Path path = current_path;
 	TreeViewColumn* col = get_column (current_col);
@@ -3003,7 +3010,7 @@ TrackerGrid::vertical_move_current_cursor (int steps)
 }
 
 void
-TrackerGrid::horizontal_move_current_cursor (int steps, bool tab)
+Grid::horizontal_move_current_cursor (int steps, bool tab)
 {
 	int colnum = current_col;
 	TreeModel::Path path = current_path;
@@ -3013,7 +3020,7 @@ TrackerGrid::horizontal_move_current_cursor (int steps, bool tab)
 }
 
 bool
-TrackerGrid::move_current_cursor_key_press (GdkEventKey* ev)
+Grid::move_current_cursor_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 
@@ -3049,7 +3056,7 @@ TrackerGrid::move_current_cursor_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::non_editing_key_press (GdkEventKey* ev)
+Grid::non_editing_key_press (GdkEventKey* ev)
 {
 	bool ret = false;
 	
@@ -3156,7 +3163,7 @@ TrackerGrid::non_editing_key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::non_editing_key_release (GdkEventKey* ev)
+Grid::non_editing_key_release (GdkEventKey* ev)
 {
 	// Make sure the current mti is a midi track
 	if (!pattern.tps[current_mti]->is_midi_track_pattern())
@@ -3245,7 +3252,7 @@ TrackerGrid::non_editing_key_release (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::key_press (GdkEventKey* ev)
+Grid::key_press (GdkEventKey* ev)
 {
 	if (tracker_editor.main_toolbar.step_edit) {
 		switch (current_auto_type) {
@@ -3260,14 +3267,14 @@ TrackerGrid::key_press (GdkEventKey* ev)
 			case TrackerColumn::DELAY:
 				return step_editing_note_delay_key_press (ev);
 			default:
-				cerr << "TrackerGrid::key_press: Implementation Error!" << endl;
+				cerr << "Grid::key_press: Implementation Error!" << endl;
 			}
 		case TrackerColumn::AUTOMATION:
 			return step_editing_automation_key_press (ev);
 		case TrackerColumn::AUTOMATION_DELAY:
 			return step_editing_automation_delay_key_press (ev);
 		default:
-			cerr << "TrackerGrid::key_press: Implementation Error!" << endl;
+			cerr << "Grid::key_press: Implementation Error!" << endl;
 		}
 	}
 	else return non_editing_key_press (ev);
@@ -3276,13 +3283,13 @@ TrackerGrid::key_press (GdkEventKey* ev)
 }
 
 bool
-TrackerGrid::key_release (GdkEventKey* ev)
+Grid::key_release (GdkEventKey* ev)
 {
 	return non_editing_key_release (ev);
 }
 
 bool
-TrackerGrid::button_event (GdkEventButton* ev)
+Grid::button_event (GdkEventButton* ev)
 {
 	if (ev->button == 1) {
 		TreeModel::Path path;
@@ -3300,7 +3307,7 @@ TrackerGrid::button_event (GdkEventButton* ev)
 }
 
 bool
-TrackerGrid::scroll_event (GdkEventScroll* ev)
+Grid::scroll_event (GdkEventScroll* ev)
 {
 	// TODO change values if editing is active, otherwise scroll.
 	return false;               // Silence compiler

@@ -19,7 +19,7 @@
 #include "audio_track_pattern.h"
 
 #include "tracker_utils.h"
-#include "tracker_grid.h"
+#include "grid.h"
 
 using namespace Tracker;
 
