@@ -18,7 +18,7 @@
 
 #include "midi_track_toolbar.h"
 #include "tracker_editor.h"
-#include "tracker_grid.h"
+#include "grid.h"
 #include "tracker_utils.h"
 
 #include "widgets/tooltips.h"
@@ -447,11 +447,11 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		chn_items.push_back (
 			Menu_Helpers::MenuElem (_("Hide all channels"),
-			                        sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
+			                        sigc::bind (sigc::mem_fun (grid, &Grid::change_all_channel_tracks_visibility),
 			                                    track_index, false, param_without_channel)));
 		chn_items.push_back (
 			Menu_Helpers::MenuElem (_("Show all channels"),
-			                        sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
+			                        sigc::bind (sigc::mem_fun (grid, &Grid::change_all_channel_tracks_visibility),
 			                                    track_index, true, param_without_channel)));
 
 		for (uint8_t chn = 0; chn < 16; chn++) {
@@ -462,7 +462,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-					               sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 					                           track_index, fully_qualified_param)));
 
 				bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
@@ -487,7 +487,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				items.push_back (
 					CheckMenuElem (label,
-					               sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
+					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 					                           track_index, fully_qualified_param)));
 
 				bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
@@ -520,7 +520,7 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 				CheckMenuElem (
 					string_compose ("<b>%1</b>: %2 [%3]", ctl, name, int (chn + 1)),
 					sigc::bind (
-						sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
+						sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 						track_index, fully_qualified_param)));
 			dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
 
@@ -554,11 +554,11 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 	Evoral::Parameter param_without_channel (MidiCCAutomation, 0, ctl);
 	chn_items.push_back (
 		Menu_Helpers::MenuElem (_("Hide all channels"),
-		                        sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
+		                        sigc::bind (sigc::mem_fun (grid, &Grid::change_all_channel_tracks_visibility),
 		                                    track_index, false, param_without_channel)));
 	chn_items.push_back (
 		Menu_Helpers::MenuElem (_("Show all channels"),
-		                        sigc::bind (sigc::mem_fun (grid, &TrackerGrid::change_all_channel_tracks_visibility),
+		                        sigc::bind (sigc::mem_fun (grid, &Grid::change_all_channel_tracks_visibility),
 		                                    track_index, true, param_without_channel)));
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -569,7 +569,7 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
 			chn_items.push_back (
 				CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-				               sigc::bind (sigc::mem_fun (grid, &TrackerGrid::update_automation_column_visibility),
+				               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 				                           track_index, fully_qualified_param)));
 
 			bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
@@ -638,7 +638,7 @@ MidiTrackToolbar::show_existing_midi_automations ()
 {
 	const std::set<Evoral::Parameter> params = midi_track->midi_playlist()->contained_automation();
 	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-		TrackerGrid::ColParamBimap::right_const_iterator it = grid.col2params[track_index].right.find(*p);
+		Grid::ColParamBimap::right_const_iterator it = grid.col2params[track_index].right.find(*p);
 		size_t column = (it == grid.col2params[track_index].right.end()) || (it->second == 0) ?
 			grid.add_midi_automation_column (track_index, *p) : it->second;
 
@@ -657,7 +657,7 @@ MidiTrackToolbar::hide_midi_automations ()
 	for (std::set<size_t>::iterator it = grid.visible_automation_columns.begin();
 	     it != grid.visible_automation_columns.end(); it++) {
 		size_t column = *it;
-		TrackerGrid::ColParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
+		Grid::ColParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
 		if (c2p_it == grid.col2params[track_index].left.end())
 			continue;
 

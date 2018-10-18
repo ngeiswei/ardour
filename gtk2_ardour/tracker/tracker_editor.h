@@ -42,7 +42,7 @@
 #include "main_toolbar.h"
 #include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
-#include "tracker_grid.h"
+#include "grid.h"
 #include "grid_header.h"
 
 namespace Evoral {
@@ -93,7 +93,7 @@ public:
 	std::vector<MidiTimeAxisView*> midi_time_axis_views; // NEXT TODO: probably doesn't need this
 
 	Gtk::ScrolledWindow          scroller;
-	TrackerGrid                  grid;
+	Grid                         grid;
 	MainToolbar                  main_toolbar;
 	GridHeader*                  grid_header;
 	Gtk::VBox                    vbox;
