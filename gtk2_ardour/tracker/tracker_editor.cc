@@ -104,11 +104,11 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 			// Make changing midi content re-render the grid
 			midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
-			                                     boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
+			                                     boost::bind (&Grid::redisplay_model, &grid), gui_context());
 
 			// Make changing the region time zone re-render the grid
 			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-			                                            boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
+			                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
 
 			// NT: is this really necessary?
 			midi_time_axis_views.push_back(midi_time_axis_view);
@@ -156,8 +156,8 @@ void
 TrackerEditor::connect_automation (boost::shared_ptr<AutomationControl> actrl)
 {
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
-	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
-	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&TrackerGrid::redisplay_model, &grid), gui_context());
+	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_model, &grid), gui_context());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_model, &grid), gui_context());
 }
 
 void

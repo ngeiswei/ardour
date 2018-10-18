@@ -1,4 +1,5 @@
 - Support super-header with track name and track toolbar in it (Gtk::Expander cpuload_expander)
+- take care of code style
 - add space between function and argument call
 - const when possible
 - Support arbitrary number of tracks (put all properties in tracker_column)
