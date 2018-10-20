@@ -123,11 +123,15 @@ public:
 	const AudioTrackToolbar* audio_track_toolbar() const;
 	AudioTrackToolbar* audio_track_toolbar();
 
+	virtual int get_min_width() const;
+
 	TrackerEditor& tracker_editor;
 	boost::shared_ptr<ARDOUR::Track> track;
 	TrackPattern* track_pattern;
 	size_t track_index;
 	Grid& grid;
+
+	int spacing;
 
 	ArdourWidgets::ArdourButton  visible_delay_button;
 	bool                         visible_delay;
