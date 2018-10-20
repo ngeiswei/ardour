@@ -44,6 +44,7 @@ TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti)
 	, track_pattern (tp)
 	, track_index (mti)
 	, grid (te.grid)
+	, spacing (2)
 	, visible_delay (false)
 	, automation_action_menu (0)
 	, controller_menu (0)
@@ -567,4 +568,13 @@ AudioTrackToolbar*
 TrackToolbar::audio_track_toolbar()
 {
 	return dynamic_cast<AudioTrackToolbar*>(this);
+}
+
+int
+TrackToolbar::get_min_width() const
+{
+	int width = visible_delay_button.get_width() + spacing +
+		+ automation_separator.get_width() + spacing
+		+ automation_button.get_width();
+	return width;
 }

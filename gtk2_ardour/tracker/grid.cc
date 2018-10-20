@@ -1189,17 +1189,6 @@ Grid::redisplay_model ()
 	redisplay_visible_automation();
 	redisplay_visible_automation_separator();
 
-	// VT: feedback get_time_width and get_track_width into the grid header to
-	// align the track headers.
-	//
-	// See Widget::set_size_request
-	std::cout << "Grid::get_time_width() = " << get_time_width() << std::endl;
-	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		size_t w = get_track_width(mti);
-		std::cout << "Grid::get_track_width(" << mti << ") = " << w << std::endl;
-	}
-
-	// Experiment
 	tracker_editor.grid_header->align();
 }
 

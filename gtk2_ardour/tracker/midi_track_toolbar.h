@@ -103,6 +103,9 @@ public:
 	void update_add_note_column_button ();
 	void update_automation_button();
 
+	void print_widths();
+	int get_min_width() const;
+
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	MidiTrackPattern& midi_track_pattern;
 
