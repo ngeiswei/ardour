@@ -25,12 +25,12 @@ GridHeader::GridHeader(TrackerEditor& te)
 	: tracker_editor(te)
 {
 	time_header.show();
-	add (time_header);
+	pack_start (time_header, Gtk::PACK_SHRINK);
 	for (size_t mti = 0; mti < te.grid.pattern.tps.size(); mti++) {
 		TrackPattern* tp = te.grid.pattern.tps[mti];
 		TrackHeader* th = new TrackHeader (te, tp, mti);
 		track_headers.push_back(th);
-		add (*th);
+		pack_start (*th, Gtk::PACK_SHRINK);
 	}
 	show();
 }
@@ -50,13 +50,26 @@ GridHeader::set_time_header_size(int width, int height)
 void
 GridHeader::set_track_header_size(size_t mti, int width, int height)
 {
+	std::cout << "GridHeader::set_track_header_size(" << mti
+	          << ", " << width << ", " << height << std::endl;
+	int previous_request_width;
+	int previous_request_height;
+	track_headers[mti]->get_size_request(previous_request_width, previous_request_height);
+	std::cout << "previous_request_width = " << previous_request_width
+	          << ", previous_request_height = " << previous_request_height
+	          << ", get_width() = " << track_headers[mti]->get_width() << std::endl;
+	width = std::max(width, track_headers[mti]->get_min_width());
 	track_headers[mti]->set_size_request(width, height);
 }
 
 void
 GridHeader::align()
 {
+	std::cout << "Grid::get_time_width() = " << tracker_editor.grid.get_time_width() << std::endl;
 	set_time_header_size(tracker_editor.grid.get_time_width());
-	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size(); mti++)
+	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size(); mti++) {
+		std::cout << "Grid::get_track_width(" << mti << ") = "
+		          << tracker_editor.grid.get_track_width(mti) << std::endl;
 		set_track_header_size(mti, tracker_editor.grid.get_track_width(mti));
+	}
 }
