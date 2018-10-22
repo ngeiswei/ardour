@@ -104,6 +104,7 @@ Grid::~Grid ()
 {
 	delete time_column;
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		delete left_separator_columns[mti];
 		delete region_name_columns[mti];
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
 			delete note_columns[mti][cgi];
@@ -117,6 +118,7 @@ Grid::~Grid ()
 			delete automation_delay_columns[mti][cgi];
 			delete automation_separator_columns[mti][cgi];
 		}
+		delete right_separator_columns[mti];
 	}
 }
 
@@ -128,6 +130,8 @@ Grid::GridModelColumns::GridModelColumns()
 	add (_family);
 	add (time);
 	for (size_t mti /* multi track index */ = 0; mti < MAX_NUMBER_OF_TRACKS; mti++) {
+		add (_left_right_separator_background_color[mti]);
+		add (left_separator[mti]);
 		add (region_name[mti]);
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
 			add (note_name[mti][cgi]);
@@ -155,6 +159,7 @@ Grid::GridModelColumns::GridModelColumns()
 			add (_automation_delay_foreground_color[mti][cgi]);
 			add (_empty);
 		}
+		add (right_separator[mti]);
 	}
 }
 
@@ -468,16 +473,29 @@ Grid::redisplay_visible_note()
 int
 Grid::mti_col_offset(size_t mti) const
 {
-	return 1 /* time */ + 1 /* first track name */
-		+ mti * (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK
+	return 1 /* time */
+		+ mti * (1 /* left separator */ + 1 /* region name */ +
+		         MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK
 		         + MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_AUTOMATION_TRACK
-		         + 1 /* track name */);
+		         + 1 /* right separator */);
+}
+
+int
+Grid::left_separator_colnum(size_t mti) const
+{
+	return mti_col_offset(mti) + 1 /* left separator */;
+}
+
+int
+Grid::region_name_colnum(size_t mti) const
+{
+	return left_separator_colnum(mti) + 1 /* region name */;
 }
 
 int
 Grid::note_colnum(size_t mti, size_t cgi) const
 {
-	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::NOTE;
+	return region_name_colnum(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK;
 }
 
 void
@@ -502,7 +520,7 @@ Grid::redisplay_visible_channel()
 int
 Grid::note_channel_colnum(size_t mti, size_t cgi) const
 {
-	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::CHANNEL;
+	return note_colnum(mti, cgi) + 1 /* channel */;
 }
 
 void
@@ -527,7 +545,7 @@ Grid::redisplay_visible_velocity()
 int
 Grid::note_velocity_colnum(size_t mti, size_t cgi) const
 {
-	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::VELOCITY;
+	return note_channel_colnum(mti, cgi) + 1 /* velocity */;
 }
 
 void
@@ -553,7 +571,7 @@ Grid::redisplay_visible_delay()
 int
 Grid::note_delay_colnum(size_t mti, size_t cgi) const
 {
-	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::DELAY;
+	return note_velocity_colnum(mti, cgi) + 1 /* delay */;
 }
 
 void
@@ -585,7 +603,7 @@ Grid::redisplay_visible_note_separator()
 int
 Grid::note_separator_colnum (size_t mti, size_t cgi) const
 {
-	return mti_col_offset(mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK + TrackerColumn::SEPARATOR;
+	return note_delay_colnum(mti, cgi) + 1 /* note group separator */;
 }
 
 void
@@ -607,14 +625,14 @@ Grid::redisplay_visible_automation()
 size_t
 Grid::automation_col_offset(size_t mti) const
 {
-	return mti_col_offset(mti)
+	return mti_col_offset(mti) + 1 /* left separator */ + 1 /* region name */
 		+ MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK;
 }
 
 int
 Grid::automation_colnum(size_t mti, size_t cgi) const
 {
-	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION;
+	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi;
 }
 
 void
@@ -635,7 +653,7 @@ Grid::redisplay_visible_automation_delay()
 int
 Grid::automation_delay_colnum(size_t mti, size_t cgi) const
 {
-	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION_DELAY;
+	return automation_colnum(mti, cgi) + 1 /* delay */;
 }
 
 void
@@ -661,13 +679,14 @@ Grid::redisplay_visible_automation_separator()
 int
 Grid::automation_separator_colnum (size_t mti, size_t cgi) const
 {
-	return automation_col_offset(mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi + TrackerColumn::AUTOMATION_SEPARATOR;
+	return automation_delay_colnum(mti, cgi) + 1 /* automation group separator */;
 }
 
 void
 Grid::init_columns ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		left_separator_columns.push_back(0);
 		region_name_columns.push_back(0);
 		note_columns.push_back(std::vector<NoteColumn*>(MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
 		channel_columns.push_back(std::vector<ChannelColumn*>(MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
@@ -677,6 +696,7 @@ Grid::init_columns ()
 		automation_columns.push_back(std::vector<AutomationColumn*>(MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
 		automation_delay_columns.push_back(std::vector<AutomationDelayColumn*>(MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
 		automation_separator_columns.push_back(std::vector<TreeViewColumn*>(MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
+		right_separator_columns.push_back(0);
 	}
 }
 
@@ -693,9 +713,10 @@ Grid::setup ()
 
 	setup_time_column();
 
-	// Instantiate midi tracks
+	// Instantiate tracks
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		setup_midi_track_column(mti);
+		setup_left_separator_column(mti);
+		setup_region_name_column(mti);
 
 		// Setup column info
 		gain_columns.push_back(0);
@@ -721,6 +742,8 @@ Grid::setup ()
 			setup_automation_delay_column(mti, cgi);
 			setup_automation_separator_column(mti, cgi);
 		}
+
+		setup_right_separator_column(mti);
 	}
 
 	// Connect to key press events
@@ -825,6 +848,18 @@ void
 Grid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 {
 	row[columns.region_name[mti]] = "";
+}
+
+void
+Grid::redisplay_left_right_separator (TreeModel::Row& row, size_t mti)
+{
+	// VT: select track color
+	// Display track color for background
+	row[columns._left_right_separator_background_color[mti]] = UIConfiguration::instance().color_str ("tracker editor: cursor");
+
+	// Align left column to track toolbar
+	// VT:
+	left_separator_columns[mti]->set_fixed_width(100);
 }
 
 void
@@ -1202,6 +1237,7 @@ int
 Grid::get_track_width(size_t mti) const
 {
 	int width = 0;
+	width += left_separator_columns[mti]->get_width();
 	if (region_name_columns[mti]->get_visible())
 		width += region_name_columns[mti]->get_width();
 	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -1224,6 +1260,7 @@ Grid::get_track_width(size_t mti) const
 		if (automation_separator_columns[mti][cgi]->get_visible())
 			width += automation_separator_columns[mti][cgi]->get_width();
 	}
+	width += right_separator_columns[mti]->get_width();
 	return width;
 }
 
@@ -1925,16 +1962,28 @@ void
 Grid::setup_time_column()
 {
 	time_column = new TreeViewColumn (_("Time"), columns.time);
-	CellRenderer* cellrenderer_time = time_column->get_first_cell_renderer ();
+	CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
 	// Link to color attributes
-	time_column->add_attribute(cellrenderer_time->property_cell_background (), columns._background_color);
+	time_column->add_attribute(time_cellrenderer->property_cell_background (), columns._background_color);
 
 	append_column (*time_column);
 }
 
 void
-Grid::setup_midi_track_column(size_t mti)
+Grid::setup_left_separator_column(size_t mti)
+{
+	left_separator_columns[mti] = new TreeViewColumn ("", columns.left_separator[mti]);
+	CellRenderer* left_separator_cellrenderer = left_separator_columns[mti]->get_first_cell_renderer ();
+
+	// Link to color attributes
+	left_separator_columns[mti]->add_attribute(left_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
+
+	append_column (*left_separator_columns[mti]);
+}
+
+void
+Grid::setup_region_name_column(size_t mti)
 {
 	string label("");
 	region_name_columns[mti] = new TreeViewColumn (label, columns.region_name[mti]);
@@ -1955,11 +2004,6 @@ Grid::setup_note_column (size_t mti, size_t cgi)
 	// TODO: maybe put the information of the mti, cgi, midi_note_type or automation_type in the TreeViewColumn
 	note_columns[mti][cgi] = new NoteColumn (columns.note_name[mti][cgi], mti, cgi);
 	CellRendererText* note_cellrenderer = dynamic_cast<CellRendererText*> (note_columns[mti][cgi]->get_first_cell_renderer ());
-
-	// TODO: maybe property_wrap_mode() can be used to have fake multi-line
-	// header
-
-	// TODO: play with property_stretch() as well
 
 	// // Link to font attributes
 	// viewcolumn_note->add_attribute(cellrenderer_note->property_family (), columns._family);
@@ -2090,6 +2134,18 @@ Grid::setup_automation_separator_column (size_t mti, size_t cgi)
 {
 	automation_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
 	append_column (*automation_separator_columns[mti][cgi]);
+}
+
+void
+Grid::setup_right_separator_column (size_t mti)
+{
+	right_separator_columns[mti] = new TreeViewColumn ("", columns.right_separator[mti]);
+	CellRenderer* right_separator_cellrenderer = right_separator_columns[mti]->get_first_cell_renderer ();
+
+	// Link to color attributes
+	right_separator_columns[mti]->add_attribute(right_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
+
+	append_column (*right_separator_columns[mti]);
 }
 
 void
