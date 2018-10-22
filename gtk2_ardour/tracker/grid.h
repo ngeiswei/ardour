@@ -60,6 +60,8 @@ public:
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
 		Gtk::TreeModelColumn<std::string> time;
+		Gtk::TreeModelColumn<std::string> _left_right_separator_background_color[MAX_NUMBER_OF_TRACKS];
+		Gtk::TreeModelColumn<std::string> left_separator[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> region_name[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
@@ -81,6 +83,7 @@ public:
 		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> right_separator[MAX_NUMBER_OF_TRACKS];
 	};
 
 	// Assign an automation parameter to a column and return the corresponding
@@ -116,6 +119,8 @@ public:
 
 	void redisplay_visible_note ();
 	int mti_col_offset(size_t mti) const;
+	int left_separator_colnum (size_t mti) const;
+	int region_name_colnum (size_t mti) const;
 	int note_colnum (size_t mti, size_t cgi /* column group index */) const;
 	void redisplay_visible_channel ();
 	int note_channel_colnum (size_t mti, size_t cgi) const;
@@ -137,6 +142,7 @@ public:
 	void read_colors ();         // Read colors from config
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
@@ -208,7 +214,8 @@ public:
 private:
 	void init_columns ();
 	void setup_time_column ();
-	void setup_midi_track_column (size_t mti);
+	void setup_left_separator_column (size_t mti);
+	void setup_region_name_column (size_t mti);
 	void setup_note_column (size_t mti, size_t cgi);
 	void setup_note_channel_column (size_t mti, size_t cgi);
 	void setup_note_velocity_column (size_t mti, size_t cgi);
@@ -217,6 +224,7 @@ private:
 	void setup_automation_column (size_t mti, size_t cgi);
 	void setup_automation_delay_column (size_t mti, size_t cgi);
 	void setup_automation_separator_column (size_t mti, size_t cgi);
+	void setup_right_separator_column (size_t mti);
 
 	/////////////////////
 	// Action Utils    //
@@ -369,6 +377,7 @@ private:
 
 	// Columns
 	Gtk::TreeViewColumn* time_column;
+	std::vector<Gtk::TreeViewColumn*> left_separator_columns;
 	std::vector<Gtk::TreeViewColumn*> region_name_columns;
 	std::vector<std::vector<NoteColumn*> > note_columns;
 	std::vector<std::vector<ChannelColumn*> > channel_columns;
@@ -378,6 +387,7 @@ private:
 	std::vector<std::vector<AutomationColumn*> > automation_columns;
 	std::vector<std::vector<AutomationDelayColumn*> > automation_delay_columns;
 	std::vector<std::vector<Gtk::TreeViewColumn*> > automation_separator_columns;
+	std::vector<Gtk::TreeViewColumn*> right_separator_columns;
 
 	// ColAutoTrackBimap per midi track
 	std::vector<ColAutoTrackBimap> col2autotracks;
