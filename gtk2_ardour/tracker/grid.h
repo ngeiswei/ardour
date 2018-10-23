@@ -23,6 +23,7 @@
 
 #include <gtkmm/treeview.h>
 #include <gtkmm/liststore.h>
+#include <gdkmm/color.h>
 
 #include "tracker_column.h"
 #include "multi_track_pattern.h"
@@ -56,7 +57,7 @@ public:
 	struct GridModelColumns : public Gtk::TreeModel::ColumnRecord {
 		GridModelColumns();
 		// TODO: add empty columns to separate between each note track and each automations
-		Gtk::TreeModelColumn<std::string> _background_color;
+		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
 		Gtk::TreeModelColumn<std::string> time;
@@ -64,26 +65,27 @@ public:
 		Gtk::TreeModelColumn<std::string> left_separator[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> region_name[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _channel_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _channel_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> velocity[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _velocity_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _velocity_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> right_separator[MAX_NUMBER_OF_TRACKS];
+		Gtk::TreeModelColumn<std::string> track_separator[MAX_NUMBER_OF_TRACKS];
 	};
 
 	// Assign an automation parameter to a column and return the corresponding
@@ -137,6 +139,7 @@ public:
 	int automation_delay_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_automation_separator ();
 	int automation_separator_colnum (size_t mti, size_t cgi) const;
+	int right_separator_colnum (size_t mti) const;
 
 	void setup ();
 	void read_colors ();         // Read colors from config
@@ -225,6 +228,7 @@ private:
 	void setup_automation_delay_column (size_t mti, size_t cgi);
 	void setup_automation_separator_column (size_t mti, size_t cgi);
 	void setup_right_separator_column (size_t mti);
+	void setup_track_separator_column (size_t mti);
 
 	/////////////////////
 	// Action Utils    //
@@ -388,6 +392,7 @@ private:
 	std::vector<std::vector<AutomationDelayColumn*> > automation_delay_columns;
 	std::vector<std::vector<Gtk::TreeViewColumn*> > automation_separator_columns;
 	std::vector<Gtk::TreeViewColumn*> right_separator_columns;
+	std::vector<Gtk::TreeViewColumn*> track_separator_columns;
 
 	// ColAutoTrackBimap per midi track
 	std::vector<ColAutoTrackBimap> col2autotracks;

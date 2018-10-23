@@ -119,6 +119,7 @@ Grid::~Grid ()
 			delete automation_separator_columns[mti][cgi];
 		}
 		delete right_separator_columns[mti];
+		delete track_separator_columns[mti];
 	}
 }
 
@@ -160,6 +161,7 @@ Grid::GridModelColumns::GridModelColumns()
 			add (_empty);
 		}
 		add (right_separator[mti]);
+		add (track_separator[mti]);
 	}
 }
 
@@ -477,7 +479,7 @@ Grid::mti_col_offset(size_t mti) const
 		+ mti * (1 /* left separator */ + 1 /* region name */ +
 		         MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK
 		         + MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_AUTOMATION_TRACK
-		         + 1 /* right separator */);
+		         + 1 /* right separator */ + 1 /* track separator */);
 }
 
 int
@@ -682,6 +684,13 @@ Grid::automation_separator_colnum (size_t mti, size_t cgi) const
 	return automation_delay_colnum(mti, cgi) + 1 /* automation group separator */;
 }
 
+int
+Grid::right_separator_colnum(size_t mti) const
+{
+	return automation_col_offset(mti)
+		+ MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_AUTOMATION_TRACK;
+}
+
 void
 Grid::init_columns ()
 {
@@ -697,6 +706,7 @@ Grid::init_columns ()
 		automation_delay_columns.push_back(std::vector<AutomationDelayColumn*>(MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
 		automation_separator_columns.push_back(std::vector<TreeViewColumn*>(MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
 		right_separator_columns.push_back(0);
+		track_separator_columns.push_back(0);
 	}
 }
 
@@ -744,6 +754,7 @@ Grid::setup ()
 		}
 
 		setup_right_separator_column(mti);
+		setup_track_separator_column(mti);
 	}
 
 	// Connect to key press events
@@ -853,9 +864,8 @@ Grid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 void
 Grid::redisplay_left_right_separator (TreeModel::Row& row, size_t mti)
 {
-	// VT: select track color
 	// Display track color for background
-	row[columns._left_right_separator_background_color[mti]] = UIConfiguration::instance().color_str ("tracker editor: cursor");
+	row[columns._left_right_separator_background_color[mti]] = gdk_color_to_string(tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color().gobj());
 
 	// Align left column to track toolbar
 	// VT:
@@ -1161,6 +1171,7 @@ Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 		// Get the region's index, -1 if undefined
 		int mri = pattern.to_mri (rowi, mti);
 
+		redisplay_left_right_separator (row, mti);
 		redisplay_region_name (row, rowi, mti, mri);
 		redisplay_notes (row, rowi, mti, mri);
 		redisplay_automations (row, rowi, mti, mri);
@@ -1261,6 +1272,7 @@ Grid::get_track_width(size_t mti) const
 			width += automation_separator_columns[mti][cgi]->get_width();
 	}
 	width += right_separator_columns[mti]->get_width();
+	width += track_separator_columns[mti]->get_width();
 	return width;
 }
 
@@ -2146,6 +2158,13 @@ Grid::setup_right_separator_column (size_t mti)
 	right_separator_columns[mti]->add_attribute(right_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
 
 	append_column (*right_separator_columns[mti]);
+}
+
+void
+Grid::setup_track_separator_column (size_t mti)
+{
+	track_separator_columns[mti] = new TreeViewColumn ("", columns.track_separator[mti]);
+	append_column (*track_separator_columns[mti]);
 }
 
 void
