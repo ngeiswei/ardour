@@ -583,16 +583,10 @@ Grid::redisplay_visible_note_separator()
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
 			bool visible = false;
 			if (pattern.tps[mti]->is_midi_track_pattern()) {
-				bool is_last_mti = mti == (pattern.tps.size() - 1);
 				bool hva = has_visible_automation(mti);
 				size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
 				bool visible_note = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note && 0 < ntracks;
-				bool is_first_gci = (cgi == 0);
-				if (is_last_mti && !hva && !visible_note) {
-					visible = is_first_gci;
-				} else {
-					visible = visible_note && (cgi < ntracks - ((hva || is_last_mti) ? 0 : 1));
-				}
+				visible = visible_note && (cgi < ntracks - (hva ? 0 : 1));
 			}
 			get_column(note_separator_colnum(mti, cgi))->set_visible (visible);
 		}
@@ -670,7 +664,7 @@ Grid::redisplay_visible_automation_separator()
 				greatest_visible_col = std::max(greatest_visible_col, col);
 			get_column(col)->set_visible (visible);
 		}
-		if (0 < greatest_visible_col && mti != (pattern.tps.size() - 1))
+		if (0 < greatest_visible_col)
 			get_column(greatest_visible_col)->set_visible (false);
 	}
 
@@ -864,12 +858,24 @@ Grid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 void
 Grid::redisplay_left_right_separator (TreeModel::Row& row, size_t mti)
 {
-	// Display track color for background
-	row[columns._left_right_separator_background_color[mti]] = gdk_color_to_string(tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color().gobj());
+	// VT: fix synchronization with track toolbar
 
-	// Align left column to track toolbar
-	// VT:
-	left_separator_columns[mti]->set_fixed_width(100);
+	// Display track color for background
+	row[columns._left_right_separator_background_color[mti]] =
+		gdk_color_to_string(tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color().gobj());
+
+	// Align with track toolbar
+	int track_header_width = tracker_editor.grid_header->track_headers[mti]->get_min_width();
+	int track_width = get_track_width(mti);
+	int track_width_without_right = track_width - get_right_separator_width(mti);
+	if (track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH < track_header_width) {
+		int diff = track_header_width - track_width_without_right;
+		right_separator_columns[mti]->set_min_width(diff);
+		right_separator_columns[mti]->set_max_width(diff);
+	} else if (track_header_width < track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH) {
+		right_separator_columns[mti]->set_min_width(LEFT_RIGHT_SEPARATOR_WIDTH);
+		right_separator_columns[mti]->set_max_width(LEFT_RIGHT_SEPARATOR_WIDTH);		
+	}
 }
 
 void
@@ -1272,8 +1278,19 @@ Grid::get_track_width(size_t mti) const
 			width += automation_separator_columns[mti][cgi]->get_width();
 	}
 	width += right_separator_columns[mti]->get_width();
-	width += track_separator_columns[mti]->get_width();
 	return width;
+}
+
+int
+Grid::get_right_separator_width(size_t mti) const
+{
+	return right_separator_columns[mti]->get_width();
+}
+
+int
+Grid::get_track_separator_width() const
+{
+	return TRACK_SEPARATOR_WIDTH;
 }
 
 /////////////////////
@@ -1991,6 +2008,10 @@ Grid::setup_left_separator_column(size_t mti)
 	// Link to color attributes
 	left_separator_columns[mti]->add_attribute(left_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
 
+	// Set width
+	left_separator_columns[mti]->set_min_width(LEFT_RIGHT_SEPARATOR_WIDTH);
+	left_separator_columns[mti]->set_max_width(LEFT_RIGHT_SEPARATOR_WIDTH);
+
 	append_column (*left_separator_columns[mti]);
 }
 
@@ -2008,6 +2029,8 @@ Grid::setup_region_name_column(size_t mti)
 	// region_name_columns[mti]->add_attribute(cellrenderer_region_name->property_cell_background (), columns._background_color);
 
 	append_column (*region_name_columns[mti]);
+
+	region_name_columns[mti]->set_visible (false);
 }
 
 void
@@ -2094,6 +2117,11 @@ void
 Grid::setup_note_separator_column (size_t mti, size_t cgi)
 {
 	note_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
+
+	// Set width
+	note_separator_columns[mti][cgi]->set_min_width(GROUP_SEPARATOR_WIDTH);
+	note_separator_columns[mti][cgi]->set_max_width(GROUP_SEPARATOR_WIDTH);
+
 	append_column (*note_separator_columns[mti][cgi]);
 }
 
@@ -2145,6 +2173,11 @@ void
 Grid::setup_automation_separator_column (size_t mti, size_t cgi)
 {
 	automation_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
+
+	// Set width
+	automation_separator_columns[mti][cgi]->set_min_width(GROUP_SEPARATOR_WIDTH);
+	automation_separator_columns[mti][cgi]->set_max_width(GROUP_SEPARATOR_WIDTH);
+
 	append_column (*automation_separator_columns[mti][cgi]);
 }
 
@@ -2157,6 +2190,10 @@ Grid::setup_right_separator_column (size_t mti)
 	// Link to color attributes
 	right_separator_columns[mti]->add_attribute(right_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
 
+	// Set width
+	right_separator_columns[mti]->set_min_width(LEFT_RIGHT_SEPARATOR_WIDTH);
+	right_separator_columns[mti]->set_max_width(LEFT_RIGHT_SEPARATOR_WIDTH);
+
 	append_column (*right_separator_columns[mti]);
 }
 
@@ -2164,6 +2201,11 @@ void
 Grid::setup_track_separator_column (size_t mti)
 {
 	track_separator_columns[mti] = new TreeViewColumn ("", columns.track_separator[mti]);
+
+	// Set width
+	track_separator_columns[mti]->set_min_width(TRACK_SEPARATOR_WIDTH);
+	track_separator_columns[mti]->set_max_width(TRACK_SEPARATOR_WIDTH);
+
 	append_column (*track_separator_columns[mti]);
 }
 
