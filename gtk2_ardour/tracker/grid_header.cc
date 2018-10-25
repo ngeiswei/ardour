@@ -65,11 +65,12 @@ GridHeader::set_track_header_size(size_t mti, int width, int height)
 void
 GridHeader::align()
 {
-	std::cout << "Grid::get_time_width() = " << tracker_editor.grid.get_time_width() << std::endl;
-	set_time_header_size(tracker_editor.grid.get_time_width());
+	int track_separator_width = tracker_editor.grid.get_track_separator_width();
+	int time_width = tracker_editor.grid.get_time_width();
+	set_spacing (track_separator_width);
+	set_time_header_size (time_width - track_separator_width);
 	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size(); mti++) {
-		std::cout << "Grid::get_track_width(" << mti << ") = "
-		          << tracker_editor.grid.get_track_width(mti) << std::endl;
-		set_track_header_size(mti, tracker_editor.grid.get_track_width(mti));
+		int track_width = tracker_editor.grid.get_track_width(mti);
+		set_track_header_size(mti, track_width);
 	}
 }
