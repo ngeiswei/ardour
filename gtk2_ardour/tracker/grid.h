@@ -46,6 +46,10 @@ namespace Tracker {
 #define NUMBER_OF_COL_PER_NOTE_TRACK 5 /*note+channel+velocity+delay+separator*/
 #define NUMBER_OF_COL_PER_AUTOMATION_TRACK 3 /*automation+delay+separator*/
 
+#define LEFT_RIGHT_SEPARATOR_WIDTH 16
+#define GROUP_SEPARATOR_WIDTH 8
+#define TRACK_SEPARATOR_WIDTH 8
+
 class TrackerEditor;
 
 class Grid : public Gtk::TreeView
@@ -146,6 +150,7 @@ public:
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
+	void redisplay_track_separator (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
@@ -168,6 +173,8 @@ public:
 	// To align grid header
 	int get_time_width() const;
 	int get_track_width(size_t mti) const;
+	int get_right_separator_width(size_t mti) const;
+	int get_track_separator_width() const;
 
 	TrackerEditor& tracker_editor;
 

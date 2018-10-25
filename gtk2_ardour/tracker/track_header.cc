@@ -40,9 +40,6 @@ TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti)
 	set_label (tp->track->name());
 	set_label_align (0.5);
 
-	// Set border
-	// set_border_width (5);
-
 	// Add toolbar to frame body
 	add (*track_toolbar);
 
