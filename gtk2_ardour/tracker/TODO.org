@@ -1,3 +1,4 @@
+- Make step editing more visible (add a red frame)
 - Support super-header with track name and track toolbar in it (Gtk::Expander cpuload_expander)
 - Try to replace as many gtk widgets by cairo widgets
 - Take care of code style
@@ -8,8 +9,6 @@
 - Create wscript under tracker folder
 - Underline the digit to be edited
 - Support shift-tab to move from right to left
-- Add color hint (maybe as region name column background)
-- Make step editing more visible (like switch editing cursor color to red and add a red frame)
 - Add shortcut for parameters, steps, etc
 - Add copy/move, etc, notes + popup menu
 - Transfer Ardour shortcuts, spacebar, etc
