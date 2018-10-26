@@ -125,6 +125,8 @@ public:
 
 	virtual int get_min_width() const;
 
+	void redisplay_model ();
+
 	TrackerEditor& tracker_editor;
 	boost::shared_ptr<ARDOUR::Track> track;
 	TrackPattern* track_pattern;
