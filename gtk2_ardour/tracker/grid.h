@@ -422,6 +422,7 @@ private:
 	std::string active_foreground_color;
 	std::string passive_foreground_color;
 	std::string cursor_color;
+	std::string cursor_step_edit_color;
 };
 
 } // ~namespace tracker
