@@ -381,5 +381,7 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 	step_edit = !step_edit;
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
+	tracker_editor.grid.redisplay_model();
+
 	return false;
 }

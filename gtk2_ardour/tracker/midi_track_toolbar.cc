@@ -163,11 +163,12 @@ MidiTrackToolbar::visible_note_press(GdkEventButton* ev)
 	}
 
 	visible_note = !visible_note;
-	grid.redisplay_visible_note();
-	grid.redisplay_visible_channel();
-	grid.redisplay_visible_velocity();
-	grid.redisplay_visible_delay();
-	grid.redisplay_visible_note_separator();
+	// grid.redisplay_visible_note();
+	// grid.redisplay_visible_channel();
+	// grid.redisplay_visible_velocity();
+	// grid.redisplay_visible_delay();
+	// grid.redisplay_visible_note_separator();
+	redisplay_model();
 	return false;
 }
 
@@ -180,7 +181,8 @@ MidiTrackToolbar::visible_channel_press(GdkEventButton* ev)
 	}
 
 	visible_channel = !visible_channel;
-	grid.redisplay_visible_channel();
+	// grid.redisplay_visible_channel();
+	redisplay_model();
 	return false;
 }
 
@@ -193,7 +195,8 @@ MidiTrackToolbar::visible_velocity_press(GdkEventButton* ev)
 	}
 
 	visible_velocity = !visible_velocity;
-	grid.redisplay_visible_velocity();
+	// grid.redisplay_visible_velocity();
+	redisplay_model();
 	return false;
 }
 
@@ -213,7 +216,7 @@ MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
 	}
 
 	midi_track_pattern.dec_ntracks ();
-	grid.redisplay_model ();
+	redisplay_model ();
 	update_remove_note_column_button ();
 	update_add_note_column_button ();
 
@@ -229,7 +232,7 @@ MidiTrackToolbar::add_note_column_press (GdkEventButton* ev)
 	}
 
 	midi_track_pattern.inc_ntracks ();
-	grid.redisplay_model ();
+	redisplay_model ();
 	update_remove_note_column_button ();
 	update_add_note_column_button ();
 
@@ -610,7 +613,7 @@ MidiTrackToolbar::show_all_automation ()
 	show_existing_midi_automations ();
 	show_all_processor_automations ();
 
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 void
@@ -620,7 +623,7 @@ MidiTrackToolbar::show_existing_automation ()
 	show_existing_midi_automations ();
 	show_existing_processor_automations ();
 
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 void
@@ -630,7 +633,7 @@ MidiTrackToolbar::hide_all_automation ()
 	hide_midi_automations ();
 	hide_processor_automations ();
 
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 void
