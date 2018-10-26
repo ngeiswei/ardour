@@ -124,7 +124,8 @@ TrackToolbar::visible_delay_press(GdkEventButton* ev)
 	}
 
 	visible_delay = !visible_delay;
-	grid.redisplay_visible_delay();
+	// grid.redisplay_visible_delay();
+	redisplay_model();
 	return false;
 }
 
@@ -328,7 +329,7 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Process
 		grid.visible_automation_columns.erase (pan->column);
 
 	/* now trigger a redisplay */
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 ProcessorAutomationNode*
@@ -359,7 +360,7 @@ TrackToolbar::show_all_automation ()
 	show_all_main_automations ();
 	show_all_processor_automations ();
 
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 void
@@ -368,7 +369,7 @@ TrackToolbar::show_existing_automation ()
 	show_existing_main_automations ();
 	show_existing_processor_automations ();
 
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 void
@@ -377,7 +378,7 @@ TrackToolbar::hide_all_automation ()
 	hide_main_automations ();
 	hide_processor_automations ();
 
-	grid.redisplay_model ();
+	redisplay_model ();
 }
 
 void
@@ -577,4 +578,10 @@ TrackToolbar::get_min_width() const
 		+ automation_separator.get_width() + spacing
 		+ automation_button.get_width();
 	return width;
+}
+
+void
+TrackToolbar::redisplay_model()
+{
+	tracker_editor.grid.redisplay_model ();
 }
