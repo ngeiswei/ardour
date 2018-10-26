@@ -470,6 +470,9 @@ Grid::redisplay_visible_note()
 
 	// Keep the window width to its minimum
 	tracker_editor.resize_width();
+
+	// Align track toolbar
+	tracker_editor.grid_header->align();
 }
 
 int
@@ -517,6 +520,9 @@ Grid::redisplay_visible_channel()
 
 	// Keep the window width to its minimum
 	tracker_editor.resize_width();
+
+	// Align track toolbar
+	tracker_editor.grid_header->align();
 }
 
 int
@@ -542,6 +548,9 @@ Grid::redisplay_visible_velocity()
 
 	// Keep the window width to its minimum
 	tracker_editor.resize_width();
+
+	// Align track toolbar
+	tracker_editor.grid_header->align();
 }
 
 int
@@ -568,6 +577,9 @@ Grid::redisplay_visible_delay()
 
 	// Keep the window width to its minimum
 	tracker_editor.resize_width();
+
+	// Align track toolbar
+	tracker_editor.grid_header->align();
 }
 
 int
@@ -644,6 +656,9 @@ Grid::redisplay_visible_automation_delay()
 
 	// Keep the window width to its minimum
 	tracker_editor.resize_width();
+
+	// Align track toolbar
+	tracker_editor.grid_header->align();
 }
 
 int
@@ -782,6 +797,7 @@ Grid::read_colors ()
 	active_foreground_color = UIConfiguration::instance().color_str ("tracker editor: active foreground");
 	passive_foreground_color = UIConfiguration::instance().color_str ("tracker editor: passive foreground");
 	cursor_color = UIConfiguration::instance().color_str ("tracker editor: cursor");
+	cursor_step_edit_color = UIConfiguration::instance().color_str ("tracker editor: step edit cursor");
 }
 
 void
@@ -1006,18 +1022,21 @@ Grid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
 void
 Grid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
+	std::string current_cursor_color = tracker_editor.main_toolbar.step_edit ?
+		cursor_step_edit_color : cursor_color;
+
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
-		row[columns._note_background_color[mti][cgi]] = cursor_color;
+		row[columns._note_background_color[mti][cgi]] = current_cursor_color;
 		break;
 	case TrackerColumn::CHANNEL:
-		row[columns._channel_background_color[mti][cgi]] = cursor_color;
+		row[columns._channel_background_color[mti][cgi]] = current_cursor_color;
 		break;
 	case TrackerColumn::VELOCITY:
-		row[columns._velocity_background_color[mti][cgi]] = cursor_color;
+		row[columns._velocity_background_color[mti][cgi]] = current_cursor_color;
 		break;
 	case TrackerColumn::DELAY:
-		row[columns._delay_background_color[mti][cgi]] = cursor_color;
+		row[columns._delay_background_color[mti][cgi]] = current_cursor_color;
 		break;
 	default:
 		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
@@ -1094,12 +1113,15 @@ Grid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri
 void
 Grid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
+	std::string current_cursor_color = tracker_editor.main_toolbar.step_edit ?
+		cursor_step_edit_color : cursor_color;
+
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION:
-		row[columns._automation_background_color[mti][cgi]] = cursor_color;
+		row[columns._automation_background_color[mti][cgi]] = current_cursor_color;
 		break;
 	case TrackerColumn::AUTOMATION_DELAY:
-		row[columns._automation_delay_background_color[mti][cgi]] = cursor_color;
+		row[columns._automation_delay_background_color[mti][cgi]] = current_cursor_color;
 		break;
 	default:
 		cerr << "Grid::redisplay_current_auto_cursor: Implementation Error!" << endl;
