@@ -77,6 +77,9 @@ namespace Tracker {
 // TrackerEditor //
 ///////////////////
 
+// VT: fix grid focus (use get_focus() to gather information on which widget
+// has a current focus)
+
 TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	: ArdourWindow (window_name(rs))
 	, session(s)
@@ -134,6 +137,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	set_size_request (-1, 400);
 
 	set_focus(grid);
+	// raise(); // VT: crashes ardour, maybe it would effective otherwise
 }
 
 TrackerEditor::~TrackerEditor ()
