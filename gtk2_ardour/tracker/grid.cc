@@ -2323,6 +2323,10 @@ Grid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 {
 	int rowi = get_row_index (path);
 	int mti = get_mti(col);
+	if (mti < 0) {
+		return false;
+	}
+
 	if (is_note_type (col)) {
 		const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 		return tc && is_region_defined (rowi, mti);
@@ -2346,11 +2350,11 @@ Grid::is_region_defined (uint32_t rowi, int mti) const
 	return pattern.is_region_defined (rowi, mti);
 }
 
-size_t
+int
 Grid::get_mti(const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
-	return tc->midi_track_idx;
+	return tc ? tc->midi_track_idx : -1;
 }
 
 size_t
