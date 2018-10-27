@@ -270,7 +270,7 @@ private:
 	
 	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
-	bool button_event (GdkEventButton*);
+	bool mouse_button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
 	// Return the row index of a tree model path
