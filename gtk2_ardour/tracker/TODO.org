@@ -1,5 +1,6 @@
 - Fix focus. When click on a button, bring focus immediately back to the grid.
 - Also fix window focus (the tracker editor window should have the focus)
+- Only redisplay cursor when move cursor
 - Make step editing more visible (add a red frame)
 - Support super-header with track name and track toolbar in it (Gtk::Expander cpuload_expander)
 - Try to replace as many gtk widgets by cairo widgets
