@@ -774,7 +774,7 @@ Grid::setup ()
 	//
 	// Disabled for now because it doesn't work as expected
 	//
-	signal_button_press_event().connect (sigc::mem_fun (*this, &Grid::button_event), false);
+	signal_button_press_event().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
 	// signal_scroll_event().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
 	set_headers_visible (true);
@@ -3417,7 +3417,7 @@ Grid::key_release (GdkEventKey* ev)
 }
 
 bool
-Grid::button_event (GdkEventButton* ev)
+Grid::mouse_button_event (GdkEventButton* ev)
 {
 	if (ev->button == 1) {
 		TreeModel::Path path;
@@ -3429,6 +3429,8 @@ Grid::button_event (GdkEventButton* ev)
 			set_cursor (path, *col, true);
 		else if (ev->type == GDK_BUTTON_PRESS)
 			set_current_cursor (path, col);
+
+		grab_focus ();
 	}
 
 	return true;
