@@ -305,7 +305,9 @@ private:
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (uint32_t rowi, int mti) const;
 
-	size_t get_mti(const Gtk::TreeViewColumn* col) const;
+	// Return mti corresponding col, or -1 if invalid
+	int get_mti(const Gtk::TreeViewColumn* col) const;
+
 	size_t get_cgi(const Gtk::TreeViewColumn* col) const;
 	TrackerColumn::midi_note_type get_note_type(const Gtk::TreeViewColumn* col) const;
 	TrackerColumn::automation_type get_auto_type(const Gtk::TreeViewColumn* col) const;
