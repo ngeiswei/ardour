@@ -132,6 +132,8 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 	add (vbox);
 	set_size_request (-1, 400);
+
+	set_focus(grid);
 }
 
 TrackerEditor::~TrackerEditor ()
