@@ -1,5 +1,5 @@
-- Fix focus. When mouse click on grid, it should be enough to have the focus on it.
-- Also fix window focus (the tracker editor should have the focus)
+- Fix focus. When click on a button, bring focus immediately back to the grid.
+- Also fix window focus (the tracker editor window should have the focus)
 - Make step editing more visible (add a red frame)
 - Support super-header with track name and track toolbar in it (Gtk::Expander cpuload_expander)
 - Try to replace as many gtk widgets by cairo widgets
@@ -18,3 +18,6 @@
 - Support midi input
 - Make virtual keyboard keys not hardcoded
 - Only have Octave, Ch, Vel in main toolbar is there is a midi track
+- Have Page Up/Down skip 8 lines
+- Have Home/End go to the beginning/end row
+- Have a following-row when playing
