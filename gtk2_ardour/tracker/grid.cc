@@ -16,6 +16,7 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <iterator>
 #include <cctype>
 #include <cmath>
 #include <map>
@@ -80,7 +81,6 @@ Grid::Grid (TrackerEditor& te)
 	, pattern (te)
 	, current_path (1)
 	, current_rowi (0)
-	, current_row (0)
 	, current_col (2)
 	, current_mti (0)
 	, current_mtp (0)
@@ -1132,9 +1132,9 @@ void
 Grid::redisplay_current_cursor ()
 {
 	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
-		redisplay_current_note_cursor (*current_row, current_mti, current_cgi);
+		redisplay_current_note_cursor (current_row, current_mti, current_cgi);
 	else
-		redisplay_current_auto_cursor (*current_row, current_mti, current_cgi);
+		redisplay_current_auto_cursor (current_row, current_mti, current_cgi);
 }
 
 void
@@ -1190,6 +1190,15 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t m
 }
 
 void
+Grid::redisplay_cell_background (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
+		redisplay_note_background (row, mti, cgi);
+	else
+		redisplay_auto_background (row, mti, cgi);
+}
+
+void
 Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
 	// Get corresponding background color
@@ -1228,10 +1237,8 @@ Grid::redisplay_model ()
 		// Set time column, row background color and font
 		redisplay_global_columns ();
 
-		// Set midi track patterns columns
-		TreeModel::Children::iterator row_it;
 		// Fill rows
-		row_it = model->children().begin();
+		TreeModel::Children::iterator row_it = model->children().begin();
 		for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 
 			// Get row
@@ -1242,7 +1249,7 @@ Grid::redisplay_model ()
 
 			// Used to draw the background of the cursor
 			if ((int)rowi == current_rowi) {
-				current_row = &row;
+				current_row = row;
 				redisplay_current_cursor ();
 			}
 		}
@@ -1329,6 +1336,14 @@ uint32_t
 Grid::get_row_index(const TreeModel::Path& path) const
 {
 	return path.front();
+}
+
+Gtk::TreeModel::Row
+Grid::get_row (uint32_t row_idx)
+{
+	TreeModel::Children::iterator row_it = model->children().begin();
+	std::advance(row_it, (int)row_idx);
+	return *row_it;
 }
 
 int
@@ -1854,14 +1869,18 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 	if (!is_defined(path, col))
 		return;
 
-	// Set current row
+	// Reset background color over the current cursor
+	redisplay_cell_background (current_row, current_mti, current_cgi);
+
+	// Update current row
 	current_path = path;
 	current_rowi = get_row_index (path);
-	
-	// Set current col
+	current_row = get_row (current_rowi);
+
+	// Update current col
 	current_col = get_col_index (col);
 
-	// Set mti, mtp, cgi and types
+	// Update current mti, mtp, cgi and types
 	current_mti = get_mti(col);
 	current_mtp = pattern.tps[current_mti];
 	current_mri = pattern.to_mri(current_rowi, current_mti);
@@ -1869,12 +1888,15 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 	current_note_type = get_note_type(col);
 	current_auto_type = get_auto_type(col);
 
-	/* now trigger a redisplay */
-	// TODO: optimize that!
-	redisplay_model ();
+	// Now display current cursor color background
+	redisplay_current_cursor ();
 
 	// Readjust scroller
 	scroll_to_row(path);
+
+	// TODO: remove that when no longer necessary
+	// Align track toolbar
+	tracker_editor.grid_header->align();
 }
 
 Evoral::Parameter
@@ -3045,6 +3067,10 @@ Grid::step_editing_set_automation_value (int digit)
 	// Move cursor
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_current_cursor (steps);
+
+	// Redisplay model with the new value
+	// TODO: optimize
+	redisplay_model ();
 
 	return true;
 }
