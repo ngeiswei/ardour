@@ -167,6 +167,7 @@ public:
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
+	void redisplay_cell_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_row (Gtk::TreeModel::Row& row, uint32_t rowi);
 	void redisplay_model ();
 
@@ -200,7 +201,7 @@ public:
 	// Coordonates associated to current cursor
 	Gtk::TreeModel::Path         current_path;
 	int                          current_rowi;
-	Gtk::TreeModel::Row*         current_row;
+	Gtk::TreeModel::Row          current_row;
 	int                          current_col;
 	int                          current_mti; // multi track index
 	TrackPattern*                current_mtp;
@@ -276,6 +277,9 @@ private:
 	// Return the row index of a tree model path
 	uint32_t get_row_index (const std::string& path) const;
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
+
+	// Return the row corresponding to a given row index
+	Gtk::TreeModel::Row get_row (uint32_t row_idx);
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.
 	// Warning: can't be const because of a get_columns()
