@@ -61,9 +61,10 @@ public:
 	struct GridModelColumns : public Gtk::TreeModel::ColumnRecord {
 		GridModelColumns();
 		// TODO: add empty columns to separate between each note track and each automations
-		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color, maybe
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
+		Gtk::TreeModelColumn<std::string> _time_background_color;
 		Gtk::TreeModelColumn<std::string> time;
 		Gtk::TreeModelColumn<std::string> _left_right_separator_background_color[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> left_separator[MAX_NUMBER_OF_TRACKS];
@@ -149,6 +150,9 @@ public:
 	void read_colors ();         // Read colors from config
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+
+	void redisplay_left_right_separator_columns ();
+	void redisplay_left_right_separator_columns (size_t mti);
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_track_separator (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
@@ -163,11 +167,14 @@ public:
 	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_note (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi);
 	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_row_background (Gtk::TreeModel::Row& row, uint32_t rowi);
+	void redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, const std::string& color);
 	void redisplay_row (Gtk::TreeModel::Row& row, uint32_t rowi);
 	void redisplay_model ();
 
@@ -180,8 +187,11 @@ public:
 	TrackerEditor& tracker_editor;
 
 	// Map column index to automation parameter and vice versa
-	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> ColParamBimap;
-	std::vector<ColParamBimap> col2params; // For each midi track
+	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> IndexParamBimap;
+	std::vector<IndexParamBimap> col2params; // For each track
+
+	// Map cgi to automation parameter and vice versa
+	std::vector<IndexParamBimap> cgi2params; // For each track
 
 	// Keep track of all visible automation columns across all midi tracks
 	std::set<size_t> visible_automation_columns;
@@ -308,6 +318,7 @@ private:
 	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (uint32_t rowi, int mti) const;
+	bool is_automation_defined (uint32_t rowi, int mti, int cgi); // VT: make this const
 
 	// Return mti corresponding col, or -1 if invalid
 	int get_mti(const Gtk::TreeViewColumn* col) const;
@@ -371,8 +382,10 @@ private:
 	void note_delay_edited (const std::string& path, const std::string& text);
 	void set_note_delay (int delay, int rowi, int mti, int mri, int cgi);
 
-	// Automation callbacks
-	Evoral::Parameter get_parameter (int mti, int automation_cgi);
+	// Return parameter at mti and automation cgi. Return the empty parameter if
+	// undefined.
+	Evoral::Parameter get_param (int mti, int auto_cgi); // VT: make this const
+
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
 	// TODO: can you make that const?
@@ -389,8 +402,8 @@ public:
 private:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
-	// Map column index to automation track index and vice versa
-	typedef boost::bimaps::bimap<size_t, size_t> ColAutoTrackBimap;
+	// Map column index to automation cgi and vice versa
+	typedef boost::bimaps::bimap<size_t, size_t> IndexBimap;
 
 	// Columns
 	Gtk::TreeViewColumn* time_column;
@@ -407,8 +420,8 @@ private:
 	std::vector<Gtk::TreeViewColumn*> right_separator_columns;
 	std::vector<Gtk::TreeViewColumn*> track_separator_columns;
 
-	// ColAutoTrackBimap per midi track
-	std::vector<ColAutoTrackBimap> col2autotracks;
+	// Map column index to automation cgi per track
+	std::vector<IndexBimap> col2auto_cgi;
 
 	// Gain, trim, mute and pan columns per midi track
 	std::vector<size_t> gain_columns;
@@ -429,6 +442,9 @@ private:
 	std::string passive_foreground_color;
 	std::string cursor_color;
 	std::string cursor_step_edit_color;
+	std::string current_row_color;
+	std::string current_step_edit_row_color;
+
 };
 
 } // ~namespace tracker
