@@ -137,7 +137,12 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	set_size_request (-1, 400);
 
 	set_focus(grid);
-	// raise(); // VT: crashes ardour, maybe it would effective otherwise
+	// raise(); // VT: crashes ardour, maybe it would be effective otherwise
+
+	show();
+
+	// To align header and grid
+	grid.redisplay_model ();
 }
 
 TrackerEditor::~TrackerEditor ()
