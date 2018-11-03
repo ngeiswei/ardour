@@ -641,7 +641,7 @@ MidiTrackToolbar::show_existing_midi_automations ()
 {
 	const std::set<Evoral::Parameter> params = midi_track->midi_playlist()->contained_automation();
 	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-		Grid::ColParamBimap::right_const_iterator it = grid.col2params[track_index].right.find(*p);
+		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find(*p);
 		size_t column = (it == grid.col2params[track_index].right.end()) || (it->second == 0) ?
 			grid.add_midi_automation_column (track_index, *p) : it->second;
 
@@ -660,7 +660,7 @@ MidiTrackToolbar::hide_midi_automations ()
 	for (std::set<size_t>::iterator it = grid.visible_automation_columns.begin();
 	     it != grid.visible_automation_columns.end(); it++) {
 		size_t column = *it;
-		Grid::ColParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
+		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
 		if (c2p_it == grid.col2params[track_index].left.end())
 			continue;
 
@@ -679,46 +679,40 @@ void
 MidiTrackToolbar::update_visible_note_button()
 {
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	print_widths();
 }
 
 void
 MidiTrackToolbar::update_visible_channel_button()
 {
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	print_widths();
 }
 
 void
 MidiTrackToolbar::update_visible_velocity_button()
 {
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	print_widths();
 }
 
 void
 MidiTrackToolbar::update_remove_note_column_button ()
 {
 	remove_note_column_button.set_sensitive (midi_track_pattern.get_nreqtracks() < midi_track_pattern.get_ntracks());
-	print_widths();
 }
 
 void
 MidiTrackToolbar::update_add_note_column_button ()
 {
 	add_note_column_button.set_sensitive (midi_track_pattern.get_ntracks() < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK);
-	print_widths();
 }
 
 void
 MidiTrackToolbar::update_automation_button()
 {
 	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackToolbar::automation_click));
-	print_widths();
 }
 
 void
-MidiTrackToolbar::print_widths()
+MidiTrackToolbar::print_widths() const
 {
 	std::cout << "visible_note_button.get_width() = " << visible_note_button.get_width() << std::endl;
 	std::cout << "visible_channel_button.get_width() = " << visible_channel_button.get_width() << std::endl;
@@ -742,5 +736,6 @@ MidiTrackToolbar::get_min_width() const
 		visible_delay_button.get_width() + spacing +
 		automation_separator.get_width() + spacing +
 		automation_button.get_width();
+
 	return width;
 }
