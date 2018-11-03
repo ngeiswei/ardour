@@ -1,10 +1,16 @@
+- Have Home/End go to the beginning/end row
+- Don't have Page Up/Down wrap (add wrap flag in cursor move functions)
+- Implement colored line (blue-violet cursor, violet-dark-red line, red step editing line)
+- Fix discrepancy between step editor cursor and edit cursor (press enter)
+- Optimize editing, cause redrawing the whole is way to slow
+- Fix alignment with track toolbar
 - Fix focus. When click on a button, bring focus immediately back to the grid.
 - Also fix window focus (the tracker editor window should have the focus)
-- Only redisplay cursor when move cursor
 - Make step editing more visible (add a red frame)
-- Support super-header with track name and track toolbar in it (Gtk::Expander cpuload_expander)
+- Support Gtk::Expander to grid header (see cpuload_expander)
 - Try to replace as many gtk widgets by cairo widgets
 - Take care of code style
+- Try to improve color usage, how to label them, what can be reused
 - Add space between function and argument call
 - const when possible
 - Support arbitrary number of tracks (put all properties in tracker_column)
@@ -18,7 +24,5 @@
 - Add piano keyboard display (see gtk_pianokeyboard.h)
 - Support midi input
 - Make virtual keyboard keys not hardcoded
-- Only have Octave, Ch, Vel in main toolbar is there is a midi track
-- Have Page Up/Down skip 8 lines
-- Have Home/End go to the beginning/end row
+- Only have Octave, Ch, Vel in main toolbar is there is a midi track, maybe
 - Have a following-row when playing
