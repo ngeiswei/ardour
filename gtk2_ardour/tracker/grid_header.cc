@@ -50,14 +50,6 @@ GridHeader::set_time_header_size(int width, int height)
 void
 GridHeader::set_track_header_size(size_t mti, int width, int height)
 {
-	std::cout << "GridHeader::set_track_header_size(" << mti
-	          << ", " << width << ", " << height << std::endl;
-	int previous_request_width;
-	int previous_request_height;
-	track_headers[mti]->get_size_request(previous_request_width, previous_request_height);
-	std::cout << "previous_request_width = " << previous_request_width
-	          << ", previous_request_height = " << previous_request_height
-	          << ", get_width() = " << track_headers[mti]->get_width() << std::endl;
 	width = std::max(width, track_headers[mti]->get_min_width());
 	track_headers[mti]->set_size_request(width, height);
 }

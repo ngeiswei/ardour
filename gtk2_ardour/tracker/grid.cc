@@ -129,6 +129,7 @@ Grid::GridModelColumns::GridModelColumns()
 	// bars. This is to keep track of it.
 	add (_background_color);
 	add (_family);
+	add (_time_background_color);
 	add (time);
 	for (size_t mti /* multi track index */ = 0; mti < MAX_NUMBER_OF_TRACKS; mti++) {
 		add (_left_right_separator_background_color[mti]);
@@ -189,7 +190,7 @@ Grid::add_main_automation_column (size_t mti, const Evoral::Parameter& param)
 		return column;
 
 	// Associate that column to the parameter
-	col2params[mti].insert(ColParamBimap::value_type(column, param)); // TODO: better put this knowledge in an inherited column
+	col2params[mti].insert(IndexParamBimap::value_type(column, param)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title
 	string name = TrackerUtils::is_pan_type(param) ?
@@ -213,7 +214,7 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 		return column;
 
 	// Associate that column to the parameter
-	col2params[mti].insert(ColParamBimap::value_type(column, param));
+	col2params[mti].insert(IndexParamBimap::value_type(column, param));
 
 	// Set the column title
 	get_column(column)->set_title (pattern.tps[mti]->track->describe_parameter (param));
@@ -251,7 +252,7 @@ Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> 
 	}
 
 	// Associate that column to the parameter
-	col2params[mti].insert(ColParamBimap::value_type(pan->column, what));
+	col2params[mti].insert(IndexParamBimap::value_type(pan->column, what));
 
 	// Set the column title
 	string name = processor->describe_parameter (what);
@@ -294,7 +295,7 @@ Grid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& 
 	const bool showit = mitem->get_active();
 
 	// Find the column associated to this parameter, assign one if necessary
-	ColParamBimap::right_const_iterator it = col2params[mti].right.find(param);
+	IndexParamBimap::right_const_iterator it = col2params[mti].right.find(param);
 	size_t column = (it == col2params[mti].right.end()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
 
@@ -314,7 +315,7 @@ Grid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& 
 bool
 Grid::is_automation_visible(size_t mti, const Evoral::Parameter& param) const
 {
-	ColParamBimap::right_const_iterator it = col2params[mti].right.find(param);
+	IndexParamBimap::right_const_iterator it = col2params[mti].right.find(param);
 	return it != col2params[mti].right.end() &&
 		visible_automation_columns.find(it->second) != visible_automation_columns.end();
 }
@@ -741,8 +742,8 @@ Grid::setup ()
 		gain_columns.push_back(0);
 		trim_columns.push_back(0);
 		mute_columns.push_back(0);
-		col2params.push_back(ColParamBimap());
-		col2autotracks.push_back(ColAutoTrackBimap());
+		col2params.push_back(IndexParamBimap());
+		col2auto_cgi.push_back(IndexBimap());
 		pan_columns.push_back(vector<size_t>());
 		available_automation_columns.push_back(set<size_t>());
 
@@ -798,6 +799,8 @@ Grid::read_colors ()
 	passive_foreground_color = UIConfiguration::instance().color_str ("tracker editor: passive foreground");
 	cursor_color = UIConfiguration::instance().color_str ("tracker editor: cursor");
 	cursor_step_edit_color = UIConfiguration::instance().color_str ("tracker editor: step edit cursor");
+	current_row_color = UIConfiguration::instance().color_str ("tracker editor: current row");
+	current_step_edit_row_color = UIConfiguration::instance().color_str ("tracker editor: current step edit row");
 }
 
 void
@@ -827,8 +830,10 @@ Grid::redisplay_global_columns ()
 		string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
 		row[columns._background_color] = row_background_color;
 
-		// Set font family to Monospace
+		// Set font family to Monospace (for region name for now)
 		row[columns._family] = "Monospace";
+
+		row[columns._time_background_color] = row_background_color;
 	}
 }
 
@@ -869,6 +874,23 @@ void
 Grid::redisplay_undefined_region_name (TreeModel::Row& row, size_t mti)
 {
 	row[columns.region_name[mti]] = "";
+}
+
+void
+Grid::redisplay_left_right_separator_columns ()
+{
+	for (size_t mti = 0; mti < pattern.tps.size(); mti++)
+		redisplay_left_right_separator_columns (mti);
+}
+
+void
+Grid::redisplay_left_right_separator_columns (size_t mti)
+{
+	TreeModel::Children::iterator row_it = model->children().begin();
+	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
+		TreeModel::Row row = *row_it++;
+		redisplay_left_right_separator (row, mti);
+	}
 }
 
 void
@@ -972,27 +994,16 @@ void
 Grid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
 	// Render automation pattern
-	for (ColParamBimap::left_const_iterator cp_it = col2params[mti].left.begin(); cp_it != col2params[mti].left.end(); ++cp_it) {
-		size_t col_idx = cp_it->first;
-		ColAutoTrackBimap::left_const_iterator ca_it = col2autotracks[mti].left.find(col_idx);
-		size_t cgi = ca_it->second;
-		if (cgi >= MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK) {
-			// TODO: use Ardour log
-			cout << "Warning: The automation track number " << cgi
-			          << " exceeds the maximum number of automation tracks "
-			          << MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK << endl;
-			continue;
-		}
-
-		const Evoral::Parameter& param = cp_it->second;
+	for (int cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 
 		// Display undefined
-		if (!pattern.is_automation_defined (rowi, mti, param)) {
+		if (!is_automation_defined (rowi, mti, cgi)) {
 			redisplay_undefined_automation (row, mti, cgi);
 			continue;
 		}
 
 		// Display defined
+		Evoral::Parameter param = get_param (mti, cgi);
 		size_t auto_count = pattern.get_automation_list_count(rowi, mti, mri, param);
 
 		// Fill background colors
@@ -1020,23 +1031,29 @@ Grid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
 }
 
 void
+Grid::redisplay_current_row_background ()
+{
+	string color = tracker_editor.main_toolbar.step_edit ? current_step_edit_row_color : current_row_color;
+	redisplay_row_background_color (current_row, current_rowi, color);
+}
+
+void
 Grid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::string current_cursor_color = tracker_editor.main_toolbar.step_edit ?
-		cursor_step_edit_color : cursor_color;
+	string color = tracker_editor.main_toolbar.step_edit ? cursor_step_edit_color : cursor_color;
 
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
-		row[columns._note_background_color[mti][cgi]] = current_cursor_color;
+		row[columns._note_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::CHANNEL:
-		row[columns._channel_background_color[mti][cgi]] = current_cursor_color;
+		row[columns._channel_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::VELOCITY:
-		row[columns._velocity_background_color[mti][cgi]] = current_cursor_color;
+		row[columns._velocity_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::DELAY:
-		row[columns._delay_background_color[mti][cgi]] = current_cursor_color;
+		row[columns._delay_background_color[mti][cgi]] = color;
 		break;
 	default:
 		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
@@ -1113,15 +1130,14 @@ Grid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri
 void
 Grid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::string current_cursor_color = tracker_editor.main_toolbar.step_edit ?
-		cursor_step_edit_color : cursor_color;
+	std::string color = tracker_editor.main_toolbar.step_edit ? cursor_step_edit_color : cursor_color;
 
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION:
-		row[columns._automation_background_color[mti][cgi]] = current_cursor_color;
+		row[columns._automation_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::AUTOMATION_DELAY:
-		row[columns._automation_delay_background_color[mti][cgi]] = current_cursor_color;
+		row[columns._automation_delay_background_color[mti][cgi]] = color;
 		break;
 	default:
 		cerr << "Grid::redisplay_current_auto_cursor: Implementation Error!" << endl;
@@ -1201,9 +1217,6 @@ Grid::redisplay_cell_background (TreeModel::Row& row, size_t mti, size_t cgi)
 void
 Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
-	// Get corresponding background color
-	string row_background_color = row[columns._background_color];
-
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		// Get the region's index, -1 if undefined
 		int mri = pattern.to_mri (rowi, mti);
@@ -1216,48 +1229,77 @@ Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 }
 
 void
+Grid::redisplay_row_background (Gtk::TreeModel::Row& row, uint32_t rowi)
+{
+	redisplay_row_background_color (row, rowi, row[columns._background_color]);
+}
+
+void
+Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, const std::string& color)
+{
+	row[columns._time_background_color] = color;
+	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		if (is_region_defined (rowi, mti)) {
+			// Set current notes row background color
+			for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks(); cgi++) {
+				row[columns._note_background_color[mti][cgi]] = color;
+				row[columns._channel_background_color[mti][cgi]] = color;
+				row[columns._velocity_background_color[mti][cgi]] = color;
+				row[columns._delay_background_color[mti][cgi]] = color;
+			}
+		}
+		// Set current automation background color
+		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+			row[columns._automation_background_color[mti][cgi]] = color;
+			row[columns._automation_delay_background_color[mti][cgi]] = color;
+		}
+	}
+}
+
+void
 Grid::redisplay_model ()
 {
 	if (editing_editable)
 		return;
 
-	if (tracker_editor.session) {
+	if (!tracker_editor.session)
+		return;
 
-		// In case the resolution (lines per beat) has changed
-		// NEXT TODO: support multi track multi region
-		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.tps.front()->delay_ticks_min());
-		tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.tps.front()->delay_ticks_max());
+	// In case the resolution (lines per beat) has changed
+	// NEXT TODO: support multi track multi region
+	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.tps.front()->delay_ticks_min());
+	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.tps.front()->delay_ticks_max());
 
-		// Load colors from config
-		read_colors ();
+	// Load colors from config
+	read_colors ();
 
-		// Update pattern settings and content
-		pattern.update ();
+	// Update pattern settings and content
+	pattern.update ();
 
-		// Set time column, row background color and font
-		redisplay_global_columns ();
+	// Set time column, row background colors and font
+	redisplay_global_columns ();
 
-		// Fill rows
-		TreeModel::Children::iterator row_it = model->children().begin();
-		for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
+	// Fill rows
+	TreeModel::Children::iterator row_it = model->children().begin();
+	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 
-			// Get row
-			TreeModel::Row row = *row_it++;
+		// Get row
+		TreeModel::Row row = *row_it++;
 
-			// Display row
-			redisplay_row(row, rowi);
+		// Display row
+		redisplay_row(row, rowi);
 
-			// Used to draw the background of the cursor
-			if ((int)rowi == current_rowi) {
-				current_row = row;
-				redisplay_current_cursor ();
-			}
+		// Used to draw the background of the current row and cursor
+		if ((int)rowi == current_rowi) {
+			current_row = row;
+			redisplay_current_row_background ();
+			redisplay_current_cursor ();
 		}
-
-		// Remove unused rows
-		for (; row_it != model->children().end();)
-			row_it = model->erase(row_it);
 	}
+
+	// Remove unused rows
+	for (; row_it != model->children().end();)
+		row_it = model->erase(row_it);
 
 	set_model (model);
 
@@ -1270,6 +1312,7 @@ Grid::redisplay_model ()
 	redisplay_visible_automation();
 	redisplay_visible_automation_separator();
 
+	redisplay_left_right_separator_columns ();
 	tracker_editor.grid_header->align();
 }
 
@@ -1869,9 +1912,9 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 	if (!is_defined(path, col))
 		return;
 
-	// Reset background color over the current cursor
-	redisplay_cell_background (current_row, current_mti, current_cgi);
-
+	// Reset background color over the previous row
+	redisplay_row_background (current_row, current_rowi);
+	
 	// Update current row
 	current_path = path;
 	current_rowi = get_row_index (path);
@@ -1888,7 +1931,8 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 	current_note_type = get_note_type(col);
 	current_auto_type = get_auto_type(col);
 
-	// Now display current cursor color background
+	// Now display current row and cursor background colors
+	redisplay_current_row_background ();
 	redisplay_current_cursor ();
 
 	// Readjust scroller
@@ -1900,13 +1944,13 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 }
 
 Evoral::Parameter
-Grid::get_parameter (int mti, int cgi)
+Grid::get_param (int mti, int cgi)
 {
-	ColAutoTrackBimap::right_const_iterator ac_it = col2autotracks[mti].right.find(cgi);
-	if (ac_it == col2autotracks[mti].right.end())
+	IndexBimap::right_const_iterator ac_it = col2auto_cgi[mti].right.find(cgi);
+	if (ac_it == col2auto_cgi[mti].right.end())
 		return Evoral::Parameter();
 	size_t edited_colnum = ac_it->second;
-	ColParamBimap::left_const_iterator it = col2params[mti].left.find(edited_colnum);
+	IndexParamBimap::left_const_iterator it = col2params[mti].left.find(edited_colnum);
 	if (it == col2params[mti].left.end())
 		return Evoral::Parameter();
 	const Evoral::Parameter& param = it->second;
@@ -1930,7 +1974,7 @@ Grid::automation_edited (const string& path, const string& text)
 	}
 
 	// Can't edit ***
-	Evoral::Parameter param = get_parameter (edit_mti, edit_cgi);
+	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
 	if (!pattern.is_auto_displayable (edit_rowi, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
@@ -1948,7 +1992,7 @@ Grid::automation_edited (const string& path, const string& text)
 pair<double, bool>
 Grid::get_automation_value (int rowi, int mti, int mri, int cgi)
 {
-	Evoral::Parameter param = get_parameter (mti, cgi);
+	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.get_automation_value (rowi, mti, mri, param);
 }
 
@@ -1956,7 +2000,7 @@ void
 Grid::set_automation_value (double val, int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
-	Evoral::Parameter param = get_parameter (mti, cgi);
+	Evoral::Parameter param = get_param (mti, cgi);
 
 	// Find delay in case the value has to be created
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
@@ -1967,7 +2011,7 @@ Grid::set_automation_value (double val, int rowi, int mti, int mri, int cgi)
 void
 Grid::delete_automation_value(int rowi, int mti, int mri, int cgi)
 {
-	Evoral::Parameter param = get_parameter (mti, cgi);
+	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.delete_automation_value (rowi, mti, mri, param);
 }
 
@@ -1988,7 +2032,7 @@ Grid::automation_delay_edited (const string& path, const string& text)
 	}
 
 	// Can't edit ***
-	Evoral::Parameter param = get_parameter (edit_mti, edit_cgi);
+	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
 	if (!pattern.is_auto_displayable(edit_rowi, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
@@ -2004,14 +2048,14 @@ pair<int, bool>
 Grid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 {
 	// Find the parameter to automate
-	Evoral::Parameter param = get_parameter (mti, cgi);
+	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.get_automation_delay (rowi, mti, mri, param);
 }
 
 void
 Grid::set_automation_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
-	Evoral::Parameter param = get_parameter (mti, cgi);
+	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.set_automation_delay (delay, rowi, mti, mri, param);
 }
 
@@ -2038,7 +2082,7 @@ Grid::setup_time_column()
 	CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
 	// Link to color attributes
-	time_column->add_attribute(time_cellrenderer->property_cell_background (), columns._background_color);
+	time_column->add_attribute(time_cellrenderer->property_cell_background (), columns._time_background_color);
 
 	append_column (*time_column);
 }
@@ -2068,9 +2112,6 @@ Grid::setup_region_name_column(size_t mti)
 
 	// Link to font attributes
 	region_name_columns[mti]->add_attribute(cellrenderer_region_name->property_family (), columns._family);
-
-	// // Link to color attributes
-	// region_name_columns[mti]->add_attribute(cellrenderer_region_name->property_cell_background (), columns._background_color);
 
 	append_column (*region_name_columns[mti]);
 
@@ -2187,7 +2228,7 @@ Grid::setup_automation_column (size_t mti, size_t cgi)
 
 	size_t column = get_columns().size();
 	append_column (*automation_columns[mti][cgi]);
-	col2autotracks[mti].insert(ColAutoTrackBimap::value_type(column, cgi));
+	col2auto_cgi[mti].insert(IndexBimap::value_type(column, cgi));
 	available_automation_columns[mti].insert(column);
 	get_column(column)->set_visible (false);
 }
@@ -2266,7 +2307,7 @@ void
 Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps)
 {
 	int mti = get_mti(col);
-	// TODO: make sure that steps is equal to or lower than nrows[mti]
+	// VT: avoid infinit loops instead
 	assert (std::abs(steps) <= pattern.nrows[mti]);
 
 	// Step till it ends up in a defined cell
@@ -2354,7 +2395,7 @@ Grid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 		return tc && is_region_defined (rowi, mti);
 	} else {
 		size_t coli = get_col_index (col);
-		ColParamBimap::left_const_iterator it = col2params[mti].left.find(coli);
+		IndexParamBimap::left_const_iterator it = col2params[mti].left.find(coli);
 		Evoral::Parameter param = it->second;
 		return pattern.is_automation_defined (rowi, mti, param);
 	}
@@ -2370,6 +2411,16 @@ bool
 Grid::is_region_defined (uint32_t rowi, int mti) const
 {
 	return pattern.is_region_defined (rowi, mti);
+}
+
+bool
+Grid::is_automation_defined (uint32_t rowi, int mti, int cgi)
+{
+	Evoral::Parameter param = get_param(mti, cgi);
+	if (param == Evoral::Parameter()) // VT: suspicious
+		return false;
+
+	return pattern.is_automation_defined (rowi, mti, param);
 }
 
 int
@@ -2709,6 +2760,10 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
@@ -2809,6 +2864,10 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
@@ -2876,6 +2935,10 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
@@ -2954,6 +3017,10 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
@@ -3043,6 +3110,10 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
@@ -3128,6 +3199,10 @@ Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
@@ -3207,6 +3282,20 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 		horizontal_move_current_cursor(1, true);
 		ret = true;
+		break;
+	case GDK_Page_Up:
+		vertical_move_current_cursor(-16);
+		ret = true;
+		break;
+	case GDK_Page_Down:
+		vertical_move_current_cursor(16);
+		ret = true;
+		break;
+	case GDK_Begin:
+		// VT: calculate move distance in order to reach the first defined line
+		break;
+	case GDK_End:
+		// VT: calculate move distance in order to reach the last defined line
 		break;
 	}
 
@@ -3304,6 +3393,10 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	case GDK_Right:
 	case GDK_rightarrow:
 	case GDK_Tab:
+	case GDK_Page_Up:
+	case GDK_Page_Down:
+	case GDK_Begin:
+	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
 
