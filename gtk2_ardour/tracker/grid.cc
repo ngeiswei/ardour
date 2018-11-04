@@ -2304,19 +2304,52 @@ Grid::vertical_move_edit_cursor (int steps)
 }
 
 void
-Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps)
+Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap)
 {
-	int mti = get_mti(col);
-	// VT: avoid infinit loops instead
-	assert (std::abs(steps) <= pattern.nrows[mti]);
+	TreeModel::Path init_path = path;
+	TreeModel::Path last_def_path = path;
 
-	// Step till it ends up in a defined cell
-	do {
-		path[0] += steps;
-		if (path[0] < 0)
-			path[0] += pattern.global_nrows;
-		path[0] %= pattern.global_nrows;
-	} while (!is_defined (path, col));
+	// Move up
+	while (steps < 0) {
+		--path[0];
+		// Wrap
+		if (path[0] < 0) {
+			if (wrap)
+				path[0] += pattern.global_nrows;
+			else
+				break;
+		}
+		// Move if defined
+		if (is_defined (path, col)) {
+			last_def_path = path;
+			++steps;
+		}
+		// Avoid infinit loops
+		if (path == init_path)
+			break;
+	}
+
+	// Move down
+	while (steps > 0) {
+		++path[0];
+		// Wrap
+		if ((int)pattern.global_nrows <= path[0]) {
+			if (wrap)
+				path[0] -= pattern.global_nrows;
+			else
+				break;
+		}
+		// Move if defined
+		if (is_defined (path, col)) {
+			last_def_path = path;
+			--steps;
+		}
+		// Avoid infinit loops
+		if (path == init_path)
+			break;
+	}
+
+	path = last_def_path;
 }
 
 void
@@ -2762,7 +2795,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
@@ -2866,7 +2899,7 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
@@ -2937,7 +2970,7 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
@@ -3019,7 +3052,7 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
@@ -3112,7 +3145,7 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
@@ -3201,7 +3234,7 @@ Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
@@ -3234,11 +3267,11 @@ Grid::step_editing_set_automation_delay (int digit)
 }
 
 void
-Grid::vertical_move_current_cursor (int steps)
+Grid::vertical_move_current_cursor (int steps, bool wrap)
 {
 	TreeModel::Path path = current_path;
 	TreeViewColumn* col = get_column (current_col);
-	wrap_around_vertical_move (path, col, steps);
+	wrap_around_vertical_move (path, col, steps, wrap);
 	set_current_cursor (path, col);
 }
 
@@ -3284,18 +3317,20 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 		ret = true;
 		break;
 	case GDK_Page_Up:
-		vertical_move_current_cursor(-16);
+		vertical_move_current_cursor(-16, false);
 		ret = true;
 		break;
 	case GDK_Page_Down:
-		vertical_move_current_cursor(16);
+		vertical_move_current_cursor(16, false);
 		ret = true;
 		break;
-	case GDK_Begin:
-		// VT: calculate move distance in order to reach the first defined line
+	case GDK_Home:
+		vertical_move_current_cursor(-(int)pattern.global_nrows, false);
+		ret = true;
 		break;
 	case GDK_End:
-		// VT: calculate move distance in order to reach the last defined line
+		vertical_move_current_cursor(pattern.global_nrows, false);
+		ret = true;
 		break;
 	}
 
@@ -3395,7 +3430,7 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	case GDK_Tab:
 	case GDK_Page_Up:
 	case GDK_Page_Down:
-	case GDK_Begin:
+	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
 		break;
