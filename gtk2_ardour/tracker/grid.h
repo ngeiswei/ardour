@@ -252,8 +252,9 @@ private:
 	// Action Utils    //
 	/////////////////////
 
-	// Move a path by s steps, wrapping around so that is remains [0, nrows).
-	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s);
+	// Move a path by s steps, if wrap is true it wraps around so that it
+	// remains within [0, nrows).
+	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s, bool wrap=true);
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns
@@ -268,7 +269,7 @@ private:
 
 	// Move the cursor steps rows downwards, or upwards if steps is
 	// negative.
-	void vertical_move_current_cursor (int steps);
+	void vertical_move_current_cursor (int steps, bool wrap=true);
 
 	// Move the current cursor steps columns rightwards, or leftwards if steps
 	// is negative.
