@@ -29,6 +29,8 @@
 #include "ardour/parameter_descriptor.h"
 #include "ardour/midi_region.h"
 
+#include "region_selection.h"
+
 namespace Tracker {
 
 typedef Evoral::Note<Temporal::Beats> NoteType;
@@ -195,25 +197,32 @@ public:
 	// number is missing then the default one is used.
 	static uint8_t parse_pitch (std::string text, int default_octave);
 
+	// Return a sequence of regions sorted by position
+	static std::vector<boost::shared_ptr<ARDOUR::Region> > get_sorted_regions(const RegionSelection& region_selection);
+
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the earliest one
 	static Temporal::samplepos_t get_position(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_position(const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the length between the very first position of the position very last + 1
 	static Temporal::samplecnt_t get_length(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplecnt_t get_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_length(const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the very first sample (it looks identical to get_regions_position
 	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_first_sample(const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the last sample.
 	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_last_sample(const RegionSelection& region_selection);
 };
 
 } // ~namespace tracker

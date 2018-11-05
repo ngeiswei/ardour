@@ -56,6 +56,7 @@
 #include "axis_view.h"
 #include "editor.h"
 #include "midi_region_view.h"
+#include "ardour_ui.h"
 
 #include "pbd/i18n.h"
 
@@ -778,6 +779,9 @@ Grid::setup ()
 	signal_button_press_event().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
 	// signal_scroll_event().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
+	// Connect to clock to follow current row
+	ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_current_row));
+
 	set_headers_visible (true);
 	set_rules_hint (true);
 	set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
@@ -1195,7 +1199,7 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t m
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
 		// Get corresponding beats and samples
 		Temporal::Beats row_relative_beats = pattern.region_relative_beats(rowi, mti, mri);
-		uint32_t row_sample = pattern.sample_at_row(rowi, mti);
+		uint32_t row_sample = pattern.sample_at_row_at_mti(rowi, mti);
 		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
 		// Get interpolation
 		bool ok;
@@ -2073,6 +2077,12 @@ Grid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
 	pattern.apply_command (mti, mri, cmd);
+}
+
+void
+Grid::follow_current_row (samplepos_t pos)
+{
+	std::cout << "Grid::follow_current_row pos = " << pos << std::endl;
 }
 
 void
