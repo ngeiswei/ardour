@@ -33,7 +33,7 @@ class TrackerEditor;
 /**
  * Represent patterns over multiple tracks.
  */
-class MultiTrackPattern // : public BasePattern /* TODO: derive or not derive? */
+class MultiTrackPattern : public BasePattern
 {
 public:
 	MultiTrackPattern (TrackerEditor& te);
@@ -69,7 +69,7 @@ public:
 	
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
-	uint32_t sample_at_row (uint32_t rowi, size_t mti, int32_t delay=0) const;
+	uint32_t sample_at_row_at_mti (uint32_t rowi, size_t mti, int32_t delay=0) const;
 
 	size_t off_notes_count (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
 	size_t on_notes_count (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
@@ -137,9 +137,6 @@ public:
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
-	// Reference of the main tracker editor
-	TrackerEditor& tracker_editor;
-
 	// Mapping between tracks and regions
 	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> > > TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
@@ -149,14 +146,9 @@ public:
 
 	// Row index offset and number of valid rows per mti
 	TrackPattern*                earliest_tp;
-	std::vector<uint32_t>        row_offset; // NT: useless
-	std::vector<uint32_t>        nrows;      // NT: useless
-	uint32_t                     global_nrows; // NT: Rename to nrows
-
-	Temporal::samplepos_t position;
-	Temporal::samplecnt_t length;
-	Temporal::samplepos_t first_sample;
-	Temporal::samplepos_t last_sample;
+	std::vector<uint32_t>        row_offset;
+	std::vector<uint32_t>        nrows;
+	uint32_t                     global_nrows;
 };
 
 } // ~namespace Tracker

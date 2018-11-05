@@ -402,6 +402,7 @@ public:
 
 private:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+	void follow_current_row (samplepos_t);
 
 	// Map column index to automation cgi and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> IndexBimap;
