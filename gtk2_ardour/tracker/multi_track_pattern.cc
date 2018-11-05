@@ -26,10 +26,16 @@
 using namespace Tracker;
 
 MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
-	: tracker_editor (te)
+	: BasePattern(te,
+	              TrackerUtils::get_position(te.region_selection),
+	              0,
+	              TrackerUtils::get_length(te.region_selection),
+	              TrackerUtils::get_first_sample(te.region_selection),
+	              TrackerUtils::get_last_sample(te.region_selection))
 	, earliest_tp (0)
 	, global_nrows (0)
-{}
+{
+}
 
 MultiTrackPattern::~MultiTrackPattern ()
 {
@@ -40,27 +46,9 @@ MultiTrackPattern::~MultiTrackPattern ()
 void
 MultiTrackPattern::setup ()
 {
-	setup_positions ();
 	setup_regions_per_track ();
 	setup_track_patterns ();
 	setup_row_offset ();
-}
-
-void
-MultiTrackPattern::setup_positions ()
-{
-	// Sort all regions to get the positions
-	std::vector<boost::shared_ptr<ARDOUR::Region> > regions;
-	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
-		boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
-		regions.push_back(region);
-	}
-	std::sort(regions.begin(), regions.end(), region_position_less());
-
-	position = TrackerUtils::get_position(regions);
-	length = TrackerUtils::get_length(regions);
-	first_sample = TrackerUtils::get_first_sample(regions);
-	last_sample = TrackerUtils::get_last_sample(regions);
 }
 
 void
@@ -191,7 +179,7 @@ MultiTrackPattern::delay_ticks (samplepos_t when, uint32_t rowi, size_t mti) con
 }
 
 uint32_t
-MultiTrackPattern::sample_at_row (uint32_t rowi, size_t mti, int32_t delay) const
+MultiTrackPattern::sample_at_row_at_mti (uint32_t rowi, size_t mti, int32_t delay) const
 {
 	return tps[mti]->sample_at_row(to_rri(rowi, mti), delay);
 }
