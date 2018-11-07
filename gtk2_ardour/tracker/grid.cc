@@ -82,13 +82,14 @@ Grid::Grid (TrackerEditor& te)
 	, pattern (te)
 	, current_path (1)
 	, current_rowi (0)
-	, current_col (2)
+	, current_col (0)
 	, current_mti (0)
 	, current_mtp (0)
 	, current_mri (0)
 	, current_cgi (0)
 	, current_note_type (TrackerColumn::NOTE)
 	, current_auto_type (TrackerColumn::AUTOMATION_SEPARATOR)
+	, clock_pos (0)
 	, edit_rowi (-1)
 	, edit_col (-1)
 	, edit_mti (-1)
@@ -721,6 +722,18 @@ Grid::init_columns ()
 	}
 }
 
+int
+Grid::first_defined_col ()
+{
+	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns();
+
+	for (int i = 0; i < (int)cols.size(); i++)
+		if (cols[i]->get_visible () && is_editable (cols[i]) && is_defined (current_path, cols[i]))
+			return i;
+
+	return -1;
+}
+
 void
 Grid::setup ()
 {
@@ -1295,6 +1308,8 @@ Grid::redisplay_model ()
 
 		// Used to draw the background of the current row and cursor
 		if ((int)rowi == current_rowi) {
+			if (current_col <= 0)
+				current_col = first_defined_col ();
 			current_row = row;
 			redisplay_current_row_background ();
 			redisplay_current_cursor ();
@@ -1913,7 +1928,7 @@ void
 Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 {
 	// Make sure the cell is defined
-	if (!is_defined(path, col))
+	if (!is_defined (path, col))
 		return;
 
 	// Reset background color over the previous row
@@ -2082,7 +2097,12 @@ Grid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
 void
 Grid::follow_current_row (samplepos_t pos)
 {
-	std::cout << "Grid::follow_current_row pos = " << pos << std::endl;
+	if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
+		int rowi = pattern.row_at_sample(pos);
+		if (rowi != current_rowi)
+			vertical_move_current_cursor (rowi - current_rowi, false, false);
+	}
+	clock_pos = pos;
 }
 
 void
@@ -2314,7 +2334,7 @@ Grid::vertical_move_edit_cursor (int steps)
 }
 
 void
-Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap)
+Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap, bool jump)
 {
 	TreeModel::Path init_path = path;
 	TreeModel::Path last_def_path = path;
@@ -2329,18 +2349,19 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 			else
 				break;
 		}
-		// Move if defined
+		// Move
 		if (is_defined (path, col)) {
 			last_def_path = path;
 			++steps;
-		}
+		} else if (!jump)
+			++steps;
 		// Avoid infinit loops
 		if (path == init_path)
 			break;
 	}
 
 	// Move down
-	while (steps > 0) {
+	while (0 < steps) {
 		++path[0];
 		// Wrap
 		if ((int)pattern.global_nrows <= path[0]) {
@@ -2349,11 +2370,12 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 			else
 				break;
 		}
-		// Move if defined
+		// Move
 		if (is_defined (path, col)) {
 			last_def_path = path;
 			--steps;
-		}
+		} else if (!jump)
+			--steps;
 		// Avoid infinit loops
 		if (path == init_path)
 			break;
@@ -2460,7 +2482,7 @@ bool
 Grid::is_automation_defined (uint32_t rowi, int mti, int cgi)
 {
 	Evoral::Parameter param = get_param(mti, cgi);
-	if (param == Evoral::Parameter()) // VT: suspicious
+	if (param == Evoral::Parameter())
 		return false;
 
 	return pattern.is_automation_defined (rowi, mti, param);
@@ -3277,11 +3299,11 @@ Grid::step_editing_set_automation_delay (int digit)
 }
 
 void
-Grid::vertical_move_current_cursor (int steps, bool wrap)
+Grid::vertical_move_current_cursor (int steps, bool wrap, bool jump)
 {
 	TreeModel::Path path = current_path;
 	TreeViewColumn* col = get_column (current_col);
-	wrap_around_vertical_move (path, col, steps, wrap);
+	wrap_around_vertical_move (path, col, steps, wrap, jump);
 	set_current_cursor (path, col);
 }
 
