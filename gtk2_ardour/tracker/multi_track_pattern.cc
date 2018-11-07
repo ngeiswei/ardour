@@ -97,6 +97,7 @@ MultiTrackPattern::setup_row_offset()
 void
 MultiTrackPattern::update ()
 {
+	set_row_range ();
 	update_rows_per_beat ();
 	update_content ();
 	update_earliest_mtp ();
@@ -106,9 +107,11 @@ MultiTrackPattern::update ()
 void
 MultiTrackPattern::update_rows_per_beat ()
 {
+	uint16_t rpb = tracker_editor.main_toolbar.rows_per_beat;
+	BasePattern::set_rows_per_beat(rpb);
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		TrackPattern* tp = tps[mti];
-		tp->set_rows_per_beat(tracker_editor.main_toolbar.rows_per_beat);
+		tp->set_rows_per_beat(rpb);
 	}
 }
 
