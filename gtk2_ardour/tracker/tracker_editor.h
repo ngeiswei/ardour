@@ -37,6 +37,7 @@
 #include "ardour_window.h"
 #include "midi_time_axis.h"
 #include "region_selection.h"
+#include "editor.h"
 
 #include "tracker_types.h"
 #include "main_toolbar.h"

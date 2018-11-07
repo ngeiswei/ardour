@@ -1925,7 +1925,7 @@ void Grid::release_note(int mti, uint8_t pitch)
 }
 
 void
-Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
+Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool set_playhead)
 {
 	// Make sure the cell is defined
 	if (!is_defined (path, col))
@@ -1956,6 +1956,12 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col)
 
 	// Readjust scroller
 	scroll_to_row(path);
+
+	// Update playhead accordingly
+	if (set_playhead) {
+		clock_pos = pattern.sample_at_row(current_rowi);
+		tracker_editor.session->request_locate (clock_pos);
+	}
 
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
@@ -2100,7 +2106,7 @@ Grid::follow_current_row (samplepos_t pos)
 	if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
 		int rowi = pattern.row_at_sample(pos);
 		if (rowi != current_rowi)
-			vertical_move_current_cursor (rowi - current_rowi, false, false);
+			vertical_move_current_cursor (rowi - current_rowi, false, false, false);
 	}
 	clock_pos = pos;
 }
@@ -3299,12 +3305,12 @@ Grid::step_editing_set_automation_delay (int digit)
 }
 
 void
-Grid::vertical_move_current_cursor (int steps, bool wrap, bool jump)
+Grid::vertical_move_current_cursor (int steps, bool wrap, bool jump, bool set_playhead)
 {
 	TreeModel::Path path = current_path;
 	TreeViewColumn* col = get_column (current_col);
 	wrap_around_vertical_move (path, col, steps, wrap, jump);
-	set_current_cursor (path, col);
+	set_current_cursor (path, col, set_playhead);
 }
 
 void
@@ -3618,7 +3624,7 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		if (ev->type == GDK_2BUTTON_PRESS)
 			set_cursor (path, *col, true);
 		else if (ev->type == GDK_BUTTON_PRESS)
-			set_current_cursor (path, col);
+			set_current_cursor (path, col, true);
 
 		grab_focus ();
 	}
