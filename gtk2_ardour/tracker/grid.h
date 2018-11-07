@@ -146,6 +146,9 @@ public:
 	int automation_separator_colnum (size_t mti, size_t cgi) const;
 	int right_separator_colnum (size_t mti) const;
 
+	// Return the column of the first defined cell
+	int first_defined_col ();
+
 	void setup ();
 	void read_colors ();         // Read colors from config
 	void redisplay_global_columns (); // time, color, font
@@ -221,6 +224,9 @@ public:
 	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
 	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
 
+	// Clock position
+	samplepos_t                  clock_pos;
+
 	// Coordonates associated to edit cursor
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_rowi;
@@ -254,7 +260,10 @@ private:
 
 	// Move a path by s steps, if wrap is true it wraps around so that it
 	// remains within [0, nrows).
-	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s, bool wrap=true);
+	//
+	// If jump is true, then do no count steps over undefined cells. If jump is
+	// false, then count the steps, and only move if the final cell is defined.
+	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s, bool wrap=true, bool jump=true);
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns
@@ -269,7 +278,10 @@ private:
 
 	// Move the cursor steps rows downwards, or upwards if steps is
 	// negative.
-	void vertical_move_current_cursor (int steps, bool wrap=true);
+	//
+	// If jump is true, then do no count steps over undefined cells. If jump is
+	// false, then count the steps, and only move if the final cell is defined.
+	void vertical_move_current_cursor (int steps, bool wrap=true, bool jump=true);
 
 	// Move the current cursor steps columns rightwards, or leftwards if steps
 	// is negative.
