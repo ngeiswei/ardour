@@ -1,6 +1,6 @@
-- Follow current row when playing
 - Display tracks in the right order
 - Prevent repeating keys when playing notes
+- Fix bug in updating playhead
 - Fix discrepancy between step editor cursor and edit cursor (press enter)
 - Optimize editing, cause redrawing the whole is way too slow
 - Fix alignment with track toolbar

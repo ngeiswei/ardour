@@ -281,7 +281,7 @@ private:
 	//
 	// If jump is true, then do no count steps over undefined cells. If jump is
 	// false, then count the steps, and only move if the final cell is defined.
-	void vertical_move_current_cursor (int steps, bool wrap=true, bool jump=true);
+	void vertical_move_current_cursor (int steps, bool wrap=true, bool jump=true, bool set_playhead=true);
 
 	// Move the current cursor steps columns rightwards, or leftwards if steps
 	// is negative.
@@ -313,7 +313,7 @@ private:
 	void release_note(int mti, uint8_t pitch);
 
 	// Set current cursor
-	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col);
+	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col, bool set_playhead=false);
 
 	/////////////////////
 	// Editing Actions //
