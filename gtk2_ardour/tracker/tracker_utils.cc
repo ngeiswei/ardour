@@ -162,13 +162,13 @@ TrackerUtils::get_position(const RegionSelection& region_selection)
 Temporal::samplecnt_t
 TrackerUtils::get_length(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
-	return regions.front()->last_sample() + 1 - regions.back()->position();
+	return regions.back()->last_sample() + 1 - regions.front()->first_sample();
 }
 
 Temporal::samplecnt_t
 TrackerUtils::get_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
-	return regions.front()->last_sample() + 1 - regions.back()->position();
+	return regions.back()->last_sample() + 1 - regions.front()->first_sample();
 }
 
 Temporal::samplecnt_t
