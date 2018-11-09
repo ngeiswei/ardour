@@ -20,6 +20,7 @@
 #define __ardour_tracker_multi_track_pattern_h_
 
 #include "ardour/midi_model.h"
+#include "ardour/stripable.h"
 
 #include "tracker_utils.h"
 #include "midi_track_pattern.h"
@@ -137,9 +138,8 @@ public:
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
-	// Mapping between tracks and regions
-	// VT: use editor track order as sorting function
-	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> > > TrackRegionsMap;
+	// Mapping track to regions
+	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> >, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per track
