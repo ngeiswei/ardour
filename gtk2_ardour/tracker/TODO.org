@@ -1,8 +1,7 @@
-- Display tracks in the right order
 - Prevent repeating keys when playing notes
-- Fix bug in updating playhead
 - Fix discrepancy between step editor cursor and edit cursor (press enter)
 - Optimize editing, cause redrawing the whole is way too slow
+- Fix bug in updating playhead
 - Fix alignment with track toolbar
 - Fix focus. When click on a button, bring focus immediately back to the grid.
 - Also fix window focus (the tracker editor window should have the focus)
