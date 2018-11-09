@@ -138,10 +138,11 @@ public:
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
 	// Mapping between tracks and regions
+	// VT: use editor track order as sorting function
 	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> > > TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
 
-	// Pattern per midi track
+	// Pattern per track
 	std::vector<TrackPattern*> tps;
 
 	// Row index offset and number of valid rows per mti
