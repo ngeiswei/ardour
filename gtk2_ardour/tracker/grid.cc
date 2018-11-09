@@ -913,7 +913,7 @@ Grid::redisplay_left_right_separator_columns (size_t mti)
 void
 Grid::redisplay_left_right_separator (TreeModel::Row& row, size_t mti)
 {
-	// VT: fix synchronization with track toolbar
+	// TODO: fix synchronization with track toolbar
 
 	// Display track color for background
 	row[columns._left_right_separator_background_color[mti]] =
