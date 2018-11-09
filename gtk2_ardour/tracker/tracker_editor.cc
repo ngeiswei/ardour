@@ -77,8 +77,8 @@ namespace Tracker {
 // TrackerEditor //
 ///////////////////
 
-// VT: fix grid focus (use get_focus() to gather information on which widget
-// has a current focus)
+// TODO: fix grid focus (use get_focus() to gather information on which widget
+//       has a current focus)
 
 TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	: ArdourWindow (window_name(rs))
@@ -92,8 +92,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 	// Build tracks, midi_time_axis_views and routes
 
-	// NT: try to understand how regions are ordered, to take
-	// advantage of it to order tracks and views
+	// Regions are sorted according to selection order
 	int i = 0;
 	for (RegionSelection::const_iterator it = region_selection.begin();
 	     it != region_selection.end(); ++it) {
@@ -102,6 +101,8 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			boost::shared_ptr<MidiRegion> midi_region = mrv->midi_region();
 			boost::shared_ptr<MidiModel> midi_model = midi_region->midi_source(0)->model();
 			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
+
+			std::cout << "midi_region[" << i << "]->name() = " << midi_region->name() << std::endl;
 
 			i++;
 
@@ -113,10 +114,10 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 			                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
 
-			// NT: is this really necessary?
+			// TODO: is this really necessary?
 			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
-		// NT: take care of audio tracks
+		// TODO: take care of audio tracks, maybe
 	}
 
 	setup_scroller ();
@@ -137,7 +138,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	set_size_request (-1, 400);
 
 	set_focus(grid);
-	// raise(); // VT: crashes ardour, maybe it would be effective otherwise
+	// raise(); // TODO: crashes ardour, maybe it would be effective otherwise for getting the focus
 
 	show();
 
