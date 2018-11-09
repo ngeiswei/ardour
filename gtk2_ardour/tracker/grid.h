@@ -331,7 +331,7 @@ private:
 	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (uint32_t rowi, int mti) const;
-	bool is_automation_defined (uint32_t rowi, int mti, int cgi); // VT: make this const
+	bool is_automation_defined (uint32_t rowi, int mti, int cgi); // TODO: make this const
 
 	// Return mti corresponding col, or -1 if invalid
 	int get_mti(const Gtk::TreeViewColumn* col) const;
@@ -397,7 +397,7 @@ private:
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
-	Evoral::Parameter get_param (int mti, int auto_cgi); // VT: make this const
+	Evoral::Parameter get_param (int mti, int auto_cgi); // TODO: make this const
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
