@@ -1957,11 +1957,12 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	// Readjust scroller
 	scroll_to_row(path);
 
-	// Update playhead accordingly
-	if (set_playhead) {
-		clock_pos = pattern.sample_at_row(current_rowi);
-		tracker_editor.session->request_locate (clock_pos);
-	}
+	// TODO: temporarily disabled because it sporadically crashes Ardour
+	// // Update playhead accordingly
+	// if (set_playhead) {
+	// 	clock_pos = pattern.sample_at_row(current_rowi);
+	// 	tracker_editor.session->request_locate (clock_pos);
+	// }
 
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
