@@ -238,6 +238,9 @@ public:
 	int                          edit_cgi;
 	Gtk::CellEditable*           editing_editable;
 
+	// Keep track of the last keyval to avoid repeating key (except cursor move)
+	guint                        last_keyval;
+
 private:
 	void init_columns ();
 	void setup_time_column ();
