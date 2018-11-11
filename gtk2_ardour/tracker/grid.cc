@@ -97,6 +97,7 @@ Grid::Grid (TrackerEditor& te)
 	, edit_mri (-1)
 	, edit_cgi (-1)
 	, editing_editable (0)
+	, last_keyval (GDK_VoidSymbol)
 	, time_column (0)
 {
 	setup ();
@@ -2859,6 +2860,13 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	case GDK_bracketright:
 	case GDK_braceright:
 		ret = true;
+		break;
+
+	// Cell edit
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
+		break;
 
 	default:
 		break;
@@ -2943,6 +2951,12 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Cell edit
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
+		break;
+
 	default:
 		break;
 	}
@@ -3012,6 +3026,12 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
+		break;
+
+	// Cell edit
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
 		break;
 
 	default:
@@ -3094,6 +3114,12 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
+		break;
+
+	// Cell edit
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
 		break;
 
 	default:
@@ -3189,6 +3215,12 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Cell edit
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
+		break;
+
 	default:
 		break;
 	}
@@ -3278,6 +3310,12 @@ Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Cell edit
+	case GDK_Return:
+		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
+		break;
+
 	default:
 		break;
 	}
@@ -3352,9 +3390,13 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 		ret = true;
 		break;
 	case GDK_Tab:
-		horizontal_move_current_cursor(1, true);
+	{
+		// TODO: unfortunately Shift-Tab makes the focus go away
+		bool is_shift = ev->state & GDK_SHIFT_MASK;
+		horizontal_move_current_cursor(is_shift ? -1 : 1, true);
 		ret = true;
 		break;
+	}
 	case GDK_Page_Up:
 		vertical_move_current_cursor(-16, false);
 		ret = true;
@@ -3453,7 +3495,8 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	case GDK_P:
 	case GDK_bracketleft:       // F+2
 	case GDK_braceleft:
-		play_note (current_mti, pitch_key (ev));
+		if (last_keyval != ev->keyval)
+			play_note (current_mti, pitch_key (ev));
 		ret = true;
 		break;
 
@@ -3474,7 +3517,7 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
-	// Set edit cursor
+	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *get_column (current_col), true);
 		ret = true;
@@ -3579,38 +3622,58 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 bool
 Grid::key_press (GdkEventKey* ev)
 {
+	// TODO: disable repeating for anything but cursor move, or make editing, really, really, really snappy
+
+	bool ret = false;
 	if (tracker_editor.main_toolbar.step_edit) {
 		switch (current_auto_type) {
 		case TrackerColumn::AUTOMATION_SEPARATOR:
 			switch (current_note_type) {
 			case TrackerColumn::NOTE:
-				return step_editing_note_key_press (ev);
+				ret = step_editing_note_key_press (ev);
+				break;
 			case TrackerColumn::CHANNEL:
-				return step_editing_note_channel_key_press (ev);
+				ret = step_editing_note_channel_key_press (ev);
+				break;
 			case TrackerColumn::VELOCITY:
-				return step_editing_note_velocity_key_press (ev);
+				ret = step_editing_note_velocity_key_press (ev);
+				break;
 			case TrackerColumn::DELAY:
-				return step_editing_note_delay_key_press (ev);
+				ret = step_editing_note_delay_key_press (ev);
+				break;
 			default:
 				cerr << "Grid::key_press: Implementation Error!" << endl;
 			}
+			break;
 		case TrackerColumn::AUTOMATION:
-			return step_editing_automation_key_press (ev);
+			ret = step_editing_automation_key_press (ev);
+			break;
 		case TrackerColumn::AUTOMATION_DELAY:
-			return step_editing_automation_delay_key_press (ev);
+			ret = step_editing_automation_delay_key_press (ev);
+			break;
 		default:
 			cerr << "Grid::key_press: Implementation Error!" << endl;
 		}
 	}
-	else return non_editing_key_press (ev);
+	else
+		ret = non_editing_key_press (ev);
 
-	return false;
+	// Store last keyval to avoid repeating note
+	last_keyval = ev->keyval;
+
+	return ret;
 }
 
 bool
 Grid::key_release (GdkEventKey* ev)
 {
-	return non_editing_key_release (ev);
+	bool ret = non_editing_key_release (ev);
+
+	// Reset last keyval
+	if (last_keyval == ev->keyval)
+		last_keyval = GDK_VoidSymbol;
+
+	return ret;
 }
 
 bool
