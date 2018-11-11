@@ -1,17 +1,15 @@
-- Prevent repeating keys when playing notes
-- Fix discrepancy between step editor cursor and edit cursor (press enter)
 - Optimize editing, cause redrawing the whole is way too slow
+- Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix bug in updating playhead
 - Fix alignment with track toolbar
-- Fix focus. When click on a button, bring focus immediately back to the grid.
-- Also fix window focus (the tracker editor window should have the focus)
+- Fix grid focus. When click on a button, bring focus immediately back to the grid.
+- Fix window focus (the tracker editor window should have focus right away)
 - Support Gtk::Expander to grid header (see cpuload_expander)
 - Try to replace as many gtk widgets by cairo widgets
 - Take care of code style
 - Try to improve color usage, how to label them, what can be reused
 - Add space between function and argument call
 - const when possible
-- Support arbitrary number of tracks (put all properties in tracker_column)
 - Create wscript under tracker folder
 - Underline the digit to be edited
 - Support shift-tab to move from right to left
