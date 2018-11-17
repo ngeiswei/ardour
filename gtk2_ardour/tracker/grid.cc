@@ -1573,6 +1573,21 @@ Grid::note_edited (const string& path, const string& text)
 	clear_editables ();
 }
 
+// VT: optimize setting note
+//
+// 1. Mirror all changes to pattern.note_pattern(mti, mri)
+//
+// 2. Modify cell accordingly
+//
+// 3. When Grid::redisplay_model is triggered, compare internal structure
+//    before and after pattern.update (), only continue if there is a
+//    difference.
+//
+// OR SIMPLY
+//
+// Keep track of the structure, when triggering redisplay_model compare the new
+// structure to the old structure, get a list of changes and only update the
+// grid with these changes!
 void
 Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 {
@@ -1594,6 +1609,13 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		char const * opname = _("change note");
 		cmd = pattern.midi_model(mti, mri)->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
+		// Pre-emptively change the pitch in the pattern to not have to redisplay
+		// the whole pattern.
+		// VT: is this really necessary???!!!
+		// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
+		pattern.note_pattern(mti, mri).change_pitch (on_note, pitch);
+		// VT: change cell
+		// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
 	} else if (off_note) {
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
@@ -1605,8 +1627,8 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		char const * opname = _("add note");
 		cmd = pattern.midi_model(mti, mri)->new_note_diff_command (opname);
 		cmd->add (new_note);
-		// Pre-emptively add the note in np to so that it knows in
-		// which track it is supposed to be.
+		// Pre-emptively add the note in the pattern so that it knows in which
+		// track it is supposed to be.
 		pattern.note_pattern(mti, mri).add (cgi, new_note);
 	} else {
 		// Create a new on note in an empty cell
@@ -1637,8 +1659,8 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note(new NoteType(chan, here, length, pitch, vel));
 		cmd->add (new_note);
-		// Pre-emptively add the note in np to so that it knows in
-		// which track it is supposed to be.
+		// Pre-emptively add the note in np so that it knows in which track it is
+		// supposed to be.
 		pattern.note_pattern(mti, mri).add (cgi, new_note);
 	}
 
