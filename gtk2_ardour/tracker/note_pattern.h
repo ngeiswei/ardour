@@ -88,9 +88,15 @@ public:
 	// perfectly contiguous, it is not displayable.
 	bool is_displayable(uint32_t row, int cgi) const;
 
-	// Add note in track_to_notes. This is used by the midi pattern editor so
-	// that the note pattern can know on which track idx a new note should be.
+	// Add note in track_to_notes. Used by the grid so that the note pattern can
+	// know on which track idx a new note should be.
 	void add(int cgi, NoteTypePtr note);
+
+	// Change pitch of the given note. Used by the grid to preemptively modify
+	// and display the change to avoid redisplaying the whole pattern.
+	// VT: Is it necessary?
+	// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
+	void change_pitch(NoteTypePtr note, uint8_t pitch);
 
 	// Number of tracks of that midi track (initially determined by the number
 	// of overlapping notes)
