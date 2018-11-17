@@ -1,4 +1,5 @@
 - Optimize editing, cause redrawing the whole is way too slow
+- Deal with *** in a "proper" manner...
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix bug in updating playhead
 - Fix alignment with track toolbar
