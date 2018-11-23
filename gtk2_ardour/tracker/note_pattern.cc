@@ -208,14 +208,6 @@ void NotePattern::add(int cgi, NoteTypePtr note)
 	track_to_notes[cgi].insert(note);
 }
 
-void
-NotePattern::change_pitch(NoteTypePtr note, uint8_t pitch)
-{
-	// VT: is this really necessary???!! If the note is not copied then maybe
-	//     it's pitch is actually gonna automatically change.
-	// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
-}
-
 NoteTypePtr
 NotePattern::earliest(const RowToNotesRange& rng) const
 {

@@ -43,6 +43,33 @@ MultiTrackPattern::~MultiTrackPattern ()
 		delete *it;
 }
 
+MultiTrackPattern::PhenomenalDiff
+MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
+{
+	MultiTrackPattern::PhenomenalDiff pd;
+
+	std::cout << "MultiTrackPattern::phenomenal_diff()" << std::endl;
+
+	pd.global = prev.global_nrows != global_nrows
+		|| prev.tps.size() != tps.size();
+
+	std::cout << "global = " << pd.global << std::endl;
+
+	if (pd.global)
+		return pd;
+
+	// No globa difference, let's look on a per track basis
+	for (size_t mti = 0; mti < tps.size(); mti++) {
+		bool diff = prev.row_offset[mti] != row_offset[mti]
+			|| prev.nrows[mti] != nrows[mti]
+			|| prev.tps[mti]->phenomenal_diff(tps[mti]);
+		pd.tps.push_back(diff);
+
+		std::cout << "pd.tps[" << mti << "] = " << diff << std::endl;
+	}
+	return pd;
+}
+
 void
 MultiTrackPattern::setup ()
 {
@@ -68,7 +95,6 @@ MultiTrackPattern::setup_regions_per_track ()
 void
 MultiTrackPattern::setup_track_patterns()
 {
-	// TODO: it should follow the order on the piano roll view!
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
 		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(it->first);
 		if (midi_track) {

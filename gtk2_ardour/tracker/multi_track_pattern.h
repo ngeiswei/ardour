@@ -32,13 +32,24 @@ namespace Tracker {
 class TrackerEditor;
 
 /**
- * Represent patterns over multiple tracks.
+ * Represent patterns of multiple tracks.
  */
 class MultiTrackPattern : public BasePattern
 {
 public:
 	MultiTrackPattern (TrackerEditor& te);
 	~MultiTrackPattern ();
+
+	// Represent the differences that may impact grid rendering. For now only a
+	// set of mti that have changed.
+	struct PhenomenalDiff {
+		// True if everything differs
+		bool global;
+
+		// True if the track pattern at mti differs
+		std::vector<bool> tps;
+	};
+	PhenomenalDiff phenomenal_diff(const MultiTrackPattern& prev) const;
 
 	void setup ();
 	void setup_positions ();
