@@ -41,6 +41,8 @@ public:
 	                  Temporal::samplepos_t last_sample);
 	virtual ~MidiTrackPattern ();
 
+	PhenomenalDiff phenomenal_diff(const TrackPattern* prev) const;
+
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 
