@@ -80,6 +80,7 @@ const string Grid::undefined_str = "***";
 Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
 	, pattern (te)
+	, prev_pattern (te)
 	, current_path (1)
 	, current_rowi (0)
 	, current_col (0)
@@ -824,6 +825,12 @@ Grid::read_colors ()
 void
 Grid::redisplay_global_columns ()
 {
+	// If no global changes, then skip
+	if (!_phenomenal_diff.global) {
+		std::cout << "Grid::redisplay_global_columns skip" << std::endl;
+		return;
+	}
+
 	// Set Time column, row background color, font
 	TreeModel::Children::iterator row_it = model->children().begin();
 	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
@@ -1236,6 +1243,11 @@ void
 Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		if (!_phenomenal_diff.global && !_phenomenal_diff.tps[mti])
+			continue;
+
+		std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
+
 		// Get the region's index, -1 if undefined
 		int mri = pattern.to_mri (rowi, mti);
 
@@ -1294,6 +1306,11 @@ Grid::redisplay_model ()
 	// Update pattern settings and content
 	pattern.update ();
 
+	// After update, compare pattern and prev_pattern to come up with a list of
+	// differences to display. For now only worry about redisplaying the
+	// changed mti.
+	_phenomenal_diff = pattern.phenomenal_diff(prev_pattern);
+
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
 
@@ -1334,6 +1351,11 @@ Grid::redisplay_model ()
 
 	redisplay_left_right_separator_columns ();
 	tracker_editor.grid_header->align();
+
+	// Save the state of pattern to prev_pattern. We may need to do a deep copy
+	// into prev_pattern to make sure that the note pointers do capture a
+	// different, if it exists.
+	prev_pattern = pattern;
 }
 
 int
@@ -1573,21 +1595,6 @@ Grid::note_edited (const string& path, const string& text)
 	clear_editables ();
 }
 
-// VT: optimize setting note
-//
-// 1. Mirror all changes to pattern.note_pattern(mti, mri)
-//
-// 2. Modify cell accordingly
-//
-// 3. When Grid::redisplay_model is triggered, compare internal structure
-//    before and after pattern.update (), only continue if there is a
-//    difference.
-//
-// OR SIMPLY
-//
-// Keep track of the structure, when triggering redisplay_model compare the new
-// structure to the old structure, get a list of changes and only update the
-// grid with these changes!
 void
 Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 {
@@ -1609,13 +1616,6 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		char const * opname = _("change note");
 		cmd = pattern.midi_model(mti, mri)->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
-		// Pre-emptively change the pitch in the pattern to not have to redisplay
-		// the whole pattern.
-		// VT: is this really necessary???!!!
-		// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
-		pattern.note_pattern(mti, mri).change_pitch (on_note, pitch);
-		// VT: change cell
-		// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
 	} else if (off_note) {
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
