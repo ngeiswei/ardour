@@ -57,6 +57,8 @@ public:
 	// A negative row index (i.e. max value) is considered invalid
 	static const uint32_t INVALID_ROW = -1;
 
+	BasePattern& operator=(const BasePattern& other);
+
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update().

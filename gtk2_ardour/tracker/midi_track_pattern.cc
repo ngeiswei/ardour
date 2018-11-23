@@ -43,6 +43,14 @@ MidiTrackPattern::~MidiTrackPattern ()
 {
 }
 
+TrackPattern::PhenomenalDiff
+MidiTrackPattern::phenomenal_diff(const TrackPattern* prev) const
+{
+	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
+	// VT: implement
+	return true;
+}
+
 boost::shared_ptr<ARDOUR::AutomationList>
 MidiTrackPattern::get_alist_at_mri(int mri, const Evoral::Parameter& param)
 {
