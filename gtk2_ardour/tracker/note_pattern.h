@@ -92,12 +92,6 @@ public:
 	// know on which track idx a new note should be.
 	void add(int cgi, NoteTypePtr note);
 
-	// Change pitch of the given note. Used by the grid to preemptively modify
-	// and display the change to avoid redisplaying the whole pattern.
-	// VT: Is it necessary?
-	// ACTUALLY PROBABLY NOT (see OR SIMPLY above)
-	void change_pitch(NoteTypePtr note, uint8_t pitch);
-
 	// Number of tracks of that midi track (initially determined by the number
 	// of overlapping notes)
 	uint16_t ntracks;

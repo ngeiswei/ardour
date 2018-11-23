@@ -63,6 +63,34 @@ BasePattern::BasePattern(TrackerEditor& te,
 {
 }
 
+BasePattern&
+BasePattern::operator=(const BasePattern& other)
+{
+	position = other.position;
+	start = other.start;
+	length = other.length;
+	first_sample = other.first_sample;
+	last_sample = other.last_sample;
+
+	position_beats = other.position_beats;
+	start_beats = other.start_beats;
+	end_beats = other.end_beats;
+	length_beats = other.length_beats;
+
+	rows_per_beat = other.rows_per_beat;
+
+	beats_per_row = other.beats_per_row;
+
+	position_row_beats = other.position_row_beats;
+	end_row_beats = other.end_row_beats;
+
+	nrows = other.nrows;
+
+	_ticks_per_row = other._ticks_per_row;
+
+	return *this;
+}
+
 void BasePattern::set_rows_per_beat(uint16_t rpb)
 {
 	rows_per_beat = rpb;

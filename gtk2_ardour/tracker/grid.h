@@ -124,6 +124,8 @@ public:
 	// Display Pattern    //
 	////////////////////////
 
+	std::set<size_t> phenomenal_diff() const;
+
 	void redisplay_visible_note ();
 	int mti_col_offset(size_t mti) const;
 	int left_separator_colnum (size_t mti) const;
@@ -201,6 +203,10 @@ public:
 
 	// Represent patterns across all tracks
 	MultiTrackPattern pattern;
+
+	// Store previous pattern to optimize redisplay_model by only redisplaying
+	// difference
+	MultiTrackPattern prev_pattern;
 
 	static const std::string note_off_str;
 
@@ -462,6 +468,9 @@ private:
 	std::string current_row_color;
 	std::string current_step_edit_row_color;
 
+	// Keep track of phenomenal differences between prev_pattern and pattern so
+	// speed up redisplay_model
+	MultiTrackPattern::PhenomenalDiff _phenomenal_diff;
 };
 
 } // ~namespace tracker
