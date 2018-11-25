@@ -54,7 +54,7 @@ TrackPattern::~TrackPattern ()
 TrackPattern::PhenomenalDiff
 TrackPattern::phenomenal_diff(const TrackPattern* prev) const
 {
-	std::cout << "TrackPattern::phenomenal_diff" << std::endl;
+	// std::cout << "TrackPattern::phenomenal_diff" << std::endl;
 	// VT: identify phenomenal automation differences
 	return true;
 }

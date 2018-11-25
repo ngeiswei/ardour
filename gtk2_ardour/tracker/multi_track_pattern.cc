@@ -48,12 +48,12 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 {
 	MultiTrackPattern::PhenomenalDiff pd;
 
-	std::cout << "MultiTrackPattern::phenomenal_diff()" << std::endl;
+	// std::cout << "MultiTrackPattern::phenomenal_diff()" << std::endl;
 
 	pd.global = prev.global_nrows != global_nrows
 		|| prev.tps.size() != tps.size();
 
-	std::cout << "global = " << pd.global << std::endl;
+	// std::cout << "global = " << pd.global << std::endl;
 
 	if (pd.global)
 		return pd;
@@ -65,7 +65,7 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 			|| prev.tps[mti]->phenomenal_diff(tps[mti]);
 		pd.tps.push_back(diff);
 
-		std::cout << "pd.tps[" << mti << "] = " << diff << std::endl;
+		// std::cout << "pd.tps[" << mti << "] = " << diff << std::endl;
 	}
 	return pd;
 }

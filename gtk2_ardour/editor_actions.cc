@@ -1641,7 +1641,7 @@ Editor::register_region_actions ()
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "spectral-analyze-region", _("Spectral Analysis..."), sigc::mem_fun (*this, &Editor::spectral_analyze_region_selection));
 
 	/* Open the tracker editor for the selected regions */
-	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "tracker-editor", _("Tracker Editor..."), sigc::mem_fun (*this, &Editor::show_tracker_editor));
+	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "tracker-editor", _("Tracker Editor (Experimental)..."), sigc::mem_fun (*this, &Editor::show_tracker_editor));
 
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions|EnteredRegions), "reset-region-gain-envelopes", _("Reset Envelope"), sigc::mem_fun (*this, &Editor::reset_region_gain_envelopes));
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions|EnteredRegions), "reset-region-scale-amplitude", _("Reset Gain"), sigc::mem_fun (*this, &Editor::reset_region_scale_amplitude));
