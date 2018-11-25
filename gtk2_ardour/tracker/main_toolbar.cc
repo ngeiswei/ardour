@@ -77,7 +77,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, position_spinner (position_adjustment)
 	, steps_label (_("Steps"))
 	  // TODO set the boundaries to not be above the number of rows
-	, steps_adjustment (4, -255, 255, 1, 4)
+	, steps_adjustment (1, -255, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
 {
 }
