@@ -27,3 +27,5 @@
   Grid::redisplay_model) to not block. This can make ardour crash when jack
   buffer size is too short.
 - Fix updating grib when note or automations are updated in the editor
+- Fix row per beat fix when not the first tracker editor instance (somehow the
+  signal must be caught by the first instance instead of the second).
