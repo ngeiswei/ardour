@@ -38,10 +38,10 @@ namespace Tracker {
 #define MAX_NUMBER_OF_TRACKS 32
 
 // Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK 8
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK 2
 
 // Maximum number of automation columns per midi track
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK 8
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK 2
 
 #define NUMBER_OF_COL_PER_NOTE_TRACK 5 /*note+channel+velocity+delay+separator*/
 #define NUMBER_OF_COL_PER_AUTOMATION_TRACK 3 /*automation+delay+separator*/
