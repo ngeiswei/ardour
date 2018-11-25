@@ -46,7 +46,7 @@ MidiTrackPattern::~MidiTrackPattern ()
 TrackPattern::PhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const TrackPattern* prev) const
 {
-	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
+	// std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
 	// VT: implement
 	return true;
 }

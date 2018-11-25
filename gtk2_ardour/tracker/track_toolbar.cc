@@ -45,7 +45,7 @@ TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti)
 	, track_index (mti)
 	, grid (te.grid)
 	, spacing (2)
-	, visible_delay (false)
+	, visible_delay (true)
 	, automation_action_menu (0)
 	, controller_menu (0)
 {
