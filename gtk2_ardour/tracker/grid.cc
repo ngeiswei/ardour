@@ -1252,7 +1252,8 @@ Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 		int mri = pattern.to_mri (rowi, mti);
 
 		redisplay_left_right_separator (row, mti);
-		redisplay_region_name (row, rowi, mti, mri);
+		// Currently disabled: use header track name instead
+		// redisplay_region_name (row, rowi, mti, mri);
 		redisplay_notes (row, rowi, mti, mri);
 		redisplay_automations (row, rowi, mti, mri);
 	}
