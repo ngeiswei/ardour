@@ -827,7 +827,7 @@ Grid::redisplay_global_columns ()
 {
 	// If no global changes, then skip
 	if (!_phenomenal_diff.global) {
-		std::cout << "Grid::redisplay_global_columns skip" << std::endl;
+		// std::cout << "Grid::redisplay_global_columns skip" << std::endl;
 		return;
 	}
 
@@ -1246,7 +1246,7 @@ Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 		if (!_phenomenal_diff.global && !_phenomenal_diff.tps[mti])
 			continue;
 
-		std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
+		// std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
 
 		// Get the region's index, -1 if undefined
 		int mri = pattern.to_mri (rowi, mti);

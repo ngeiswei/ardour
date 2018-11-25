@@ -42,8 +42,8 @@ MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp, si
 	, midi_track (mtp.midi_track)
 	, midi_track_pattern (mtp)
 	, visible_note (true)
-	, visible_channel (false)
-	, visible_velocity (false)
+	, visible_channel (true)
+	, visible_velocity (true)
 {
 	setup_processor_menu_and_curves ();
 	setup ();
