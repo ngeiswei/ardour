@@ -51,10 +51,22 @@ TrackPattern::~TrackPattern ()
 {
 }
 
+TrackPattern*
+TrackPattern::clone() const
+{
+	// VT: Add a meaningful default if necessary (probably some automation one,
+	// or audio one).
+	return nullptr;
+}
+
 TrackPattern::PhenomenalDiff
 TrackPattern::phenomenal_diff(const TrackPattern* prev) const
 {
-	// std::cout << "TrackPattern::phenomenal_diff" << std::endl;
+	std::cout << "TrackPattern::phenomenal_diff" << std::endl
+	          << "this = " << this << std::endl
+	          << to_string("  ") << std::endl
+	          << "prev = " << prev << std::endl
+	          << prev->to_string("  ") << std::endl;
 	// VT: identify phenomenal automation differences
 	return true;
 }

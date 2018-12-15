@@ -740,6 +740,8 @@ void
 Grid::setup ()
 {
 	pattern.setup ();
+	// VT: setup prev_pattern in a way that all tps are created. Then overload
+	// operator= for deep copy instead of cloning
 
 	// Ininitialize columns
 	init_columns ();
@@ -1356,7 +1358,13 @@ Grid::redisplay_model ()
 	// Save the state of pattern to prev_pattern. We may need to do a deep copy
 	// into prev_pattern to make sure that the note pointers do capture a
 	// different, if it exists.
+
+	std::cout << "pattern:" << std::endl << pattern.to_string("  ");
+	std::cout << "prev_pattern [BEFORE ASSIGNMENT]:" << std::endl << prev_pattern.to_string("  ");
+
 	prev_pattern = pattern;
+
+	std::cout << "prev_pattern [AFTER ASSIGNMENT]:" << std::endl << prev_pattern.to_string("  ");
 }
 
 int

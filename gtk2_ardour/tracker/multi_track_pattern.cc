@@ -43,12 +43,37 @@ MultiTrackPattern::~MultiTrackPattern ()
 		delete *it;
 }
 
+MultiTrackPattern&
+MultiTrackPattern::operator=(const MultiTrackPattern& other)
+{
+	// BasePattern
+	BasePattern::operator=(other);
+
+	// MultiTrackPattern
+	tps = other.tps;
+	for (size_t i = 0; i < tps.size(); i++) {
+		tps[i] = other.tps->clone(); // VT: implement TrackPattern::clone to make a deep copy
+	}
+	earliest_tp = other.earliest_tp; // VT: make sure it uses the clone
+	row_offset = other.row_offset;
+	nrows = other.nrows;
+	global_nrows = other.global_nrows;
+
+	return *this;
+}
+
 MultiTrackPattern::PhenomenalDiff
 MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 {
-	MultiTrackPattern::PhenomenalDiff pd;
+	std::cout << "MultiTrackPattern::phenomenal_diff()" << std::endl;
 
-	// std::cout << "MultiTrackPattern::phenomenal_diff()" << std::endl;
+	std::cout << "this->to_string():" << std::endl << to_string("  ");
+	std::cout << "prev.to_string():" << std::endl << prev.to_string("  ");
+
+	// VT: debug and understand why the same two multi track patterns get
+	// compared
+
+	MultiTrackPattern::PhenomenalDiff pd;
 
 	pd.global = prev.global_nrows != global_nrows
 		|| prev.tps.size() != tps.size();
@@ -378,4 +403,27 @@ void
 MultiTrackPattern::set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri(rowi, mti), mri, param);
+}
+
+std::string
+MultiTrackPattern::self_to_string() const
+{
+	std::stringstream ss;
+	ss << "MultiTrackPattern[" << this << "]";
+	return ss.str();
+}
+
+std::string
+MultiTrackPattern::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePattern::to_string(indent);
+
+	std::string header = indent + self_to_string() + " ";
+	for (size_t i = 0; i != tps.size(); i++) {
+		ss << header << "tps[" << i << "]:" << std::endl
+		   << tps[i]->to_string(indent + "  ");
+	}
+	// VT: display other MultiTrackPattern attributes
+	return ss.str();
 }

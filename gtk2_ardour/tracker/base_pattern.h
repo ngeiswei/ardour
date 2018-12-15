@@ -57,6 +57,8 @@ public:
 	// A negative row index (i.e. max value) is considered invalid
 	static const uint32_t INVALID_ROW = -1;
 
+	// Phenomenal overload of operator=(), only need to copy what is necessary
+	// for phenomenal_diff to correctly operate.
 	BasePattern& operator=(const BasePattern& other);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
@@ -134,6 +136,10 @@ public:
 	// rows. Specifially between 0 and nrow-1
 	virtual bool is_defined(int row_idx) const;
 
+	// For representing pattern data. Mostly for debugging
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
+	
 	// Reference to main tracker editor
 	TrackerEditor& tracker_editor;
 
