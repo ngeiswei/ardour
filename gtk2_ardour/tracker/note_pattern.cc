@@ -208,6 +208,41 @@ void NotePattern::add(int cgi, NoteTypePtr note)
 	track_to_notes[cgi].insert(note);
 }
 
+std::string
+NotePattern::self_to_string() const
+{
+	std::stringstream ss;
+	ss << "NotePattern[" << this << "]";
+	return ss.str();
+}
+
+std::string
+NotePattern::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePattern::to_string(indent);
+	
+	std::string header = indent + self_to_string() + " ";
+	ss << header << "ntracks = " << ntracks << std::endl;
+	ss << header << "nreqtracks = " << nreqtracks << std::endl;
+	for (size_t i = 0; i < track_to_notes.size(); i++) {
+		// VT: implement operator<< for ARDOUR::MidiModel::Notes or something
+		// like that. Hint: Notes is likely defined in evoral/Sequence.hpp
+		//
+		// 	typedef std::multiset<NotePtr, EarlierNoteComparator> Notes;
+		//
+		// See l.200 and on.
+		const ARDOUR::MidiModel::Notes& notes = track_to_notes[i];
+		ss << "track_to_notes[" << i << "]:";
+		for (ARDOUR::MidiModel::Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
+			ss << std::endl << *it;
+		}
+	}
+	// VT: take care of on_notes and other attributes
+
+	return ss.str();
+}
+
 NoteTypePtr
 NotePattern::earliest(const RowToNotesRange& rng) const
 {

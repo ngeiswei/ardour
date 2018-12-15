@@ -92,6 +92,10 @@ public:
 	// know on which track idx a new note should be.
 	void add(int cgi, NoteTypePtr note);
 
+	// For representing pattern data. Mostly for debugging
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
+
 	// Number of tracks of that midi track (initially determined by the number
 	// of overlapping notes)
 	uint16_t ntracks;
