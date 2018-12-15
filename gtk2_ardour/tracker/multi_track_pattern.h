@@ -40,6 +40,10 @@ public:
 	MultiTrackPattern (TrackerEditor& te);
 	~MultiTrackPattern ();
 
+	// Phenomenal overload of operator=(), only need to copy what is necessary
+	// for phenomenal_diff to correctly operate.
+	MultiTrackPattern& operator=(const MultiTrackPattern& other);
+
 	// Represent the differences that may impact grid rendering. For now only a
 	// set of mti that have changed.
 	struct PhenomenalDiff {
@@ -50,7 +54,7 @@ public:
 		std::vector<bool> tps;
 	};
 	PhenomenalDiff phenomenal_diff(const MultiTrackPattern& prev) const;
-
+	
 	void setup ();
 	void setup_positions ();
 	void setup_regions_per_track ();
@@ -149,6 +153,9 @@ public:
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
+	
 	// Mapping track to regions
 	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> >, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 	TrackRegionsMap regions_per_track;

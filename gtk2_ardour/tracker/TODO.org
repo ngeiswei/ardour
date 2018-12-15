@@ -28,4 +28,8 @@
   buffer size is too short.
 - Fix updating grib when note or automations are updated in the editor
 - Fix row per beat fix when not the first tracker editor instance (somehow the
-  signal must be caught by the first instance instead of the second).
+  signal must be caught by the first instance instead of the second). One way
+  to fix that would be to only allow one instance of the tracker editor to be
+  active at any given time. So that it's not possible to open 2 tracker editor
+  at the same time, and when someone closes the current tracker editor it gets
+  destructed.
