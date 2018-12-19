@@ -52,9 +52,9 @@ MultiTrackPattern::operator=(const MultiTrackPattern& other)
 	// MultiTrackPattern
 	tps = other.tps;
 	for (size_t i = 0; i < tps.size(); i++) {
-		tps[i] = other.tps->clone(); // VT: implement TrackPattern::clone to make a deep copy
+		tps[i] = 0 // VVT: make deep copy
 	}
-	earliest_tp = other.earliest_tp; // VT: make sure it uses the clone
+	earliest_tp = other.earliest_tp; // VT: use the corresponding this->tps[i]
 	row_offset = other.row_offset;
 	nrows = other.nrows;
 	global_nrows = other.global_nrows;
@@ -69,9 +69,6 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 
 	std::cout << "this->to_string():" << std::endl << to_string("  ");
 	std::cout << "prev.to_string():" << std::endl << prev.to_string("  ");
-
-	// VT: debug and understand why the same two multi track patterns get
-	// compared
 
 	MultiTrackPattern::PhenomenalDiff pd;
 
