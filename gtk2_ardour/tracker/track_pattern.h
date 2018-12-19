@@ -49,10 +49,6 @@ public:
 	              Temporal::samplepos_t fst,
 	              Temporal::samplepos_t lst);
 	virtual ~TrackPattern ();
-
-	// Make a deep copy of self. Only worry about phenomenal attributes, that is
-	// that would have an impact on phenomenal_diff.
-	virtual TrackPattern* clone() const;
 	
 	// Represent the differences that may impact grid rendering. For now only a
 	// boolean to tell whether the patterns differ.

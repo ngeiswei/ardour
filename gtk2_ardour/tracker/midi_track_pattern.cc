@@ -43,14 +43,6 @@ MidiTrackPattern::~MidiTrackPattern ()
 {
 }
 
-TrackPattern*
-MidiTrackPattern::clone() const
-{
-	// VT: implement deep copy (keeping only relevant attributes for
-	// phenomenal_diff)
-	return 0;
-}
-
 TrackPattern::PhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const TrackPattern* prev) const
 {
