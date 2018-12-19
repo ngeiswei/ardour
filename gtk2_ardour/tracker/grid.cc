@@ -740,8 +740,12 @@ void
 Grid::setup ()
 {
 	pattern.setup ();
-	// VT: setup prev_pattern in a way that all tps are created. Then overload
-	// operator= for deep copy instead of cloning
+
+	// Setup previous pattern in order to instantiate its tracks in
+	// memory. However prev_pattern will never be updated, and only serve as
+	// buffer to calculate phenomenal differences with the current (updated)
+	// pattern.
+	prev_pattern.setup ();
 
 	// Ininitialize columns
 	init_columns ();

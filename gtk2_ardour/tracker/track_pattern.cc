@@ -51,14 +51,6 @@ TrackPattern::~TrackPattern ()
 {
 }
 
-TrackPattern*
-TrackPattern::clone() const
-{
-	// VT: Add a meaningful default if necessary (probably some automation one,
-	// or audio one).
-	return nullptr;
-}
-
 TrackPattern::PhenomenalDiff
 TrackPattern::phenomenal_diff(const TrackPattern* prev) const
 {
