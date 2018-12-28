@@ -41,7 +41,13 @@ public:
 	                  Temporal::samplepos_t last_sample);
 	virtual ~MidiTrackPattern ();
 
-	PhenomenalDiff phenomenal_diff(const TrackPattern* prev) const;
+	MidiTrackPattern& operator=(const MidiTrackPattern& other);
+
+	// Represent the differences that may impact grid rendering. For now only a
+	// boolean to tell whether the patterns differ.
+	typedef bool PhenomenalDiff;
+
+	PhenomenalDiff phenomenal_diff(const MidiTrackPattern& prev) const;
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
@@ -122,6 +128,10 @@ public:
 	bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+
+	// For representing pattern data. Mostly for debugging
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	std::vector<MidiRegionPattern> mrps;

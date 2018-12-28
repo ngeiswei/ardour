@@ -164,6 +164,7 @@ public:
 	std::vector<TrackPattern*> tps;
 
 	// Row index offset and number of valid rows per mti
+	size_t                       earliest_mti;
 	TrackPattern*                earliest_tp;
 	std::vector<uint32_t>        row_offset;
 	std::vector<uint32_t>        nrows;
