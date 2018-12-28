@@ -43,11 +43,29 @@ MidiTrackPattern::~MidiTrackPattern ()
 {
 }
 
-TrackPattern::PhenomenalDiff
-MidiTrackPattern::phenomenal_diff(const TrackPattern* prev) const
+MidiTrackPattern&
+MidiTrackPattern::operator=(const MidiTrackPattern& other)
 {
-	// std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
-	// VT: implement
+	std::cout << "MidiTrackPattern[" << this << "]::operator=(" << &other << ")" << std::endl;
+	
+	TrackAutomationPattern::operator=(other);
+	midi_track = other.midi_track;
+	assert(mrps.size() == other.mrps.size());
+	for (size_t i = 0; i < mrps.size(); i++)
+		mrps[i] = other.mrps[i];
+	assert(row_offset.size() == other.row_offset.size());
+	for (size_t i = 0; i < row_offset.size(); i++)
+		row_offset[i] = other.row_offset[i];
+
+	return *this;
+}
+
+MidiTrackPattern::PhenomenalDiff
+MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
+{
+	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
+
+	// VVT: implement
 	return true;
 }
 
@@ -296,4 +314,29 @@ MidiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const
 	return TrackerUtils::is_region_automation (param) ?
 		*mrps[mri].rap.automations.find(param)->second.find(to_rrri(rowi, mri))->second
 		: *TrackAutomationPattern::automations.find(param)->second.find(rowi)->second;
+}
+
+std::string
+MidiTrackPattern::self_to_string() const
+{
+	std::stringstream ss;
+	ss << "MidiTrackPattern[" << this << "]";
+	return ss.str();
+}
+
+std::string
+MidiTrackPattern::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << TrackAutomationPattern::to_string(indent);
+
+	std::string header = indent + self_to_string() + " ";
+	ss << header << "midi_track = " << midi_track.get() << std::endl;
+	for (size_t i = 0; i != mrps.size(); i++)
+		ss << header << "mrps[" << i << "]:" << std::endl
+		   << mrps[i].to_string(indent + "  ");
+	for (size_t i = 0; i != row_offset.size(); i++)
+		ss << header << "row_offset[" << i << "] = " << row_offset[i] << std::endl;
+
+	return ss.str();
 }
