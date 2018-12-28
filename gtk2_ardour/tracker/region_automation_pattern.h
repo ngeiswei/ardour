@@ -36,6 +36,8 @@ public:
 	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                        boost::shared_ptr<ARDOUR::MidiRegion> region);
 
+	RegionAutomationPattern& operator=(const RegionAutomationPattern& other);
+	
 	// Insert all existing region (midi) automation controls in
 	// _automation_controls and connect then to the grid
 	void setup_automation_controls ();

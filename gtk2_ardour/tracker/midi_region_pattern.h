@@ -37,6 +37,8 @@ public:
 	                   boost::shared_ptr<ARDOUR::MidiRegion> region);
 	virtual ~MidiRegionPattern ();
 
+	MidiRegionPattern& operator=(const MidiRegionPattern& other);
+	
 	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
 	// TODO attempt to move TrackerEditor::update_automation_patterns here
 	// TODO attempt to move TrackerEditor::get_automation_pattern here
@@ -57,7 +59,10 @@ public:
 
 	// Insert the automation control corresponding to param
 	void insert (const Evoral::Parameter& param);
-	
+
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
+
 	NotePattern np;
 	RegionAutomationPattern rap;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;

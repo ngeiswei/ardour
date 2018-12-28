@@ -51,16 +51,15 @@ TrackPattern::~TrackPattern ()
 {
 }
 
-TrackPattern::PhenomenalDiff
-TrackPattern::phenomenal_diff(const TrackPattern* prev) const
+TrackPattern&
+TrackPattern::operator=(const TrackPattern& other)
 {
-	std::cout << "TrackPattern::phenomenal_diff" << std::endl
-	          << "this = " << this << std::endl
-	          << to_string("  ") << std::endl
-	          << "prev = " << prev << std::endl
-	          << prev->to_string("  ") << std::endl;
-	// VT: identify phenomenal automation differences
-	return true;
+	std::cout << "TrackPattern[" << this << "]::operator=(" << &other << ")" << std::endl;
+
+	AutomationPattern::operator=(other);
+	track = other.track;
+
+	return *this;
 }
 
 boost::shared_ptr<ARDOUR::MidiTrack>

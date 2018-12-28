@@ -46,6 +46,9 @@ public:
 	NotePattern(TrackerEditor& te,
 	            boost::shared_ptr<ARDOUR::MidiRegion> region);
 
+	NotePattern& operator=(const NotePattern& other);
+	NoteTypePtr clone_note(NoteTypePtr note) const;
+	
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
