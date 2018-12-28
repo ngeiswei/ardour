@@ -32,6 +32,7 @@ MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
 	              TrackerUtils::get_length(te.region_selection),
 	              TrackerUtils::get_first_sample(te.region_selection),
 	              TrackerUtils::get_last_sample(te.region_selection))
+	, earliest_mti (0)
 	, earliest_tp (0)
 	, global_nrows (0)
 {
@@ -50,11 +51,20 @@ MultiTrackPattern::operator=(const MultiTrackPattern& other)
 	BasePattern::operator=(other);
 
 	// MultiTrackPattern
-	tps = other.tps;
+	assert(tps.size() == other.tps.size());
 	for (size_t i = 0; i < tps.size(); i++) {
-		tps[i] = 0 // VVT: make deep copy
+		if (tps[i]->is_midi_track_pattern ()) {
+			assert(other.tps[i]->is_midi_track_pattern ());
+			tps[i]->midi_track_pattern ()->operator=(*other.tps[i]->midi_track_pattern ());
+		} else if (tps[i]->is_audio_track_pattern ()) {
+			assert(other.tps[i]->is_audio_track_pattern ());
+			tps[i]->audio_track_pattern ()->operator=(*other.tps[i]->audio_track_pattern ());
+		} else {
+			std::cout << "Not implemented" << std::endl;
+		}
 	}
-	earliest_tp = other.earliest_tp; // VT: use the corresponding this->tps[i]
+	earliest_mti = other.earliest_mti;
+	earliest_tp = other.tps[earliest_mti];
 	row_offset = other.row_offset;
 	nrows = other.nrows;
 	global_nrows = other.global_nrows;
@@ -80,14 +90,26 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 	if (pd.global)
 		return pd;
 
-	// No globa difference, let's look on a per track basis
+	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		bool diff = prev.row_offset[mti] != row_offset[mti]
-			|| prev.nrows[mti] != nrows[mti]
-			|| prev.tps[mti]->phenomenal_diff(tps[mti]);
+			|| prev.nrows[mti] != nrows[mti];
+		if (!diff) {
+			if (tps[mti]->is_midi_track_pattern ()) {
+				const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
+				const MidiTrackPattern* prev_mtp = prev.tps[mti]->midi_track_pattern ();
+				diff = prev_mtp->phenomenal_diff(*mtp);
+			} else if (tps[mti]->is_audio_track_pattern ()) {
+				const AudioTrackPattern* atp = tps[mti]->audio_track_pattern ();
+				const AudioTrackPattern* prev_atp = prev.tps[mti]->audio_track_pattern ();
+				diff = prev_atp->phenomenal_diff(*atp);
+			} else {
+				std::cout << "Not implemented" << std::endl;
+			}
+		}
 		pd.tps.push_back(diff);
 
-		// std::cout << "pd.tps[" << mti << "] = " << diff << std::endl;
+		std::cout << "pd.tps[" << mti << "] = " << diff << std::endl;
 	}
 	return pd;
 }
@@ -182,6 +204,7 @@ MultiTrackPattern::update_earliest_mtp ()
 		// Get min position beat
 		if (tp->position_row_beats < min_position_beats) {
 			min_position_beats = tp->position_row_beats;
+			earliest_mti = mti;
 			earliest_tp = tp;
 		}
 	}
@@ -417,10 +440,17 @@ MultiTrackPattern::to_string(const std::string& indent) const
 	ss << BasePattern::to_string(indent);
 
 	std::string header = indent + self_to_string() + " ";
-	for (size_t i = 0; i != tps.size(); i++) {
+	for (size_t i = 0; i != tps.size(); i++)
 		ss << header << "tps[" << i << "]:" << std::endl
 		   << tps[i]->to_string(indent + "  ");
-	}
-	// VT: display other MultiTrackPattern attributes
+
+	ss << header << "earliest_mti = " << earliest_mti << std::endl;
+	ss << header << "earliest_tp = " << earliest_tp << std::endl;
+	for (size_t i = 0; i != row_offset.size(); i++)
+		ss << header << "row_offset[" << i << "] = " << row_offset[i] << std::endl;
+	for (size_t i = 0; i != nrows.size(); i++)
+		ss << header << "nrows[" << i << "] = " << nrows[i] << std::endl;
+	ss << header << "global_nrows = " << global_nrows << std::endl;
+
 	return ss.str();
 }
