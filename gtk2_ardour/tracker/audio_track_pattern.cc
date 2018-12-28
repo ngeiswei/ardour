@@ -37,3 +37,10 @@ AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
 AudioTrackPattern::~AudioTrackPattern ()
 {
 }
+
+AudioTrackPattern::PhenomenalDiff
+AudioTrackPattern::phenomenal_diff(const AudioTrackPattern& prev) const
+{
+	// VT: implement
+	return true;
+}

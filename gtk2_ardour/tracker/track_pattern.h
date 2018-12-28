@@ -49,13 +49,8 @@ public:
 	              Temporal::samplepos_t fst,
 	              Temporal::samplepos_t lst);
 	virtual ~TrackPattern ();
-	
-	// Represent the differences that may impact grid rendering. For now only a
-	// boolean to tell whether the patterns differ.
-	typedef bool PhenomenalDiff;
-	// VT: maybe have argument being BasePattern* and defined under BasePattern
-	// that way it defined all usages, maybe...
-	virtual PhenomenalDiff phenomenal_diff(const TrackPattern* prev) const;
+
+	TrackPattern& operator=(const TrackPattern& other);
 	
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
 	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
