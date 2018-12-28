@@ -43,6 +43,18 @@ RegionAutomationPattern::RegionAutomationPattern(TrackerEditor& te,
 	setup_automation_controls ();
 }
 
+RegionAutomationPattern&
+RegionAutomationPattern::operator=(const RegionAutomationPattern& other)
+{
+	std::cout << "RegionAutomationPattern[" << this << "]::operator=(" << &other << ")" << std::endl;
+
+	AutomationPattern::operator=(other);
+	midi_track = other.midi_track;
+	midi_model = other.midi_model;
+
+	return *this;
+}
+
 void RegionAutomationPattern::setup_automation_controls ()
 {
 	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();

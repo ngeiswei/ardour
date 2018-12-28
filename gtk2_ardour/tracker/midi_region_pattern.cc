@@ -38,14 +38,30 @@ MidiRegionPattern::~MidiRegionPattern ()
 {
 }
 
-void MidiRegionPattern::set_rows_per_beat(uint16_t rpb)
+MidiRegionPattern&
+MidiRegionPattern::operator=(const MidiRegionPattern& other)
+{
+	std::cout << "MidiRegionPattern[" << this << "]::operator(" << &other << ")" << std::endl;
+
+	BasePattern::operator=(other);
+	np = other.np;
+	rap = other.rap;
+	midi_model = other.midi_model;
+	midi_region = other.midi_region;
+	
+	return *this;
+}
+
+void
+MidiRegionPattern::set_rows_per_beat(uint16_t rpb)
 {
 	BasePattern::set_rows_per_beat(rpb);
 	np.set_rows_per_beat(rpb);
 	rap.set_rows_per_beat(rpb);
 }
 
-void MidiRegionPattern::set_row_range()
+void
+MidiRegionPattern::set_row_range()
 {
 	BasePattern::set_row_range();
 	np.set_row_range();
@@ -60,14 +76,39 @@ void MidiRegionPattern::set_row_range()
 	assert (nrows == rap.nrows);
 }
 
-void MidiRegionPattern::update()
+void
+MidiRegionPattern::update()
 {
 	set_row_range();
 	np.update();
 	rap.update();
 }
 
-void MidiRegionPattern::insert(const Evoral::Parameter& param)
+void
+MidiRegionPattern::insert(const Evoral::Parameter& param)
 {
 	rap.insert(param);
+}
+
+std::string
+MidiRegionPattern::self_to_string() const
+{
+	std::stringstream ss;
+	ss << "MidiRegionPattern[" << this << "]";
+	return ss.str();
+}
+
+std::string
+MidiRegionPattern::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePattern::to_string(indent);
+
+	std::string header = indent + self_to_string() + " ";
+	ss << header << "np:" << std::endl << np.to_string(indent + "  ");
+	ss << header << "rap:" << std::endl << rap.to_string(indent + "  ");
+	ss << header << "midi_model = " << midi_model.get() << std::endl;
+	ss << header << "midi_region = " << midi_region.get() << std::endl;
+
+	return ss.str();
 }
