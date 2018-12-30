@@ -38,7 +38,13 @@ public:
 	virtual ~MidiRegionPattern ();
 
 	MidiRegionPattern& operator=(const MidiRegionPattern& other);
-	
+
+	// Represent the differences that may impact grid rendering. For now only a
+	// boolean to tell whether the patterns differ.
+	typedef bool PhenomenalDiff;
+
+	PhenomenalDiff phenomenal_diff(const MidiRegionPattern& prev) const;
+
 	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
 	// TODO attempt to move TrackerEditor::update_automation_patterns here
 	// TODO attempt to move TrackerEditor::get_automation_pattern here

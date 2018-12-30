@@ -48,7 +48,10 @@ public:
 
 	NotePattern& operator=(const NotePattern& other);
 	NoteTypePtr clone_note(NoteTypePtr note) const;
-	
+
+	typedef bool PhenomenalDiff;
+	PhenomenalDiff phenomenal_diff(const NotePattern& prev) const;
+
 	// Holds a note and its associated track number (a maximum of 4096
 	// tracks should be more than enough).
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
