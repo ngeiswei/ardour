@@ -65,8 +65,27 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
 	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
 
-	// VVT: implement
-	return true;
+	bool diff = row_offset != prev.row_offset;
+	if (diff)
+		return diff;
+
+	diff = mrps.size() != prev.mrps.size();
+	if (diff) {
+		std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff << std::endl;
+		return diff;
+	}
+
+	for (size_t i = 0; i < mrps.size(); i++) {
+		MidiRegionPattern::PhenomenalDiff mrp_diff = mrps[i].phenomenal_diff(prev.mrps[i]);
+		diff = mrp_diff;          // for now mrp_diff is bool
+		if (diff) {
+			std::cout << "MidiTrackPattern::phenomenal_diff mrp_diff[" << i << "] = " << mrp_diff << std::endl;
+			return diff;
+		}
+	}
+
+	std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff << std::endl;
+	return diff;
 }
 
 boost::shared_ptr<ARDOUR::AutomationList>

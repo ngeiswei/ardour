@@ -1249,10 +1249,11 @@ void
 Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (!_phenomenal_diff.global && !_phenomenal_diff.tps[mti])
+		std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
+		if (!_phenomenal_diff.global && !_phenomenal_diff.tps[mti]) {
+			std::cout << "Grid::redisplay_row !_phenomenal_diff.global && !_phenomenal_diff.tps[mti] = " << true << std::endl;
 			continue;
-
-		// std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
+		}
 
 		// Get the region's index, -1 if undefined
 		int mri = pattern.to_mri (rowi, mti);
