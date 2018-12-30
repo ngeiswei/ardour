@@ -52,6 +52,19 @@ MidiRegionPattern::operator=(const MidiRegionPattern& other)
 	return *this;
 }
 
+MidiRegionPattern::PhenomenalDiff
+MidiRegionPattern::phenomenal_diff(const MidiRegionPattern& prev) const
+{
+	std::cout << "MidiRegionPattern::phenomenal_diff" << std::endl;
+
+	NotePattern::PhenomenalDiff diff = np.phenomenal_diff(prev.np);
+	// TODO: take care of rap
+
+	std::cout << "MidiRegionPattern::phenomenal_diff diff = " << diff << std::endl;
+
+	return diff;
+}
+
 void
 MidiRegionPattern::set_rows_per_beat(uint16_t rpb)
 {

@@ -98,11 +98,11 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 			if (tps[mti]->is_midi_track_pattern ()) {
 				const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 				const MidiTrackPattern* prev_mtp = prev.tps[mti]->midi_track_pattern ();
-				diff = prev_mtp->phenomenal_diff(*mtp);
+				diff = mtp->phenomenal_diff(*prev_mtp);
 			} else if (tps[mti]->is_audio_track_pattern ()) {
 				const AudioTrackPattern* atp = tps[mti]->audio_track_pattern ();
 				const AudioTrackPattern* prev_atp = prev.tps[mti]->audio_track_pattern ();
-				diff = prev_atp->phenomenal_diff(*atp);
+				diff = atp->phenomenal_diff(*prev_atp);
 			} else {
 				std::cout << "Not implemented" << std::endl;
 			}
