@@ -97,6 +97,50 @@ NotePattern::clone_note(NoteTypePtr note) const
 	return NoteTypePtr(new NoteType(note->channel(), note->time(), note->length(), note->note(), note->velocity()));
 }
 
+NotePattern::PhenomenalDiff
+NotePattern::phenomenal_diff(const NotePattern& prev) const
+{
+	std::cout << "NotePattern::phenomenal_diff" << std::endl;
+
+	bool diff = ntracks != prev.ntracks;
+	if (diff) {
+		std::cout << "NotePattern::phenomenal_diff diff-1 = " << diff << std::endl;
+		return diff;
+	}
+
+	diff = nreqtracks != prev.nreqtracks;
+	if (diff) {
+		std::cout << "NotePattern::phenomenal_diff diff-2 = " << diff << std::endl;
+		return diff;
+	}
+
+	assert(track_to_notes.size() == prev.track_to_notes.size());
+	for (size_t i = 0; i != track_to_notes.size(); i++) {
+		diff = track_to_notes[i].size() != prev.track_to_notes[i].size();
+		if (diff) {
+			std::cout << "NotePattern::phenomenal_diff diff-3 = " << diff << std::endl;
+			return diff;
+		}
+
+		const ARDOUR::MidiModel::Notes& notes = track_to_notes[i];
+		const ARDOUR::MidiModel::Notes& prev_notes = prev.track_to_notes[i];
+		ARDOUR::MidiModel::Notes::const_iterator it = notes.begin();
+		ARDOUR::MidiModel::Notes::const_iterator prev_it = prev_notes.begin();
+		for (; it != notes.end(); ++it, ++prev_it) {
+			diff = !(**it == **prev_it);
+			if (diff) {
+				std::cout << "NotePattern::phenomenal_diff diff-4 = " << diff << std::endl;
+				return diff;
+			}
+		}
+
+		// VT: should only need to take care of on_notes and off_notes
+	}
+
+	std::cout << "NotePattern::phenomenal_diff diff-5 = " << diff << std::endl;
+	return diff;
+}
+
 void
 NotePattern::update()
 {
