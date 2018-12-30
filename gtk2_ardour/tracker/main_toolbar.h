@@ -52,6 +52,7 @@ public:
 	 * Build beats_per_row menu
 	 */
 	void setup_beats_per_row_menu ();
+	void load_bindings ();
 	void register_actions ();
 	void beats_per_row_selection_done (Editing::GridType st);
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::GridType st);
@@ -65,7 +66,8 @@ public:
 
 	TrackerEditor& tracker_editor;
 
-	Gtkmm2ext::ActionMap         myactions;
+	Gtkmm2ext::Bindings* bindings;
+
 	ArdourWidgets::ArdourDropdown beats_per_row_selector;
 	std::vector<std::string>     beats_per_row_strings;
 	uint8_t                      rows_per_beat;
