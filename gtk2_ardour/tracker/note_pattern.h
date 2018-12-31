@@ -49,7 +49,11 @@ public:
 	NotePattern& operator=(const NotePattern& other);
 	NoteTypePtr clone_note(NoteTypePtr note) const;
 
-	typedef bool PhenomenalDiff;
+	// Represent the differences that may impact grid rendering. For now only a
+	// set of mti that have changed.
+	struct PhenomenalDiff {
+		// VVT: implement, probably a map from cgi to rows
+	};
 	PhenomenalDiff phenomenal_diff(const NotePattern& prev) const;
 
 	// Holds a note and its associated track number (a maximum of 4096
