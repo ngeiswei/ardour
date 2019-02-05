@@ -62,6 +62,23 @@ TrackPattern::operator=(const TrackPattern& other)
 	return *this;
 }
 
+// bool
+// TrackPattern::PhenomenalDiff::empty() const
+// {
+// 	if (is_midi_track_phenomenal_diff()) {
+// 		return midi_track_phenomenal_diff()->empty();
+// 	} else if (is_audio_track_phenomenal_diff ()) {
+// 		return audio_track_phenomenal_diff()->empty();
+// 	} else {
+// 	}
+// }
+
+// std::string
+// TrackPattern::PhenomenalDiff::to_string(const std::string& indent = std::string()) const
+// {
+// 	// VVT: implement the following
+// }
+
 TrackPattern::PhenomenalDiff*
 TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 {
@@ -69,11 +86,11 @@ TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 	if (is_midi_track_pattern ()) {
 		const MidiTrackPattern* mtp = midi_track_pattern ();
 		const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
-		diff_ptr = new PhenomenalDiff(mtp->phenomenal_diff(*prev_mtp));
+		diff_ptr = new MidiTrackPattern::PhenomenalDiff(mtp->phenomenal_diff(*prev_mtp));
 	} else if (is_audio_track_pattern ()) {
 		const AudioTrackPattern* atp = audio_track_pattern ();
 		const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
-		diff_ptr = new PhenomenalDiff(atp->phenomenal_diff(*prev_atp));
+		diff_ptr = new AudioTrackPattern::PhenomenalDiff(atp->phenomenal_diff(*prev_atp));
 	} else {
 		std::cout << "Not implemented" << std::endl;
 		diff_ptr = 0;
