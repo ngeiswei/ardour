@@ -24,7 +24,7 @@
 
 #include "note_pattern.h"
 #include "region_automation_pattern.h"
-#include "base_phenomenal_diff.h"
+#include "midi_region_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -40,15 +40,8 @@ public:
 
 	MidiRegionPattern& operator=(const MidiRegionPattern& other);
 
-	// Represent the differences that may impact grid rendering.
-	struct PhenomenalDiff : public BasePhenomenalDiff
-	{
-		NotePattern::PhenomenalDiff note_pattern_diff;
-
-		bool empty() const;
-		std::string to_string(const std::string& indent = std::string()) const;
-	};
-	PhenomenalDiff phenomenal_diff(const MidiRegionPattern& prev) const;
+	// VT: maybe move this to its PhenomenalDiff class
+	MidiRegionPatternPhenomenalDiff phenomenal_diff(const MidiRegionPattern& prev) const;
 
 	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
 	// TODO attempt to move TrackerEditor::update_automation_patterns here
