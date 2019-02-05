@@ -72,6 +72,26 @@ MultiTrackPattern::operator=(const MultiTrackPattern& other)
 	return *this;
 }
 
+bool MultiTrackPattern::PhenomenalDiff::empty() const
+{
+	return !full && mti2tp_diff.empty();
+}
+
+std::string
+MultiTrackPattern::PhenomenalDiff::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePhenomenalDiff::to_string(indent) << std::endl;
+	ss << indent << "mti2tp_diff:" << std::endl;
+	for (Mti2TrackPatternDiff::const_iterator it = mti2tp_diff.begin(); it != mti2tp_diff.end(); it++) {
+		ss << indent + "  " << "mti = " << it->first << std::endl;
+		ss << indent + "  " << "track_pattern_diff:" << std::endl
+		   << it->second->to_string(indent + "    ");
+	}
+	return ss.str();
+
+}
+
 MultiTrackPattern::PhenomenalDiff
 MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 {
@@ -80,38 +100,20 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 	std::cout << "this->to_string():" << std::endl << to_string("  ");
 	std::cout << "prev.to_string():" << std::endl << prev.to_string("  ");
 
-	MultiTrackPattern::PhenomenalDiff pd;
+	MultiTrackPattern::PhenomenalDiff diff;
 
-	pd.global = prev.global_nrows != global_nrows
-		|| prev.tps.size() != tps.size();
+	diff.full = prev.global_nrows != global_nrows || prev.tps.size() != tps.size();
 
-	// std::cout << "global = " << pd.global << std::endl;
-
-	if (pd.global)
-		return pd;
+	if (diff.full)
+		return diff;
 
 	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size(); mti++) {
-		bool diff = prev.row_offset[mti] != row_offset[mti]
-			|| prev.nrows[mti] != nrows[mti];
-		if (!diff) {
-			if (tps[mti]->is_midi_track_pattern ()) {
-				const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
-				const MidiTrackPattern* prev_mtp = prev.tps[mti]->midi_track_pattern ();
-				diff = mtp->phenomenal_diff(*prev_mtp);
-			} else if (tps[mti]->is_audio_track_pattern ()) {
-				const AudioTrackPattern* atp = tps[mti]->audio_track_pattern ();
-				const AudioTrackPattern* prev_atp = prev.tps[mti]->audio_track_pattern ();
-				diff = atp->phenomenal_diff(*prev_atp);
-			} else {
-				std::cout << "Not implemented" << std::endl;
-			}
-		}
-		pd.tps.push_back(diff);
-
-		std::cout << "pd.tps[" << mti << "] = " << diff << std::endl;
+		TrackPattern::PhenomenalDiff* tp_diff = tps[mti]->phenomenal_diff_ptr(prev.tps[mti]);
+		if (tp_diff->empty())
+			diff.mti2tp_diff[mti] = tp_diff;
 	}
-	return pd;
+	return diff;
 }
 
 void

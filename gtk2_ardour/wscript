@@ -181,6 +181,7 @@ gtk2_ardour_sources = [
         'tracker/tracker_utils.cc',
         'tracker/grid.cc',
         'tracker/tracker_column.cc',
+        'tracker/base_phenomenal_diff.cc',
         'midi_region_view.cc',
         'midi_region_operations_box.cc',
         'midi_region_properties_box.cc',
