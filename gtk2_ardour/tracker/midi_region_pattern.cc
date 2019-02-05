@@ -52,15 +52,32 @@ MidiRegionPattern::operator=(const MidiRegionPattern& other)
 	return *this;
 }
 
+bool
+MidiRegionPattern::PhenomenalDiff::empty() const
+{
+	return !full && note_pattern_diff.empty();
+}
+
+std::string
+MidiRegionPattern::PhenomenalDiff::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePhenomenalDiff::to_string(indent) << std::endl
+	   << indent << "note_pattern_diff:" << std::endl
+	   << note_pattern_diff.to_string(indent + "  ");
+	return ss.str();
+}
+
 MidiRegionPattern::PhenomenalDiff
 MidiRegionPattern::phenomenal_diff(const MidiRegionPattern& prev) const
 {
+	MidiRegionPattern::PhenomenalDiff diff;
 	std::cout << "MidiRegionPattern::phenomenal_diff" << std::endl;
 
-	NotePattern::PhenomenalDiff diff = np.phenomenal_diff(prev.np);
+	diff.note_pattern_diff = np.phenomenal_diff(prev.np);
 	// TODO: take care of rap
 
-	std::cout << "MidiRegionPattern::phenomenal_diff diff = " << diff << std::endl;
+	std::cout << "MidiRegionPattern::phenomenal_diff diff = " << diff.to_string() << std::endl;
 
 	return diff;
 }

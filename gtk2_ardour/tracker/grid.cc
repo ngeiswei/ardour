@@ -832,7 +832,7 @@ void
 Grid::redisplay_global_columns ()
 {
 	// If no global changes, then skip
-	if (!_phenomenal_diff.global) {
+	if (!_phenomenal_diff.full) {
 		// std::cout << "Grid::redisplay_global_columns skip" << std::endl;
 		return;
 	}
@@ -1248,11 +1248,15 @@ Grid::redisplay_cell_background (TreeModel::Row& row, size_t mti, size_t cgi)
 void
 Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
+	// TODO: optimize by having the loop directly follow _phenomenal_diff.mti2tp_diff iterator when !full
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
-		if (!_phenomenal_diff.global && !_phenomenal_diff.tps[mti]) {
-			std::cout << "Grid::redisplay_row !_phenomenal_diff.global && !_phenomenal_diff.tps[mti] = " << true << std::endl;
-			continue;
+		if (!_phenomenal_diff.full) {
+			MultiTrackPattern::PhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.find(mti);
+			if (it == _phenomenal_diff.mti2tp_diff.end() || it->second->empty()) {
+				std::cout << "Grid::redisplay_row skip rowi = " << rowi << ", mti = " << mti << std::endl;
+				continue;
+			}
 		}
 
 		// Get the region's index, -1 if undefined
