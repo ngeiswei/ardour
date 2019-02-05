@@ -28,7 +28,7 @@ namespace Tracker {
  *
  * The phenomenal difference is the visible difference once a pattern is
  * rendered on the grid. This class allows to only modify the cells that may
- * show a difference, thus avoid an exhausitve rendering of all cells of the
+ * show a difference, thus avoid an exhausitve rendition of all cells of the
  * grid, which is too slow when the grid is large.
  */
 

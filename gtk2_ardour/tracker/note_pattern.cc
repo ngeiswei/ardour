@@ -49,8 +49,6 @@ NotePattern::NotePattern(TrackerEditor& te,
 NotePattern&
 NotePattern::operator=(const NotePattern& other)
 {
-	std::cout << "NotePattern[" << this << "]::operator=(" << &other << ")";
-
 	BasePattern::operator=(other);
 	ntracks = other.ntracks;
 	nreqtracks = other.nreqtracks;
@@ -142,7 +140,7 @@ NotePattern::phenomenal_diff(const NotePattern& prev) const
 			++it;
 		}
 
-		// VT: take care of this off notes, on/off notes from prev, first test
+		// VVT: take care of this off notes, on/off notes from prev, first test
 		// if diff looks like what we want!
 	}
 

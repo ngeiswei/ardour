@@ -23,7 +23,7 @@
 
 namespace Tracker {
 
-// Represent the differences that may impact grid rendering
+// Represent the differences that may impact grid rendition.
 struct AudioTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
 {
 	bool empty() const;

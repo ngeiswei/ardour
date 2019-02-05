@@ -102,8 +102,6 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			boost::shared_ptr<MidiModel> midi_model = midi_region->midi_source(0)->model();
 			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
 
-			std::cout << "midi_region[" << i << "]->name() = " << midi_region->name() << std::endl;
-
 			i++;
 
 			// Make changing midi content re-render the grid
