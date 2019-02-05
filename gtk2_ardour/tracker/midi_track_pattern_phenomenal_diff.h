@@ -24,7 +24,7 @@
 
 namespace Tracker {
 
-// Represent the differences that may impact grid rendering.
+// Represent the differences that may impact grid rendition.
 struct MidiTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
 {
 	typedef std::map<size_t, MidiRegionPatternPhenomenalDiff> Mri2MidiRegionPatternDiff;

@@ -41,8 +41,6 @@ MidiRegionPattern::~MidiRegionPattern ()
 MidiRegionPattern&
 MidiRegionPattern::operator=(const MidiRegionPattern& other)
 {
-	std::cout << "MidiRegionPattern[" << this << "]::operator(" << &other << ")" << std::endl;
-
 	BasePattern::operator=(other);
 	np = other.np;
 	rap = other.rap;

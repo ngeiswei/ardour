@@ -38,7 +38,9 @@ NotePatternPhenomenalDiff::to_string(const std::string& indent) const
 	for (Cgi2Rows::const_iterator it = cgi2rows.begin(); it != cgi2rows.end(); it++) {
 		ss << std::endl << indent << "  " << "(cgi=" << it->first << ", rows=";
 		for (Cgi2Rows::mapped_type::const_iterator row_it = it->second.begin(); row_it != it->second.end(); ++row_it) {
-			ss << " " << *row_it;
+			if (row_it != it->second.begin())
+				ss << ",";
+			ss << *row_it;
 		}
 		ss << ")";
 	}
