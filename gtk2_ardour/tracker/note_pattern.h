@@ -24,6 +24,7 @@
 
 #include "base_pattern.h"
 #include "tracker_utils.h"
+#include "base_phenomenal_diff.h"
 
 namespace ARDOUR {
 	class MidiRegion;
@@ -51,8 +52,13 @@ public:
 
 	// Represent the differences that may impact grid rendering. For now only a
 	// set of mti that have changed.
-	struct PhenomenalDiff {
-		// VVT: implement, probably a map from cgi to rows
+	struct PhenomenalDiff :public BasePhenomenalDiff
+	{
+		typedef std::map<size_t, std::set<size_t> > Cgi2Rows;
+		Cgi2Rows cgi2rows;
+
+		bool empty() const;
+		std::string to_string(const std::string& indent = std::string()) const;
 	};
 	PhenomenalDiff phenomenal_diff(const NotePattern& prev) const;
 
