@@ -36,9 +36,10 @@ class BasePhenomenalDiff {
 public:
 	BasePhenomenalDiff();
 
+	virtual bool empty() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
+
 	bool full;
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
 };
 
 } // ~namespace tracker

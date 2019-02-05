@@ -72,12 +72,9 @@ MidiRegionPattern::PhenomenalDiff
 MidiRegionPattern::phenomenal_diff(const MidiRegionPattern& prev) const
 {
 	MidiRegionPattern::PhenomenalDiff diff;
-	std::cout << "MidiRegionPattern::phenomenal_diff" << std::endl;
 
 	diff.note_pattern_diff = np.phenomenal_diff(prev.np);
 	// TODO: take care of rap
-
-	std::cout << "MidiRegionPattern::phenomenal_diff diff = " << diff.to_string() << std::endl;
 
 	return diff;
 }
