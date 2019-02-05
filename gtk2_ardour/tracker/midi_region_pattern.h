@@ -40,7 +40,6 @@ public:
 
 	MidiRegionPattern& operator=(const MidiRegionPattern& other);
 
-	// VT: maybe move this to its PhenomenalDiff class
 	MidiRegionPatternPhenomenalDiff phenomenal_diff(const MidiRegionPattern& prev) const;
 
 	// TODO attempt to move TrackerEditor::param2actrl + its ctor here

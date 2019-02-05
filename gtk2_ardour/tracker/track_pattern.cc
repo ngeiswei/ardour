@@ -56,8 +56,6 @@ TrackPattern::~TrackPattern ()
 TrackPattern&
 TrackPattern::operator=(const TrackPattern& other)
 {
-	std::cout << "TrackPattern[" << this << "]::operator=(" << &other << ")" << std::endl;
-
 	AutomationPattern::operator=(other);
 	track = other.track;
 
@@ -71,11 +69,13 @@ TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 	if (is_midi_track_pattern ()) {
 		const MidiTrackPattern* mtp = midi_track_pattern ();
 		const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
-		diff_ptr = new MidiTrackPatternPhenomenalDiff(mtp->phenomenal_diff(*prev_mtp));
+		MidiTrackPatternPhenomenalDiff mtp_diff = mtp->phenomenal_diff(*prev_mtp);
+		diff_ptr = new MidiTrackPatternPhenomenalDiff(mtp_diff);
 	} else if (is_audio_track_pattern ()) {
 		const AudioTrackPattern* atp = audio_track_pattern ();
 		const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
-		diff_ptr = new AudioTrackPatternPhenomenalDiff(atp->phenomenal_diff(*prev_atp));
+		AudioTrackPatternPhenomenalDiff atp_diff = atp->phenomenal_diff(*prev_atp);
+		diff_ptr = new AudioTrackPatternPhenomenalDiff(atp_diff);
 	} else {
 		std::cout << "Not implemented" << std::endl;
 		diff_ptr = 0;

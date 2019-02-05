@@ -47,8 +47,6 @@ MidiTrackPattern::~MidiTrackPattern ()
 MidiTrackPattern&
 MidiTrackPattern::operator=(const MidiTrackPattern& other)
 {
-	std::cout << "MidiTrackPattern[" << this << "]::operator=(" << &other << ")" << std::endl;
-	
 	TrackAutomationPattern::operator=(other);
 	midi_track = other.midi_track;
 	assert(mrps.size() == other.mrps.size());
