@@ -25,13 +25,13 @@
 #include "ardour/region.h"
 
 #include "automation_pattern.h"
-#include "base_phenomenal_diff.h"
+#include "track_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
 class MidiTrackPattern;
 class AudioTrackPattern;
-
+	
 // TODO: maybe implement some MultiRegionPattern class that deals with mri and
 // have TrackPattern inherits that one as well.
 
@@ -53,23 +53,9 @@ public:
 
 	TrackPattern& operator=(const TrackPattern& other);
 
-	struct PhenomenalDiff : public BasePhenomenalDiff
-	{
-		// virtual bool empty() const;
-		// virtual std::string to_string(const std::string& indent = std::string()) const;
-
-		// // VVT: implement the following
-		// bool is_midi_track_phenomenal_diff() const;
-		// bool is_audio_track_phenomenal_diff() const;
-
-		// const MidiTrackPattern::PhenomenalDiff* midi_track_phenomenal_diff() const;
-		// const AudioTrackPattern::PhenomenalDiff* audio_track_phenomenal_diff() const;
-		// MidiTrackPattern::PhenomenalDiff* midi_track_phenomenal_diff();
-		// AudioTrackPattern::PhenomenalDiff* audio_track_phenomenal_diff();
-	};
 	// VT: for now do not worry about memory leaking, create a new
 	// PhenomenalDiff object at every call
-	PhenomenalDiff* phenomenal_diff_ptr(const TrackPattern* prev) const;
+	TrackPatternPhenomenalDiff* phenomenal_diff_ptr(const TrackPattern* prev) const;
 	
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
 	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
@@ -105,4 +91,4 @@ public:
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_midi_track_pattern_h_ */
+#endif /* __ardour_tracker_track_pattern_h_ */

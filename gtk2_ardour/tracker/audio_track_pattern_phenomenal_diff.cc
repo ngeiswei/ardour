@@ -16,25 +16,22 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "base_phenomenal_diff.h"
+#include "audio_track_pattern_phenomenal_diff.h"
 
 #include <sstream>
 
 using namespace Tracker;
 
-BasePhenomenalDiff::BasePhenomenalDiff()
-	: full(false) {}
-
 bool
-BasePhenomenalDiff::empty() const
+AudioTrackPatternPhenomenalDiff::empty() const
 {
 	return !full;
 }
 
 std::string
-BasePhenomenalDiff::to_string(const std::string& indent) const
+AudioTrackPatternPhenomenalDiff::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << indent << "full = " << full;
+	ss << TrackPatternPhenomenalDiff::to_string(indent) << std::endl;
 	return ss.str();
 }
