@@ -1252,7 +1252,7 @@ Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
 		if (!_phenomenal_diff.full) {
-			MultiTrackPattern::PhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.find(mti);
+			MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.find(mti);
 			if (it == _phenomenal_diff.mti2tp_diff.end() || it->second->empty()) {
 				std::cout << "Grid::redisplay_row skip rowi = " << rowi << ", mti = " << mti << std::endl;
 				continue;

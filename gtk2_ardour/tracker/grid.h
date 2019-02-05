@@ -470,7 +470,7 @@ private:
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_model
-	MultiTrackPattern::PhenomenalDiff _phenomenal_diff;
+	MultiTrackPatternPhenomenalDiff _phenomenal_diff;
 };
 
 } // ~namespace tracker
