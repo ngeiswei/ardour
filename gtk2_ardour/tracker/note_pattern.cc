@@ -97,47 +97,85 @@ NotePattern::clone_note(NoteTypePtr note) const
 	return NoteTypePtr(new NoteType(note->channel(), note->time(), note->length(), note->note(), note->velocity()));
 }
 
+bool
+NotePattern::PhenomenalDiff::empty() const
+{
+	return !full && cgi2rows.empty();
+}
+
+std::string
+NotePattern::PhenomenalDiff::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePhenomenalDiff::to_string(indent) << std::endl
+		<< indent << "cgi2rows:" << std::endl
+	   << indent << "size = " << cgi2rows.size();
+	for (Cgi2Rows::const_iterator it = cgi2rows.begin(); it != cgi2rows.end(); it++) {
+		ss << std::endl << indent << "  " << "(cgi=" << it->first << ", rows=";
+		for (Cgi2Rows::mapped_type::const_iterator row_it = it->second.begin(); row_it != it->second.end(); ++row_it) {
+			ss << " " << *row_it;
+		}
+		ss << ")";
+	}
+	return ss.str();
+}
+
 NotePattern::PhenomenalDiff
 NotePattern::phenomenal_diff(const NotePattern& prev) const
 {
+	NotePattern::PhenomenalDiff diff;
+
 	std::cout << "NotePattern::phenomenal_diff" << std::endl;
 
-	bool diff = ntracks != prev.ntracks;
-	if (diff) {
-		std::cout << "NotePattern::phenomenal_diff diff-1 = " << diff << std::endl;
+	diff.full = ntracks != prev.ntracks;
+	if (diff.full) {
+		std::cout << "NotePattern::phenomenal_diff diff-1 = " << diff.to_string() << std::endl;
 		return diff;
 	}
 
-	diff = nreqtracks != prev.nreqtracks;
-	if (diff) {
-		std::cout << "NotePattern::phenomenal_diff diff-2 = " << diff << std::endl;
+	diff.full = nreqtracks != prev.nreqtracks;
+	if (diff.full) {
+		std::cout << "NotePattern::phenomenal_diff diff-2 = " << diff.to_string() << std::endl;
 		return diff;
 	}
 
-	assert(track_to_notes.size() == prev.track_to_notes.size());
-	for (size_t i = 0; i != track_to_notes.size(); i++) {
-		diff = track_to_notes[i].size() != prev.track_to_notes[i].size();
-		if (diff) {
-			std::cout << "NotePattern::phenomenal_diff diff-3 = " << diff << std::endl;
-			return diff;
-		}
+	assert(on_notes.size() == prev.on_notes.size());
+	assert(on_notes.size() == off_notes.size());
+	assert(off_notes.size() == prev.off_notes.size());
+	for (size_t cgi = 0; cgi != on_notes.size(); cgi++) {
+		// Compare this on notes with on notes from prev
+		for (RowToNotes::const_iterator it = on_notes[cgi].begin(); it != on_notes[cgi].end();) {
+			uint32_t row = it->first;
 
-		const ARDOUR::MidiModel::Notes& notes = track_to_notes[i];
-		const ARDOUR::MidiModel::Notes& prev_notes = prev.track_to_notes[i];
-		ARDOUR::MidiModel::Notes::const_iterator it = notes.begin();
-		ARDOUR::MidiModel::Notes::const_iterator prev_it = prev_notes.begin();
-		for (; it != notes.end(); ++it, ++prev_it) {
-			diff = !(**it == **prev_it);
-			if (diff) {
-				std::cout << "NotePattern::phenomenal_diff diff-4 = " << diff << std::endl;
-				return diff;
+			// First, look at the difference in displayability
+			bool is_cell_displayable = is_displayable(row, cgi);
+			bool cell_diff = is_cell_displayable != prev.is_displayable(row, cgi);
+			if (cell_diff)
+				diff.cgi2rows[cgi].insert(row);
+			if (!is_cell_displayable) {
+				// It means there are more than one note, jump to the next row
+				it = on_notes[cgi].upper_bound(row);
+				continue;
 			}
+			if (cell_diff) {
+				++it;
+				continue;
+			}
+
+			// Second, see if that single on note is present in prev, and if it is, check if it is different
+			RowToNotes::const_iterator prev_it = prev.on_notes[cgi].find(row);
+			if (prev_it == prev.on_notes[cgi].end() || !TrackerUtils::is_on_equal(it->second, prev_it->second)) {
+				diff.cgi2rows[cgi].insert(row);
+			}
+
+			++it;
 		}
 
-		// VT: should only need to take care of on_notes and off_notes
+		// VT: take care of this off notes, on/off notes from prev, first test
+		// if diff looks like what we want!
 	}
 
-	std::cout << "NotePattern::phenomenal_diff diff-5 = " << diff << std::endl;
+	std::cout << "NotePattern::phenomenal_diff diff-5 = " << diff.to_string() << std::endl;
 	return diff;
 }
 

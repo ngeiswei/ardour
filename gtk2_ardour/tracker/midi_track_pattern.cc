@@ -51,40 +51,60 @@ MidiTrackPattern::operator=(const MidiTrackPattern& other)
 	TrackAutomationPattern::operator=(other);
 	midi_track = other.midi_track;
 	assert(mrps.size() == other.mrps.size());
-	for (size_t i = 0; i < mrps.size(); i++)
-		mrps[i] = other.mrps[i];
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		mrps[mri] = other.mrps[mri];
 	assert(row_offset.size() == other.row_offset.size());
-	for (size_t i = 0; i < row_offset.size(); i++)
-		row_offset[i] = other.row_offset[i];
+	for (size_t mri = 0; mri < row_offset.size(); mri++)
+		row_offset[mri] = other.row_offset[mri];
 
 	return *this;
+}
+
+bool
+MidiTrackPattern::PhenomenalDiff::empty() const
+{
+	return !full && mri2mrp_diff.empty();
+}
+
+std::string
+MidiTrackPattern::PhenomenalDiff::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << TrackPattern::PhenomenalDiff::to_string(indent) << std::endl;
+	ss << indent << "mri2mrp_diff:" << std::endl;
+	for (Mri2MidiRegionPatternDiff::const_iterator it = mri2mrp_diff.begin(); it != mri2mrp_diff.end(); it++) {
+		ss << indent + "  " << "mri = " << it->first << std::endl;
+		ss << indent + "  " << "midi_region_pattern_diff:" << std::endl
+		   << it->second.to_string(indent + "    ");
+	}
+	return ss.str();
 }
 
 MidiTrackPattern::PhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
+	MidiTrackPattern::PhenomenalDiff diff;
+
 	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
 
-	bool diff = row_offset != prev.row_offset;
-	if (diff)
+	diff.full = row_offset != prev.row_offset;
+	if (diff.full)
 		return diff;
 
-	diff = mrps.size() != prev.mrps.size();
-	if (diff) {
-		std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff << std::endl;
+	diff.full = mrps.size() != prev.mrps.size();
+	if (diff.full) {
+		std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff.to_string() << std::endl;
 		return diff;
 	}
 
-	for (size_t i = 0; i < mrps.size(); i++) {
-		MidiRegionPattern::PhenomenalDiff mrp_diff = mrps[i].phenomenal_diff(prev.mrps[i]);
-		diff = mrp_diff;          // for now mrp_diff is bool
-		if (diff) {
-			std::cout << "MidiTrackPattern::phenomenal_diff mrp_diff[" << i << "] = " << mrp_diff << std::endl;
-			return diff;
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
+		MidiRegionPattern::PhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
+		if (!mrp_diff.empty()) {
+			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
 	}
 
-	std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff << std::endl;
+	std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff.to_string() << std::endl;
 	return diff;
 }
 
@@ -110,8 +130,8 @@ void
 MidiTrackPattern::insert(const Evoral::Parameter& param)
 {
 	if (TrackerUtils::is_region_automation (param))
-		for (size_t i = 0; i < mrps.size(); i++)
-			mrps[i].insert(param);
+		for (size_t mri = 0; mri < mrps.size(); mri++)
+			mrps[mri].insert(param);
 	else
 		TrackAutomationPattern::insert(param);
 }
@@ -120,8 +140,8 @@ void
 MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
 {
 	BasePattern::set_rows_per_beat(rpb);
-	for (size_t i = 0; i < mrps.size(); i++)
-		mrps[i].set_rows_per_beat(rpb);
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		mrps[mri].set_rows_per_beat(rpb);
 	TrackAutomationPattern::set_rows_per_beat(rpb);
 }
 
@@ -129,8 +149,8 @@ void
 MidiTrackPattern::set_row_range()
 {
 	BasePattern::set_row_range();
-	for (size_t i = 0; i < mrps.size(); i++)
-		mrps[i].set_row_range();
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		mrps[mri].set_row_range();
 	TrackAutomationPattern::set_row_range();
 }
 
@@ -220,22 +240,22 @@ MidiTrackPattern::get_ntracks () const
 void
 MidiTrackPattern::set_ntracks (uint16_t n)
 {
-	for (size_t i = 0; i < mrps.size(); i++)
-		mrps[i].np.set_ntracks(n);
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		mrps[mri].np.set_ntracks(n);
 }
 
 void
 MidiTrackPattern::inc_ntracks ()
 {
-	for (size_t i = 0; i < mrps.size(); i++)
-		mrps[i].np.inc_ntracks();
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		mrps[mri].np.inc_ntracks();
 }
 
 void
 MidiTrackPattern::dec_ntracks ()
 {
-	for (size_t i = 0; i < mrps.size(); i++)
-		mrps[i].np.dec_ntracks();
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		mrps[mri].np.dec_ntracks();
 }
 
 uint16_t
@@ -351,11 +371,11 @@ MidiTrackPattern::to_string(const std::string& indent) const
 
 	std::string header = indent + self_to_string() + " ";
 	ss << header << "midi_track = " << midi_track.get() << std::endl;
-	for (size_t i = 0; i != mrps.size(); i++)
-		ss << header << "mrps[" << i << "]:" << std::endl
-		   << mrps[i].to_string(indent + "  ");
-	for (size_t i = 0; i != row_offset.size(); i++)
-		ss << header << "row_offset[" << i << "] = " << row_offset[i] << std::endl;
+	for (size_t mri = 0; mri != mrps.size(); mri++)
+		ss << header << "mrps[" << mri << "]:" << std::endl
+		   << mrps[mri].to_string(indent + "  ");
+	for (size_t mri = 0; mri != row_offset.size(); mri++)
+		ss << header << "row_offset[" << mri << "] = " << row_offset[mri] << std::endl;
 
 	return ss.str();
 }

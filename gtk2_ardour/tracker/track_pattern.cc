@@ -62,6 +62,25 @@ TrackPattern::operator=(const TrackPattern& other)
 	return *this;
 }
 
+TrackPattern::PhenomenalDiff*
+TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
+{
+	TrackPattern::PhenomenalDiff* diff_ptr;
+	if (is_midi_track_pattern ()) {
+		const MidiTrackPattern* mtp = midi_track_pattern ();
+		const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
+		diff_ptr = new PhenomenalDiff(mtp->phenomenal_diff(*prev_mtp));
+	} else if (is_audio_track_pattern ()) {
+		const AudioTrackPattern* atp = audio_track_pattern ();
+		const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
+		diff_ptr = new PhenomenalDiff(atp->phenomenal_diff(*prev_atp));
+	} else {
+		std::cout << "Not implemented" << std::endl;
+		diff_ptr = 0;
+	}
+	return diff_ptr;
+}
+
 boost::shared_ptr<ARDOUR::MidiTrack>
 TrackPattern::midi_track ()
 {
