@@ -16,10 +16,10 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include "midi_region_pattern.h"
+
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
-
-#include "midi_region_pattern.h"
 
 using namespace Tracker;
 
@@ -52,26 +52,10 @@ MidiRegionPattern::operator=(const MidiRegionPattern& other)
 	return *this;
 }
 
-bool
-MidiRegionPattern::PhenomenalDiff::empty() const
-{
-	return !full && note_pattern_diff.empty();
-}
-
-std::string
-MidiRegionPattern::PhenomenalDiff::to_string(const std::string& indent) const
-{
-	std::stringstream ss;
-	ss << BasePhenomenalDiff::to_string(indent) << std::endl
-	   << indent << "note_pattern_diff:" << std::endl
-	   << note_pattern_diff.to_string(indent + "  ");
-	return ss.str();
-}
-
-MidiRegionPattern::PhenomenalDiff
+MidiRegionPatternPhenomenalDiff
 MidiRegionPattern::phenomenal_diff(const MidiRegionPattern& prev) const
 {
-	MidiRegionPattern::PhenomenalDiff diff;
+	MidiRegionPatternPhenomenalDiff diff;
 
 	diff.note_pattern_diff = np.phenomenal_diff(prev.np);
 	// TODO: take care of rap
