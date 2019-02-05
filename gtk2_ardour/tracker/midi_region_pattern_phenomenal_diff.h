@@ -24,7 +24,7 @@
 
 namespace Tracker {
 
-// Represent the differences that may impact grid rendering.
+// Represent the differences that may impact grid rendition.
 struct MidiRegionPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
 	NotePatternPhenomenalDiff note_pattern_diff;
