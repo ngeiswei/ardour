@@ -55,6 +55,17 @@ public:
 
 	struct PhenomenalDiff : public BasePhenomenalDiff
 	{
+		// virtual bool empty() const;
+		// virtual std::string to_string(const std::string& indent = std::string()) const;
+
+		// // VVT: implement the following
+		// bool is_midi_track_phenomenal_diff() const;
+		// bool is_audio_track_phenomenal_diff() const;
+
+		// const MidiTrackPattern::PhenomenalDiff* midi_track_phenomenal_diff() const;
+		// const AudioTrackPattern::PhenomenalDiff* audio_track_phenomenal_diff() const;
+		// MidiTrackPattern::PhenomenalDiff* midi_track_phenomenal_diff();
+		// AudioTrackPattern::PhenomenalDiff* audio_track_phenomenal_diff();
 	};
 	// VT: for now do not worry about memory leaking, create a new
 	// PhenomenalDiff object at every call
