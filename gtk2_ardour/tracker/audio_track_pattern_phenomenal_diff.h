@@ -16,32 +16,20 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_tracker_base_phenomenal_diff_h_
-#define __ardour_tracker_base_phenomenal_diff_h_
+#ifndef __ardour_tracker_audio_track_pattern_phenomenal_diff_h_
+#define __ardour_tracker_audio_track_pattern_phenomenal_diff_h_
 
-#include <string>
+#include "track_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
-/**
- * Base class for storing the phenomenal difference between 2 patterns.
- *
- * The phenomenal difference is the visible difference once a pattern is
- * rendered on the grid. This class allows to only modify the cells that may
- * show a difference, thus avoid an exhausitve rendering of all cells of the
- * grid, which is too slow when the grid is large.
- */
-
-class BasePhenomenalDiff {
-public:
-	BasePhenomenalDiff();
-
-	virtual bool empty() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
-
-	bool full;
+// Represent the differences that may impact grid rendering
+struct AudioTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
+{
+	bool empty() const;
+	std::string to_string(const std::string& indent = std::string()) const;
 };
 
-} // ~namespace tracker
+} // ~namespace Tracker
 
-#endif /* __ardour_tracker_base_pattern_h_ */
+#endif /* __ardour_tracker_midi_track_pattern_h_ */
