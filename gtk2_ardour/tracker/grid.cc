@@ -1371,11 +1371,9 @@ Grid::redisplay_model ()
 	// different, if it exists.
 
 	std::cout << "pattern:" << std::endl << pattern.to_string("  ");
-	std::cout << "prev_pattern [BEFORE ASSIGNMENT]:" << std::endl << prev_pattern.to_string("  ");
+	std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
 
 	prev_pattern = pattern;
-
-	std::cout << "prev_pattern [AFTER ASSIGNMENT]:" << std::endl << prev_pattern.to_string("  ");
 }
 
 int

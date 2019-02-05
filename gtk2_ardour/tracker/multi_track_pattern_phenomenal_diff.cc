@@ -18,6 +18,8 @@
 
 #include "multi_track_pattern_phenomenal_diff.h"
 
+#include <sstream>
+
 using namespace Tracker;
 
 bool
@@ -30,25 +32,13 @@ std::string
 MultiTrackPatternPhenomenalDiff::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePhenomenalDiff::to_string(indent) << std::endl;
+	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl;
 	ss << indent << "mti2tp_diff:" << std::endl;
 	for (Mti2TrackPatternDiff::const_iterator it = mti2tp_diff.begin(); it != mti2tp_diff.end(); it++) {
 		size_t mti = it->first;
 		TrackPatternPhenomenalDiff* tp_diff = it->second;
-		MidiTrackPatternPhenomenalDiff* mtp_diff = dynamic_cast<MidiTrackPatternPhenomenalDiff*>(tp_diff);
-		AudioTrackPatternPhenomenalDiff* atp_diff = dynamic_cast<AudioTrackPatternPhenomenalDiff*>(tp_diff);
 		ss << indent + "  " << "track_pattern_diff[" << mti << "]:" << std::endl;
-		ss << indent + "    " << "tp_diff = " << tp_diff << std::endl;
-		ss << indent + "    " << "mtp_diff = " << mtp_diff << std::endl;
-		ss << indent + "    " << "atp_diff = " << atp_diff << std::endl;
-		// ss << indent + "  " << "track_pattern_diff[" << it->first << "]:" << std::endl;
-		// if () {
-		// 	ss << std::dynamic_cast<MidiTrackPatternPhenomenalDiff>(it->second)->to_string(indent + "    ");
-		// } else if (tps[mti]->is_audio_track_pattern ()) {
-		// 	ss << std::static_cast<MidiTrackPattern>(it->second)->to_string(indent + "    ");
-		// } else {
-		// 	std::cout << "Not implemented" << std::endl;
-		// }
+		ss << tp_diff->to_string(indent + "    ");
 	}
 	return ss.str();
 }

@@ -73,46 +73,9 @@ MultiTrackPattern::operator=(const MultiTrackPattern& other)
 	return *this;
 }
 
-bool MultiTrackPatternPhenomenalDiff::empty() const
-{
-	return !full && mti2tp_diff.empty();
-}
-
-std::string
-MultiTrackPatternPhenomenalDiff::to_string(const std::string& indent) const
-{
-	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl;
-	ss << indent << "mti2tp_diff:" << std::endl;
-	for (Mti2TrackPatternDiff::const_iterator it = mti2tp_diff.begin(); it != mti2tp_diff.end(); it++) {
-		size_t mti = it->first;
-		TrackPatternPhenomenalDiff* tp_diff = it->second;
-		MidiTrackPatternPhenomenalDiff* mtp_diff = dynamic_cast<MidiTrackPatternPhenomenalDiff*>(tp_diff);
-		AudioTrackPatternPhenomenalDiff* atp_diff = dynamic_cast<AudioTrackPatternPhenomenalDiff*>(tp_diff);
-		ss << indent + "  " << "track_pattern_diff[" << mti << "]:" << std::endl;
-		ss << indent + "    " << "tp_diff = " << tp_diff << std::endl;
-		ss << indent + "    " << "mtp_diff = " << mtp_diff << std::endl;
-		ss << indent + "    " << "atp_diff = " << atp_diff << std::endl;
-		// ss << indent + "  " << "track_pattern_diff[" << it->first << "]:" << std::endl;
-		// if () {
-		// 	ss << std::dynamic_cast<MidiTrackPatternPhenomenalDiff>(it->second)->to_string(indent + "    ");
-		// } else if (tps[mti]->is_audio_track_pattern ()) {
-		// 	ss << std::static_cast<MidiTrackPattern>(it->second)->to_string(indent + "    ");
-		// } else {
-		// 	std::cout << "Not implemented" << std::endl;
-		// }
-	}
-	return ss.str();
-}
-
 MultiTrackPatternPhenomenalDiff
 MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 {
-	std::cout << "MultiTrackPattern::phenomenal_diff()" << std::endl;
-
-	std::cout << "this->to_string():" << std::endl << to_string("  ");
-	std::cout << "prev.to_string():" << std::endl << prev.to_string("  ");
-
 	MultiTrackPatternPhenomenalDiff diff;
 
 	diff.full = prev.global_nrows != global_nrows || prev.tps.size() != tps.size();
@@ -123,7 +86,7 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		TrackPatternPhenomenalDiff* tp_diff = tps[mti]->phenomenal_diff_ptr(prev.tps[mti]);
-		if (tp_diff->empty())
+		if (!tp_diff->empty())
 			diff.mti2tp_diff[mti] = tp_diff;
 	}
 	return diff;
