@@ -73,8 +73,7 @@ MidiTrackPattern::PhenomenalDiff::to_string(const std::string& indent) const
 	ss << TrackPattern::PhenomenalDiff::to_string(indent) << std::endl;
 	ss << indent << "mri2mrp_diff:" << std::endl;
 	for (Mri2MidiRegionPatternDiff::const_iterator it = mri2mrp_diff.begin(); it != mri2mrp_diff.end(); it++) {
-		ss << indent + "  " << "mri = " << it->first << std::endl;
-		ss << indent + "  " << "midi_region_pattern_diff:" << std::endl
+		ss << indent + "  " << "midi_region_pattern_diff[" << it->first << "]:" << std::endl
 		   << it->second.to_string(indent + "    ");
 	}
 	return ss.str();
@@ -85,17 +84,13 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
 	MidiTrackPattern::PhenomenalDiff diff;
 
-	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
-
 	diff.full = row_offset != prev.row_offset;
 	if (diff.full)
 		return diff;
 
 	diff.full = mrps.size() != prev.mrps.size();
-	if (diff.full) {
-		std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff.to_string() << std::endl;
+	if (diff.full)
 		return diff;
-	}
 
 	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		MidiRegionPattern::PhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
@@ -104,7 +99,6 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 		}
 	}
 
-	std::cout << "MidiTrackPattern::phenomenal_diff diff = " << diff.to_string() << std::endl;
 	return diff;
 }
 

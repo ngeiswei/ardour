@@ -125,19 +125,13 @@ NotePattern::phenomenal_diff(const NotePattern& prev) const
 {
 	NotePattern::PhenomenalDiff diff;
 
-	std::cout << "NotePattern::phenomenal_diff" << std::endl;
-
 	diff.full = ntracks != prev.ntracks;
-	if (diff.full) {
-		std::cout << "NotePattern::phenomenal_diff diff-1 = " << diff.to_string() << std::endl;
+	if (diff.full)
 		return diff;
-	}
 
 	diff.full = nreqtracks != prev.nreqtracks;
-	if (diff.full) {
-		std::cout << "NotePattern::phenomenal_diff diff-2 = " << diff.to_string() << std::endl;
+	if (diff.full)
 		return diff;
-	}
 
 	assert(on_notes.size() == prev.on_notes.size());
 	assert(on_notes.size() == off_notes.size());
@@ -175,7 +169,6 @@ NotePattern::phenomenal_diff(const NotePattern& prev) const
 		// if diff looks like what we want!
 	}
 
-	std::cout << "NotePattern::phenomenal_diff diff-5 = " << diff.to_string() << std::endl;
 	return diff;
 }
 
