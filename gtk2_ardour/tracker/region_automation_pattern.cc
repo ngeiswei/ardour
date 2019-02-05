@@ -46,8 +46,6 @@ RegionAutomationPattern::RegionAutomationPattern(TrackerEditor& te,
 RegionAutomationPattern&
 RegionAutomationPattern::operator=(const RegionAutomationPattern& other)
 {
-	std::cout << "RegionAutomationPattern[" << this << "]::operator=(" << &other << ")" << std::endl;
-
 	AutomationPattern::operator=(other);
 	midi_track = other.midi_track;
 	midi_model = other.midi_model;

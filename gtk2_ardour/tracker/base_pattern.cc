@@ -66,8 +66,6 @@ BasePattern::BasePattern(TrackerEditor& te,
 BasePattern&
 BasePattern::operator=(const BasePattern& other)
 {
-	std::cout << "BasePattern[" << this << "]::operator=(" << &other << ")" << std::endl;
-
 	position = other.position;
 	start = other.start;
 	length = other.length;

@@ -26,7 +26,7 @@
 
 namespace Tracker {
 
-// Represent the differences that may impact grid rendering. For now only a
+// Represent the differences that may impact grid rendition. For now only a
 // set of mti that have changed.
 struct NotePatternPhenomenalDiff :public BasePatternPhenomenalDiff
 {
