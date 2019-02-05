@@ -40,14 +40,7 @@ public:
 	                  Temporal::samplepos_t last_sample);
 	virtual ~AudioTrackPattern ();
 
-	// Represent the differences that may impact grid rendering
-	struct PhenomenalDiff : public TrackPattern::PhenomenalDiff
-	{
-		bool empty() const;
-		std::string to_string(const std::string& indent = std::string()) const;
-	};
-
-	PhenomenalDiff phenomenal_diff(const AudioTrackPattern& prev) const;
+	AudioTrackPatternPhenomenalDiff phenomenal_diff(const AudioTrackPattern& prev) const;
 };
 
 } // ~namespace Tracker

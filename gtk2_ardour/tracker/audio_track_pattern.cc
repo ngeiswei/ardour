@@ -17,6 +17,7 @@
 */
 
 #include "audio_track_pattern.h"
+#include "audio_track_pattern_phenomenal_diff.h"
 
 #include "tracker_utils.h"
 #include "grid.h"
@@ -38,23 +39,9 @@ AudioTrackPattern::~AudioTrackPattern ()
 {
 }
 
-bool
-AudioTrackPattern::PhenomenalDiff::empty() const
-{
-	return !full;
-}
-
-std::string
-AudioTrackPattern::PhenomenalDiff::to_string(const std::string& indent) const
-{
-	std::stringstream ss;
-	ss << TrackPattern::PhenomenalDiff::to_string(indent) << std::endl;
-	return ss.str();
-}
-
-AudioTrackPattern::PhenomenalDiff
+AudioTrackPatternPhenomenalDiff
 AudioTrackPattern::phenomenal_diff(const AudioTrackPattern& prev) const
 {
 	// VT: implement
-	return PhenomenalDiff();
+	return AudioTrackPatternPhenomenalDiff();
 }

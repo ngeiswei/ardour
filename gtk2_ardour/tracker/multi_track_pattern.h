@@ -21,11 +21,13 @@
 
 #include "ardour/midi_model.h"
 #include "ardour/stripable.h"
+#include "ardour/automation_list.h"
+#include "ardour/track.h"
 
 #include "tracker_utils.h"
-#include "midi_track_pattern.h"
-#include "audio_track_pattern.h"
 #include "note_pattern.h"
+#include "track_pattern.h"
+#include "multi_track_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -44,16 +46,7 @@ public:
 	// for phenomenal_diff to correctly operate.
 	MultiTrackPattern& operator=(const MultiTrackPattern& other);
 
-	// Represent the differences that may impact grid rendering. For now only a
-	// set of mti that have changed.
-	struct PhenomenalDiff : public BasePhenomenalDiff {
-		typedef std::map<size_t, TrackPattern::PhenomenalDiff*> Mti2TrackPatternDiff;
-		Mti2TrackPatternDiff mti2tp_diff;
-
-		bool empty() const;
-		std::string to_string(const std::string& indent = std::string()) const;
-	};
-	PhenomenalDiff phenomenal_diff(const MultiTrackPattern& prev) const;
+	MultiTrackPatternPhenomenalDiff phenomenal_diff(const MultiTrackPattern& prev) const;
 	
 	void setup ();
 	void setup_positions ();

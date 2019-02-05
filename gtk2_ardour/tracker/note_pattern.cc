@@ -97,33 +97,10 @@ NotePattern::clone_note(NoteTypePtr note) const
 	return NoteTypePtr(new NoteType(note->channel(), note->time(), note->length(), note->note(), note->velocity()));
 }
 
-bool
-NotePattern::PhenomenalDiff::empty() const
-{
-	return !full && cgi2rows.empty();
-}
-
-std::string
-NotePattern::PhenomenalDiff::to_string(const std::string& indent) const
-{
-	std::stringstream ss;
-	ss << BasePhenomenalDiff::to_string(indent) << std::endl
-		<< indent << "cgi2rows:" << std::endl
-	   << indent << "size = " << cgi2rows.size();
-	for (Cgi2Rows::const_iterator it = cgi2rows.begin(); it != cgi2rows.end(); it++) {
-		ss << std::endl << indent << "  " << "(cgi=" << it->first << ", rows=";
-		for (Cgi2Rows::mapped_type::const_iterator row_it = it->second.begin(); row_it != it->second.end(); ++row_it) {
-			ss << " " << *row_it;
-		}
-		ss << ")";
-	}
-	return ss.str();
-}
-
-NotePattern::PhenomenalDiff
+NotePatternPhenomenalDiff
 NotePattern::phenomenal_diff(const NotePattern& prev) const
 {
-	NotePattern::PhenomenalDiff diff;
+	NotePatternPhenomenalDiff diff;
 
 	diff.full = ntracks != prev.ntracks;
 	if (diff.full)

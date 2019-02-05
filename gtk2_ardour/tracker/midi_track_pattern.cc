@@ -20,6 +20,7 @@
 
 #include "tracker_utils.h"
 #include "midi_track_pattern.h"
+#include "midi_track_pattern_phenomenal_diff.h"
 #include "grid.h"
 
 using namespace Tracker;
@@ -60,29 +61,10 @@ MidiTrackPattern::operator=(const MidiTrackPattern& other)
 	return *this;
 }
 
-bool
-MidiTrackPattern::PhenomenalDiff::empty() const
-{
-	return !full && mri2mrp_diff.empty();
-}
-
-std::string
-MidiTrackPattern::PhenomenalDiff::to_string(const std::string& indent) const
-{
-	std::stringstream ss;
-	ss << TrackPattern::PhenomenalDiff::to_string(indent) << std::endl;
-	ss << indent << "mri2mrp_diff:" << std::endl;
-	for (Mri2MidiRegionPatternDiff::const_iterator it = mri2mrp_diff.begin(); it != mri2mrp_diff.end(); it++) {
-		ss << indent + "  " << "midi_region_pattern_diff[" << it->first << "]:" << std::endl
-		   << it->second.to_string(indent + "    ");
-	}
-	return ss.str();
-}
-
-MidiTrackPattern::PhenomenalDiff
+MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
-	MidiTrackPattern::PhenomenalDiff diff;
+	MidiTrackPatternPhenomenalDiff diff;
 
 	diff.full = row_offset != prev.row_offset;
 	if (diff.full)
@@ -93,7 +75,7 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 		return diff;
 
 	for (size_t mri = 0; mri < mrps.size(); mri++) {
-		MidiRegionPattern::PhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
+		MidiRegionPatternPhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
 		if (!mrp_diff.empty()) {
 			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
