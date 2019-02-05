@@ -25,6 +25,7 @@
 #include "ardour/region.h"
 
 #include "automation_pattern.h"
+#include "base_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -51,6 +52,13 @@ public:
 	virtual ~TrackPattern ();
 
 	TrackPattern& operator=(const TrackPattern& other);
+
+	struct PhenomenalDiff : public BasePhenomenalDiff
+	{
+	};
+	// VT: for now do not worry about memory leaking, create a new
+	// PhenomenalDiff object at every call
+	PhenomenalDiff* phenomenal_diff_ptr(const TrackPattern* prev) const;
 	
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
 	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();

@@ -40,9 +40,8 @@ public:
 	                  Temporal::samplepos_t last_sample);
 	virtual ~AudioTrackPattern ();
 
-	// Represent the differences that may impact grid rendering. For now only a
-	// boolean to tell whether the patterns differ.
-	typedef bool PhenomenalDiff;
+	// Represent the differences that may impact grid rendering
+	struct PhenomenalDiff : public TrackPattern::PhenomenalDiff	{};
 
 	PhenomenalDiff phenomenal_diff(const AudioTrackPattern& prev) const;
 };

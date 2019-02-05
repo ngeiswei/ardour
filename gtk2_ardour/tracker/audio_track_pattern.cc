@@ -42,5 +42,5 @@ AudioTrackPattern::PhenomenalDiff
 AudioTrackPattern::phenomenal_diff(const AudioTrackPattern& prev) const
 {
 	// VT: implement
-	return true;
+	return PhenomenalDiff();
 }

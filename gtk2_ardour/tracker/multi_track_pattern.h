@@ -46,12 +46,12 @@ public:
 
 	// Represent the differences that may impact grid rendering. For now only a
 	// set of mti that have changed.
-	struct PhenomenalDiff {
-		// True if everything differs
-		bool global;
+	struct PhenomenalDiff : public BasePhenomenalDiff {
+		typedef std::map<size_t, TrackPattern::PhenomenalDiff*> Mti2TrackPatternDiff;
+		Mti2TrackPatternDiff mti2tp_diff;
 
-		// True if the track pattern at mti differs
-		std::vector<bool> tps;
+		bool empty() const;
+		std::string to_string(const std::string& indent = std::string()) const;
 	};
 	PhenomenalDiff phenomenal_diff(const MultiTrackPattern& prev) const;
 	

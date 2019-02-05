@@ -212,3 +212,18 @@ TrackerUtils::get_last_sample(const RegionSelection& region_selection)
 {
 	return get_last_sample(get_sorted_regions(region_selection));
 }
+
+bool
+TrackerUtils::is_on_equal(NoteTypePtr ln, NoteTypePtr rn)
+{
+	return ln->time() == rn->time()
+		&& ln->note() == rn->note()
+		&& ln->velocity() == rn->velocity()
+		&& ln->channel() == rn->channel();
+}
+
+bool
+TrackerUtils::is_off_equal(NoteTypePtr ln, NoteTypePtr rn)
+{
+	return ln->end_time() == rn->end_time();
+}
