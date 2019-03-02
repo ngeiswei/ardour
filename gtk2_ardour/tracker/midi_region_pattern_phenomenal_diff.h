@@ -29,6 +29,8 @@ struct MidiRegionPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
 	NotePatternPhenomenalDiff note_pattern_diff;
 
+	// VT: support region automation
+
 	bool empty() const;
 	std::string to_string(const std::string& indent = std::string()) const;
 };

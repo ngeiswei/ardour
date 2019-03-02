@@ -63,6 +63,7 @@
 #include "tracker_editor.h"
 #include "track_toolbar.h"
 #include "tracker_utils.h"
+#include "midi_track_pattern_phenomenal_diff.h"
 
 using namespace std;
 using namespace Gtk;
@@ -978,6 +979,7 @@ Grid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 	row[columns.region_name[mti]] = cell_str;
 }
 
+// TODO: remove when no longer needed
 void
 Grid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
@@ -1245,6 +1247,7 @@ Grid::redisplay_cell_background (TreeModel::Row& row, size_t mti, size_t cgi)
 		redisplay_auto_background (row, mti, cgi);
 }
 
+// TODO: remove when no longer needed
 void
 Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
@@ -1328,6 +1331,20 @@ Grid::redisplay_model ()
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
 
+#if 1                           // New implementation
+	if (_phenomenal_diff.full) {
+		for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+			redisplay_track(mti);
+		}
+	} else {
+		for (MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.begin(); it != _phenomenal_diff.mti2tp_diff.end(); ++it) {
+			redisplay_track(it->first, it->second);
+		}
+	}
+
+	// VT: don't forget to remove superfluous row
+
+#else
 	// Fill rows
 	TreeModel::Children::iterator row_it = model->children().begin();
 	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
@@ -1351,6 +1368,7 @@ Grid::redisplay_model ()
 	// Remove unused rows
 	for (; row_it != model->children().end();)
 		row_it = model->erase(row_it);
+#endif
 
 	set_model (model);
 
@@ -1374,6 +1392,98 @@ Grid::redisplay_model ()
 	std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
 
 	prev_pattern = pattern;
+}
+
+void
+Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
+{
+	std::cout << "redisplay_track(mti=" << mti << ",tp_diff=" << tp_diff << ")" << std::endl;
+
+	if (pattern.tps[mti]->is_midi_track_pattern ())
+		redisplay_midi_track(mti,
+		                     *pattern.tps[mti]->midi_track_pattern (),
+		                     tp_diff ? tp_diff->midi_track_pattern_phenomenal_diff() : 0);
+	else if (pattern.tps[mti]->is_audio_track_pattern ())
+		redisplay_audio_track(mti,
+		                      *pattern.tps[mti]->audio_track_pattern (),
+		                      tp_diff ? tp_diff->audio_track_pattern_phenomenal_diff() : 0);
+	else
+		std::cout << "Not implemented" << std::endl;
+}
+
+void
+Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
+{
+	std::cout << "redisplay_midi_track(mti=" << mti << ",&mtp=" << &mtp << ",mtp_diff=" << mtp_diff << ")" << std::endl;
+
+	if (mtp_diff == 0 || mtp_diff->full) {
+		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
+			redisplay_midi_region (mti, mri, mtp.mrps[mri]);
+		}
+	} else {
+		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin(); it != mtp_diff->mri2mrp_diff.end(); ++it) {
+			size_t mri = it->first;
+			redisplay_midi_region (mti, mri, mtp.mrps[mri], &it->second);
+		}
+	}
+}
+
+void
+Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
+{
+	std::cout << "redisplay_midi_region(mti=" << mti << ",mri=" << mri << ",&mrp=" << &mrp << ",mrp_diff=" << mrp_diff << ")" << std::endl;
+
+	redisplay_note_region (mti, mri, mrp.np, mrp_diff ? &mrp_diff->note_pattern_diff : 0);
+}
+
+void
+Grid::redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff)
+{
+	std::cout << "redisplay_note_region(mti=" << mti << ",mri=" << mri << ",&np=" << &np << ",np_diff=" << np_diff << ")" << std::endl;
+
+	if (np_diff == 0 || np_diff->full) {
+		for (size_t cgi = 0; cgi < np.ntracks; cgi++) {
+			redisplay_note_column (mti, mri, cgi, np);
+		}
+	} else {
+		const NotePatternPhenomenalDiff::Cgi2NoteColPhenomenalDiff& cgi2nc_diff = np_diff->cgi2nc_diff;
+		for (NotePatternPhenomenalDiff::Cgi2NoteColPhenomenalDiff::const_iterator it = cgi2nc_diff.begin(); it != cgi2nc_diff.end(); it++) {
+			redisplay_note_column (mti, mri, it->first, np, &it->second);
+		}
+	}
+}
+
+void
+Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const NoteColPhenomenalDiff* nc_diff)
+{
+	std::cout << "redisplay_note_column(mti=" << mti << ",mri=" << mri << ",cgi=" << cgi << ",&np=" << &np << ",nc_diff=" << nc_diff << ")" << std::endl;
+
+	size_t row_offset = get_row_offset (mti, mri);
+	if (nc_diff == 0 || nc_diff->full) {
+		for (size_t rrrowi = 0; rrrowi < get_row_size(mti, mri); rrrowi++) {
+			redisplay_note_alternate (mti, mri, cgi, row_offset + rrrowi, np);
+		}
+	} else {
+		for (std::set<size_t>::const_iterator row_it = nc_diff->rows.begin(); row_it != nc_diff->rows.end(); ++row_it) {
+			redisplay_note_alternate (mti, mri, cgi, row_offset + *row_it, np);
+		}
+	}
+}
+
+void
+Grid::redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
+{
+	std::cout << "redisplay_note_alternate(mti=" << mti << ",mri=" << mri << ",cgi=" << cgi << "rowi=" << rowi << ",&np=)" << std::endl;
+
+	// VT: optimize
+	Gtk::TreeModel::Row row = get_row(rowi);
+	redisplay_note (row, rowi, mti, mri, cgi);
+}
+
+void
+Grid::redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
+{
+	// VT
 }
 
 int
@@ -1439,6 +1549,18 @@ uint32_t
 Grid::get_row_index(const TreeModel::Path& path) const
 {
 	return path.front();
+}
+
+uint32_t
+Grid::get_row_offset (size_t mti, size_t mri) const
+{
+	return pattern.row_offset[mti] + pattern.tps[mti]->midi_track_pattern()->row_offset[mri];
+}
+
+uint32_t
+Grid::get_row_size (size_t mti, size_t mri) const
+{
+	return pattern.tps[mti]->midi_track_pattern()->mrps[mri].nrows;
 }
 
 Gtk::TreeModel::Row
