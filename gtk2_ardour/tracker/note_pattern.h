@@ -52,8 +52,7 @@ public:
 
 	NotePatternPhenomenalDiff phenomenal_diff(const NotePattern& prev) const;
 
-	// Holds a note and its associated track number (a maximum of 4096
-	// tracks should be more than enough).
+	// Map row index to note.
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
@@ -114,11 +113,11 @@ public:
 	// overlapping notes are on the same track.
 	std::vector<ARDOUR::MidiModel::Notes> track_to_notes;
 
-	// Map row index to on notes for each track
+	// Map row index to on notes for each note column group
 	std::vector<RowToNotes> on_notes;
 
 	// Map row index to off notes (basically the same corresponding on notes)
-	// for each track
+	// for each note column group
 	std::vector<RowToNotes> off_notes;
 
 private:
