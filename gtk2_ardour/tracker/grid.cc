@@ -1253,11 +1253,9 @@ Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
 {
 	// TODO: optimize by having the loop directly follow _phenomenal_diff.mti2tp_diff iterator when !full
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		std::cout << "Grid::redisplay_row mti = " << mti << std::endl;
 		if (!_phenomenal_diff.full) {
 			MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.find(mti);
 			if (it == _phenomenal_diff.mti2tp_diff.end() || it->second->empty()) {
-				std::cout << "Grid::redisplay_row skip rowi = " << rowi << ", mti = " << mti << std::endl;
 				continue;
 			}
 		}
@@ -1326,7 +1324,7 @@ Grid::redisplay_model ()
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff(prev_pattern);
 
-	std::cout << "Grid::redisplay_model _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
+	// std::cout << "Grid::redisplay_model _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
 
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
@@ -1384,8 +1382,8 @@ Grid::redisplay_model ()
 	// into prev_pattern to make sure that the note pointers do capture a
 	// different, if it exists.
 
-	std::cout << "pattern:" << std::endl << pattern.to_string("  ");
-	std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
+	// std::cout << "pattern:" << std::endl << pattern.to_string("  ");
+	// std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
 
 	prev_pattern = pattern;
 }
@@ -1393,8 +1391,6 @@ Grid::redisplay_model ()
 void
 Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 {
-	std::cout << "redisplay_track(mti=" << mti << ",tp_diff=" << tp_diff << ")" << std::endl;
-
 	if (pattern.tps[mti]->is_midi_track_pattern ())
 		redisplay_midi_track(mti,
 		                     *pattern.tps[mti]->midi_track_pattern (),
@@ -1410,8 +1406,6 @@ Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
-	std::cout << "redisplay_midi_track(mti=" << mti << ",&mtp=" << &mtp << ",mtp_diff=" << mtp_diff << ")" << std::endl;
-
 	if (mtp_diff == 0 || mtp_diff->full) {
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
 			redisplay_midi_region (mti, mri, mtp.mrps[mri]);
@@ -1427,16 +1421,12 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 void
 Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
-	std::cout << "redisplay_midi_region(mti=" << mti << ",mri=" << mri << ",&mrp=" << &mrp << ",mrp_diff=" << mrp_diff << ")" << std::endl;
-
 	redisplay_note_region (mti, mri, mrp.np, mrp_diff ? &mrp_diff->note_pattern_diff : 0);
 }
 
 void
 Grid::redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff)
 {
-	std::cout << "redisplay_note_region(mti=" << mti << ",mri=" << mri << ",&np=" << &np << ",np_diff=" << np_diff << ")" << std::endl;
-
 	if (np_diff == 0 || np_diff->full) {
 		for (size_t cgi = 0; cgi < np.ntracks; cgi++) {
 			redisplay_note_column (mti, mri, cgi, np);
@@ -1452,8 +1442,6 @@ Grid::redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, cons
 void
 Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const NoteColPhenomenalDiff* nc_diff)
 {
-	std::cout << "redisplay_note_column(mti=" << mti << ",mri=" << mri << ",cgi=" << cgi << ",&np=" << &np << ",nc_diff=" << nc_diff << ")" << std::endl;
-
 	size_t row_offset = get_row_offset (mti, mri);
 	if (nc_diff == 0 || nc_diff->full) {
 		for (size_t rrrowi = 0; rrrowi < get_row_size(mti, mri); rrrowi++) {
@@ -1469,8 +1457,6 @@ Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePatte
 void
 Grid::redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
 {
-	std::cout << "redisplay_note_alternate(mti=" << mti << ",mri=" << mri << ",cgi=" << cgi << ",rowi=" << rowi << ",&np=" << &np << ")" << std::endl;
-
 	// TODO: optimize
 	Gtk::TreeModel::Row row = get_row(rowi);
 
