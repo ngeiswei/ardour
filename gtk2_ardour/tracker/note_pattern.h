@@ -50,7 +50,7 @@ public:
 	NotePattern& operator=(const NotePattern& other);
 	NoteTypePtr clone_note(NoteTypePtr note) const;
 
-	NotePatternPhenomenalDiff phenomenal_diff(const NotePattern& prev) const;
+	NotePatternPhenomenalDiff phenomenal_diff(const NotePattern& other) const;
 
 	// Map row index to note.
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
