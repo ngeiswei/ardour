@@ -27,6 +27,7 @@
 
 #include "tracker_column.h"
 #include "multi_track_pattern.h"
+#include "midi_region_pattern.h"
 #include "tracker_utils.h"
 
 namespace Tracker {
@@ -182,6 +183,13 @@ public:
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, const std::string& color);
 	void redisplay_row (Gtk::TreeModel::Row& row, uint32_t rowi);
 	void redisplay_model ();
+	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
+	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
+	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
+	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
+	void redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
+	void redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const NoteColPhenomenalDiff* nc_diff = 0);
+	void redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np);
 
 	// To align grid header
 	int get_time_width() const;
@@ -309,6 +317,9 @@ private:
 	// Return the row index of a tree model path
 	uint32_t get_row_index (const std::string& path) const;
 	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
+
+	uint32_t get_row_offset (size_t mti, size_t mri) const;
+	uint32_t get_row_size (size_t mti, size_t mri) const;
 
 	// Return the row corresponding to a given row index
 	Gtk::TreeModel::Row get_row (uint32_t row_idx);

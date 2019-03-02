@@ -23,9 +23,31 @@
 using namespace Tracker;
 
 bool
+NoteColPhenomenalDiff::empty() const
+{
+	return !full && rows.empty();
+}
+
+std::string
+NoteColPhenomenalDiff::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
+		<< indent << "rows:" << std::endl
+	   << indent << "size = " << rows.size()
+	   << std::endl << indent << "  rows=";
+	for (std::set<size_t>::const_iterator it = rows.begin(); it != rows.end(); it++) {
+		if (it != rows.begin())
+			ss << ",";
+		ss << *it;
+	}
+	return ss.str();
+}
+
+bool
 NotePatternPhenomenalDiff::empty() const
 {
-	return !full && cgi2rows.empty();
+	return !full && cgi2nc_diff.empty();
 }
 
 std::string
@@ -33,12 +55,14 @@ NotePatternPhenomenalDiff::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
-		<< indent << "cgi2rows:" << std::endl
-	   << indent << "size = " << cgi2rows.size();
-	for (Cgi2Rows::const_iterator it = cgi2rows.begin(); it != cgi2rows.end(); it++) {
+		<< indent << "cgi2nc_diff:" << std::endl
+	   << indent << "size = " << cgi2nc_diff.size();
+	for (Cgi2NoteColPhenomenalDiff::const_iterator it = cgi2nc_diff.begin(); it != cgi2nc_diff.end(); it++) {
 		ss << std::endl << indent << "  " << "(cgi=" << it->first << ", rows=";
-		for (Cgi2Rows::mapped_type::const_iterator row_it = it->second.begin(); row_it != it->second.end(); ++row_it) {
-			if (row_it != it->second.begin())
+		const NoteColPhenomenalDiff& nc_diff = it->second;
+		const std::set<size_t>& rows = nc_diff.rows;
+		for (std::set<size_t>::const_iterator row_it = rows.begin(); row_it != rows.end(); row_it++) {
+			if (row_it != rows.begin())
 				ss << ",";
 			ss << *row_it;
 		}
