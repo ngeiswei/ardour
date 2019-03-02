@@ -120,7 +120,7 @@ NotePattern::phenomenal_diff(const NotePattern& prev) const
 			bool is_cell_displayable = is_displayable(row, cgi);
 			bool cell_diff = is_cell_displayable != prev.is_displayable(row, cgi);
 			if (cell_diff)
-				diff.cgi2rows[cgi].insert(row);
+				diff.cgi2nc_diff[cgi].rows.insert(row);
 			if (!is_cell_displayable) {
 				// It means there are more than one note, jump to the next row
 				it = on_notes[cgi].upper_bound(row);
@@ -134,13 +134,13 @@ NotePattern::phenomenal_diff(const NotePattern& prev) const
 			// Second, see if that single on note is present in prev, and if it is, check if it is different
 			RowToNotes::const_iterator prev_it = prev.on_notes[cgi].find(row);
 			if (prev_it == prev.on_notes[cgi].end() || !TrackerUtils::is_on_equal(it->second, prev_it->second)) {
-				diff.cgi2rows[cgi].insert(row);
+				diff.cgi2nc_diff[cgi].rows.insert(row);
 			}
 
 			++it;
 		}
 
-		// VVT: take care of this off notes, on/off notes from prev, first test
+		// VT: take care of this off notes, on/off notes from prev, first test
 		// if diff looks like what we want!
 	}
 

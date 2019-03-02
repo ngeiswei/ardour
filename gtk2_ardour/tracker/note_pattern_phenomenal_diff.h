@@ -26,12 +26,20 @@
 
 namespace Tracker {
 
+struct NoteColPhenomenalDiff : public BasePatternPhenomenalDiff
+{
+	std::set<size_t> rows;
+
+	bool empty() const;
+	std::string to_string(const std::string& indent = std::string()) const;
+};
+
 // Represent the differences that may impact grid rendition. For now only a
 // set of mti that have changed.
-struct NotePatternPhenomenalDiff :public BasePatternPhenomenalDiff
+struct NotePatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	typedef std::map<size_t, std::set<size_t> > Cgi2Rows;
-	Cgi2Rows cgi2rows;
+	typedef std::map<size_t, NoteColPhenomenalDiff> Cgi2NoteColPhenomenalDiff;
+	Cgi2NoteColPhenomenalDiff cgi2nc_diff;
 
 	bool empty() const;
 	std::string to_string(const std::string& indent = std::string()) const;
