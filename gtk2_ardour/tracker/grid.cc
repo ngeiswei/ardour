@@ -1007,7 +1007,7 @@ Grid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mr
 		size_t off_notes_count = pattern.off_notes_count (rowi, mti, mri, cgi);
 		size_t on_notes_count = pattern.on_notes_count (rowi, mti, mri, cgi);
 		if (0 < on_notes_count || 0 < off_notes_count)
-			redisplay_note (row, rowi, mti, mri, cgi);
+			redisplay_note_foreground (row, rowi, mti, mri, cgi);
 	}
 }
 
@@ -1118,7 +1118,7 @@ Grid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t cgi)
 }
 
 void
-Grid::redisplay_note (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi)
+Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi)
 {
 	if (pattern.is_note_displayable(rowi, mti, mri, cgi)) {
 		// Notes off
@@ -1331,7 +1331,7 @@ Grid::redisplay_model ()
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
 
-#if 1                           // New implementation
+	// Redisplay cell contents
 	if (_phenomenal_diff.full) {
 		for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 			redisplay_track(mti);
@@ -1342,18 +1342,15 @@ Grid::redisplay_model ()
 		}
 	}
 
-	// VT: don't forget to remove superfluous row
-
-#else
-	// Fill rows
+	// Redisplay current row and cursor
 	TreeModel::Children::iterator row_it = model->children().begin();
 	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 
 		// Get row
 		TreeModel::Row row = *row_it++;
 
-		// Display row
-		redisplay_row(row, rowi);
+		// // Display row
+		// redisplay_row(row, rowi);
 
 		// Used to draw the background of the current row and cursor
 		if ((int)rowi == current_rowi) {
@@ -1368,7 +1365,6 @@ Grid::redisplay_model ()
 	// Remove unused rows
 	for (; row_it != model->children().end();)
 		row_it = model->erase(row_it);
-#endif
 
 	set_model (model);
 
@@ -1473,11 +1469,25 @@ Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePatte
 void
 Grid::redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
 {
-	std::cout << "redisplay_note_alternate(mti=" << mti << ",mri=" << mri << ",cgi=" << cgi << "rowi=" << rowi << ",&np=)" << std::endl;
+	std::cout << "redisplay_note_alternate(mti=" << mti << ",mri=" << mri << ",cgi=" << cgi << ",rowi=" << rowi << ",&np=" << &np << ")" << std::endl;
 
-	// VT: optimize
+	// TODO: optimize
 	Gtk::TreeModel::Row row = get_row(rowi);
-	redisplay_note (row, rowi, mti, mri, cgi);
+
+	// Fill background colors
+	redisplay_note_background (row, mti, cgi);
+
+	// Fill with blank foreground text and colors
+	redisplay_blank_note_foreground (row, mti, cgi);
+
+	// Reset keeping track of the on and off notes
+	reset_off_on_note (row, mti, cgi);
+
+	// Display note
+	size_t off_notes_count = pattern.off_notes_count (rowi, mti, mri, cgi);
+	size_t on_notes_count = pattern.on_notes_count (rowi, mti, mri, cgi);
+	if (0 < on_notes_count || 0 < off_notes_count)
+		redisplay_note_foreground (row, rowi, mti, mri, cgi);
 }
 
 void
