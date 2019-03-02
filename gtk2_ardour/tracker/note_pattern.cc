@@ -169,8 +169,6 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 				diff.cgi2nc_diff[cgi].rows.insert(row);
 			}
 
-			// VVT: make sure previous off notes are redrawn as well (as blank)
-
 			++it;
 		}
 
@@ -228,7 +226,6 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 			if (this_it == off_notes[cgi].end()
 			    || !TrackerUtils::is_off_equal(it->second, this_it->second)
 			    || on_notes[cgi].find(row) != on_notes[cgi].end()) {
-				std::cout << "CHECK ME OUT row = " << row << std::endl;
 				diff.cgi2nc_diff[cgi].rows.insert(row);
 			}
 
