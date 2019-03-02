@@ -39,10 +39,10 @@ namespace Tracker {
 #define MAX_NUMBER_OF_TRACKS 32
 
 // Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK 2
+#define MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK 16
 
 // Maximum number of automation columns per midi track
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK 2
+#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK 16
 
 #define NUMBER_OF_COL_PER_NOTE_TRACK 5 /*note+channel+velocity+delay+separator*/
 #define NUMBER_OF_COL_PER_AUTOMATION_TRACK 3 /*automation+delay+separator*/
@@ -171,7 +171,7 @@ public:
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_note (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi);
+	void redisplay_note_foreground (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi);
 	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
