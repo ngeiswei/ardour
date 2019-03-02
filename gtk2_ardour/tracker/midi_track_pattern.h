@@ -131,6 +131,8 @@ public:
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	std::vector<MidiRegionPattern> mrps;
+
+	// Associate each mri to row_offset
 	std::vector<uint32_t> row_offset;
 };
 
