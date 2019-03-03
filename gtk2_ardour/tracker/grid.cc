@@ -1341,6 +1341,7 @@ Grid::redisplay_model ()
 	}
 
 	// Redisplay current row and cursor
+	// TODO: optimize
 	TreeModel::Children::iterator row_it = model->children().begin();
 	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 
@@ -1407,7 +1408,7 @@ void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
 	if (mtp_diff == 0 || mtp_diff->full) {
-		// VVT: redisplay between regions as well
+		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
 			redisplay_midi_region (mti, mri, mtp.mrps[mri]);
 		}
@@ -1416,6 +1417,18 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, mtp.mrps[mri], &it->second);
 		}
+	}
+}
+
+void
+Grid::redisplay_inter_midi_regions (size_t mti)
+{
+	TreeModel::Children::iterator row_it = model->children().begin();
+	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
+		// Get row
+		TreeModel::Row row = *row_it++;
+		if (!is_region_defined (rowi, mti))
+			redisplay_undefined_notes (row, mti);
 	}
 }
 
@@ -1455,6 +1468,7 @@ Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePatte
 	}
 }
 
+// VT: rename with redisplay_note once no longer usefull
 void
 Grid::redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
 {
