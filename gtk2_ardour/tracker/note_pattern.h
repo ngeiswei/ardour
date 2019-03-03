@@ -50,6 +50,8 @@ public:
 	NotePattern& operator=(const NotePattern& other);
 	NoteTypePtr clone_note(NoteTypePtr note) const;
 
+	static void rows_diff(size_t cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd);
+
 	NotePatternPhenomenalDiff phenomenal_diff(const NotePattern& other) const;
 
 	// Map row index to note.

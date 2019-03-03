@@ -95,6 +95,70 @@ NotePattern::clone_note(NoteTypePtr note) const
 	return NoteTypePtr(new NoteType(note->channel(), note->time(), note->length(), note->note(), note->velocity()));
 }
 
+void
+NotePattern::rows_diff(size_t cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd)
+{
+	// Compare left on notes with right on notes
+	for (RowToNotes::const_iterator it = lnp.on_notes[cgi].begin(); it != lnp.on_notes[cgi].end();) {
+		uint32_t row = it->first;
+
+		// First, look at the difference in displayability
+		bool is_cell_displayable = lnp.is_displayable(row, cgi);
+		bool cell_diff = is_cell_displayable != rnp.is_displayable(row, cgi);
+		if (cell_diff)
+			rd.insert(row);
+		if (!is_cell_displayable) {
+			// It means there are more than one note, jump to the next row
+			it = lnp.on_notes[cgi].upper_bound(row);
+			continue;
+		}
+		if (cell_diff) {
+			++it;
+			continue;
+		}
+
+		// Second, see if that single on note is present in other, and if it is, check if it is different
+		RowToNotes::const_iterator rit = rnp.on_notes[cgi].find(row);
+		if (rit == rnp.on_notes[cgi].end() || !TrackerUtils::is_on_equal(it->second, rit->second)) {
+			rd.insert(row);
+		}
+
+		++it;
+	}
+
+	// Compare left off notes with right off notes
+	for (RowToNotes::const_iterator it = lnp.off_notes[cgi].begin(); it != lnp.off_notes[cgi].end();) {
+		uint32_t row = it->first;
+
+		// First, look at the difference in displayability
+		bool is_cell_displayable = lnp.is_displayable(row, cgi);
+		bool cell_diff = is_cell_displayable != rnp.is_displayable(row, cgi);
+		if (cell_diff)
+			rd.insert(row);
+		if (!is_cell_displayable) {
+			// It means there are more than one note, jump to the next row
+			it = lnp.off_notes[cgi].upper_bound(row);
+			continue;
+		}
+		if (cell_diff) {
+			++it;
+			continue;
+		}
+
+		// Second, see if that single off note is present in other, and if it
+		// is, check if it is different, and it is not make sure no on note is
+		// present as on note can hide off note.
+		RowToNotes::const_iterator rit = rnp.off_notes[cgi].find(row);
+		if (rit == rnp.off_notes[cgi].end()
+		    || !TrackerUtils::is_off_equal(it->second, rit->second)
+		    || rnp.on_notes[cgi].find(row) != rnp.on_notes[cgi].end()) {
+			rd.insert(row);
+		}
+
+		++it;
+	}
+}
+
 NotePatternPhenomenalDiff
 NotePattern::phenomenal_diff(const NotePattern& other) const
 {
@@ -112,125 +176,8 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 	assert(on_notes.size() == off_notes.size());
 	assert(off_notes.size() == other.off_notes.size());
 	for (size_t cgi = 0; cgi != on_notes.size(); cgi++) {
-		// Compare this on notes with on or off notes from other
-		for (RowToNotes::const_iterator it = on_notes[cgi].begin(); it != on_notes[cgi].end();) {
-			uint32_t row = it->first;
-
-			// First, look at the difference in displayability
-			bool is_cell_displayable = is_displayable(row, cgi);
-			bool cell_diff = is_cell_displayable != other.is_displayable(row, cgi);
-			if (cell_diff)
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			if (!is_cell_displayable) {
-				// It means there are more than one note, jump to the next row
-				it = on_notes[cgi].upper_bound(row);
-				continue;
-			}
-			if (cell_diff) {
-				++it;
-				continue;
-			}
-
-			// Second, see if that single on note is present in other, and if it is, check if it is different
-			RowToNotes::const_iterator other_it = other.on_notes[cgi].find(row);
-			if (other_it == other.on_notes[cgi].end() || !TrackerUtils::is_on_equal(it->second, other_it->second)) {
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			}
-
-			++it;
-		}
-
-		// Compare this off notes with off notes from other
-		for (RowToNotes::const_iterator it = off_notes[cgi].begin(); it != off_notes[cgi].end();) {
-			uint32_t row = it->first;
-
-			// First, look at the difference in displayability
-			bool is_cell_displayable = is_displayable(row, cgi);
-			bool cell_diff = is_cell_displayable != other.is_displayable(row, cgi);
-			if (cell_diff)
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			if (!is_cell_displayable) {
-				// It means there are more than one note, jump to the next row
-				it = off_notes[cgi].upper_bound(row);
-				continue;
-			}
-			if (cell_diff) {
-				++it;
-				continue;
-			}
-
-			// Second, see if that single off note is present in other, and if it
-			// is, check if it is different, and it is not make sure no on note is
-			// present as on note can hide off note.
-			RowToNotes::const_iterator other_it = other.off_notes[cgi].find(row);
-			if (other_it == other.off_notes[cgi].end()
-			    || !TrackerUtils::is_off_equal(it->second, other_it->second)
-			    || other.on_notes[cgi].find(row) != other.on_notes[cgi].end()) {
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			}
-
-			++it;
-		}
-
-		// Compare other on notes with this
-		for (RowToNotes::const_iterator it = other.on_notes[cgi].begin(); it != other.on_notes[cgi].end();) {
-			uint32_t row = it->first;
-
-			// First, look at the difference in displayability
-			bool is_cell_displayable = is_displayable(row, cgi);
-			bool cell_diff = is_cell_displayable != other.is_displayable(row, cgi);
-			if (cell_diff)
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			if (!is_cell_displayable) {
-				// It means there are more than one note, jump to the next row
-				it = other.on_notes[cgi].upper_bound(row);
-				continue;
-			}
-			if (cell_diff) {
-				++it;
-				continue;
-			}
-
-			// Second, see if that single on note is present in this, and if it is, check if it is different
-			RowToNotes::const_iterator this_it = on_notes[cgi].find(row);
-			if (this_it == on_notes[cgi].end() || !TrackerUtils::is_on_equal(it->second, this_it->second)) {
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			}
-
-			++it;
-		}
-
-		// Compare other off notes with off notes from this
-		for (RowToNotes::const_iterator it = other.off_notes[cgi].begin(); it != other.off_notes[cgi].end();) {
-			uint32_t row = it->first;
-
-			// First, look at the difference in displayability
-			bool is_cell_displayable = is_displayable(row, cgi);
-			bool cell_diff = is_cell_displayable != other.is_displayable(row, cgi);
-			if (cell_diff)
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			if (!is_cell_displayable) {
-				// It means there are more than one note, jump to the next row
-				it = other.off_notes[cgi].upper_bound(row);
-				continue;
-			}
-			if (cell_diff) {
-				++it;
-				continue;
-			}
-
-			// Second, see if that single off note is present in this, and if it
-			// is, check if it is different, and it is not make sure no on note is
-			// present as on note can hide off note.
-			RowToNotes::const_iterator this_it = off_notes[cgi].find(row);
-			if (this_it == off_notes[cgi].end()
-			    || !TrackerUtils::is_off_equal(it->second, this_it->second)
-			    || on_notes[cgi].find(row) != on_notes[cgi].end()) {
-				diff.cgi2nc_diff[cgi].rows.insert(row);
-			}
-
-			++it;
-		}
+		rows_diff(cgi, *this, other, diff.cgi2nc_diff[cgi].rows);
+		rows_diff(cgi, other, *this, diff.cgi2nc_diff[cgi].rows);
 	}
 
 	return diff;
