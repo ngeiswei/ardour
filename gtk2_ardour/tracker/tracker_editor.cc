@@ -105,10 +105,12 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			i++;
 
 			// Make changing midi content re-render the grid
+			// TODO: connect to redisplay_track or such to speed up the whole rendering
 			midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
 			                                     boost::bind (&Grid::redisplay_model, &grid), gui_context());
 
 			// Make changing the region time zone re-render the grid
+			// TODO: set full to true and connect directly to redisplay_track or such
 			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 			                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
 
@@ -165,6 +167,7 @@ TrackerEditor::get_device_names ()
 void
 TrackerEditor::connect_automation (boost::shared_ptr<AutomationControl> actrl)
 {
+	// TODO: call a more direct redisplay method than redisplay_model to speed up redisplay
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
 	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_model, &grid), gui_context());
 	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_model, &grid), gui_context());
