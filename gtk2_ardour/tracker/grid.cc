@@ -979,38 +979,6 @@ Grid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 	row[columns.region_name[mti]] = cell_str;
 }
 
-// TODO: remove when no longer needed
-void
-Grid::redisplay_notes (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
-{
-	if (!pattern.tps[mti]->is_midi_track_pattern())
-		return;
-
-	if (!is_region_defined (rowi, mti)) {
-		redisplay_undefined_notes (row, mti);
-		return;
-	}
-
-	// Render midi notes pattern
-	for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks(); cgi++) { // cgi stands from column group index
-
-		// Fill background colors
-		redisplay_note_background (row, mti, cgi);
-
-		// Fill with blank foreground text and colors
-		redisplay_blank_note_foreground (row, mti, cgi);
-
-		// Reset keeping track of the on and off notes
-		reset_off_on_note (row, mti, cgi);
-
-		// Display note
-		size_t off_notes_count = pattern.off_notes_count (rowi, mti, mri, cgi);
-		size_t on_notes_count = pattern.on_notes_count (rowi, mti, mri, cgi);
-		if (0 < on_notes_count || 0 < off_notes_count)
-			redisplay_note_foreground (row, rowi, mti, mri, cgi);
-	}
-}
-
 void
 Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
 {
@@ -1247,30 +1215,6 @@ Grid::redisplay_cell_background (TreeModel::Row& row, size_t mti, size_t cgi)
 		redisplay_auto_background (row, mti, cgi);
 }
 
-// TODO: remove when no longer needed
-void
-Grid::redisplay_row (TreeModel::Row& row, uint32_t rowi)
-{
-	// TODO: optimize by having the loop directly follow _phenomenal_diff.mti2tp_diff iterator when !full
-	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (!_phenomenal_diff.full) {
-			MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.find(mti);
-			if (it == _phenomenal_diff.mti2tp_diff.end() || it->second->empty()) {
-				continue;
-			}
-		}
-
-		// Get the region's index, -1 if undefined
-		int mri = pattern.to_mri (rowi, mti);
-
-		redisplay_left_right_separator (row, mti);
-		// Currently disabled: use header track name instead
-		// redisplay_region_name (row, rowi, mti, mri);
-		redisplay_notes (row, rowi, mti, mri);
-		redisplay_automations (row, rowi, mti, mri);
-	}
-}
-
 void
 Grid::redisplay_row_background (Gtk::TreeModel::Row& row, uint32_t rowi)
 {
@@ -1309,7 +1253,7 @@ Grid::redisplay_model ()
 		return;
 
 	// In case the resolution (lines per beat) has changed
-	// NEXT TODO: support multi track multi region
+	// TODO: support multi track multi region
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.tps.front()->delay_ticks_min());
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.tps.front()->delay_ticks_max());
 
@@ -1347,9 +1291,6 @@ Grid::redisplay_model ()
 
 		// Get row
 		TreeModel::Row row = *row_it++;
-
-		// // Display row
-		// redisplay_row(row, rowi);
 
 		// Used to draw the background of the current row and cursor
 		if ((int)rowi == current_rowi) {
@@ -1459,18 +1400,17 @@ Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePatte
 	size_t row_offset = get_row_offset (mti, mri);
 	if (nc_diff == 0 || nc_diff->full) {
 		for (size_t rrrowi = 0; rrrowi < get_row_size(mti, mri); rrrowi++) {
-			redisplay_note_alternate (mti, mri, cgi, row_offset + rrrowi, np);
+			redisplay_note (mti, mri, cgi, row_offset + rrrowi, np);
 		}
 	} else {
 		for (std::set<size_t>::const_iterator row_it = nc_diff->rows.begin(); row_it != nc_diff->rows.end(); ++row_it) {
-			redisplay_note_alternate (mti, mri, cgi, row_offset + *row_it, np);
+			redisplay_note (mti, mri, cgi, row_offset + *row_it, np);
 		}
 	}
 }
 
-// VT: rename with redisplay_note once no longer usefull
 void
-Grid::redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
+Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
 {
 	// TODO: optimize
 	Gtk::TreeModel::Row row = get_row(rowi);
@@ -1494,7 +1434,7 @@ Grid::redisplay_note_alternate (size_t mti, size_t mri, size_t cgi, size_t rowi,
 void
 Grid::redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
 {
-	// VT
+	// VVT
 }
 
 int
