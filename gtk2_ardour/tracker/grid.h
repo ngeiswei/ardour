@@ -184,6 +184,7 @@ public:
 	void redisplay_row (Gtk::TreeModel::Row& row, uint32_t rowi);
 	void redisplay_model ();
 	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
+	void redisplay_inter_midi_regions (size_t mti);
 	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
