@@ -1407,6 +1407,7 @@ void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
 	if (mtp_diff == 0 || mtp_diff->full) {
+		// VVT: redisplay between regions as well
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
 			redisplay_midi_region (mti, mri, mtp.mrps[mri]);
 		}
