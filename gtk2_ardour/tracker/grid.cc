@@ -1348,6 +1348,7 @@ Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
+	// VT: take care of automation
 	if (mtp_diff == 0 || mtp_diff->full) {
 		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
@@ -1387,8 +1388,8 @@ Grid::redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, cons
 			redisplay_note_column (mti, mri, cgi, np);
 		}
 	} else {
-		const NotePatternPhenomenalDiff::Cgi2NoteColPhenomenalDiff& cgi2nc_diff = np_diff->cgi2nc_diff;
-		for (NotePatternPhenomenalDiff::Cgi2NoteColPhenomenalDiff::const_iterator it = cgi2nc_diff.begin(); it != cgi2nc_diff.end(); it++) {
+		const NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = np_diff->cgi2rows_diff;
+		for (NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin(); it != cgi2rows_diff.end(); it++) {
 			redisplay_note_column (mti, mri, it->first, np, &it->second);
 		}
 	}
@@ -1434,7 +1435,7 @@ Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const Not
 void
 Grid::redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
 {
-	// VVT
+	// VT
 }
 
 int
