@@ -20,26 +20,18 @@
 #define __ardour_tracker_note_pattern_phenomenal_diff_h_
 
 #include <map>
-#include <set>
 
 #include "base_pattern_phenomenal_diff.h"
+#include "rows_phenomenal_diff.h"
 
 namespace Tracker {
-
-struct NoteColPhenomenalDiff : public BasePatternPhenomenalDiff
-{
-	std::set<size_t> rows;
-
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
-};
 
 // Represent the differences that may impact grid rendition. For now only a
 // set of mti that have changed.
 struct NotePatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	typedef std::map<size_t, NoteColPhenomenalDiff> Cgi2NoteColPhenomenalDiff;
-	Cgi2NoteColPhenomenalDiff cgi2nc_diff;
+	typedef std::map<size_t, RowsPhenomenalDiff> Cgi2RowsPhenomenalDiff;
+	Cgi2RowsPhenomenalDiff cgi2rows_diff;
 
 	bool empty() const;
 	std::string to_string(const std::string& indent = std::string()) const;
