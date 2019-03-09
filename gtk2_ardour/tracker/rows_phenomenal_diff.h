@@ -33,4 +33,6 @@ struct RowsPhenomenalDiff : public BasePatternPhenomenalDiff
 	std::string to_string(const std::string& indent = std::string()) const;
 };
 
+}
+
 #endif /* __ardour_tracker_rows_phenomenal_diff_h_ */

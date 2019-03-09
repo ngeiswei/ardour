@@ -187,7 +187,7 @@ public:
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
 	void redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
-	void redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const NoteColPhenomenalDiff* nc_diff = 0);
+	void redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* nc_diff = 0);
 	void redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np);
 
 	// To align grid header
