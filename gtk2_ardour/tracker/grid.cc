@@ -1396,15 +1396,15 @@ Grid::redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, cons
 }
 
 void
-Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const NoteColPhenomenalDiff* nc_diff)
+Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff)
 {
 	size_t row_offset = get_row_offset (mti, mri);
-	if (nc_diff == 0 || nc_diff->full) {
+	if (rows_diff == 0 || rows_diff->full) {
 		for (size_t rrrowi = 0; rrrowi < get_row_size(mti, mri); rrrowi++) {
 			redisplay_note (mti, mri, cgi, row_offset + rrrowi, np);
 		}
 	} else {
-		for (std::set<size_t>::const_iterator row_it = nc_diff->rows.begin(); row_it != nc_diff->rows.end(); ++row_it) {
+		for (std::set<size_t>::const_iterator row_it = rows_diff->rows.begin(); row_it != rows_diff->rows.end(); ++row_it) {
 			redisplay_note (mti, mri, cgi, row_offset + *row_it, np);
 		}
 	}
