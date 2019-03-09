@@ -16,35 +16,30 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "note_pattern_phenomenal_diff.h"
+#include "rows_phenomenal_diff.h"
 
 #include <sstream>
 
 using namespace Tracker;
 
 bool
-NotePatternPhenomenalDiff::empty() const
+RowsPhenomenalDiff::empty() const
 {
-	return !full && cgi2rows_diff.empty();
+	return !full && rows.empty();
 }
 
 std::string
-NotePatternPhenomenalDiff::to_string(const std::string& indent) const
+RowsPhenomenalDiff::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
-		<< indent << "cgi2rows_diff:" << std::endl
-	   << indent << "size = " << cgi2rows_diff.size();
-	for (Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin(); it != cgi2rows_diff.end(); it++) {
-		ss << std::endl << indent << "  " << "(cgi=" << it->first << ", rows=";
-		const RowsPhenomenalDiff& rows_diff = it->second;
-		const std::set<size_t>& rows = rows_diff.rows;
-		for (std::set<size_t>::const_iterator row_it = rows.begin(); row_it != rows.end(); row_it++) {
-			if (row_it != rows.begin())
-				ss << ",";
-			ss << *row_it;
-		}
-		ss << ")";
+		<< indent << "rows:" << std::endl
+	   << indent << "size = " << rows.size()
+	   << std::endl << indent << "  rows=";
+	for (std::set<size_t>::const_iterator it = rows.begin(); it != rows.end(); it++) {
+		if (it != rows.begin())
+			ss << ",";
+		ss << *it;
 	}
 	return ss.str();
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2018 Nil Geisweiller
+    Copyright (C) 2019 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,20 +16,17 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __ardour_tracker_midi_region_pattern_phenomenal_diff_h_
-#define __ardour_tracker_midi_region_pattern_phenomenal_diff_h_
+#ifndef __ardour_tracker_region_automation_pattern_phenomenal_diff_h_
+#define __ardour_tracker_region_automation_pattern_phenomenal_diff_h_
 
 #include "base_pattern_phenomenal_diff.h"
-#include "note_pattern_phenomenal_diff.h"
-#include "region_automation_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
 // Represent the differences that may impact grid rendition.
-struct MidiRegionPatternPhenomenalDiff : public BasePatternPhenomenalDiff
+struct RegionAutomationPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	NotePatternPhenomenalDiff note_pattern_diff;
-	RegionAutomationPatternPhenomenalDiff region_automation_pattern_diff;
+	// VVT:
 
 	bool empty() const;
 	std::string to_string(const std::string& indent = std::string()) const;
@@ -37,4 +34,4 @@ struct MidiRegionPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_midi_region_pattern_phenomenal_diff_h_ */
+#endif /* __ardour_tracker_region_automation_pattern_phenomenal_diff_h_ */
