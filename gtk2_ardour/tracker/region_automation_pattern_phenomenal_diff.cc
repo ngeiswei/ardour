@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2018 Nil Geisweiller
+    Copyright (C) 2019 Nil Geisweiller
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,26 +16,22 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "midi_region_pattern_phenomenal_diff.h"
+#include "region_automation_pattern_phenomenal_diff.h"
 
 #include <sstream>
 
 using namespace Tracker;
 
 bool
-MidiRegionPatternPhenomenalDiff::empty() const
+RegionAutomationPatternPhenomenalDiff::empty() const
 {
-	return !full && note_pattern_diff.empty() && region_automation_pattern_diff.empty();
+	return !full; // VVT:
 }
 
 std::string
-MidiRegionPatternPhenomenalDiff::to_string(const std::string& indent) const
+RegionAutomationPatternPhenomenalDiff::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
-	   << indent << "note_pattern_diff:" << std::endl
-	   << note_pattern_diff.to_string(indent + "  ") << std::endl
-	   << indent << "region_automation_pattern_diff:" << std::endl
-	   << region_automation_pattern_diff.to_string(indent + "  ");
+	// VVT:
 	return ss.str();
 }

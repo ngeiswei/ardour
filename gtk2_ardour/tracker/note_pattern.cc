@@ -176,8 +176,8 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 	assert(on_notes.size() == off_notes.size());
 	assert(off_notes.size() == other.off_notes.size());
 	for (size_t cgi = 0; cgi != on_notes.size(); cgi++) {
-		rows_diff(cgi, *this, other, diff.cgi2nc_diff[cgi].rows);
-		rows_diff(cgi, other, *this, diff.cgi2nc_diff[cgi].rows);
+		rows_diff(cgi, *this, other, diff.cgi2rows_diff[cgi].rows);
+		rows_diff(cgi, other, *this, diff.cgi2rows_diff[cgi].rows);
 	}
 
 	return diff;
