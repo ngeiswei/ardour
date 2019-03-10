@@ -25,6 +25,7 @@
 #include "ardour/automation_list.h"
 #include "evoral/ControlList.hpp"
 
+#include "automation_pattern_phenomenal_diff.h"
 #include "base_pattern.h"
 #include "tracker_types.h"
 
@@ -50,6 +51,10 @@ public:
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
+
+	// TODO: maybe implement operator=(const AutomationPattern& other)
+
+	AutomationPatternPhenomenalDiff phenomenal_diff(const AutomationPattern& other) const;
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
@@ -106,6 +111,10 @@ public:
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
+
+	// For displaying pattern data. Mostly for debugging
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
 
 	// Map parameters to maps of row to automation range
 	std::map<Evoral::Parameter, RowToAutomationIt> automations;

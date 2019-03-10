@@ -24,6 +24,7 @@
 #include "ardour/region.h"
 
 #include "automation_pattern.h"
+#include "region_automation_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -37,7 +38,9 @@ public:
 	                        boost::shared_ptr<ARDOUR::MidiRegion> region);
 
 	RegionAutomationPattern& operator=(const RegionAutomationPattern& other);
-	
+
+	RegionAutomationPatternPhenomenalDiff phenomenal_diff(const RegionAutomationPattern& other) const;
+
 	// Insert all existing region (midi) automation controls in
 	// _automation_controls and connect then to the grid
 	void setup_automation_controls ();
@@ -48,6 +51,10 @@ public:
 
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+
+	// For displaying pattern data. Mostly for debugging
+	virtual std::string self_to_string() const;
+	virtual std::string to_string(const std::string& indent = std::string()) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
