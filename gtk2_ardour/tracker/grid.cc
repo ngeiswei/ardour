@@ -1377,7 +1377,7 @@ Grid::redisplay_inter_midi_regions (size_t mti)
 void
 Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
-	redisplay_note_region (mti, mri, mrp.np, mrp_diff ? &mrp_diff->note_pattern_diff : 0);
+	redisplay_note_region (mti, mri, mrp.np, mrp_diff ? &mrp_diff->np_diff : 0);
 }
 
 void
