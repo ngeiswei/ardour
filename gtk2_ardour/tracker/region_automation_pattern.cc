@@ -53,6 +53,14 @@ RegionAutomationPattern::operator=(const RegionAutomationPattern& other)
 	return *this;
 }
 
+RegionAutomationPatternPhenomenalDiff
+RegionAutomationPattern::phenomenal_diff(const RegionAutomationPattern& other) const
+{
+	RegionAutomationPatternPhenomenalDiff diff;
+	diff.ap_diff = AutomationPattern::phenomenal_diff(other);
+	return diff;
+}
+
 void RegionAutomationPattern::setup_automation_controls ()
 {
 	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
@@ -78,4 +86,25 @@ RegionAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral:
 	if (automations[param].count(row) != 0)
 		row = row_at_beats_min_delay(beats);
 	return row;
+}
+
+std::string
+RegionAutomationPattern::self_to_string() const
+{
+	std::stringstream ss;
+	ss << "RegionAutomationPattern[" << this << "]";
+	return ss.str();
+}
+
+std::string
+RegionAutomationPattern::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << AutomationPattern::to_string(indent);
+
+	std::string header = indent + self_to_string() + " ";
+	ss << header << "midi_track = " << midi_track << std::endl;
+	ss << header << "midi_model = " << midi_model;
+
+	return ss.str();
 }
