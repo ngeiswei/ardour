@@ -19,14 +19,20 @@
 #ifndef __ardour_tracker_region_automation_pattern_phenomenal_diff_h_
 #define __ardour_tracker_region_automation_pattern_phenomenal_diff_h_
 
+#include <map>
+
+#include "evoral/Parameter.hpp"
+
 #include "base_pattern_phenomenal_diff.h"
+#include "automation_pattern_phenomenal_diff.h"
+#include "rows_phenomenal_diff.h"
 
 namespace Tracker {
 
 // Represent the differences that may impact grid rendition.
 struct RegionAutomationPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	// VVT:
+	AutomationPatternPhenomenalDiff ap_diff;
 
 	bool empty() const;
 	std::string to_string(const std::string& indent = std::string()) const;

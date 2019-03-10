@@ -1,6 +1,8 @@
 /*
     Copyright (C) 2015-2017 Nil Geisweiller
 
+    // TODO: what kind of indentation should be prevail?
+    
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation; either version 2 of the License, or
@@ -99,7 +101,7 @@ public:
 	// know on which track idx a new note should be.
 	void add(int cgi, NoteTypePtr note);
 
-	// For representing pattern data. Mostly for debugging
+	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;
 

@@ -25,13 +25,15 @@ using namespace Tracker;
 bool
 RegionAutomationPatternPhenomenalDiff::empty() const
 {
-	return !full; // VVT:
+	return !full && ap_diff.empty();
 }
 
 std::string
 RegionAutomationPatternPhenomenalDiff::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	// VVT:
+	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
+		<< indent << "ap_diff:" << std::endl
+	   << ap_diff.to_string(indent + "  ");
 	return ss.str();
 }

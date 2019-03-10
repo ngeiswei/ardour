@@ -46,6 +46,14 @@ AutomationPattern::AutomationPattern(TrackerEditor& te,
 {
 }
 
+AutomationPatternPhenomenalDiff
+AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
+{
+	AutomationPatternPhenomenalDiff diff;
+	// VVT
+	return diff;
+}
+
 uint32_t
 AutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
@@ -270,4 +278,36 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	alist->modify (auto_lst_it, awhen, ce->value);
 	XMLNode& after = alist->get_state ();
 	tracker_editor.grid.register_automation_undo (alist, _("change automation event delay"), before, after);
+}
+
+std::string
+AutomationPattern::self_to_string() const
+{
+	std::stringstream ss;
+	ss << "AutomationPattern[" << this << "]";
+	return ss.str();
+}
+
+std::string
+AutomationPattern::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePattern::to_string(indent);
+
+	std::string header = indent + self_to_string() + " ";
+	std::string indent_l1 = indent + "  ";
+	std::string indent_l2 = indent_l1 + "  ";
+	ss << std::endl << header << "automations:";
+	for (std::map<Evoral::Parameter, RowToAutomationIt>::const_iterator it = automations.begin(); it != automations.end(); ++it) {
+		ss << std::endl << indent_l1 << "parameter[" << it->first << "]:";
+		for (std::multimap<uint32_t, AutomationListIt>::const_iterator r2a_it = it->second.begin(); r2a_it != it->second.end(); ++r2a_it) {
+			ss << std::endl << indent_l2 << "row = " << r2a_it->first << ", auto_lst_it = " << *r2a_it->second;
+		}
+	}
+	ss << header << "_automation_controls:";
+	for (AutomationControlSet::const_iterator it = _automation_controls.begin(); it != _automation_controls.end(); ++it) {
+		ss << std::endl << indent_l1 << "ac = " << *it;
+	}
+
+	return ss.str();
 }
