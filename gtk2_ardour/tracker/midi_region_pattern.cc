@@ -54,9 +54,8 @@ MidiRegionPatternPhenomenalDiff
 MidiRegionPattern::phenomenal_diff(const MidiRegionPattern& prev) const
 {
 	MidiRegionPatternPhenomenalDiff diff;
-
-	diff.note_pattern_diff = np.phenomenal_diff(prev.np);
-	// TODO: take care of rap
+	diff.np_diff = np.phenomenal_diff(prev.np);
+	diff.rap_diff = rap.phenomenal_diff(prev.rap);
 
 	return diff;
 }

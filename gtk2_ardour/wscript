@@ -183,6 +183,7 @@ gtk2_ardour_sources = [
         'tracker/note_pattern_phenomenal_diff.cc',
         'tracker/rows_phenomenal_diff.cc',
         'tracker/region_automation_pattern_phenomenal_diff.cc',
+        'tracker/automation_pattern_phenomenal_diff.cc',
         'tracker/midi_region_pattern_phenomenal_diff.cc',
         'tracker/track_pattern_phenomenal_diff.cc',
         'tracker/midi_track_pattern_phenomenal_diff.cc',
