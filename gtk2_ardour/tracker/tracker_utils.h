@@ -224,11 +224,14 @@ public:
 	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	static Temporal::samplepos_t get_last_sample(const RegionSelection& region_selection);
 
-	// Compare is two notes have the same on note attributes
+	// Compare if two notes have the same on note attributes
 	static bool is_on_equal(NoteTypePtr ln, NoteTypePtr rn);
 
-	// Compare is two notes have the same off note attributes
+	// Compare if two notes have the same off note attributes
 	static bool is_off_equal(NoteTypePtr ln, NoteTypePtr rn);
+
+	// Compare if two control events have the same attributes
+	static bool is_equal(const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);
 };
 
 } // ~namespace tracker
