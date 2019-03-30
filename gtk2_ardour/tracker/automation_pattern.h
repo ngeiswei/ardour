@@ -54,6 +54,8 @@ public:
 
 	// TODO: maybe implement operator=(const AutomationPattern& other)
 
+	static void rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rd);
+
 	AutomationPatternPhenomenalDiff phenomenal_diff(const AutomationPattern& other) const;
 
 	// Assign a control event to a row
@@ -67,9 +69,9 @@ public:
 	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 	virtual void insert(const Evoral::Parameter& param) = 0;
 
-	// Return whether the automation associated to param is empty
+	// Return whether the automation associated to param is empty.
 	virtual bool is_empty (const Evoral::Parameter& param) const;
-	
+
 	// Return automation control associated to the given parameter. If absent,
 	// return 0.
 	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
@@ -117,7 +119,8 @@ public:
 	virtual std::string to_string(const std::string& indent = std::string()) const;
 
 	// Map parameters to maps of row to automation range
-	std::map<Evoral::Parameter, RowToAutomationIt> automations;
+	typedef std::map<Evoral::Parameter, RowToAutomationIt> ParamToRowToAutomationIt;
+	ParamToRowToAutomationIt automations;
 
 protected:
 	AutomationControlSet _automation_controls;
