@@ -46,11 +46,43 @@ AutomationPattern::AutomationPattern(TrackerEditor& te,
 {
 }
 
+void AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rows)
+{
+	for (RowToAutomationIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end(); l_it++) {
+		uint32_t row = l_it->first;
+		const Evoral::ControlEvent& l_ce = **l_it->second;
+
+		// Check if the event exist in other, and if so if it is equal
+		RowToAutomationIt::const_iterator r_it = r_row2auto.find(row);
+		if (r_it == r_row2auto.end()) {
+			const Evoral::ControlEvent& r_ce = **r_it->second;
+			if (!TrackerUtils::is_equal(l_ce, r_ce)) {
+				rows.insert(row);
+			}
+		}
+	}
+}
+
 AutomationPatternPhenomenalDiff
 AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 {
 	AutomationPatternPhenomenalDiff diff;
-	// VVT
+
+	for (ParamToRowToAutomationIt::const_iterator it = automations.begin(); it != automations.end(); it++) {
+		Evoral::Parameter param = it->first;
+		RowsPhenomenalDiff& rd = diff.param2rows_diff[param];
+		// Make sure the parameter is in other, otherwise make the corresponding RowsPhenomenalDiff full
+		ParamToRowToAutomationIt::const_iterator other_it = other.automations.find(param);
+		if (other_it == other.automations.end()) {
+			rd.full = true;
+			continue;
+		}
+
+		const RowToAutomationIt& row2auto = it->second;
+		const RowToAutomationIt& other_row2auto = other_it->second;
+		rows_diff(row2auto, other_row2auto, rd.rows);
+		rows_diff(other_row2auto, row2auto, rd.rows);
+	}
 	return diff;
 }
 
@@ -150,7 +182,7 @@ AutomationPattern::get_alist_iterator (size_t rowi, const Evoral::Parameter& par
 Evoral::ControlEvent*
 AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param)
 {
-	std::map<Evoral::Parameter, RowToAutomationIt>::iterator it = automations.find(param);
+	ParamToRowToAutomationIt::iterator it = automations.find(param);
 	if (it == automations.end())
 		return 0;
 
@@ -164,7 +196,7 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 const Evoral::ControlEvent*
 AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param) const
 {
-	std::map<Evoral::Parameter, RowToAutomationIt>::const_iterator it = automations.find(param);
+	ParamToRowToAutomationIt::const_iterator it = automations.find(param);
 	if (it == automations.end())
 		return 0;
 
@@ -298,7 +330,7 @@ AutomationPattern::to_string(const std::string& indent) const
 	std::string indent_l1 = indent + "  ";
 	std::string indent_l2 = indent_l1 + "  ";
 	ss << std::endl << header << "automations:";
-	for (std::map<Evoral::Parameter, RowToAutomationIt>::const_iterator it = automations.begin(); it != automations.end(); ++it) {
+	for (ParamToRowToAutomationIt::const_iterator it = automations.begin(); it != automations.end(); ++it) {
 		ss << std::endl << indent_l1 << "parameter[" << it->first << "]:";
 		for (std::multimap<uint32_t, AutomationListIt>::const_iterator r2a_it = it->second.begin(); r2a_it != it->second.end(); ++r2a_it) {
 			ss << std::endl << indent_l2 << "row = " << r2a_it->first << ", auto_lst_it = " << *r2a_it->second;
