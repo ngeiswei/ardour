@@ -125,8 +125,6 @@ public:
 	// Display Pattern    //
 	////////////////////////
 
-	std::set<size_t> phenomenal_diff() const;
-
 	void redisplay_visible_note ();
 	int mti_col_offset(size_t mti) const;
 	int left_separator_colnum (size_t mti) const;
@@ -184,6 +182,7 @@ public:
 	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
 	void redisplay_inter_midi_regions (size_t mti);
 	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
+	void redisplay_track_automation (size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
 	void redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
