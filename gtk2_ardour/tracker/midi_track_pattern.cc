@@ -78,6 +78,7 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
 	}
+	diff.auto_diff = AutomationPattern::phenomenal_diff(prev);
 
 	return diff;
 }
