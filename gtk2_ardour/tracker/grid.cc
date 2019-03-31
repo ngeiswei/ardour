@@ -1348,18 +1348,25 @@ Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
-	// VT: take care of automation
 	if (mtp_diff == 0 || mtp_diff->full) {
 		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
 			redisplay_midi_region (mti, mri, mtp.mrps[mri]);
 		}
+		redisplay_track_automation(mti, mtp);
 	} else {
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin(); it != mtp_diff->mri2mrp_diff.end(); ++it) {
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, mtp.mrps[mri], &it->second);
 		}
+		redisplay_track_automation(mti, mtp, &mtp_diff->auto_diff);
 	}
+}
+
+void
+Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
+{
+	// VVT: Iterate over visible param
 }
 
 void
