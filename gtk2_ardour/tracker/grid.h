@@ -183,6 +183,7 @@ public:
 	void redisplay_inter_midi_regions (size_t mti);
 	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
 	void redisplay_track_automation (size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
+	void redisplay_track_automation_param (size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
 	void redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
