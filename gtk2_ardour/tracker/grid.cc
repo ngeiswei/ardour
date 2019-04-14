@@ -1366,7 +1366,30 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 void
 Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
 {
-	// VVT: Iterate over visible param
+	if (auto_diff == 0 || auto_diff->full) {
+		for (AutomationPattern::ParamToRowToAutomationIt::const_iterator it = tap.automations.begin(); it != tap.automations.end(); it++)
+		{
+			redisplay_track_automation_param(mti, tap, it->first);
+		}
+	} else {
+		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = auto_diff->param2rows_diff.begin(); it != auto_diff->param2rows_diff.end(); it++)
+		{
+			redisplay_track_automation_param(mti, tap, it->first, &it->second);
+		}
+	}
+}
+
+void
+Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+{
+	// VVT: study redisplay_automations and redisplay_note, should provide all we need to display this
+	if (is_automation_visible(mti, param)) {
+		if (rows_diff == 0 || rows_diff->full) {
+			// VVT: grab tap.automations[param] and redisplay the whole column
+		} else {
+			// VVT: grab tap.automations[param] and redisplay all rows within rows_diff
+		}
+	}
 }
 
 void
@@ -1385,6 +1408,7 @@ void
 Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
 	redisplay_note_region (mti, mri, mrp.np, mrp_diff ? &mrp_diff->np_diff : 0);
+	// VT: redisplay automation
 }
 
 void
@@ -1424,6 +1448,7 @@ Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const Not
 	Gtk::TreeModel::Row row = get_row(rowi);
 
 	// Fill background colors
+	// TODO: optimize, should only need to redisplay note bg once
 	redisplay_note_background (row, mti, cgi);
 
 	// Fill with blank foreground text and colors
