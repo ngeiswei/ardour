@@ -36,7 +36,7 @@ AutomationPatternPhenomenalDiff::to_string(const std::string& indent) const
 		<< indent << "param2rows_diff:" << std::endl
 	   << indent << "size = " << param2rows_diff.size();
 	for (Param2RowsPhenomenalDiff::const_iterator it = param2rows_diff.begin(); it != param2rows_diff.end(); it++) {
-		ss << std::endl << indent << "  " << "(cgi=" << it->first << ", rows=";
+		ss << std::endl << indent << "  " << "(param=" << it->first << ", rows=";
 		const RowsPhenomenalDiff& rows_diff = it->second;
 		const std::set<size_t>& rows = rows_diff.rows;
 		for (std::set<size_t>::const_iterator row_it = rows.begin(); row_it != rows.end(); row_it++) {
