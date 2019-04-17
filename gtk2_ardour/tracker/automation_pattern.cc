@@ -48,16 +48,52 @@ AutomationPattern::AutomationPattern(TrackerEditor& te,
 
 void AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rows)
 {
+	// VVT: fix phenomeal diff
+	//
+	// 1. Empty np_diff should have empty cgi2rows_diff
+	// 2. param2rows[param=1-0-0] should not be empty
+	//
+	// mti2tp_diff:
+	//   track_pattern_diff[0]:
+	//     mri2mrp_diff:
+	//       midi_region_pattern_diff[0]:
+	//         full = 0
+	//         np_diff:
+	//           full = 0
+	//	           cgi2rows_diff:
+	//           size = 1
+	//             (cgi=0, rows=)
+	//         rap_diff:
+	//           full = 0
+	//           ap_diff:
+	//             full = 0
+	//             param2rows_diff:
+	//             size = 0
+	//     auto_diff:
+	//         full = 0
+	//         param2rows_diff:
+	//         size = 1
+	//           (param=1-0-0, rows=)
+	
+	std::cout << "AutomationPattern::rows_diff" << std::endl;
 	for (RowToAutomationIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end(); l_it++) {
+		std::cout << "AutomationPattern::rows_diff-1" << std::endl;
 		uint32_t row = l_it->first;
+		std::cout << "AutomationPattern::rows_diff-2" << std::endl;
 		const Evoral::ControlEvent& l_ce = **l_it->second;
+		std::cout << "AutomationPattern::rows_diff-3" << std::endl;
 
 		// Check if the event exist in other, and if so if it is equal
 		RowToAutomationIt::const_iterator r_it = r_row2auto.find(row);
-		if (r_it == r_row2auto.end()) {
+		std::cout << "AutomationPattern::rows_diff-4" << std::endl;
+		if (r_it != r_row2auto.end()) {
+			std::cout << "AutomationPattern::rows_diff-5" << std::endl;
 			const Evoral::ControlEvent& r_ce = **r_it->second;
+			std::cout << "AutomationPattern::rows_diff-6" << std::endl;
 			if (!TrackerUtils::is_equal(l_ce, r_ce)) {
+				std::cout << "AutomationPattern::rows_diff-7" << std::endl;
 				rows.insert(row);
+				std::cout << "AutomationPattern::rows_diff-8" << std::endl;
 			}
 		}
 	}
@@ -66,22 +102,32 @@ void AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const Row
 AutomationPatternPhenomenalDiff
 AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 {
+	std::cout << "AutomationPattern[" << this << "]::phenomenal_diff" << std::endl;
 	AutomationPatternPhenomenalDiff diff;
 
 	for (ParamToRowToAutomationIt::const_iterator it = automations.begin(); it != automations.end(); it++) {
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-1" << std::endl;
 		Evoral::Parameter param = it->first;
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-2" << std::endl;
 		RowsPhenomenalDiff& rd = diff.param2rows_diff[param];
 		// Make sure the parameter is in other, otherwise make the corresponding RowsPhenomenalDiff full
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-3" << std::endl;
 		ParamToRowToAutomationIt::const_iterator other_it = other.automations.find(param);
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-4" << std::endl;
 		if (other_it == other.automations.end()) {
 			rd.full = true;
 			continue;
 		}
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-5" << std::endl;
 
 		const RowToAutomationIt& row2auto = it->second;
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-6" << std::endl;
 		const RowToAutomationIt& other_row2auto = other_it->second;
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-7" << std::endl;
 		rows_diff(row2auto, other_row2auto, rd.rows);
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-8" << std::endl;
 		rows_diff(other_row2auto, row2auto, rd.rows);
+		std::cout << "AutomationPattern[" << this << "]::phenomenal_diff-9" << std::endl;
 	}
 	return diff;
 }
