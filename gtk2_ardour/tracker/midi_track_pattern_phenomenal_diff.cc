@@ -37,5 +37,7 @@ MidiTrackPatternPhenomenalDiff::to_string(const std::string& indent) const
 		ss << indent + "  " << "midi_region_pattern_diff[" << it->first << "]:" << std::endl
 		   << it->second.to_string(indent + "    ");
 	}
+	ss << std::endl << indent << "auto_diff:" << std::endl;
+	ss << auto_diff.to_string(indent + "  ");
 	return ss.str();
 }
