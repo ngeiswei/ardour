@@ -184,6 +184,7 @@ public:
 	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
 	void redisplay_track_automation (size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
 	void redisplay_track_automation_param (size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_track_automation_param_row (size_t mti, size_t rowi, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
 	void redisplay_note_region (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
@@ -201,9 +202,6 @@ public:
 	// Map column index to automation parameter and vice versa
 	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> IndexParamBimap;
 	std::vector<IndexParamBimap> col2params; // For each track
-
-	// Map cgi to automation parameter and vice versa
-	std::vector<IndexParamBimap> cgi2params; // For each track
 
 	// Keep track of all visible automation columns across all midi tracks
 	std::set<size_t> visible_automation_columns;
@@ -416,7 +414,8 @@ private:
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
-	Evoral::Parameter get_param (int mti, int auto_cgi); // TODO: make this const
+	Evoral::Parameter get_param (size_t mti, size_t auto_cgi); // TODO: make const
+	size_t get_auto_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);

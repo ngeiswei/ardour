@@ -62,6 +62,7 @@ MidiTrackPattern::operator=(const MidiTrackPattern& other)
 MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
+	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
 	MidiTrackPatternPhenomenalDiff diff;
 
 	diff.full = row_offset != prev.row_offset;
@@ -73,11 +74,13 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 		return diff;
 
 	for (size_t mri = 0; mri < mrps.size(); mri++) {
+		std::cout << "right before calling midi reg phenomenal diff" << std::endl;
 		MidiRegionPatternPhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
 		if (!mrp_diff.empty()) {
 			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
 	}
+	std::cout << "right before calling auto pat phenomenal diff" << std::endl;
 	diff.auto_diff = AutomationPattern::phenomenal_diff(prev);
 
 	return diff;
