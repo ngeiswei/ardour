@@ -991,6 +991,7 @@ Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size
 	row[columns.automation_delay[mti][cgi]] = "";
 }
 
+// VT: remove when no longer useful
 void
 Grid::redisplay_automations (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
 {
@@ -1246,6 +1247,8 @@ Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, c
 void
 Grid::redisplay_model ()
 {
+	std::cout << "Start redisplaying model" << std::endl;
+
 	if (editing_editable)
 		return;
 
@@ -1260,18 +1263,28 @@ Grid::redisplay_model ()
 	// Load colors from config
 	read_colors ();
 
+	std::cout << "Start updating pattern" << std::endl;
+
 	// Update pattern settings and content
 	pattern.update ();
+
+	std::cout << "Start calculating _phenomenal_diff" << std::endl;
 
 	// After update, compare pattern and prev_pattern to come up with a list of
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff(prev_pattern);
 
+	std::cout << "_phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
+	
 	// std::cout << "Grid::redisplay_model _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
+
+	std::cout << "Start redisplaying global columns" << std::endl;
 
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
+
+	std::cout << "Start redisplaying cell contents" << std::endl;
 
 	// Redisplay cell contents
 	if (_phenomenal_diff.full) {
@@ -1284,6 +1297,8 @@ Grid::redisplay_model ()
 		}
 	}
 
+	std::cout << "Done redisplaying cell contents" << std::endl;
+	
 	// Redisplay current row and cursor
 	// TODO: optimize
 	TreeModel::Children::iterator row_it = model->children().begin();
@@ -1301,6 +1316,8 @@ Grid::redisplay_model ()
 			redisplay_current_cursor ();
 		}
 	}
+
+	std::cout << "Done redisplaying current row and cursor" << std::endl;
 
 	// Remove unused rows
 	for (; row_it != model->children().end();)
@@ -1328,6 +1345,8 @@ Grid::redisplay_model ()
 	// std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
 
 	prev_pattern = pattern;
+
+	std::cout << "Done redisplaying model" << std::endl;
 }
 
 void
@@ -1348,6 +1367,7 @@ Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
+	std::cout << "redisplay_midi_track begin" << std::endl;
 	if (mtp_diff == 0 || mtp_diff->full) {
 		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
@@ -1361,11 +1381,13 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 		}
 		redisplay_track_automation(mti, mtp, &mtp_diff->auto_diff);
 	}
+	std::cout << "redisplay_midi_track end" << std::endl;
 }
 
 void
 Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
 {
+	std::cout << "redisplay_track_automation(mti=" << mti << ", &tap=" << &tap << ", auto_diff=" << auto_diff << ")" << std::endl;
 	if (auto_diff == 0 || auto_diff->full) {
 		for (AutomationPattern::ParamToRowToAutomationIt::const_iterator it = tap.automations.begin(); it != tap.automations.end(); it++)
 		{
@@ -1382,13 +1404,41 @@ Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, 
 void
 Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	// VVT: study redisplay_automations and redisplay_note, should provide all we need to display this
-	if (is_automation_visible(mti, param)) {
-		if (rows_diff == 0 || rows_diff->full) {
-			// VVT: grab tap.automations[param] and redisplay the whole column
-		} else {
-			// VVT: grab tap.automations[param] and redisplay all rows within rows_diff
+	std::cout << "redisplay_track_automation_param(mti=" << mti << ", &tap=" << &tap << ", param=" << param << ", rows_diff=" << rows_diff << ")" << std::endl;
+	if (rows_diff == 0 || rows_diff->full) {
+		std::cout << "full!" << std::endl;
+		for (size_t rowi = 0; rowi < tap.nrows; rowi++) {
+			redisplay_track_automation_param_row(mti, rowi, tap, param);
 		}
+	} else {
+		std::cout << "no full!" << std::endl;
+		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); it++) {
+			redisplay_track_automation_param_row(mti, *it, tap, param);
+		}
+	}
+}
+
+void
+Grid::redisplay_track_automation_param_row(size_t mti, size_t rowi, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+{
+	std::cout << "redisplay_track_automation_param_row(mti=" << mti << ", rowi=" << rowi << ", &tap=" << &tap << ", param=" << param << ", rows_diff=" << rows_diff << ")" << std::endl;
+	size_t cgi = get_auto_cgi(mti, param);
+
+	// TODO: optimize!
+	Gtk::TreeModel::Row row = get_row(rowi);
+	int mri = -1;
+	size_t auto_count = pattern.get_automation_list_count(rowi, mti, mri, param);
+
+	// Fill background colors
+	redisplay_auto_background (row, mti, cgi);
+
+	// Fill default blank foreground text and color
+	redisplay_blank_auto_foreground (row, mti, cgi);
+
+	if (auto_count > 0) {
+		redisplay_automation (row, rowi, mti, mri, cgi, param);
+	} else {
+		redisplay_auto_interpolation (row, rowi, mti, mri, cgi, param);
 	}
 }
 
@@ -1444,7 +1494,7 @@ Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePatte
 void
 Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
 {
-	// TODO: optimize
+	// TODO: optimize!
 	Gtk::TreeModel::Row row = get_row(rowi);
 
 	// Fill background colors
@@ -2117,7 +2167,7 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 }
 
 Evoral::Parameter
-Grid::get_param (int mti, int cgi)
+Grid::get_param (size_t mti, size_t cgi)
 {
 	IndexBimap::right_const_iterator ac_it = col2auto_cgi[mti].right.find(cgi);
 	if (ac_it == col2auto_cgi[mti].right.end())
@@ -2128,6 +2178,15 @@ Grid::get_param (int mti, int cgi)
 		return Evoral::Parameter();
 	const Evoral::Parameter& param = it->second;
 	return param;
+}
+
+size_t
+Grid::get_auto_cgi (size_t mti, const Evoral::Parameter& param)
+{
+	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find(param);
+	size_t coli = cp_it->second;
+	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find(coli);
+	return cac_it->second;
 }
 
 boost::shared_ptr<AutomationList>
