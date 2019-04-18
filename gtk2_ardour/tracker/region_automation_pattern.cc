@@ -100,7 +100,7 @@ std::string
 RegionAutomationPattern::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << AutomationPattern::to_string(indent);
+	ss << AutomationPattern::to_string(indent) << std::endl;
 
 	std::string header = indent + self_to_string() + " ";
 	ss << header << "midi_track = " << midi_track << std::endl;

@@ -65,7 +65,6 @@ TrackPattern::operator=(const TrackPattern& other)
 TrackPatternPhenomenalDiff*
 TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 {
-	std::cout << "TrackPattern::phenomenal_diff_ptr" << std::endl;
 	TrackPatternPhenomenalDiff* diff_ptr;
 	if (is_midi_track_pattern ()) {
 		const MidiTrackPattern* mtp = midi_track_pattern ();
