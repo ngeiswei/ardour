@@ -263,7 +263,7 @@ BasePattern::to_string(const std::string& indent) const
 	ss << header << "position_row_beats = " << position_row_beats << std::endl;
 	ss << header << "end_row_beats = " << end_row_beats << std::endl;
 	ss << header << "nrows = " << nrows << std::endl;
-	ss << header << "_ticks_per_row = " << _ticks_per_row << std::endl;
+	ss << header << "_ticks_per_row = " << _ticks_per_row;
 
 	return ss.str();
 }

@@ -176,8 +176,11 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 	assert(on_notes.size() == off_notes.size());
 	assert(off_notes.size() == other.off_notes.size());
 	for (size_t cgi = 0; cgi != on_notes.size(); cgi++) {
-		rows_diff(cgi, *this, other, diff.cgi2rows_diff[cgi].rows);
-		rows_diff(cgi, other, *this, diff.cgi2rows_diff[cgi].rows);
+		std::set<size_t> rows;
+		rows_diff(cgi, *this, other, rows);
+		rows_diff(cgi, other, *this, rows);
+		if (!rows.empty())
+			diff.cgi2rows_diff[cgi].rows = rows;
 	}
 
 	return diff;
@@ -368,7 +371,7 @@ std::string
 NotePattern::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePattern::to_string(indent);
+	ss << BasePattern::to_string(indent) << std::endl;
 
 	std::string header = indent + self_to_string() + " ";
 	ss << header << "ntracks = " << ntracks << std::endl;
@@ -389,7 +392,7 @@ NotePattern::to_string(const std::string& indent) const
 		for (RowToNotes::const_iterator it = off_notes[i].begin(); it != off_notes[i].end(); ++it)
 			ss << indent + "  " << "row[" << it->first << "] = " << "[" << it->second << "] " << *it->second << std::endl;
 	}
-	ss << header << "_midi_model = " << _midi_model << std::endl;
+	ss << header << "_midi_model = " << _midi_model;
 
 	return ss.str();
 }
