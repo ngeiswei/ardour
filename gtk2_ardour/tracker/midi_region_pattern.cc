@@ -110,13 +110,13 @@ std::string
 MidiRegionPattern::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePattern::to_string(indent);
+	ss << BasePattern::to_string(indent) << std::endl;
 
 	std::string header = indent + self_to_string() + " ";
-	ss << header << "np:" << std::endl << np.to_string(indent + "  ");
-	ss << header << "rap:" << std::endl << rap.to_string(indent + "  ");
+	ss << header << "np:" << std::endl << np.to_string(indent + "  ") << std::endl;
+	ss << header << "rap:" << std::endl << rap.to_string(indent + "  ") << std::endl;
 	ss << header << "midi_model = " << midi_model.get() << std::endl;
-	ss << header << "midi_region = " << midi_region.get() << std::endl;
+	ss << header << "midi_region = " << midi_region.get();
 
 	return ss.str();
 }

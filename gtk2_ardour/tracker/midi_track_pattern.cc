@@ -62,7 +62,6 @@ MidiTrackPattern::operator=(const MidiTrackPattern& other)
 MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
-	std::cout << "MidiTrackPattern::phenomenal_diff" << std::endl;
 	MidiTrackPatternPhenomenalDiff diff;
 
 	diff.full = row_offset != prev.row_offset;
@@ -74,13 +73,11 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 		return diff;
 
 	for (size_t mri = 0; mri < mrps.size(); mri++) {
-		std::cout << "right before calling midi reg phenomenal diff" << std::endl;
 		MidiRegionPatternPhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
 		if (!mrp_diff.empty()) {
 			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
 	}
-	std::cout << "right before calling auto pat phenomenal diff" << std::endl;
 	diff.auto_diff = AutomationPattern::phenomenal_diff(prev);
 
 	return diff;
@@ -345,15 +342,15 @@ std::string
 MidiTrackPattern::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << TrackAutomationPattern::to_string(indent);
+	ss << TrackAutomationPattern::to_string(indent) << std::endl;
 
 	std::string header = indent + self_to_string() + " ";
-	ss << header << "midi_track = " << midi_track.get() << std::endl;
+	ss << header << "midi_track = " << midi_track.get();
 	for (size_t mri = 0; mri != mrps.size(); mri++)
-		ss << header << "mrps[" << mri << "]:" << std::endl
+		ss << std::endl << header << "mrps[" << mri << "]:" << std::endl
 		   << mrps[mri].to_string(indent + "  ");
 	for (size_t mri = 0; mri != row_offset.size(); mri++)
-		ss << header << "row_offset[" << mri << "] = " << row_offset[mri] << std::endl;
+		ss << std::endl << header << "row_offset[" << mri << "] = " << row_offset[mri];
 
 	return ss.str();
 }
