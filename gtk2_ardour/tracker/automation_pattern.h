@@ -52,7 +52,9 @@ public:
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
 
-	// TODO: maybe implement operator=(const AutomationPattern& other)
+	// Make a deep copy of the automation controls
+	AutomationPattern& operator=(const AutomationPattern& other);
+	boost::shared_ptr<ARDOUR::AutomationControl> clone_actrl(boost::shared_ptr<ARDOUR::AutomationControl> actrl) const;
 
 	static void rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rd);
 
@@ -61,8 +63,9 @@ public:
 	// Assign a control event to a row
 	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
-	// Build or rebuild the pattern (implement BasePattern::update_pattern)
+	// Build or rebuild the pattern (implement BasePattern::update())
 	virtual void update();
+	void update_automations();
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
