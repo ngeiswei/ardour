@@ -46,17 +46,43 @@ AutomationPattern::AutomationPattern(TrackerEditor& te,
 {
 }
 
-void AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rows)
+AutomationPattern&
+AutomationPattern::operator=(const AutomationPattern& other)
+{
+	BasePattern::operator=(other);
+
+	// Deep copy _automation_controls to be sure that changing the event doesn't
+	// change the copy
+	_automation_controls.clear();
+	for (AutomationControlSet::const_iterator it = other._automation_controls.begin(); it != other._automation_controls.end(); it++)
+		_automation_controls.insert(clone_actrl(*it));
+
+	// Update automations using the deep copy
+	update_automations();
+
+	return *this;
+}
+
+boost::shared_ptr<ARDOUR::AutomationControl>
+AutomationPattern::clone_actrl(boost::shared_ptr<ARDOUR::AutomationControl> actrl) const
+{
+	// VVT: shallow copy actrl and duplicate/deep-copy _list
+	return actrl;
+}
+
+void
+AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rows)
 {
 	for (RowToAutomationIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end(); l_it++) {
 		uint32_t row = l_it->first;
 		const Evoral::ControlEvent& l_ce = **l_it->second;
 
+		// VT: take care of displayable vs non-displayable values
+
 		// Check if the event exist in other, and if so if it is equal
 		RowToAutomationIt::const_iterator r_it = r_row2auto.find(row);
 		if (r_it != r_row2auto.end()) {
 			const Evoral::ControlEvent& r_ce = **r_it->second;
-			// VVT: fix phenomeal diff, likely the events must be copied or something
 			if (!TrackerUtils::is_equal(l_ce, r_ce)) {
 				rows.insert(row);
 			}
@@ -107,12 +133,17 @@ AutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::Contr
 	return 0;
 }
 
-void AutomationPattern::update()
+void
+AutomationPattern::update()
 {
 	set_row_range();
+	update_automations();
+}
 
+void
+AutomationPattern::update_automations()
+{
 	automations.clear();
-
 	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl) {
 		boost::shared_ptr<ARDOUR::AutomationList> al = (*actrl)->alist();
 		const Evoral::Parameter& param = (*actrl)->parameter();
@@ -125,7 +156,8 @@ void AutomationPattern::update()
 	}
 }
 
-void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
+void
+AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
 {
 	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actrl);
 	// NT: re-enable connecting automation
@@ -133,7 +165,8 @@ void AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actr
 	// 	tracker_editor.connect_automation(actrl);
 }
 
-bool AutomationPattern::is_empty (const Evoral::Parameter& param) const
+bool
+AutomationPattern::is_empty (const Evoral::Parameter& param) const
 {
 	return get_alist(param)->size() == 0;
 }
@@ -150,7 +183,8 @@ boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const 
 	return 0;
 }
 
-const boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const Evoral::Parameter& param) const
+const boost::shared_ptr<ARDOUR::AutomationControl>
+AutomationPattern::get_actrl(const Evoral::Parameter& param) const
 {
 	if (!param)
 		return 0;
@@ -180,7 +214,8 @@ AutomationPattern::get_alist (const Evoral::Parameter& param) const
 	return 0;
 }
 
-bool AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
+bool
+AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
 {
 	return automations.find(param) == automations.end()
 		|| automations.find(param)->second.count(row) <= 1;
