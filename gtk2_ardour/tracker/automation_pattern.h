@@ -51,12 +51,14 @@ public:
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
+	typedef std::pair<RowToAutomationIt::const_iterator, RowToAutomationIt::const_iterator> RowToAutomationItRange;
 
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator=(const AutomationPattern& other);
 	boost::shared_ptr<ARDOUR::AutomationControl> clone_actrl(boost::shared_ptr<ARDOUR::AutomationControl> actrl) const;
+	boost::shared_ptr<ARDOUR::AutomationList> clone_alist(boost::shared_ptr<ARDOUR::AutomationList> alist) const;
 
-	static void rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rd);
+	void rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rd) const;
 
 	AutomationPatternPhenomenalDiff phenomenal_diff(const AutomationPattern& other) const;
 
@@ -116,6 +118,22 @@ public:
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
+
+	// Return RowToAutomationIt corresponding to the previous (resp. next)
+	// event. If there is no such previous or next event then return end()
+	// iterator.
+	RowToAutomationIt::const_iterator find_prev(RowToAutomationIt::const_iterator it) const;
+	RowToAutomationIt::const_iterator find_next(RowToAutomationIt::const_iterator it) const;
+	RowToAutomationIt::const_iterator find_prev(uint32_t row, const RowToAutomationIt& row2auto) const;
+	RowToAutomationIt::const_iterator find_next(uint32_t row, const RowToAutomationIt& row2auto) const;
+
+	// Return the range of rows that must be updateing if the event on the given
+	// row of it is modified
+	std::pair<uint32_t, uint32_t> prev_next_range(RowToAutomationIt::const_iterator it, const RowToAutomationIt& row2auto) const;
+	std::pair<uint32_t, uint32_t> prev_next_range(uint32_t row, const RowToAutomationIt& row2auto) const;
+
+	RowToAutomationIt::const_iterator earliest(const RowToAutomationItRange& rng) const;
+	RowToAutomationIt::const_iterator lattest(const RowToAutomationItRange& rng) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
