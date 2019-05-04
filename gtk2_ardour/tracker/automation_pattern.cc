@@ -82,11 +82,24 @@ AutomationPattern::clone_alist(boost::shared_ptr<ARDOUR::AutomationList> alist) 
 void
 AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rows) const
 {
-	for (RowToAutomationIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end(); l_it++) {
+	for (RowToAutomationIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end();) {
 		uint32_t row = l_it->first;
 		const Evoral::ControlEvent& l_ce = **l_it->second;
 
-		// VT: take care of displayable vs non-displayable values
+		// First, look at the difference in displayability
+		bool is_cell_displayable = is_displayable(row, l_row2auto);
+		bool cell_diff = is_cell_displayable != is_displayable(row, r_row2auto);
+		if (cell_diff)
+			rows.insert(row);
+		if (!is_cell_displayable) {
+			// It means there are more than one note, jump to the next row
+			l_it = l_row2auto.upper_bound(row);
+			continue;
+		}
+		if (cell_diff) {
+			++l_it;
+			continue;
+		}
 
 		// Check if the event exist in other, and if so if it is equal
 		RowToAutomationIt::const_iterator r_it = r_row2auto.find(row);
@@ -233,7 +246,13 @@ bool
 AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
 {
 	return automations.find(param) == automations.end()
-		|| automations.find(param)->second.count(row) <= 1;
+		|| is_displayable(row, automations.find(param)->second);
+}
+
+bool
+AutomationPattern::is_displayable(uint32_t row, RowToAutomationIt r2a)
+{
+	return r2a.count(row) <= 1;
 }
 
 AutomationPattern::AutomationListIt

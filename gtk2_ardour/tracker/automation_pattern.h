@@ -90,6 +90,8 @@ public:
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
 	bool is_displayable(uint32_t row, const Evoral::Parameter& param) const;
+	static bool is_displayable(uint32_t row, RowToAutomationIt r2a);
+
 
 	// Return the control list iterator associated to param at rowi if exists or
 	// end() pointer if it does not.
