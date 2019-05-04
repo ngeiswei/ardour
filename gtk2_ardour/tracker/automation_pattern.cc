@@ -117,6 +117,7 @@ AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAut
 			for (uint32_t rowi = r.first; rowi <= r.second; rowi++)
 				rows.insert(rowi);
 		}
+		++l_it;
 	}
 }
 
