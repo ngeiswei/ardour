@@ -45,6 +45,8 @@ public:
 
 	MidiTrackPatternPhenomenalDiff phenomenal_diff(const MidiTrackPattern& prev) const;
 
+	std::string get_name(const Evoral::Parameter& param) const;
+
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 

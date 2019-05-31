@@ -33,7 +33,7 @@ namespace Tracker {
 
 // AutomationControl as opposed to AutomationList is used to easily retrieve
 // the associated Parameter of each AutomationList.
-typedef std::set<boost::shared_ptr<ARDOUR::AutomationControl> > AutomationControlSet;
+typedef std::map<boost::shared_ptr<ARDOUR::AutomationControl>, std::string> AutomationControlStringMap;
 
 /**
  * Data structure holding the automation list pattern.
@@ -56,6 +56,7 @@ public:
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator=(const AutomationPattern& other);
 	boost::shared_ptr<ARDOUR::AutomationControl> clone_actrl(boost::shared_ptr<ARDOUR::AutomationControl> actrl) const;
+	std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > clone_param_actrl(const std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> >& param_name) const;
 	boost::shared_ptr<ARDOUR::AutomationList> clone_alist(boost::shared_ptr<ARDOUR::AutomationList> alist) const;
 
 	void rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rd) const;
@@ -71,7 +72,7 @@ public:
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
-	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl);
+	void insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl, const std::string& name);
 	virtual void insert(const Evoral::Parameter& param) = 0;
 
 	// Return whether the automation associated to param is empty.
@@ -81,6 +82,8 @@ public:
 	// return 0.
 	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param) const;
+
+	virtual std::string get_name(const Evoral::Parameter& param) const;
 
 	// Return automation list associated to the given parameter. If absent
 	// return 0.
@@ -145,8 +148,13 @@ public:
 	typedef std::map<Evoral::Parameter, RowToAutomationIt> ParamToRowToAutomationIt;
 	ParamToRowToAutomationIt automations;
 
-protected:
-	AutomationControlSet _automation_controls;
+	// Map parameters to actrl
+	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > ParamToAutomationControl;
+	ParamToAutomationControl param_to_actrl;
+
+	// Map parameters to name
+	typedef std::map<Evoral::Parameter, std::string> ParamToName;
+	ParamToName param_to_name;
 };
 
 } // ~namespace tracker
