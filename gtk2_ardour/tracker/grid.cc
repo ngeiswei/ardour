@@ -183,12 +183,16 @@ Grid::select_available_automation_column (size_t mti)
 	size_t column = *it;
 	available_automation_columns[mti].erase(it);
 
+	std::cout << "Grid::select_available_automation_column(mti=" << mti << ") column = " << column << std::endl;
+
 	return column;
 }
 
 size_t
 Grid::add_main_automation_column (size_t mti, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::add_main_automation_column(mti=" << mti << ",param=" << get_name(mti, param) << ")" << std::endl;
+
 	// Select the next available column
 	size_t column = select_available_automation_column (mti);
 	if (column == 0)
@@ -198,10 +202,7 @@ Grid::add_main_automation_column (size_t mti, const Evoral::Parameter& param)
 	col2params[mti].insert(IndexParamBimap::value_type(column, param)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title
-	string name = TrackerUtils::is_pan_type(param) ?
-		pattern.tps[mti]->track->panner()->describe_parameter (param)
-		: pattern.tps[mti]->track->describe_parameter (param);
-	get_column(column)->set_title (name);
+	get_column(column)->set_title (get_name (mti, param));
 
 	return column;
 }
@@ -222,7 +223,7 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 	col2params[mti].insert(IndexParamBimap::value_type(column, param));
 
 	// Set the column title
-	get_column(column)->set_title (pattern.tps[mti]->track->describe_parameter (param));
+	get_column(column)->set_title (get_name (mti, param));
 
 	return column;
 }
@@ -232,36 +233,35 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
  * parameter.
  */
 void
-Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> processor, const Evoral::Parameter& what)
+Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> processor, const Evoral::Parameter& param)
 {
-	ProcessorAutomationNode* pan;
+	ProcessorAutomationNode* pauton;
 
-	if ((pan = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, what)) == 0) {
+	if ((pauton = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, param)) == 0) {
 		/* session state may never have been saved with new plugin */
 		error << _("programming error: ")
 		      << string_compose (X_("processor automation column for %1:%2/%3/%4 not registered with track!"),
-		                         processor->name(), what.type(), (int) what.channel(), what.id() )
+		                         processor->name(), param.type(), (int) param.channel(), param.id() )
 		      << endmsg;
 		abort(); /*NOTREACHED*/
 		return;
 	}
 
-	if (pan->column) {
+	if (pauton->column) {
 		return;
 	}
 
 	// Find the next available column
-	pan->column = select_available_automation_column (mti);
-	if (!pan->column) {
+	pauton->column = select_available_automation_column (mti);
+	if (!pauton->column) {
 		return;
 	}
 
 	// Associate that column to the parameter
-	col2params[mti].insert(IndexParamBimap::value_type(pan->column, what));
+	col2params[mti].insert(IndexParamBimap::value_type(pauton->column, param));
 
 	// Set the column title
-	string name = processor->describe_parameter (what);
-	get_column(pan->column)->set_title (name);
+	get_column(pauton->column)->set_title (get_name(mti, param));
 }
 
 void
@@ -415,6 +415,7 @@ Grid::update_trim_column_visibility (size_t mti)
 void
 Grid::update_mute_column_visibility (size_t mti)
 {
+	// VVT: understand what is leading to the insertion of mute automation control in the automation pattern
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->mute_automation_item->get_active();
 
 	if (mute_columns[mti] == 0)
@@ -1368,11 +1369,13 @@ void
 Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
 {
 	if (auto_diff == 0 || auto_diff->full) {
+		std::cout << "Grid::redisplay_track_automation auto_diff is null or full" << std::endl;
 		for (AutomationPattern::ParamToRowToAutomationIt::const_iterator it = tap.automations.begin(); it != tap.automations.end(); it++)
 		{
 			redisplay_track_automation_param(mti, tap, it->first);
 		}
 	} else {
+		std::cout << "Grid::redisplay_track_automation auto_diff is defined" << std::endl;
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = auto_diff->param2rows_diff.begin(); it != auto_diff->param2rows_diff.end(); it++)
 		{
 			redisplay_track_automation_param(mti, tap, it->first, &it->second);
@@ -1383,22 +1386,23 @@ Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, 
 void
 Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	size_t cgi = get_auto_cgi(mti, param);
+	// VVT: when mute is selected Fader is actually called here. Why?
+	std::cout << "Grid::redisplay_track_automation_param mti = " << mti << ", cgi = " << cgi << ", param = " << param << ", param description = " << get_name(mti, param) << std::endl;
 	if (rows_diff == 0 || rows_diff->full) {
 		for (size_t rowi = 0; rowi < tap.nrows; rowi++) {
-			redisplay_track_automation_param_row(mti, rowi, tap, param);
+			redisplay_track_automation_param_row(mti, cgi, rowi, tap, param);
 		}
 	} else {
 		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); it++) {
-			redisplay_track_automation_param_row(mti, *it, tap, param);
+			redisplay_track_automation_param_row(mti, cgi, *it, tap, param);
 		}
 	}
 }
 
 void
-Grid::redisplay_track_automation_param_row(size_t mti, size_t rowi, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_track_automation_param_row(size_t mti, size_t cgi, size_t rowi, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	size_t cgi = get_auto_cgi(mti, param);
-
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = get_row(rowi);
 	int mri = -1;
@@ -1542,6 +1546,12 @@ int
 Grid::get_track_separator_width() const
 {
 	return TRACK_SEPARATOR_WIDTH;
+}
+
+std::string
+Grid::get_name(size_t mti, const Evoral::Parameter& param) const
+{
+	return pattern.tps[mti]->get_name(param);
 }
 
 /////////////////////
@@ -2158,9 +2168,14 @@ Grid::get_param (size_t mti, size_t cgi)
 size_t
 Grid::get_auto_cgi (size_t mti, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::get_auto_cgi(mti=" << mti << ",param=" << get_name(mti, param) << ")" << std::endl;
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find(param);
+	std::cout << "cp_it != col2params[mti].right.end() = " << (cp_it != col2params[mti].right.end()) << std::endl;
 	size_t coli = cp_it->second;
+	std::cout << "coli = " << coli << std::endl;
 	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find(coli);
+	std::cout << "cac_it != col2auto_cgi[mti].left.end() = " << (cac_it != col2auto_cgi[mti].left.end()) << std::endl;
+	std::cout << "cac_it->second = " << cac_it->second << std::endl;
 	return cac_it->second;
 }
 

@@ -65,12 +65,12 @@ void RegionAutomationPattern::setup_automation_controls ()
 {
 	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
 	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i)
-		AutomationPattern::insert(midi_model->automation_control(*i));
+		AutomationPattern::insert(midi_model->automation_control(*i), midi_track->describe_parameter (*i));
 }
 
 void RegionAutomationPattern::insert(const Evoral::Parameter& param)
 {
-	AutomationPattern::insert(midi_model->automation_control(param, true));
+	AutomationPattern::insert(midi_model->automation_control(param, true), midi_track->describe_parameter (param));
 }
 
 uint32_t
