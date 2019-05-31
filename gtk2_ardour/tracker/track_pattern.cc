@@ -83,6 +83,16 @@ TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 	return diff_ptr;
 }
 
+std::string
+TrackPattern::get_name(const Evoral::Parameter& param) const
+{
+	if (is_midi_track_pattern ()) {
+		const MidiTrackPattern* mtp = midi_track_pattern ();
+		return mtp->get_name(param);
+	}
+	return AutomationPattern::get_name(param);
+}
+
 boost::shared_ptr<ARDOUR::MidiTrack>
 TrackPattern::midi_track ()
 {

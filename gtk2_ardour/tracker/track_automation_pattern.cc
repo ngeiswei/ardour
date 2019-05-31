@@ -21,6 +21,7 @@
 
 #include "ardour/region.h"
 #include "ardour/pannable.h"
+#include "ardour/panner.h"
 
 #include "tracker_utils.h"
 
@@ -66,18 +67,18 @@ void TrackAutomationPattern::setup_automation_controls ()
 void TrackAutomationPattern::setup_main_automation_controls ()
 {
 	// Gain
-	AutomationPattern::insert(track->gain_control());
+	AutomationPattern::insert(track->gain_control(), track->describe_parameter (Evoral::Parameter(GainAutomation)));
 
 	// Trim
-	AutomationPattern::insert(track->trim_control());
+	AutomationPattern::insert(track->trim_control(), track->describe_parameter (Evoral::Parameter(TrimAutomation)));
 
 	// Mute
-	AutomationPattern::insert(track->mute_control());
+	AutomationPattern::insert(track->mute_control(), track->describe_parameter (Evoral::Parameter(MuteAutomation)));
 
 	// Pan
 	set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p)
-		AutomationPattern::insert(track->pannable()->automation_control(*p));
+		AutomationPattern::insert(track->pannable()->automation_control(*p), track->panner()->describe_parameter (*p));
 }
 
 void TrackAutomationPattern::setup_processors_automation_controls ()
@@ -95,12 +96,12 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 
 	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait)
-		AutomationPattern::insert(boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait)));
+		AutomationPattern::insert(boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait)), processor->describe_parameter (*ait));
 }
 
 void TrackAutomationPattern::insert(const Evoral::Parameter& param)
 {
-	AutomationPattern::insert(track->automation_control(param, true));
+	AutomationPattern::insert(track->automation_control(param, true), track->describe_parameter (param));
 }
 
 uint32_t

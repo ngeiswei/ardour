@@ -53,9 +53,13 @@ AutomationPattern::operator=(const AutomationPattern& other)
 
 	// Deep copy _automation_controls to be sure that changing the event doesn't
 	// change the copy
-	_automation_controls.clear();
-	for (AutomationControlSet::const_iterator it = other._automation_controls.begin(); it != other._automation_controls.end(); it++)
-		_automation_controls.insert(clone_actrl(*it));
+	param_to_actrl.clear();
+	for (ParamToAutomationControl::const_iterator it = other.param_to_actrl.begin(); it != other.param_to_actrl.end(); it++)
+		param_to_actrl.insert(clone_param_actrl(*it));
+
+	param_to_name.clear();
+	for (ParamToName::const_iterator it = other.param_to_name.begin(); it != other.param_to_name.end(); it++)
+		param_to_name.insert(*it);
 
 	// Update automations using the deep copy
 	update_automations();
@@ -68,6 +72,12 @@ AutomationPattern::clone_actrl(boost::shared_ptr<ARDOUR::AutomationControl> actr
 {
 	boost::shared_ptr<ARDOUR::AutomationControl> actrl_cp(new ARDOUR::AutomationControl(const_cast<ARDOUR::Session&>(actrl->session()), actrl->parameter(), actrl->desc(), clone_alist(actrl->alist())));
 	return actrl_cp;
+}
+
+std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> >
+AutomationPattern::clone_param_actrl(const std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> >& param_actrl) const
+{
+	return std::make_pair(param_actrl.first, clone_actrl(param_actrl.second));
 }
 
 boost::shared_ptr<ARDOUR::AutomationList>
@@ -173,9 +183,10 @@ void
 AutomationPattern::update_automations()
 {
 	automations.clear();
-	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl) {
-		boost::shared_ptr<ARDOUR::AutomationList> al = (*actrl)->alist();
-		const Evoral::Parameter& param = (*actrl)->parameter();
+	for (ParamToAutomationControl::const_iterator param_actrl = param_to_actrl.begin(); param_actrl != param_to_actrl.end(); ++param_actrl) {
+		boost::shared_ptr<ARDOUR::AutomationControl> actrl = param_actrl->second;
+		boost::shared_ptr<ARDOUR::AutomationList> al = actrl->alist();
+		const Evoral::Parameter& param = actrl->parameter();
 		// Build automation pattern
 		for (ARDOUR::AutomationList::iterator it = al->begin(); it != al->end(); ++it) {
 			uint32_t row = event2row(param, *it);
@@ -186,11 +197,16 @@ AutomationPattern::update_automations()
 }
 
 void
-AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl)
+AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl, const std::string& name)
 {
-	std::pair<AutomationControlSet::iterator, bool> result = _automation_controls.insert(actrl);
+	std::cout << self_to_string() << "::insert(actrl=" << actrl << ",name=" << name << ")" << std::endl;
+	// NT: try to understand why it is inserted twice
+
+	Evoral::Parameter param = actrl->parameter();
+	std::pair<ParamToAutomationControl::iterator, bool> actrl_result = param_to_actrl.insert(std::make_pair(param, actrl));
+	std::pair<ParamToName::iterator, bool> name_result = param_to_name.insert(std::make_pair(param, name));
 	// NT: re-enable connecting automation
-	// if (result.second)
+	// if (actrl_result.second)
 	// 	tracker_editor.connect_automation(actrl);
 }
 
@@ -205,9 +221,9 @@ boost::shared_ptr<ARDOUR::AutomationControl> AutomationPattern::get_actrl(const 
 	if (!param)
 		return 0;
 
-	for (AutomationControlSet::iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
-		if (param == (*actrl)->parameter())
-			return *actrl;
+	ParamToAutomationControl::iterator it = param_to_actrl.find(param);
+	if (it != param_to_actrl.end())
+		return it->second;
 
 	return 0;
 }
@@ -218,11 +234,25 @@ AutomationPattern::get_actrl(const Evoral::Parameter& param) const
 	if (!param)
 		return 0;
 
-	for (AutomationControlSet::const_iterator actrl = _automation_controls.begin(); actrl != _automation_controls.end(); ++actrl)
-		if (param == (*actrl)->parameter())
-			return *actrl;
+	ParamToAutomationControl::const_iterator it = param_to_actrl.find(param);
+	if (it != param_to_actrl.end())
+		return it->second;
 
 	return 0;
+}
+
+std::string
+AutomationPattern::get_name (const Evoral::Parameter& param) const
+{
+	static std::string empty_string = "";
+	if (!param)
+		return empty_string;
+
+	ParamToName::const_iterator it = param_to_name.find(param);
+	if (it != param_to_name.end())
+		return it->second;
+
+	return empty_string;
 }
 
 boost::shared_ptr<ARDOUR::AutomationList>
@@ -343,7 +373,7 @@ AutomationPattern::delete_automation_value(int rowi, const Evoral::Parameter& pa
 	if (!alist)
 		return;
 
-		// Save state for undo
+	// Save state for undo
 	XMLNode& before = alist->get_state ();
 
 	alist->erase (get_alist_iterator (rowi, param));
@@ -496,9 +526,9 @@ AutomationPattern::to_string(const std::string& indent) const
 			ss << std::endl << indent_l2 << "row = " << r2a_it->first << ", auto_lst[" << *r2a_it->second << "] = (when=" << (*r2a_it->second)->when << ", value=" << (*r2a_it->second)->value << ")";
 		}
 	}
-	ss << std::endl << header << "_automation_controls:";
-	for (AutomationControlSet::const_iterator it = _automation_controls.begin(); it != _automation_controls.end(); ++it) {
-		ss << std::endl << indent_l1 << "ac = " << (*it)->parameter();
+	ss << std::endl << header << "param_actrl:";
+	for (ParamToAutomationControl::const_iterator it = param_to_actrl.begin(); it != param_to_actrl.end(); ++it) {
+		ss << std::endl << indent_l1 << "param name = " << get_name(it->first) << ", actrl = " << it->second;
 	}
 
 	return ss.str();
