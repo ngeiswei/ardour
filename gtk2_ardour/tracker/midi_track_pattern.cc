@@ -83,6 +83,17 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 	return diff;
 }
 
+std::string
+MidiTrackPattern::get_name(const Evoral::Parameter& param) const
+{
+	std::cout << "MidiTrackPattern::get_name" << std::endl;
+	if (TrackerUtils::is_region_automation (param)) {
+		std::cout << "FUCK!" << std::endl;
+		return midi_track->describe_parameter(param);
+	}
+	return AutomationPattern::get_name(param);
+}
+
 boost::shared_ptr<ARDOUR::AutomationList>
 MidiTrackPattern::get_alist_at_mri(int mri, const Evoral::Parameter& param)
 {
