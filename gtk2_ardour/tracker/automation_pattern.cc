@@ -244,15 +244,14 @@ AutomationPattern::get_actrl(const Evoral::Parameter& param) const
 std::string
 AutomationPattern::get_name (const Evoral::Parameter& param) const
 {
-	static std::string empty_string = "";
 	if (!param)
-		return empty_string;
+		return "";
 
 	ParamToName::const_iterator it = param_to_name.find(param);
 	if (it != param_to_name.end())
 		return it->second;
 
-	return empty_string;
+	return "";
 }
 
 boost::shared_ptr<ARDOUR::AutomationList>
