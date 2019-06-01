@@ -86,11 +86,8 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 std::string
 MidiTrackPattern::get_name(const Evoral::Parameter& param) const
 {
-	std::cout << "MidiTrackPattern::get_name" << std::endl;
-	if (TrackerUtils::is_region_automation (param)) {
-		std::cout << "FUCK!" << std::endl;
+	if (TrackerUtils::is_region_automation (param))
 		return midi_track->describe_parameter(param);
-	}
 	return AutomationPattern::get_name(param);
 }
 
