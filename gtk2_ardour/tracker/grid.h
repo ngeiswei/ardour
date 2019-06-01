@@ -418,8 +418,7 @@ private:
 	// undefined.
 	Evoral::Parameter get_param (size_t mti, size_t auto_cgi); // TODO: make const
 
-	// Return cgi associated to param at mti. VVT: probably return -1 if no such
-	// parameter associated.
+	// Return cgi associated to param at mti.
 	size_t get_auto_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
