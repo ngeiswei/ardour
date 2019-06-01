@@ -415,7 +415,6 @@ Grid::update_trim_column_visibility (size_t mti)
 void
 Grid::update_mute_column_visibility (size_t mti)
 {
-	// VVT: understand what is leading to the insertion of mute automation control in the automation pattern
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->mute_automation_item->get_active();
 
 	if (mute_columns[mti] == 0)
@@ -1387,8 +1386,13 @@ void
 Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
 	size_t cgi = get_auto_cgi(mti, param);
-	// VVT: when mute is selected Fader is actually called here. Why?
-	std::cout << "Grid::redisplay_track_automation_param mti = " << mti << ", cgi = " << cgi << ", param = " << param << ", param description = " << get_name(mti, param) << std::endl;
+	// VVT: when mute is selected Fader is actually called here. The problem
+	// seems to be that cgi is undefined as it's never been made
+	// visible. Solution: have get_auto_cgi somehow define it, or
+	// redisplay_track_automation_param define it outside of get_auto_cgi, in
+	// such a case get_auto_cgi would return -1 so we know that it doesn't
+	// exist.
+	std::cout << "Grid::redisplay_track_automation_param mti = " << mti << ", cgi = " << cgi << ", param = " << param << ", param name = " << get_name(mti, param) << std::endl;
 	if (rows_diff == 0 || rows_diff->full) {
 		for (size_t rowi = 0; rowi < tap.nrows; rowi++) {
 			redisplay_track_automation_param_row(mti, cgi, rowi, tap, param);
