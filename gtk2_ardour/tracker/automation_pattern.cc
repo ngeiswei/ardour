@@ -90,9 +90,9 @@ AutomationPattern::clone_alist(boost::shared_ptr<ARDOUR::AutomationList> alist) 
 }
 
 void
-AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rows) const
+AutomationPattern::rows_diff(const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<size_t>& rows) const
 {
-	for (RowToAutomationIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end();) {
+	for (RowToAutomationListIt::const_iterator l_it = l_row2auto.begin(); l_it != l_row2auto.end();) {
 		uint32_t row = l_it->first;
 		const Evoral::ControlEvent& l_ce = **l_it->second;
 
@@ -112,7 +112,7 @@ AutomationPattern::rows_diff(const RowToAutomationIt& l_row2auto, const RowToAut
 		}
 
 		// Check if the event exist in other, and if so if it is equal
-		RowToAutomationIt::const_iterator r_it = r_row2auto.find(row);
+		RowToAutomationListIt::const_iterator r_it = r_row2auto.find(row);
 		if (r_it != r_row2auto.end()) {
 			const Evoral::ControlEvent& r_ce = **r_it->second;
 			if (!TrackerUtils::is_equal(l_ce, r_ce)) {
@@ -142,25 +142,44 @@ AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 
 	AutomationPatternPhenomenalDiff diff;
 
-	for (ParamToRowToAutomationIt::const_iterator it = automations.begin(); it != automations.end(); it++) {
-		Evoral::Parameter param = it->first;
+	for (ParamToEnabled::const_iterator pe_it = param_to_enabled.begin(); pe_it != param_to_enabled.end(); pe_it++) {
+		const Evoral::Parameter& param = pe_it->first;
 		RowsPhenomenalDiff rd;
-
-		// Make sure the parameter is in other, otherwise make the corresponding RowsPhenomenalDiff full
-		ParamToRowToAutomationIt::const_iterator other_it = other.automations.find(param);
-		if (other_it == other.automations.end()) {
+		
+		// If this is disabled ignore their differences, otherwise consider full
+		// phenomenal diff if one is enabled while the other is not.
+		if (!pe_it->second)
+			continue;
+		if (pe_it->second != other.param_to_enabled[param]) {
 			rd.full = true;
 			diff.param2rows_diff[param] = rd;
 			continue;
 		}
 
-		const RowToAutomationIt& row2auto = it->second;
-		const RowToAutomationIt& other_row2auto = other_it->second;
+		// Make sure the parameter is in other, otherwise make the corresponding RowsPhenomenalDiff full
+		ParamToRowToAutomationListIt::const_iterator pra_it = param_to_row_to_ali.find(param);
+		ParamToRowToAutomationListIt::const_iterator other_pra_it = other.param_to_row_to_ali.find(param);
+		if (pra_it == param_to_row_to_ali.end() && other_pra_it == other.param_to_row_to_ali.end())
+			continue;
+		if (pra_it == param_to_row_to_ali.end() || other_pra_it == other.param_to_row_to_ali.end())
+		{
+			rd.full = true;
+			diff.param2rows_diff[param] = rd;
+			continue;
+		}
+
+		// Both are defined, consider the rows for phenomenal diff
+		const RowToAutomationListIt& row2auto = pra_it->second;
+		const RowToAutomationListIt& other_row2auto = other_pra_it->second;
 		rows_diff(row2auto, other_row2auto, rd.rows);
 		rows_diff(other_row2auto, row2auto, rd.rows);
 		if (!rd.empty())
 			diff.param2rows_diff[param] = rd;
 	}
+
+	std::cout << "AutomationPattern::phenomenal_diff diff:" << std::endl
+	          << diff.to_string() << std::endl;
+	
 	return diff;
 }
 
@@ -182,16 +201,21 @@ AutomationPattern::update()
 void
 AutomationPattern::update_automations()
 {
-	automations.clear();
+	param_to_row_to_ali.clear();
 	for (ParamToAutomationControl::const_iterator param_actrl = param_to_actrl.begin(); param_actrl != param_to_actrl.end(); ++param_actrl) {
 		boost::shared_ptr<ARDOUR::AutomationControl> actrl = param_actrl->second;
 		boost::shared_ptr<ARDOUR::AutomationList> al = actrl->alist();
 		const Evoral::Parameter& param = actrl->parameter();
+
+		// Same CPU resources
+		if (!param_to_enabled[param])
+			continue;
+
 		// Build automation pattern
 		for (ARDOUR::AutomationList::iterator it = al->begin(); it != al->end(); ++it) {
 			uint32_t row = event2row(param, *it);
 			if (row != INVALID_ROW)
-				automations[param].insert(RowToAutomationIt::value_type(row, it));
+				param_to_row_to_ali[param].insert(RowToAutomationListIt::value_type(row, it));
 		}
 	}
 }
@@ -204,7 +228,7 @@ AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl, co
 
 	Evoral::Parameter param = actrl->parameter();
 	std::pair<ParamToAutomationControl::iterator, bool> actrl_result = param_to_actrl.insert(std::make_pair(param, actrl));
-	std::pair<ParamToName::iterator, bool> name_result = param_to_name.insert(std::make_pair(param, name));
+	param_to_name.insert(std::make_pair(param, name));
 	// NT: re-enable connecting automation
 	// if (actrl_result.second)
 	// 	tracker_editor.connect_automation(actrl);
@@ -238,6 +262,15 @@ AutomationPattern::get_actrl(const Evoral::Parameter& param) const
 	if (it != param_to_actrl.end())
 		return it->second;
 
+	return 0;
+}
+
+size_t
+AutomationPattern::get_automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const
+{
+	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find(param);
+	if (it != param_to_row_to_ali.end())
+		return it->second.count(rowi);
 	return 0;
 }
 
@@ -275,12 +308,12 @@ AutomationPattern::get_alist (const Evoral::Parameter& param) const
 bool
 AutomationPattern::is_displayable(uint32_t row, const Evoral::Parameter& param) const
 {
-	return automations.find(param) == automations.end()
-		|| is_displayable(row, automations.find(param)->second);
+	return param_to_row_to_ali.find(param) == param_to_row_to_ali.end()
+		|| is_displayable(row, param_to_row_to_ali.find(param)->second);
 }
 
 bool
-AutomationPattern::is_displayable(uint32_t row, RowToAutomationIt r2a)
+AutomationPattern::is_displayable(uint32_t row, RowToAutomationListIt r2a)
 {
 	return r2a.count(row) <= 1;
 }
@@ -288,17 +321,17 @@ AutomationPattern::is_displayable(uint32_t row, RowToAutomationIt r2a)
 AutomationPattern::AutomationListIt
 AutomationPattern::get_alist_iterator (size_t rowi, const Evoral::Parameter& param)
 {
-	return automations.find(param)->second.find(rowi)->second;
+	return param_to_row_to_ali.find(param)->second.find(rowi)->second;
 }
 
 Evoral::ControlEvent*
 AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param)
 {
-	ParamToRowToAutomationIt::iterator it = automations.find(param);
-	if (it == automations.end())
+	ParamToRowToAutomationListIt::iterator it = param_to_row_to_ali.find(param);
+	if (it == param_to_row_to_ali.end())
 		return 0;
 
-	AutomationPattern::RowToAutomationIt::iterator auto_it = it->second.find(rowi);
+	AutomationPattern::RowToAutomationListIt::iterator auto_it = it->second.find(rowi);
 	if (auto_it != it->second.end())
 		return *auto_it->second;
 
@@ -308,11 +341,11 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 const Evoral::ControlEvent*
 AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param) const
 {
-	ParamToRowToAutomationIt::const_iterator it = automations.find(param);
-	if (it == automations.end())
+	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find(param);
+	if (it == param_to_row_to_ali.end())
 		return 0;
 
-	AutomationPattern::RowToAutomationIt::const_iterator auto_it = it->second.find(rowi);
+	AutomationPattern::RowToAutomationListIt::const_iterator auto_it = it->second.find(rowi);
 	if (auto_it != it->second.end())
 		return *auto_it->second;
 
@@ -424,40 +457,40 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	tracker_editor.grid.register_automation_undo (alist, _("change automation event delay"), before, after);
 }
 
-AutomationPattern::RowToAutomationIt::const_iterator
-AutomationPattern::find_prev(RowToAutomationIt::const_iterator it) const
+AutomationPattern::RowToAutomationListIt::const_iterator
+AutomationPattern::find_prev(RowToAutomationListIt::const_iterator it) const
 {
 	return --it;
 }
 
-AutomationPattern::RowToAutomationIt::const_iterator
-AutomationPattern::find_next(RowToAutomationIt::const_iterator it) const
+AutomationPattern::RowToAutomationListIt::const_iterator
+AutomationPattern::find_next(RowToAutomationListIt::const_iterator it) const
 {
 	return ++it;
 }
 
-AutomationPattern::RowToAutomationIt::const_iterator
-AutomationPattern::find_prev(uint32_t row, const RowToAutomationIt& r2a) const
+AutomationPattern::RowToAutomationListIt::const_iterator
+AutomationPattern::find_prev(uint32_t row, const RowToAutomationListIt& r2a) const
 {
-	RowToAutomationIt::const_reverse_iterator rit =
-		std::reverse_iterator<RowToAutomationIt::const_iterator>(r2a.lower_bound(row));
+	RowToAutomationListIt::const_reverse_iterator rit =
+		std::reverse_iterator<RowToAutomationListIt::const_iterator>(r2a.lower_bound(row));
 	while (rit != r2a.rend() && rit->first == row) { ++rit; };
 	return rit != r2a.rend() ? lattest(r2a.equal_range(rit->first)) : rit.base();
 }
 
-AutomationPattern::RowToAutomationIt::const_iterator
-AutomationPattern::find_next(uint32_t row, const RowToAutomationIt& r2a) const
+AutomationPattern::RowToAutomationListIt::const_iterator
+AutomationPattern::find_next(uint32_t row, const RowToAutomationListIt& r2a) const
 {
-	RowToAutomationIt::const_iterator it = r2a.upper_bound(row);
+	RowToAutomationListIt::const_iterator it = r2a.upper_bound(row);
 	while (it != r2a.end() && it->first == row) { ++it; };
 	return it != r2a.end() ? earliest(r2a.equal_range(it->first)) : it;
 }
 
 std::pair<uint32_t, uint32_t>
-AutomationPattern::prev_next_range(RowToAutomationIt::const_iterator it, const RowToAutomationIt& row2auto) const
+AutomationPattern::prev_next_range(RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const
 {
-	RowToAutomationIt::const_iterator p_it = find_prev(it);
-	RowToAutomationIt::const_iterator n_it = find_next(it);
+	RowToAutomationListIt::const_iterator p_it = find_prev(it);
+	RowToAutomationListIt::const_iterator n_it = find_next(it);
 	uint32_t p_row = p_it != row2auto.end() ? p_it->first : 0;
 	uint32_t n_row = n_it != row2auto.end() ? n_it->first : nrows - 1;
 	p_row = std::min(p_row + 1, it->first);
@@ -466,10 +499,10 @@ AutomationPattern::prev_next_range(RowToAutomationIt::const_iterator it, const R
 }
 
 std::pair<uint32_t, uint32_t>
-AutomationPattern::prev_next_range(uint32_t row, const RowToAutomationIt& row2auto) const
+AutomationPattern::prev_next_range(uint32_t row, const RowToAutomationListIt& row2auto) const
 {
-	RowToAutomationIt::const_iterator p_it = find_prev(row, row2auto);
-	RowToAutomationIt::const_iterator n_it = find_next(row, row2auto);
+	RowToAutomationListIt::const_iterator p_it = find_prev(row, row2auto);
+	RowToAutomationListIt::const_iterator n_it = find_next(row, row2auto);
 	uint32_t p_row = p_it != row2auto.end() ? p_it->first : 0;
 	uint32_t n_row = n_it != row2auto.end() ? n_it->first : nrows - 1;
 	p_row = std::min(p_row + 1, row);
@@ -477,11 +510,11 @@ AutomationPattern::prev_next_range(uint32_t row, const RowToAutomationIt& row2au
 	return std::make_pair(p_row, n_row);
 }
 
-AutomationPattern::RowToAutomationIt::const_iterator
-AutomationPattern::earliest(const RowToAutomationItRange& rng) const
+AutomationPattern::RowToAutomationListIt::const_iterator
+AutomationPattern::earliest(const RowToAutomationListItRange& rng) const
 {
-	RowToAutomationIt::const_iterator res_it = rng.first;
-	RowToAutomationIt::const_iterator it = res_it;
+	RowToAutomationListIt::const_iterator res_it = rng.first;
+	RowToAutomationListIt::const_iterator it = res_it;
 	++it;
 	for (; it != rng.second; ++it)
 		if ((*res_it->second)->when < (*it->second)->when)
@@ -489,16 +522,28 @@ AutomationPattern::earliest(const RowToAutomationItRange& rng) const
 	return res_it;
 }
 
-AutomationPattern::RowToAutomationIt::const_iterator
-AutomationPattern::lattest(const RowToAutomationItRange& rng) const
+AutomationPattern::RowToAutomationListIt::const_iterator
+AutomationPattern::lattest(const RowToAutomationListItRange& rng) const
 {
-	RowToAutomationIt::const_iterator res_it = rng.first;
-	RowToAutomationIt::const_iterator it = res_it;
+	RowToAutomationListIt::const_iterator res_it = rng.first;
+	RowToAutomationListIt::const_iterator it = res_it;
 	++it;
 	for (; it != rng.second; ++it)
 		if ((*it->second)->when < (*res_it->second)->when)
 			res_it = it;
 	return res_it;
+}
+
+void
+AutomationPattern::set_enabled(const Evoral::Parameter& param, bool enabled)
+{
+	param_to_enabled[param] = enabled;
+}
+
+bool
+AutomationPattern::is_enabled(const Evoral::Parameter& param) const
+{
+	return param_to_enabled[param];
 }
 
 std::string
@@ -518,16 +563,22 @@ AutomationPattern::to_string(const std::string& indent) const
 	std::string header = indent + self_to_string() + " ";
 	std::string indent_l1 = indent + "  ";
 	std::string indent_l2 = indent_l1 + "  ";
-	ss << std::endl << header << "automations:";
-	for (ParamToRowToAutomationIt::const_iterator it = automations.begin(); it != automations.end(); ++it) {
-		ss << std::endl << indent_l1 << "parameter[" << it->first << "]:";
+	ss << std::endl << header << "param_to_row_to_ali:";
+	for (ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.begin(); it != param_to_row_to_ali.end(); ++it) {
+		ss << std::endl << indent_l1 << "param[" << it->first << "]:";
 		for (std::multimap<uint32_t, AutomationListIt>::const_iterator r2a_it = it->second.begin(); r2a_it != it->second.end(); ++r2a_it) {
 			ss << std::endl << indent_l2 << "row = " << r2a_it->first << ", auto_lst[" << *r2a_it->second << "] = (when=" << (*r2a_it->second)->when << ", value=" << (*r2a_it->second)->value << ")";
 		}
 	}
-	ss << std::endl << header << "param_actrl:";
+	ss << std::endl << header << "param_to_actrl:";
 	for (ParamToAutomationControl::const_iterator it = param_to_actrl.begin(); it != param_to_actrl.end(); ++it) {
-		ss << std::endl << indent_l1 << "param name = " << get_name(it->first) << ", actrl = " << it->second;
+		const Evoral::Parameter& param = it->first;
+		ss << std::endl << indent_l1 << "param[" << param << "] name = " << get_name(param) << ", actrl = " << it->second;
+	}
+	ss << std::endl << header << "param_to_enabled:";
+	for (ParamToEnabled::const_iterator it = param_to_enabled.begin(); it != param_to_enabled.end(); ++it) {
+		const Evoral::Parameter& param = it->first;
+		ss << std::endl << indent_l1 << "param[" << param << "] enabled = " << it->second;
 	}
 
 	return ss.str();

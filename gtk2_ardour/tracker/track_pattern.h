@@ -57,8 +57,6 @@ public:
 	// PhenomenalDiff object at every call
 	TrackPatternPhenomenalDiff* phenomenal_diff_ptr(const TrackPattern* prev) const;
 
-	virtual std::string get_name(const Evoral::Parameter& param) const;
-	
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
 	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
 
