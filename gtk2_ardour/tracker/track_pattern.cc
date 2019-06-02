@@ -83,16 +83,6 @@ TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 	return diff_ptr;
 }
 
-std::string
-TrackPattern::get_name(const Evoral::Parameter& param) const
-{
-	if (is_midi_track_pattern ()) {
-		const MidiTrackPattern* mtp = midi_track_pattern ();
-		return mtp->get_name(param);
-	}
-	return AutomationPattern::get_name(param);
-}
-
 boost::shared_ptr<ARDOUR::MidiTrack>
 TrackPattern::midi_track ()
 {
@@ -161,12 +151,12 @@ TrackPattern::is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Para
 size_t
 TrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
-	return automations.find(param)->second.count(rowi);
+	return param_to_row_to_ali.find(param)->second.count(rowi);
 }
 
 Evoral::ControlEvent* TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
-	return *automations.find(param)->second.find(rowi)->second;
+	return *param_to_row_to_ali.find(param)->second.find(rowi)->second;
 }
 
 bool
