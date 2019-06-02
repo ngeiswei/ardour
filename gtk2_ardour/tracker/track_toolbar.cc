@@ -273,7 +273,7 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 
 	for (std::set<Evoral::Parameter>::const_iterator i = automatable.begin(); i != automatable.end(); ++i) {
 
-		ProcessorAutomationNode* pan = 0;
+		ProcessorAutomationNode* pauno = 0;
 		CheckMenuItem* mitem;
 
 		std::string name = processor->describe_parameter (*i);
@@ -291,15 +291,15 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 			mitem->set_active(true);
 		}
 
-		if ((pan = find_processor_automation_node (processor, *i)) == 0) {
+		if ((pauno = find_processor_automation_node (processor, *i)) == 0) {
 			/* new item */
-			pan = new ProcessorAutomationNode (*i, mitem);
-			rai->columns.push_back (pan);
+			pauno = new ProcessorAutomationNode (*i, mitem);
+			rai->columns.push_back (pauno);
 		} else {
-			pan->menu_item = mitem;
+			pauno->menu_item = mitem;
 		}
 
-		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &TrackToolbar::processor_menu_item_toggled), rai, pan));
+		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &TrackToolbar::processor_menu_item_toggled), rai, pauno));
 	}
 
 	if (items.size() == 0) {
@@ -316,17 +316,17 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 }
 
 void
-TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, ProcessorAutomationNode* pan)
+TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, ProcessorAutomationNode* pauno)
 {
-	const bool showit = pan->menu_item->get_active();
+	const bool showit = pauno->menu_item->get_active();
 
-	if (pan->column == 0)
-		grid.add_processor_automation_column (track_index, rai->processor, pan->what);
+	if (pauno->column == 0)
+		grid.add_processor_automation_column (track_index, rai->processor, pauno->what);
 
 	if (showit)
-		grid.visible_automation_columns.insert (pan->column);
+		grid.visible_automation_columns.insert (pauno->column);
 	else
-		grid.visible_automation_columns.erase (pan->column);
+		grid.visible_automation_columns.erase (pauno->column);
 
 	/* now trigger a redisplay */
 	redisplay_model ();

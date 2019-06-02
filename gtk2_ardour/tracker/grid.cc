@@ -235,9 +235,9 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 void
 Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> processor, const Evoral::Parameter& param)
 {
-	ProcessorAutomationNode* pauton;
+	ProcessorAutomationNode* pauno;
 
-	if ((pauton = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, param)) == 0) {
+	if ((pauno = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, param)) == 0) {
 		/* session state may never have been saved with new plugin */
 		error << _("programming error: ")
 		      << string_compose (X_("processor automation column for %1:%2/%3/%4 not registered with track!"),
@@ -247,21 +247,21 @@ Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> 
 		return;
 	}
 
-	if (pauton->column) {
+	if (pauno->column) {
 		return;
 	}
 
 	// Find the next available column
-	pauton->column = select_available_automation_column (mti);
-	if (!pauton->column) {
+	pauno->column = select_available_automation_column (mti);
+	if (!pauno->column) {
 		return;
 	}
 
 	// Associate that column to the parameter
-	col2params[mti].insert(IndexParamBimap::value_type(pauton->column, param));
+	col2params[mti].insert(IndexParamBimap::value_type(pauno->column, param));
 
 	// Set the column title
-	get_column(pauton->column)->set_title (get_name(mti, param));
+	get_column(pauno->column)->set_title (get_name(mti, param));
 }
 
 void
@@ -308,10 +308,7 @@ Grid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& 
 	if (column == 0)
 		return;
 
-	if (showit)
-		visible_automation_columns.insert (column);
-	else
-		visible_automation_columns.erase (column);
+	set_automation_column_visible(mti, param, column, showit);
 
 	/* now trigger a redisplay */
 	redisplay_model ();
@@ -323,6 +320,16 @@ Grid::is_automation_visible(size_t mti, const Evoral::Parameter& param) const
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find(param);
 	return it != col2params[mti].right.end() &&
 		visible_automation_columns.find(it->second) != visible_automation_columns.end();
+}
+
+void
+Grid::set_automation_column_visible(size_t mti, const Evoral::Parameter& param, size_t column, bool showit)
+{
+	if (showit)
+		visible_automation_columns.insert (column);
+	else
+		visible_automation_columns.erase (column);
+	set_enabled(mti, param, showit);
 }
 
 bool
@@ -382,10 +389,7 @@ Grid::update_gain_column_visibility (size_t mti)
 	if (gain_columns[mti] == 0)
 		return;
 
-	if (showit)
-		visible_automation_columns.insert (gain_columns[mti]);
-	else
-		visible_automation_columns.erase (gain_columns[mti]);
+	set_automation_column_visible (mti, Evoral::Parameter(GainAutomation), gain_columns[mti], showit);
 
 	/* now trigger a redisplay */
 	redisplay_model ();
@@ -403,10 +407,7 @@ Grid::update_trim_column_visibility (size_t mti)
 	if (trim_columns[mti] == 0)
 		return;
 
-	if (showit)
-		visible_automation_columns.insert (trim_columns[mti]);
-	else
-		visible_automation_columns.erase (trim_columns[mti]);
+	set_automation_column_visible (mti, Evoral::Parameter(TrimAutomation), trim_columns[mti], showit);
 
 	/* now trigger a redisplay */
 	redisplay_model ();
@@ -424,10 +425,7 @@ Grid::update_mute_column_visibility (size_t mti)
 	if (mute_columns[mti] == 0)
 		return;
 
-	if (showit)
-		visible_automation_columns.insert (mute_columns[mti]);
-	else
-		visible_automation_columns.erase (mute_columns[mti]);
+	set_automation_column_visible (mti, Evoral::Parameter(MuteAutomation), mute_columns[mti], showit);
 
 	/* now trigger a redisplay */
 	redisplay_model ();
@@ -441,19 +439,12 @@ Grid::update_pan_columns_visibility (size_t mti)
 	if (pan_columns[mti].empty()) {
 		set<Evoral::Parameter> const & params = pattern.tps[mti]->track->panner()->what_can_be_automated ();
 		for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-			pan_columns[mti].push_back(add_main_automation_column(mti, *p));
+			size_t column = add_main_automation_column(mti, *p);
+			if (column == 0)
+				return;
+			pan_columns[mti].push_back(column);
+			set_automation_column_visible(mti, *p, column, showit);
 		}
-	}
-
-	// Still no column available, abort
-	if (pan_columns[mti].empty())
-		return;
-
-	for (vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
-		if (showit)
-			visible_automation_columns.insert (*it);
-		else
-			visible_automation_columns.erase (*it);
 	}
 
 	/* now trigger a redisplay */
@@ -1369,7 +1360,7 @@ Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, 
 {
 	if (auto_diff == 0 || auto_diff->full) {
 		std::cout << "Grid::redisplay_track_automation auto_diff is null or full" << std::endl;
-		for (AutomationPattern::ParamToRowToAutomationIt::const_iterator it = tap.automations.begin(); it != tap.automations.end(); it++)
+		for (AutomationPattern::ParamToRowToAutomationListIt::const_iterator it = tap.param_to_row_to_ali.begin(); it != tap.param_to_row_to_ali.end(); it++)
 		{
 			redisplay_track_automation_param(mti, tap, it->first);
 		}
@@ -1385,14 +1376,16 @@ Grid::redisplay_track_automation(size_t mti, const TrackAutomationPattern& tap, 
 void
 Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	size_t cgi = get_auto_cgi(mti, param);
-	// VVT: when mute is selected Fader is actually called here. The problem
-	// seems to be that cgi is undefined as it's never been made
-	// visible. Solution: have get_auto_cgi somehow define it, or
-	// redisplay_track_automation_param define it outside of get_auto_cgi, in
-	// such a case get_auto_cgi would return -1 so we know that it doesn't
-	// exist.
+	// Only display if the automation is enabled
+	if (!tap.is_enabled(param))
+		return;
+
+	int cgi = get_auto_cgi(mti, param);
 	std::cout << "Grid::redisplay_track_automation_param mti = " << mti << ", cgi = " << cgi << ", param = " << param << ", param name = " << get_name(mti, param) << std::endl;
+
+	if (cgi < 0)
+		return;
+
 	if (rows_diff == 0 || rows_diff->full) {
 		for (size_t rowi = 0; rowi < tap.nrows; rowi++) {
 			redisplay_track_automation_param_row(mti, cgi, rowi, tap, param);
@@ -1407,6 +1400,11 @@ Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern&
 void
 Grid::redisplay_track_automation_param_row(size_t mti, size_t cgi, size_t rowi, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	std::cout << "Grid::redisplay_track_automation_param_row mti = " << mti
+	          << ", cgi = " << cgi << ", rowi = " << rowi
+	          << ", tap = " << &tap << ", param = " << param
+	          << ", rows_diff = " << rows_diff << std::endl;
+
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = get_row(rowi);
 	int mri = -1;
@@ -1556,6 +1554,18 @@ std::string
 Grid::get_name(size_t mti, const Evoral::Parameter& param) const
 {
 	return pattern.tps[mti]->get_name(param);
+}
+
+void
+Grid::set_enabled(size_t mti, const Evoral::Parameter& param, bool enabled)
+{
+	pattern.tps[mti]->set_enabled(param, enabled);
+}
+
+bool
+Grid::is_enabled(size_t mti, const Evoral::Parameter& param) const
+{
+	return pattern.tps[mti]->is_enabled(param);
 }
 
 /////////////////////
@@ -2169,17 +2179,16 @@ Grid::get_param (size_t mti, size_t cgi)
 	return param;
 }
 
-size_t
+int
 Grid::get_auto_cgi (size_t mti, const Evoral::Parameter& param)
 {
-	std::cout << "Grid::get_auto_cgi(mti=" << mti << ",param=" << get_name(mti, param) << ")" << std::endl;
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find(param);
-	std::cout << "cp_it != col2params[mti].right.end() = " << (cp_it != col2params[mti].right.end()) << std::endl;
+	if (cp_it == col2params[mti].right.end())
+		return -1;
 	size_t coli = cp_it->second;
-	std::cout << "coli = " << coli << std::endl;
 	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find(coli);
-	std::cout << "cac_it != col2auto_cgi[mti].left.end() = " << (cac_it != col2auto_cgi[mti].left.end()) << std::endl;
-	std::cout << "cac_it->second = " << cac_it->second << std::endl;
+	if (cac_it == col2auto_cgi[mti].left.end())
+		return -1;
 	return cac_it->second;
 }
 
