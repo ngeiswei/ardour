@@ -113,7 +113,7 @@ TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::
 		return INVALID_ROW;
 
 	uint32_t row = row_at_sample(sample);
-	if (automations[param].count(row) != 0)
+	if (param_to_row_to_ali[param].count(row) != 0)
 		row = row_at_sample_min_delay(sample);
 	return row;
 }
