@@ -321,26 +321,23 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Process
 	const bool showit = pauno->menu_item->get_active();
 
 	if (pauno->column == 0)
-		grid.add_processor_automation_column (track_index, rai->processor, pauno->what);
+		grid.add_processor_automation_column (track_index, rai->processor, pauno->param);
 
-	if (showit)
-		grid.visible_automation_columns.insert (pauno->column);
-	else
-		grid.visible_automation_columns.erase (pauno->column);
+	grid.set_automation_column_visible (track_index, pauno->param, pauno->column, showit);
 
 	/* now trigger a redisplay */
 	redisplay_model ();
 }
 
 ProcessorAutomationNode*
-TrackToolbar::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter what)
+TrackToolbar::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter param)
 {
 	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
 
 		if ((*i)->processor == processor) {
 
 			for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
-				if ((*ii)->what == what) {
+				if ((*ii)->param == param) {
 					return *ii;
 				}
 			}
@@ -466,12 +463,13 @@ TrackToolbar::show_all_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
 			if (column == 0)
-				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->what);
+				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->param);
 
 			// Still no column available, skip
 			if (column == 0)
 				continue;
 
+			// VVT: fix, use grid.set_automation_column_visible
 			grid.visible_automation_columns.insert (column);
 
 			(*ii)->menu_item->set_active (true);
@@ -486,18 +484,19 @@ TrackToolbar::show_existing_processor_automations ()
 	     i != processor_automation.end(); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t& column = (*ii)->column;
-			bool exist = !track_pattern->is_empty((*ii)->what);
+			bool exist = !track_pattern->is_empty((*ii)->param);
 
 			// Create automation column if necessary
 			if (exist) {
 				if (column == 0)
-					grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->what);
+					grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->param);
 			}
 
 			// Still no column available, skip
 			if (column == 0)
 				continue;
 
+			// VVT: fix, use grid.set_automation_column_visible
 			if (exist)
 				grid.visible_automation_columns.insert (column);
 			else
@@ -516,6 +515,7 @@ TrackToolbar::hide_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t column = (*ii)->column;
 			if (column != 0) {
+				// VVT: fix, use grid.set_automation_column_visible
 				grid.visible_automation_columns.erase (column);
 				(*ii)->menu_item->set_active (false);
 			}
