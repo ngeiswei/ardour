@@ -308,7 +308,7 @@ Grid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& 
 	if (column == 0)
 		return;
 
-	set_automation_column_visible(mti, param, column, showit);
+	set_automation_column_visible (mti, param, column, showit);
 
 	/* now trigger a redisplay */
 	redisplay_model ();
@@ -1439,7 +1439,7 @@ void
 Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
 	redisplay_note_region (mti, mri, mrp.np, mrp_diff ? &mrp_diff->np_diff : 0);
-	// VT: redisplay automation
+	// VVT: redisplay automation
 }
 
 void
@@ -1498,7 +1498,7 @@ Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const Not
 void
 Grid::redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
 {
-	// VT
+	// VT: implement
 }
 
 int
