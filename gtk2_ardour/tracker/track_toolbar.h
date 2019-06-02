@@ -38,12 +38,12 @@ class MidiTrackToolbar;
 class AudioTrackToolbar;
 
 struct ProcessorAutomationNode {
-	ProcessorAutomationNode (Evoral::Parameter w, Gtk::CheckMenuItem* mitem)
-		: what (w), menu_item (mitem), column(0) {}
+	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem)
+		: param (p), menu_item (mitem), column(0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationNode ();
 
-	Evoral::Parameter                         what;
+	Evoral::Parameter                         param;
 	Gtk::CheckMenuItem*                       menu_item;
 	// corresponding column index. If set to 0 then undetermined yet
 	size_t                                    column;
