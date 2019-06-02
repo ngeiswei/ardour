@@ -91,6 +91,27 @@ MidiTrackPattern::get_name(const Evoral::Parameter& param) const
 	return AutomationPattern::get_name(param);
 }
 
+void
+MidiTrackPattern::set_enabled(const Evoral::Parameter& param, bool enabled)
+{
+	if (TrackerUtils::is_region_automation (param)) {
+		for (size_t mri = 0; mri < mrps.size(); mri++)
+			mrps[mri].rap.set_enabled(param, enabled);
+	}
+	return AutomationPattern::set_enabled(param, enabled);
+}
+
+bool
+MidiTrackPattern::is_enabled(const Evoral::Parameter& param) const
+{
+	if (TrackerUtils::is_region_automation (param)) {
+		// If param is enabled in the first region we can assume it is in all
+		// region
+		mrps[0].rap.is_enabled(param);
+	}
+	return AutomationPattern::is_enabled(param);
+}
+
 boost::shared_ptr<ARDOUR::AutomationList>
 MidiTrackPattern::get_alist_at_mri(int mri, const Evoral::Parameter& param)
 {
@@ -326,16 +347,16 @@ size_t
 MidiTrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri].rap.automations.find(param)->second.count(to_rrri(rowi, mri))
-		: TrackAutomationPattern::automations.find(param)->second.count(rowi);
+		mrps[mri].rap.get_automation_list_count(to_rrri(rowi, mri), param)
+		: AutomationPattern::get_automation_list_count(rowi, param);
 }
 
 Evoral::ControlEvent*
 MidiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		*mrps[mri].rap.automations.find(param)->second.find(to_rrri(rowi, mri))->second
-		: *TrackAutomationPattern::automations.find(param)->second.find(rowi)->second;
+		*mrps[mri].rap.param_to_row_to_ali.find(param)->second.find(to_rrri(rowi, mri))->second
+		: *TrackAutomationPattern::param_to_row_to_ali.find(param)->second.find(rowi)->second;
 }
 
 std::string

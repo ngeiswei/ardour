@@ -50,8 +50,8 @@ public:
 	                  Temporal::samplepos_t last_sample);
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationIt;
-	typedef std::pair<RowToAutomationIt::const_iterator, RowToAutomationIt::const_iterator> RowToAutomationItRange;
+	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationListIt;
+	typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
 
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator=(const AutomationPattern& other);
@@ -59,7 +59,7 @@ public:
 	std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > clone_param_actrl(const std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> >& param_name) const;
 	boost::shared_ptr<ARDOUR::AutomationList> clone_alist(boost::shared_ptr<ARDOUR::AutomationList> alist) const;
 
-	void rows_diff(const RowToAutomationIt& l_row2auto, const RowToAutomationIt& r_row2auto, std::set<size_t>& rd) const;
+	void rows_diff(const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<size_t>& rd) const;
 
 	AutomationPatternPhenomenalDiff phenomenal_diff(const AutomationPattern& other) const;
 
@@ -83,6 +83,9 @@ public:
 	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationControl> get_actrl(const Evoral::Parameter& param) const;
 
+	// Return the number of values within the same row. If undefined return 0.
+	size_t get_automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const;
+
 	virtual std::string get_name(const Evoral::Parameter& param) const;
 
 	// Return automation list associated to the given parameter. If absent
@@ -93,7 +96,7 @@ public:
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
 	bool is_displayable(uint32_t row, const Evoral::Parameter& param) const;
-	static bool is_displayable(uint32_t row, RowToAutomationIt r2a);
+	static bool is_displayable(uint32_t row, RowToAutomationListIt r2a);
 
 
 	// Return the control list iterator associated to param at rowi if exists or
@@ -124,29 +127,32 @@ public:
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
 
-	// Return RowToAutomationIt corresponding to the previous (resp. next)
+	// Return RowToAutomationListIt corresponding to the previous (resp. next)
 	// event. If there is no such previous or next event then return end()
 	// iterator.
-	RowToAutomationIt::const_iterator find_prev(RowToAutomationIt::const_iterator it) const;
-	RowToAutomationIt::const_iterator find_next(RowToAutomationIt::const_iterator it) const;
-	RowToAutomationIt::const_iterator find_prev(uint32_t row, const RowToAutomationIt& row2auto) const;
-	RowToAutomationIt::const_iterator find_next(uint32_t row, const RowToAutomationIt& row2auto) const;
+	RowToAutomationListIt::const_iterator find_prev(RowToAutomationListIt::const_iterator it) const;
+	RowToAutomationListIt::const_iterator find_next(RowToAutomationListIt::const_iterator it) const;
+	RowToAutomationListIt::const_iterator find_prev(uint32_t row, const RowToAutomationListIt& row2auto) const;
+	RowToAutomationListIt::const_iterator find_next(uint32_t row, const RowToAutomationListIt& row2auto) const;
 
 	// Return the range of rows that must be updateing if the event on the given
 	// row of it is modified
-	std::pair<uint32_t, uint32_t> prev_next_range(RowToAutomationIt::const_iterator it, const RowToAutomationIt& row2auto) const;
-	std::pair<uint32_t, uint32_t> prev_next_range(uint32_t row, const RowToAutomationIt& row2auto) const;
+	std::pair<uint32_t, uint32_t> prev_next_range(RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const;
+	std::pair<uint32_t, uint32_t> prev_next_range(uint32_t row, const RowToAutomationListIt& row2auto) const;
 
-	RowToAutomationIt::const_iterator earliest(const RowToAutomationItRange& rng) const;
-	RowToAutomationIt::const_iterator lattest(const RowToAutomationItRange& rng) const;
+	RowToAutomationListIt::const_iterator earliest(const RowToAutomationListItRange& rng) const;
+	RowToAutomationListIt::const_iterator lattest(const RowToAutomationListItRange& rng) const;
+
+	virtual void set_enabled(const Evoral::Parameter& param, bool enabled);
+	virtual bool is_enabled(const Evoral::Parameter& param) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;
 
 	// Map parameters to maps of row to automation range
-	typedef std::map<Evoral::Parameter, RowToAutomationIt> ParamToRowToAutomationIt;
-	ParamToRowToAutomationIt automations;
+	typedef std::map<Evoral::Parameter, RowToAutomationListIt> ParamToRowToAutomationListIt;
+	ParamToRowToAutomationListIt param_to_row_to_ali;
 
 	// Map parameters to actrl
 	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > ParamToAutomationControl;
@@ -155,6 +161,12 @@ public:
 	// Map parameters to name
 	typedef std::map<Evoral::Parameter, std::string> ParamToName;
 	ParamToName param_to_name;
+
+	// Map parameters to whether the automation is enabled. This is kept track
+	// of here in case it can affect updating its content, to save calculations
+	// or measure its phenomenal difference.
+	typedef std::map<Evoral::Parameter, bool> ParamToEnabled;
+	mutable ParamToEnabled param_to_enabled; // disabled by default
 };
 
 } // ~namespace tracker

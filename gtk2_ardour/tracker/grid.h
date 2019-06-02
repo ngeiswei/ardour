@@ -108,6 +108,8 @@ public:
 	// Return if the automation column associated to this parameter is currently visible
 	bool is_automation_visible(size_t mti, const Evoral::Parameter& param) const;
 
+	void set_automation_column_visible(size_t mti, const Evoral::Parameter& param, size_t column, bool showit);
+
 	// Return true iff there exists some automation in that mti that is visible
 	bool has_visible_automation(size_t mti) const;
 
@@ -198,6 +200,9 @@ public:
 	int get_track_separator_width() const;
 
 	std::string get_name(size_t mti, const Evoral::Parameter& param) const;
+
+	void set_enabled(size_t mti, const Evoral::Parameter& param, bool enabled);
+	bool is_enabled(size_t mti, const Evoral::Parameter& param) const;
 
 	TrackerEditor& tracker_editor;
 
@@ -418,8 +423,8 @@ private:
 	// undefined.
 	Evoral::Parameter get_param (size_t mti, size_t auto_cgi); // TODO: make const
 
-	// Return cgi associated to param at mti.
-	size_t get_auto_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
+	// Return cgi associated to param at mti. If undefined for param return -1.
+	int get_auto_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
