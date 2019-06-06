@@ -421,6 +421,7 @@ TrackToolbar::show_existing_main_automations ()
 	grid.update_mute_column_visibility (track_index);
 
 	// Pan
+	// VVT: fix, apparently it systematically shows pan
 	bool pan_visible = false;
 	std::set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
@@ -451,6 +452,7 @@ TrackToolbar::hide_main_automations ()
 	grid.update_mute_column_visibility (track_index);
 
 	// Pan
+	// VVT: fix, apparently it systematically shows pan
 	pan_automation_item->set_active (false);
 	grid.update_pan_columns_visibility (track_index);
 }
@@ -469,8 +471,7 @@ TrackToolbar::show_all_processor_automations ()
 			if (column == 0)
 				continue;
 
-			// VVT: fix, use grid.set_automation_column_visible
-			grid.visible_automation_columns.insert (column);
+			grid.set_automation_column_visible (track_index, (*ii)->param, column, true);
 
 			(*ii)->menu_item->set_active (true);
 		}
@@ -496,11 +497,7 @@ TrackToolbar::show_existing_processor_automations ()
 			if (column == 0)
 				continue;
 
-			// VVT: fix, use grid.set_automation_column_visible
-			if (exist)
-				grid.visible_automation_columns.insert (column);
-			else
-				grid.visible_automation_columns.erase (column);
+			grid.set_automation_column_visible (track_index, (*ii)->param, column, exist);
 
 			(*ii)->menu_item->set_active (exist);
 		}
@@ -515,8 +512,7 @@ TrackToolbar::hide_processor_automations ()
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
 			size_t column = (*ii)->column;
 			if (column != 0) {
-				// VVT: fix, use grid.set_automation_column_visible
-				grid.visible_automation_columns.erase (column);
+				grid.set_automation_column_visible (track_index, (*ii)->param, column, false);
 				(*ii)->menu_item->set_active (false);
 			}
 		}
