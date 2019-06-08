@@ -439,12 +439,17 @@ Grid::update_pan_columns_visibility (size_t mti)
 	if (pan_columns[mti].empty()) {
 		set<Evoral::Parameter> const & params = pattern.tps[mti]->track->panner()->what_can_be_automated ();
 		for (set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-			size_t column = add_main_automation_column(mti, *p);
-			if (column == 0)
-				return;
-			pan_columns[mti].push_back(column);
-			set_automation_column_visible(mti, *p, column, showit);
+			pan_columns[mti].push_back(add_main_automation_column(mti, *p));
 		}
+	}
+
+	// Still no column available, abort
+	if (pan_columns[mti].empty())
+		return;
+
+	for (vector<size_t>::const_iterator it = pan_columns[mti].begin(); it != pan_columns[mti].end(); ++it) {
+		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find(*it);
+		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
 
 	/* now trigger a redisplay */

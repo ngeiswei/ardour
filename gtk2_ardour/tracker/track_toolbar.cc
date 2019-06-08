@@ -421,7 +421,6 @@ TrackToolbar::show_existing_main_automations ()
 	grid.update_mute_column_visibility (track_index);
 
 	// Pan
-	// VVT: fix, apparently it systematically shows pan
 	bool pan_visible = false;
 	std::set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
 	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
@@ -452,7 +451,6 @@ TrackToolbar::hide_main_automations ()
 	grid.update_mute_column_visibility (track_index);
 
 	// Pan
-	// VVT: fix, apparently it systematically shows pan
 	pan_automation_item->set_active (false);
 	grid.update_pan_columns_visibility (track_index);
 }
