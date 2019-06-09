@@ -94,21 +94,19 @@ MidiTrackPattern::get_name(const Evoral::Parameter& param) const
 void
 MidiTrackPattern::set_enabled(const Evoral::Parameter& param, bool enabled)
 {
-	if (TrackerUtils::is_region_automation (param)) {
+	if (TrackerUtils::is_region_automation (param))
 		for (size_t mri = 0; mri < mrps.size(); mri++)
 			mrps[mri].rap.set_enabled(param, enabled);
-	}
-	return AutomationPattern::set_enabled(param, enabled);
+	else AutomationPattern::set_enabled(param, enabled);
 }
 
 bool
 MidiTrackPattern::is_enabled(const Evoral::Parameter& param) const
 {
-	if (TrackerUtils::is_region_automation (param)) {
+	if (TrackerUtils::is_region_automation (param))
 		// If param is enabled in the first region we can assume it is in all
 		// region
-		mrps[0].rap.is_enabled(param);
-	}
+		return mrps[0].rap.is_enabled(param);
 	return AutomationPattern::is_enabled(param);
 }
 
