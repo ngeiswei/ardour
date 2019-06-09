@@ -175,6 +175,7 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 	assert(on_notes.size() == other.on_notes.size());
 	assert(on_notes.size() == off_notes.size());
 	assert(off_notes.size() == other.off_notes.size());
+	// VVT: fix note pattern difference, they seem to be always present
 	for (size_t cgi = 0; cgi != on_notes.size(); cgi++) {
 		std::set<size_t> rows;
 		rows_diff(cgi, *this, other, rows);
