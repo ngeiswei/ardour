@@ -134,12 +134,6 @@ AutomationPattern::rows_diff(const RowToAutomationListIt& l_row2auto, const RowT
 AutomationPatternPhenomenalDiff
 AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 {
-	std::cout << "AutomationPattern::phenomenal_diff" << std::endl
-	          << "this:" << std::endl
-	          << this->to_string() << std::endl
-	          << "other:" << std::endl
-	          << other.to_string() << std::endl;
-
 	AutomationPatternPhenomenalDiff diff;
 
 	for (ParamToEnabled::const_iterator pe_it = param_to_enabled.begin(); pe_it != param_to_enabled.end(); pe_it++) {
@@ -177,9 +171,6 @@ AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 			diff.param2rows_diff[param] = rd;
 	}
 
-	std::cout << "AutomationPattern::phenomenal_diff diff:" << std::endl
-	          << diff.to_string() << std::endl;
-	
 	return diff;
 }
 
