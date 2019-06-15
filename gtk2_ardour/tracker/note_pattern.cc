@@ -105,8 +105,9 @@ NotePattern::rows_diff(size_t cgi, const NotePattern& lnp, const NotePattern& rn
 		// First, look at the difference in displayability
 		bool is_cell_displayable = lnp.is_displayable(row, cgi);
 		bool cell_diff = is_cell_displayable != rnp.is_displayable(row, cgi);
-		if (cell_diff)
+		if (cell_diff) {
 			rd.insert(row);
+		}
 		if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
 			it = lnp.on_notes[cgi].upper_bound(row);
@@ -133,9 +134,9 @@ NotePattern::rows_diff(size_t cgi, const NotePattern& lnp, const NotePattern& rn
 		// First, look at the difference in displayability
 		bool is_cell_displayable = lnp.is_displayable(row, cgi);
 		bool cell_diff = is_cell_displayable != rnp.is_displayable(row, cgi);
-		if (cell_diff)
+		if (cell_diff) {
 			rd.insert(row);
-		if (!is_cell_displayable) {
+		} if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
 			it = lnp.off_notes[cgi].upper_bound(row);
 			continue;
@@ -151,7 +152,10 @@ NotePattern::rows_diff(size_t cgi, const NotePattern& lnp, const NotePattern& rn
 		RowToNotes::const_iterator rit = rnp.off_notes[cgi].find(row);
 		if (rit == rnp.off_notes[cgi].end()
 		    || !TrackerUtils::is_off_equal(it->second, rit->second)
-		    || rnp.on_notes[cgi].find(row) != rnp.on_notes[cgi].end()) {
+		    || (rnp.on_notes[cgi].find(row) == rnp.on_notes[cgi].end()
+		        && lnp.on_notes[cgi].find(row) != lnp.on_notes[cgi].end())
+		    || (lnp.on_notes[cgi].find(row) == lnp.on_notes[cgi].end()
+		        && rnp.on_notes[cgi].find(row) != rnp.on_notes[cgi].end())) {
 			rd.insert(row);
 		}
 
@@ -175,7 +179,6 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 	assert(on_notes.size() == other.on_notes.size());
 	assert(on_notes.size() == off_notes.size());
 	assert(off_notes.size() == other.off_notes.size());
-	// VVT: fix note pattern difference, they seem to be always present
 	for (size_t cgi = 0; cgi != on_notes.size(); cgi++) {
 		std::set<size_t> rows;
 		rows_diff(cgi, *this, other, rows);
