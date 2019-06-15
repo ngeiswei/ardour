@@ -1,4 +1,4 @@
-- Optimize editing, cause redrawing the whole is way too slow
+- Try to understand segfault when loading test-3
 - Deal with *** in a "proper" manner...
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix bug in updating playhead
@@ -9,10 +9,9 @@
 - Try to replace as many gtk widgets by cairo widgets
 - Take care of code style
 - Try to improve color usage, how to label them, what can be reused
-- Add space between function and argument call
 - const when possible
 - Create wscript under tracker folder
-- Underline the digit to be edited
+- Underline the digit to be edited according to position
 - Support shift-tab to move from right to left
 - Add shortcut for parameters, steps, etc
 - Add copy/move, etc, notes + popup menu
