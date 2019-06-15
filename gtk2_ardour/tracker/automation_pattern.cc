@@ -214,8 +214,7 @@ AutomationPattern::update_automations()
 void
 AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl, const std::string& name)
 {
-	std::cout << self_to_string() << "::insert(actrl=" << actrl << ",name=" << name << ")" << std::endl;
-	// NT: try to understand why it is inserted twice
+	// NT: try to understand why some controls are inserted twice
 
 	Evoral::Parameter param = actrl->parameter();
 	std::pair<ParamToAutomationControl::iterator, bool> actrl_result = param_to_actrl.insert(std::make_pair(param, actrl));
