@@ -213,7 +213,7 @@ public:
 	static Temporal::samplepos_t get_length(const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
-	// the very first sample (it looks identical to get_regions_position
+	// the very first sample (it looks identical to get_regions_position)
 	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	static Temporal::samplepos_t get_first_sample(const RegionSelection& region_selection);

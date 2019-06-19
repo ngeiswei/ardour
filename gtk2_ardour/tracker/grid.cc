@@ -1422,7 +1422,7 @@ Grid::redisplay_inter_midi_regions (size_t mti)
 		TreeModel::Row row = *row_it++;
 		if (!is_region_defined (rowi, mti)) {
 			redisplay_undefined_notes (row, mti);
-			// VVT: probably take into account region automations
+			// VT: probably take into account region automations
 		}
 	}
 }
