@@ -144,73 +144,112 @@ TrackerUtils::get_sorted_regions(const RegionSelection& region_selection)
 Temporal::samplepos_t
 TrackerUtils::get_position(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
-	return regions.front()->position();
+	size_t i = 0;
+	Temporal::samplepos_t position = regions[i++]->position();
+	for (; i < regions.size(); i++)
+		position = std::min(position, regions[i]->position());
+	return position;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
-	return regions.front()->position();
+	size_t i = 0;
+	Temporal::samplepos_t position = regions[i++]->position();
+	for (; i < regions.size(); i++)
+		position = std::min(position, regions[i]->position());
+	return position;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_position(const RegionSelection& region_selection)
 {
-	return get_position(get_sorted_regions(region_selection));
+	RegionSelection::const_iterator it = region_selection.begin();
+	Temporal::samplepos_t position = (*it)->region()->position();
+	++it;
+	for (; it != region_selection.end(); ++it)
+		position = std::min(position, (*it)->region()->position());
+	return position;
 }
 
 Temporal::samplecnt_t
 TrackerUtils::get_length(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
-	return regions.back()->last_sample() + 1 - regions.front()->first_sample();
+	return get_last_sample(regions) + 1 - get_first_sample(regions);
 }
 
 Temporal::samplecnt_t
 TrackerUtils::get_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
-	return regions.back()->last_sample() + 1 - regions.front()->first_sample();
+	return get_last_sample(regions) + 1 - get_first_sample(regions);
 }
 
 Temporal::samplecnt_t
 TrackerUtils::get_length(const RegionSelection& region_selection)
 {
-	return get_length(get_sorted_regions(region_selection));
+	return get_last_sample(region_selection) + 1 - get_first_sample(region_selection);
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
-	return regions.front()->first_sample();
+	size_t i = 0;
+	Temporal::samplepos_t first_sample = regions[i++]->first_sample();
+	for (; i < regions.size(); i++)
+		first_sample = std::min(first_sample, regions[i]->first_sample());
+	return first_sample;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
-	return regions.front()->first_sample();
+	size_t i = 0;
+	Temporal::samplepos_t first_sample = regions[i++]->first_sample();
+	for (; i < regions.size(); i++)
+		first_sample = std::min(first_sample, regions[i]->first_sample());
+	return first_sample;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_first_sample(const RegionSelection& region_selection)
 {
-	return get_first_sample(get_sorted_regions(region_selection));
+	RegionSelection::const_iterator it = region_selection.begin();
+	Temporal::samplepos_t first_sample = (*it)->region()->first_sample();
+	++it;
+	for (; it != region_selection.end(); ++it)
+		first_sample = std::min(first_sample, (*it)->region()->first_sample());
+	return first_sample;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
-	return regions.back()->last_sample();
+	size_t i = 0;
+	Temporal::samplepos_t last_sample = regions[i++]->last_sample();
+	for (; i < regions.size(); i++)
+		last_sample = std::max(last_sample, regions[i]->last_sample());
+	return last_sample;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
-	return regions.back()->last_sample();
+	size_t i = 0;
+	Temporal::samplepos_t last_sample = regions[i++]->last_sample();
+	for (; i < regions.size(); i++)
+		last_sample = std::max(last_sample, regions[i]->last_sample());
+	return last_sample;
 }
 
 Temporal::samplepos_t
 TrackerUtils::get_last_sample(const RegionSelection& region_selection)
 {
-	return get_last_sample(get_sorted_regions(region_selection));
+	RegionSelection::const_iterator it = region_selection.begin();
+	Temporal::samplepos_t last_sample = (*it)->region()->last_sample();
+	++it;
+	for (; it != region_selection.end(); ++it)
+		last_sample = std::max(last_sample, (*it)->region()->last_sample());
+	return last_sample;
 }
 
 bool
