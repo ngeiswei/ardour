@@ -1485,13 +1485,14 @@ Grid::redisplay_region_automation_param (size_t mti, size_t mri, const RegionAut
 	if (cgi < 0)
 		return;
 
+	size_t row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
 		for (size_t rowi = 0; rowi < rap.nrows; rowi++) {
-			redisplay_region_automation_param_row (mti, mri, cgi, rowi, rap, param);
+			redisplay_region_automation_param_row (mti, mri, cgi, rowi + row_offset, rap, param);
 		}
 	} else {
 		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); it++) {
-			redisplay_region_automation_param_row (mti, mri, cgi, *it, rap, param);
+			redisplay_region_automation_param_row (mti, mri, cgi, *it + row_offset, rap, param);
 		}
 	}
 }
