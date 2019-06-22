@@ -2753,11 +2753,13 @@ Grid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 		return false;
 	}
 
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 	if (is_note_type (col)) {
-		const TrackerColumn* tc = dynamic_cast<const TrackerColumn*>(col);
 		return tc && is_region_defined (rowi, mti);
 	} else {
 		size_t coli = get_col_index (col);
+		if (tc && tc->auto_type == TrackerColumn::AUTOMATION_DELAY)
+			coli--;
 		IndexParamBimap::left_const_iterator it = col2params[mti].left.find(coli);
 		Evoral::Parameter param = it->second;
 		return pattern.is_automation_defined (rowi, mti, param);
