@@ -65,6 +65,7 @@ public:
 	bool is_region_defined (uint32_t rowi, size_t mti) const;
 
 	// Return true iff the row at mti is defined for param
+	// Warning: if param is undefined, then the behavior is unknown
 	bool is_automation_defined (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
