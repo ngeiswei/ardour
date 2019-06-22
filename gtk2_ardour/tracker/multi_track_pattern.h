@@ -26,6 +26,7 @@
 
 #include "tracker_utils.h"
 #include "note_pattern.h"
+#include "midi_region_pattern.h"
 #include "track_pattern.h"
 #include "multi_track_pattern_phenomenal_diff.h"
 
@@ -123,6 +124,9 @@ public:
 	
 	// Return the note pattern at mti and mri
 	NotePattern& note_pattern (size_t mti, size_t mri);
+
+	// Return the midi region pattern at mti and mri
+	MidiRegionPattern& midi_region_pattern (size_t mti, size_t mri);
 
 	// Apply given command at mti
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);

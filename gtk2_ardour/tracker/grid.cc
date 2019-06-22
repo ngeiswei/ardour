@@ -1219,17 +1219,46 @@ Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, c
 {
 	row[columns._time_background_color] = color;
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (is_region_defined (rowi, mti)) {
-			// Set current notes row background color
-			for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks(); cgi++) {
-				row[columns._note_background_color[mti][cgi]] = color;
-				row[columns._channel_background_color[mti][cgi]] = color;
-				row[columns._velocity_background_color[mti][cgi]] = color;
-				row[columns._delay_background_color[mti][cgi]] = color;
-			}
-		}
-		// Set current automation background color
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		redisplay_row_mti_background_color (row, rowi, mti, color);
+	}
+}
+
+void
+Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color)
+{
+	if (is_region_defined (rowi, mti)) {
+		// Set current notes row background color
+		redisplay_row_mti_notes_background_color (row, rowi, mti, color);
+
+		// Set current region automations background color
+		int mri = pattern.to_mri(rowi, mti);
+		MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
+		redisplay_row_mti_automations_background_color (row, rowi, mti, mrp.rap, color);
+	}
+
+	// Set automation background color of the enabled track automations
+	AutomationPattern& ap = *pattern.tps[mti];
+	redisplay_row_mti_automations_background_color (row, rowi, mti, ap, color);
+}
+
+void
+Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color)
+{
+	for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks(); cgi++) {
+		row[columns._note_background_color[mti][cgi]] = color;
+		row[columns._channel_background_color[mti][cgi]] = color;
+		row[columns._velocity_background_color[mti][cgi]] = color;
+		row[columns._delay_background_color[mti][cgi]] = color;
+	}
+}
+
+void
+Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color)
+{
+	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
+		Evoral::Parameter param = it->first;
+		if (ap.is_enabled (param)) {
+			int cgi = get_cgi (mti, param);
 			row[columns._automation_background_color[mti][cgi]] = color;
 			row[columns._automation_delay_background_color[mti][cgi]] = color;
 		}
@@ -1360,7 +1389,7 @@ void
 Grid::redisplay_track_automations(size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
 {
 	if (auto_diff == 0 || auto_diff->full) {
-		for (AutomationPattern::ParamToRowToAutomationListIt::const_iterator it = tap.param_to_row_to_ali.begin(); it != tap.param_to_row_to_ali.end(); it++) {
+		for (AutomationPattern::ParamToEnabled::const_iterator it = tap.param_to_enabled.begin(); it != tap.param_to_enabled.end(); it++) {
 			redisplay_track_automation_param(mti, tap, it->first);
 		}
 	} else {
@@ -1377,7 +1406,7 @@ Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern&
 	if (!tap.is_enabled(param))
 		return;
 
-	int cgi = get_auto_cgi(mti, param);
+	int cgi = get_cgi(mti, param);
 	if (cgi < 0)
 		return;
 
@@ -1422,7 +1451,7 @@ Grid::redisplay_inter_midi_regions (size_t mti)
 		TreeModel::Row row = *row_it++;
 		if (!is_region_defined (rowi, mti)) {
 			redisplay_undefined_notes (row, mti);
-			// VT: probably take into account region automations
+			// VVT: take into account region automations
 		}
 	}
 }
@@ -1452,23 +1481,16 @@ Grid::redisplay_region_notes (size_t mti, size_t mri, const NotePattern& np, con
 void
 Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* rap_diff)
 {
-	if (rap_diff == 0 || rap_diff->full) {
-		for (AutomationPattern::ParamToRowToAutomationListIt::const_iterator it = rap.param_to_row_to_ali.begin(); it != rap.param_to_row_to_ali.end(); it++)
+	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
+		for (AutomationPattern::ParamToEnabled::const_iterator it = rap.param_to_enabled.begin(); it != rap.param_to_enabled.end(); it++)
 		{
 			redisplay_region_automation_param(mti, mri, rap, it->first);
 		}
 	} else {
 		const AutomationPatternPhenomenalDiff& ap_diff = rap_diff->ap_diff;
-		if (ap_diff.full) {
-			for (AutomationPattern::ParamToRowToAutomationListIt::const_iterator it = rap.param_to_row_to_ali.begin(); it != rap.param_to_row_to_ali.end(); it++)
-			{
-				redisplay_region_automation_param(mti, mri, rap, it->first);
-			}
-		} else {
-			for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = ap_diff.param2rows_diff.begin(); it != ap_diff.param2rows_diff.end(); it++)
-			{
-				redisplay_region_automation_param(mti, mri, rap, it->first, &it->second);
-			}
+		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = ap_diff.param2rows_diff.begin(); it != ap_diff.param2rows_diff.end(); it++)
+		{
+			redisplay_region_automation_param(mti, mri, rap, it->first, &it->second);
 		}
 	}
 }
@@ -1480,7 +1502,7 @@ Grid::redisplay_region_automation_param (size_t mti, size_t mri, const RegionAut
 	if (!rap.is_enabled(param))
 		return;
 
-	int cgi = get_auto_cgi(mti, param);
+	int cgi = get_cgi(mti, param);
 
 	if (cgi < 0)
 		return;
@@ -2240,7 +2262,7 @@ Grid::get_param (size_t mti, size_t cgi)
 }
 
 int
-Grid::get_auto_cgi (size_t mti, const Evoral::Parameter& param)
+Grid::get_cgi (size_t mti, const Evoral::Parameter& param)
 {
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find(param);
 	if (cp_it == col2params[mti].right.end())
