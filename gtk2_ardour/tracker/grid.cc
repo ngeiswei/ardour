@@ -877,21 +877,58 @@ Grid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
 	// Number of column groups
 	size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
 	for (size_t cgi = 0; cgi < ntracks; cgi++) {
-		// cgi stands from column group index
-		row[columns.note_name[mti][cgi]] = "";
-		row[columns.channel[mti][cgi]] = "";
-		row[columns.velocity[mti][cgi]] = "";
-		row[columns.delay[mti][cgi]] = "";
-
-		// TODO: replace gtk_bases_color by a custom one
-		row[columns._note_background_color[mti][cgi]] = gtk_bases_color;
-		row[columns._channel_background_color[mti][cgi]] = gtk_bases_color;
-		row[columns._velocity_background_color[mti][cgi]] = gtk_bases_color;
-		row[columns._delay_background_color[mti][cgi]] = gtk_bases_color;
+		redisplay_undefined_note (row, mti, cgi);
 
 		// Reset keeping track of the on and off notes
 		reset_off_on_note (row, mti, cgi);
 	}
+}
+
+void
+Grid::redisplay_undefined_note (TreeModel::Row& row, size_t mti, size_t cgi)
+{
+	// cgi stands from column group index
+	row[columns.note_name[mti][cgi]] = "";
+	row[columns.channel[mti][cgi]] = "";
+	row[columns.velocity[mti][cgi]] = "";
+	row[columns.delay[mti][cgi]] = "";
+
+	// TODO: replace gtk_bases_color by a custom one
+	row[columns._note_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._channel_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._velocity_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._delay_background_color[mti][cgi]] = gtk_bases_color;
+}
+
+void
+Grid::redisplay_undefined_automations (TreeModel::Row& row, size_t rowi, size_t mti)
+{
+	std::cout << "Grid::redisplay_undefined_automations BEGIN rowi = " << rowi
+	          << ", mti = " << mti << std::endl;
+
+	if (!pattern.tps[mti]->is_midi_track_pattern())
+		return;
+
+	std::cout << "Grid::redisplay_undefined_automations MID-1" << std::endl;
+	int mri = pattern.to_mri(rowi, mti);
+	std::cout << "Grid::redisplay_undefined_automations MID-2" << std::endl;
+	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
+	std::cout << "Grid::redisplay_undefined_automations MID-3" << std::endl;
+	AutomationPattern& ap = mrp.rap;
+	std::cout << "Grid::redisplay_undefined_automations MID-4" << std::endl;
+	// VVT: find out why it crashes, maybe there is a race condition!
+	// for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
+	// 	std::cout << "Grid::redisplay_undefined_automations MID-5" << std::endl;
+	// 	Evoral::Parameter param = it->first;
+	// 	std::cout << "Grid::redisplay_undefined_automations MID-6" << std::endl;
+	// 	if (ap.is_enabled (param)) {
+	// 		std::cout << "Grid::redisplay_undefined_automations MID-7" << std::endl;
+	// 		int cgi = get_cgi (mti, param);
+	// 		redisplay_undefined_automation (row, mti, cgi);
+	// 	}
+	// }
+
+	std::cout << "Grid::redisplay_undefined_automations END" << std::endl;
 }
 
 void
@@ -974,13 +1011,16 @@ Grid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 void
 Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	// Set undefined background color
-	row[columns._automation_background_color[mti][cgi]] = gtk_bases_color;
-	row[columns._automation_delay_background_color[mti][cgi]] = gtk_bases_color;
-
+	std::cout << "Grid::redisplay_undefined_automation BEGIN mti = " << mti
+	          << ", cgi = " << cgi << std::endl;
 	// Set empty forground
 	row[columns.automation[mti][cgi]] = "";
 	row[columns.automation_delay[mti][cgi]] = "";
+
+	// Set undefined background color
+	row[columns._automation_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._automation_delay_background_color[mti][cgi]] = gtk_bases_color;
+	std::cout << "Grid::redisplay_undefined_automation END" << std::endl;
 }
 
 // VT: remove when no longer useful
@@ -1451,7 +1491,7 @@ Grid::redisplay_inter_midi_regions (size_t mti)
 		TreeModel::Row row = *row_it++;
 		if (!is_region_defined (rowi, mti)) {
 			redisplay_undefined_notes (row, mti);
-			// VVT: take into account region automations
+			redisplay_undefined_automations (row, rowi, mti);
 		}
 	}
 }
