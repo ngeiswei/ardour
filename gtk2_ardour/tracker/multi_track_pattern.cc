@@ -346,19 +346,25 @@ MultiTrackPattern::insert(size_t mti, const Evoral::Parameter& param)
 boost::shared_ptr<ARDOUR::MidiModel>
 MultiTrackPattern::midi_model (size_t mti, size_t mri)
 {
-	return tps[mti]->midi_track_pattern()->mrps[mri].midi_model;
+	return midi_region_pattern (mti, mri).midi_model;
 }
 
 boost::shared_ptr<ARDOUR::MidiRegion>
 MultiTrackPattern::midi_region (size_t mti, size_t mri)
 {
-	return tps[mti]->midi_track_pattern()->mrps[mri].midi_region;
+	return midi_region_pattern (mti, mri).midi_region;
 }
 
 NotePattern&
 MultiTrackPattern::note_pattern (size_t mti, size_t mri)
 {
-	return tps[mti]->midi_track_pattern()->mrps[mri].np;
+	return midi_region_pattern (mti, mri).np;
+}
+
+MidiRegionPattern&
+MultiTrackPattern::midi_region_pattern (size_t mti, size_t mri)
+{
+	return tps[mti]->midi_track_pattern()->mrps[mri];
 }
 
 void
