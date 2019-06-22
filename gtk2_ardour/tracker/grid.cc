@@ -903,32 +903,20 @@ Grid::redisplay_undefined_note (TreeModel::Row& row, size_t mti, size_t cgi)
 void
 Grid::redisplay_undefined_automations (TreeModel::Row& row, size_t rowi, size_t mti)
 {
-	std::cout << "Grid::redisplay_undefined_automations BEGIN rowi = " << rowi
-	          << ", mti = " << mti << std::endl;
-
 	if (!pattern.tps[mti]->is_midi_track_pattern())
 		return;
 
-	std::cout << "Grid::redisplay_undefined_automations MID-1" << std::endl;
-	int mri = pattern.to_mri(rowi, mti);
-	std::cout << "Grid::redisplay_undefined_automations MID-2" << std::endl;
+	size_t mri = 0;              // consider the first one, all parameters
+										  // should be the same in all other regions
 	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
-	std::cout << "Grid::redisplay_undefined_automations MID-3" << std::endl;
 	AutomationPattern& ap = mrp.rap;
-	std::cout << "Grid::redisplay_undefined_automations MID-4" << std::endl;
-	// VVT: find out why it crashes, maybe there is a race condition!
-	// for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
-	// 	std::cout << "Grid::redisplay_undefined_automations MID-5" << std::endl;
-	// 	Evoral::Parameter param = it->first;
-	// 	std::cout << "Grid::redisplay_undefined_automations MID-6" << std::endl;
-	// 	if (ap.is_enabled (param)) {
-	// 		std::cout << "Grid::redisplay_undefined_automations MID-7" << std::endl;
-	// 		int cgi = get_cgi (mti, param);
-	// 		redisplay_undefined_automation (row, mti, cgi);
-	// 	}
-	// }
-
-	std::cout << "Grid::redisplay_undefined_automations END" << std::endl;
+	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
+		Evoral::Parameter param = it->first;
+		if (it->second) {
+			int cgi = get_cgi (mti, param);
+			redisplay_undefined_automation (row, mti, cgi);
+		}
+	}
 }
 
 void
@@ -1011,8 +999,6 @@ Grid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, siz
 void
 Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::cout << "Grid::redisplay_undefined_automation BEGIN mti = " << mti
-	          << ", cgi = " << cgi << std::endl;
 	// Set empty forground
 	row[columns.automation[mti][cgi]] = "";
 	row[columns.automation_delay[mti][cgi]] = "";
@@ -1020,7 +1006,6 @@ Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size
 	// Set undefined background color
 	row[columns._automation_background_color[mti][cgi]] = gtk_bases_color;
 	row[columns._automation_delay_background_color[mti][cgi]] = gtk_bases_color;
-	std::cout << "Grid::redisplay_undefined_automation END" << std::endl;
 }
 
 // VT: remove when no longer useful
@@ -1297,7 +1282,7 @@ Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, u
 {
 	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
 		Evoral::Parameter param = it->first;
-		if (ap.is_enabled (param)) {
+		if (it->second) {
 			int cgi = get_cgi (mti, param);
 			row[columns._automation_background_color[mti][cgi]] = color;
 			row[columns._automation_delay_background_color[mti][cgi]] = color;
@@ -1430,7 +1415,8 @@ Grid::redisplay_track_automations(size_t mti, const TrackAutomationPattern& tap,
 {
 	if (auto_diff == 0 || auto_diff->full) {
 		for (AutomationPattern::ParamToEnabled::const_iterator it = tap.param_to_enabled.begin(); it != tap.param_to_enabled.end(); it++) {
-			redisplay_track_automation_param(mti, tap, it->first);
+			if (it->second)
+				redisplay_track_automation_param(mti, tap, it->first);
 		}
 	} else {
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = auto_diff->param2rows_diff.begin(); it != auto_diff->param2rows_diff.end(); it++) {
@@ -1442,10 +1428,6 @@ Grid::redisplay_track_automations(size_t mti, const TrackAutomationPattern& tap,
 void
 Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	// Only display if the automation is enabled
-	if (!tap.is_enabled(param))
-		return;
-
 	int cgi = get_cgi(mti, param);
 	if (cgi < 0)
 		return;
@@ -1524,7 +1506,8 @@ Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomati
 	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
 		for (AutomationPattern::ParamToEnabled::const_iterator it = rap.param_to_enabled.begin(); it != rap.param_to_enabled.end(); it++)
 		{
-			redisplay_region_automation_param(mti, mri, rap, it->first);
+			if (it->second)
+				redisplay_region_automation_param(mti, mri, rap, it->first);
 		}
 	} else {
 		const AutomationPatternPhenomenalDiff& ap_diff = rap_diff->ap_diff;
@@ -1538,10 +1521,6 @@ Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomati
 void
 Grid::redisplay_region_automation_param (size_t mti, size_t mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	// Only display if the automation is enabled
-	if (!rap.is_enabled(param))
-		return;
-
 	int cgi = get_cgi(mti, param);
 
 	if (cgi < 0)
