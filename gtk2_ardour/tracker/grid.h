@@ -181,6 +181,9 @@ public:
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, uint32_t rowi);
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, const std::string& color);
+	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color);
+	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color);
+	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color);
 	void redisplay_model ();
 	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
 	void redisplay_inter_midi_regions (size_t mti);
@@ -428,7 +431,7 @@ private:
 	Evoral::Parameter get_param (size_t mti, size_t auto_cgi); // TODO: make const
 
 	// Return cgi associated to param at mti. If undefined for param return -1.
-	int get_auto_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
+	int get_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
