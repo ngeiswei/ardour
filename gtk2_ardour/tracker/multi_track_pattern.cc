@@ -145,8 +145,8 @@ MultiTrackPattern::setup_row_offset()
 void
 MultiTrackPattern::update ()
 {
-	set_row_range ();
 	update_rows_per_beat ();
+	set_row_range ();
 	update_content ();
 	update_earliest_mtp ();
 	update_global_nrows ();
