@@ -1,4 +1,3 @@
-- Try to understand segfault when loading test-3
 - Deal with *** in a "proper" manner...
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix bug in updating playhead
