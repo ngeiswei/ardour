@@ -239,6 +239,7 @@ public:
 	Glib::RefPtr<Gtk::ListStore> model;
 
 	// Coordonates associated to current cursor
+	Temporal::Beats              current_beats;
 	Gtk::TreeModel::Path         current_path;
 	int                          current_rowi;
 	Gtk::TreeModel::Row          current_row;
@@ -255,6 +256,7 @@ public:
 	samplepos_t                  clock_pos;
 
 	// Coordonates associated to edit cursor
+	// TODO: is everything below used?
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_rowi;
 	// TreeModel::Row*              edit_row;

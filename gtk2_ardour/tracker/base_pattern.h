@@ -139,7 +139,7 @@ public:
 	// For representing pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;
-	
+
 	// Reference to main tracker editor
 	TrackerEditor& tracker_editor;
 
