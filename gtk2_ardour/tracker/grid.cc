@@ -82,6 +82,7 @@ Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
 	, pattern (te)
 	, prev_pattern (te)
+	, current_beats (0)
 	, current_path (1)
 	, current_rowi (0)
 	, current_col (0)
@@ -1333,6 +1334,7 @@ Grid::redisplay_model ()
 
 	// Redisplay current row and cursor
 	// TODO: optimize
+	uint32_t current_rowi_from_beats = pattern.row_at_beats(current_beats);
 	TreeModel::Children::iterator row_it = model->children().begin();
 	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
 
@@ -1340,9 +1342,10 @@ Grid::redisplay_model ()
 		TreeModel::Row row = *row_it++;
 
 		// Used to draw the background of the current row and cursor
-		if ((int)rowi == current_rowi) {
+		if (rowi == current_rowi_from_beats) {
 			if (current_col <= 0)
 				current_col = first_defined_col ();
+			current_rowi = current_rowi_from_beats;
 			current_row = row;
 			redisplay_current_row_background ();
 			redisplay_current_cursor ();
@@ -2234,6 +2237,7 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	// Update current row
 	current_path = path;
 	current_rowi = get_row_index (path);
+	current_beats = pattern.beats_at_row(current_rowi);
 	current_row = get_row (current_rowi);
 
 	// Update current col
@@ -2414,6 +2418,7 @@ Grid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
 void
 Grid::follow_current_row (samplepos_t pos)
 {
+	// TODO: relax that interval so that follow goes to the extremes 
 	if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
 		int rowi = pattern.row_at_sample(pos);
 		if (rowi != current_rowi)
