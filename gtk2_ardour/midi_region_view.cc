@@ -1542,7 +1542,6 @@ MidiRegionView::~MidiRegionView ()
 	hide_verbose_cursor ();
 
 	delete _list_editor;
-	delete _tracker_editor;
 
 	RegionViewGoingAway (this); /* EMIT_SIGNAL */
 
