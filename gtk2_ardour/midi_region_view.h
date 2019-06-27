@@ -526,7 +526,6 @@ public:
 	void update_ghost_note (double, double, uint32_t state);
 
 	MidiListEditor* _list_editor;
-	Tracker::TrackerEditor* _tracker_editor;
 	bool _no_sound_notes;
 
 	void snap_changed ();
