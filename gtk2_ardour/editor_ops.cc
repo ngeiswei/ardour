@@ -128,8 +128,6 @@
 #include "utils.h"
 #include "vca_time_axis.h"
 
-#include "tracker/tracker_editor.h"
-
 #include "pbd/i18n.h"
 
 using namespace std;
@@ -3159,14 +3157,10 @@ Editor::show_tracker_editor ()
 {
 	if (_session) {
 		RegionSelection rs = get_regions_from_selection_and_entered ();
-		Tracker::TrackerEditor* tracker_editor = new Tracker::TrackerEditor (_session, rs);
-		tracker_editor->present ();
-		// TODO: disable the corresponding action so that no one can select
-		// tracker editor again till closed. See code like
-		//
-		// _region_actions->get_action("show-region-list-editor")->set_sensitive (false);
-		//
-		// in editor_selection.cc
+		if (!_tracker_editor)
+			_tracker_editor = new Tracker::TrackerEditor (_session, rs);
+		// VVT: update rs to tracker_editor
+		_tracker_editor->present ();
 	}
 }
 

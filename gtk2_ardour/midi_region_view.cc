@@ -70,7 +70,6 @@
 #include "midi_channel_dialog.h"
 #include "midi_cut_buffer.h"
 #include "midi_list_editor.h"
-#include "tracker/tracker_editor.h"
 #include "midi_region_view.h"
 #include "midi_streamview.h"
 #include "midi_time_axis.h"
