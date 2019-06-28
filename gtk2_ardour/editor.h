@@ -80,6 +80,8 @@
 
 #include "ptformat/ptformat.h"
 
+#include "tracker/tracker_editor.h"
+
 namespace Gtkmm2ext {
 	class Bindings;
 }
@@ -2558,6 +2560,9 @@ private:
 	/* MIDI actions, proxied to selected MidiRegionView(s) */
 	void midi_action (void (MidiRegionView::*method)());
 	std::vector<MidiRegionView*> filter_to_unique_midi_region_views (RegionSelection const & ms) const;
+
+	/* Persistent tracker editor window */
+	Tracker::TrackerEditor* _tracker_editor;
 
 	/* private helper functions to help with registering region actions */
 
