@@ -80,6 +80,8 @@ namespace Tracker {
 // TODO: fix grid focus (use get_focus() to gather information on which widget
 //       has a current focus)
 
+// VVT: decompose this function into ctor taking only s, and setup method
+// taking rs
 TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	: ArdourWindow (window_name(rs))
 	, session(s)
