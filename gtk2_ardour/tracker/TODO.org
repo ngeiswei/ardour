@@ -1,4 +1,5 @@
 - Make TrackerEditor persistent
+- Fix pattern position when tempo change
 - Underline the digit to be edited according to position
 - Create wscript under tracker folder
 - Add copy/move, etc, notes + popup menu
