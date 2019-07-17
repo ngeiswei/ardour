@@ -75,9 +75,10 @@ public:
 	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
 	~TrackerEditor();
 
+	void setup (RegionSelection& rs);
+
 	boost::shared_ptr<ARDOUR::MidiModel> to_model (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
 
-	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names();
 	void resize_width ();
 
 	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actrl);
@@ -89,9 +90,6 @@ public:
 
 	// List of selected region considered at the creation of this class
 	RegionSelection region_selection;
-
-	// Hold tracks, models, views and patterns for each midi track
-	std::vector<MidiTimeAxisView*> midi_time_axis_views; // NEXT TODO: probably doesn't need this
 
 	Gtk::ScrolledWindow          scroller;
 	Grid                         grid;
@@ -105,8 +103,8 @@ public:
 private:
 	void setup_toolbars ();
 	void setup_main_toolbar ();
-	void setup_grid_header ();
 	void setup_grid ();
+	void setup_grid_header ();
 	void setup_scroller ();
 };
 

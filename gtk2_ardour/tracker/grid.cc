@@ -103,6 +103,8 @@ Grid::Grid (TrackerEditor& te)
 	, last_keyval (GDK_VoidSymbol)
 	, time_column (0)
 {
+	// VVT: we probably want to remove that and run it during
+	// TrackerEditor::setup instead.
 	setup ();
 }
 
