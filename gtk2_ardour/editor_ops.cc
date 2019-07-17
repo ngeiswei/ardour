@@ -3055,7 +3055,7 @@ Editor::show_tracker_editor ()
 		RegionSelection rs = get_regions_from_selection_and_entered ();
 		if (!_tracker_editor)
 			_tracker_editor = new Tracker::TrackerEditor (_session, rs);
-		// VVT: update rs to tracker_editor
+		_tracker_editor->setup (rs);
 		_tracker_editor->present ();
 	}
 }

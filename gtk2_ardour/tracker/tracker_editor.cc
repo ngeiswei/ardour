@@ -80,20 +80,31 @@ namespace Tracker {
 // TODO: fix grid focus (use get_focus() to gather information on which widget
 //       has a current focus)
 
-// VVT: decompose this function into ctor taking only s, and setup method
-// taking rs
 TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
-	: ArdourWindow (window_name(rs))
+	: ArdourWindow ("")
 	, session(s)
 	, public_editor(dynamic_cast<RouteTimeAxisView&>(rs.front()->get_time_axis_view ()).editor ())
-	, region_selection(rs)
+	, region_selection (rs)
 	, grid (*this)
 	, main_toolbar (*this)
 {
 	set_session (s);
+}
+
+TrackerEditor::~TrackerEditor ()
+{
+	delete grid_header;
+}
+
+void TrackerEditor::setup (RegionSelection& rs)
+{
+	region_selection = rs;
+	set_title (window_name(rs));
+	// setup_grid ();               // VVT: this happens in Grid ctor too, this is redundant
 
 	// Build tracks, midi_time_axis_views and routes
 
+	// VVT: Move this in MidiTrackPattern and such
 	// Regions are sorted according to selection order
 	int i = 0;
 	for (RegionSelection::const_iterator it = region_selection.begin();
@@ -102,7 +113,6 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 		if (mrv) {                // Make sure it is midi region
 			boost::shared_ptr<MidiRegion> midi_region = mrv->midi_region();
 			boost::shared_ptr<MidiModel> midi_model = midi_region->midi_source(0)->model();
-			MidiTimeAxisView* midi_time_axis_view = mrv->midi_view();
 
 			i++;
 
@@ -116,8 +126,6 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 			                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
 
-			// TODO: is this really necessary?
-			midi_time_axis_views.push_back(midi_time_axis_view);
 		}
 		// TODO: take care of audio tracks, maybe
 	}
@@ -148,22 +156,10 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	grid.redisplay_model ();
 }
 
-TrackerEditor::~TrackerEditor ()
-{
-	delete grid_header;
-}
-
 boost::shared_ptr<MidiModel>
 TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
 {
 	return midi_region->midi_source(0)->model();
-}
-
-boost::shared_ptr<MIDI::Name::MasterDeviceNames>
-TrackerEditor::get_device_names ()
-{
-	// NEXT TODO: support mti
-	return midi_time_axis_views.front()->get_device_names ();
 }
 
 void
@@ -184,6 +180,12 @@ TrackerEditor::resize_width()
 }
 
 void
+TrackerEditor::setup_grid ()
+{
+	grid.setup();
+}
+
+void
 TrackerEditor::setup_toolbars ()
 {
 	main_toolbar.setup ();
@@ -192,6 +194,7 @@ TrackerEditor::setup_toolbars ()
 void
 TrackerEditor::setup_grid_header()
 {
+	delete grid_header;
 	grid_header = new GridHeader (*this);
 }
 

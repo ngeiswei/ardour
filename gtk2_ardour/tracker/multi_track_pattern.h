@@ -24,6 +24,8 @@
 #include "ardour/automation_list.h"
 #include "ardour/track.h"
 
+#include "region_view.h"
+
 #include "tracker_utils.h"
 #include "note_pattern.h"
 #include "midi_region_pattern.h"
@@ -51,6 +53,7 @@ public:
 	
 	void setup ();
 	void setup_positions ();
+	void setup_region_views_per_track ();
 	void setup_regions_per_track ();
 	void setup_track_patterns ();
 	void setup_row_offset ();
@@ -153,6 +156,10 @@ public:
 
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;
+
+	// Mapping track to region views
+	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<RegionView*>, ARDOUR::Stripable::Sorter> TrackRegionViewsMap;
+	TrackRegionViewsMap region_views_per_track;
 	
 	// Mapping track to regions
 	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> >, ARDOUR::Stripable::Sorter> TrackRegionsMap;
