@@ -24,7 +24,6 @@
 #include "widgets/tooltips.h"
 #include "ardour/midi_track.h"
 #include "ardour/amp.h"
-#include "midi++2/midi++/midnam_patch.h"
 
 #include "pbd/i18n.h"
 #include "gtkmm2ext/utils.h"
@@ -341,7 +340,7 @@ MidiTrackToolbar::build_controller_menu ()
 	}
 
 	using namespace MIDI::Name;
-	boost::shared_ptr<MasterDeviceNames> device_names = tracker_editor.get_device_names(); // NT: move this here!
+	boost::shared_ptr<MasterDeviceNames> device_names = get_device_names ();
 
 	if (device_names && !device_names->controls().empty()) {
 		/* Controllers names available in midnam file, generate fancy menu */
@@ -738,4 +737,10 @@ MidiTrackToolbar::get_min_width() const
 		automation_button.get_width();
 
 	return width;
+}
+
+boost::shared_ptr<MIDI::Name::MasterDeviceNames>
+MidiTrackToolbar::get_device_names ()
+{
+	return midi_track_pattern.get_device_names ();
 }

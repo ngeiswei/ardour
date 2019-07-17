@@ -18,15 +18,20 @@
 
 #include "ardour/midi_region.h"
 
+#include "region_view.h"
+#include "midi_region_view.h"
+
 #include "tracker_utils.h"
 #include "midi_track_pattern.h"
 #include "midi_track_pattern_phenomenal_diff.h"
 #include "grid.h"
+#include "tracker_editor.h"
 
 using namespace Tracker;
 
 MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     boost::shared_ptr<ARDOUR::Track> trk,
+                                    const std::vector<RegionView*>& region_views,
                                     const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
                                     Temporal::samplepos_t position,
                                     Temporal::samplecnt_t length,
@@ -34,6 +39,7 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     Temporal::samplepos_t last_sample)
 	: TrackAutomationPattern(te, trk, position, length, first_sample, last_sample)
 	, midi_track(boost::static_pointer_cast<ARDOUR::MidiTrack>(trk))
+	, rvs(region_views)
 	, row_offset(regions.size(), 0)
 {
 	for (size_t i = 0; i < regions.size(); i++)
@@ -355,6 +361,14 @@ MidiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const
 	return TrackerUtils::is_region_automation (param) ?
 		*mrps[mri].rap.param_to_row_to_ali.find(param)->second.find(to_rrri(rowi, mri))->second
 		: *TrackAutomationPattern::param_to_row_to_ali.find(param)->second.find(rowi)->second;
+}
+
+boost::shared_ptr<MIDI::Name::MasterDeviceNames>
+MidiTrackPattern::get_device_names ()
+{
+	MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(rvs.front());
+	MidiTimeAxisView* mtav = mrv->midi_view();
+	return mtav->get_device_names ();
 }
 
 std::string

@@ -95,9 +95,20 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 void
 MultiTrackPattern::setup ()
 {
+	setup_region_views_per_track ();
 	setup_regions_per_track ();
 	setup_track_patterns ();
 	setup_row_offset ();
+}
+
+void
+MultiTrackPattern::setup_region_views_per_track ()
+{
+	// Associate track to its region selections
+	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
+		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
+		region_views_per_track[track].push_back(*it);
+	}
 }
 
 void
@@ -120,7 +131,8 @@ MultiTrackPattern::setup_track_patterns()
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
 		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(it->first);
 		if (midi_track) {
-			MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, it->first, it->second,
+			MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor,
+			                                             it->first, region_views_per_track[midi_track], it->second,
 			                                             position, length, first_sample, last_sample);
 			tps.push_back(mtp);
 		}
