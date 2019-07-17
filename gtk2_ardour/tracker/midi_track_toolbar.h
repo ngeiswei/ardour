@@ -26,6 +26,7 @@
 #include "ardour/processor.h"
 #include "ardour/pannable.h"
 #include "ardour/midi_playlist.h"
+#include "midi++2/midi++/midnam_patch.h"
 
 #include "midi_track_pattern.h"
 #include "tracker_types.h"
@@ -105,6 +106,8 @@ public:
 
 	void print_widths() const;
 	int get_min_width() const;
+
+	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	MidiTrackPattern& midi_track_pattern;

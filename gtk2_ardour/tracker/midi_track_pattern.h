@@ -23,6 +23,8 @@
 #include "track_pattern.h"
 #include "track_automation_pattern.h"
 
+#include "midi++2/midi++/midnam_patch.h"
+
 namespace Tracker {
 
 /**
@@ -34,6 +36,7 @@ class MidiTrackPattern : public TrackAutomationPattern {
 public:
 	MidiTrackPattern (TrackerEditor& te,
 	                  boost::shared_ptr<ARDOUR::Track> track,
+	                  const std::vector<RegionView*>& region_views,
 	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
 	                  Temporal::samplepos_t position,
 	                  Temporal::samplecnt_t length,
@@ -130,11 +133,14 @@ public:
 	size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 
+	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
+
 	// For representing pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
+	std::vector<RegionView*> rvs; // to get access to device names
 	std::vector<MidiRegionPattern> mrps;
 
 	// Associate each mri to row_offset
