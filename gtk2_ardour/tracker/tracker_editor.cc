@@ -87,6 +87,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	, region_selection (rs)
 	, grid (*this)
 	, main_toolbar (*this)
+	, grid_header (0)
 {
 	set_session (s);
 }
@@ -98,44 +99,25 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
+	std::cout << "TrackerEditor::setup" << std::endl;
+
 	region_selection = rs;
 	set_title (window_name(rs));
-	// setup_grid ();               // VVT: this happens in Grid ctor too, this is redundant
 
-	// Build tracks, midi_time_axis_views and routes
+	std::cout << "TrackerEditor::setup before setup_grid" << std::endl;
 
-	// VVT: Move this in MidiTrackPattern and such
-	// Regions are sorted according to selection order
-	int i = 0;
-	for (RegionSelection::const_iterator it = region_selection.begin();
-	     it != region_selection.end(); ++it) {
-		MidiRegionView* mrv = dynamic_cast<MidiRegionView*>(*it);
-		if (mrv) {                // Make sure it is midi region
-			boost::shared_ptr<MidiRegion> midi_region = mrv->midi_region();
-			boost::shared_ptr<MidiModel> midi_model = midi_region->midi_source(0)->model();
-
-			i++;
-
-			// Make changing midi content re-render the grid
-			// TODO: connect to redisplay_track or such to speed up the whole rendering
-			midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
-			                                     boost::bind (&Grid::redisplay_model, &grid), gui_context());
-
-			// Make changing the region time zone re-render the grid
-			// TODO: set full to true and connect directly to redisplay_track or such
-			midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-			                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
-
-		}
-		// TODO: take care of audio tracks, maybe
-	}
-
+	setup_grid ();
+	std::cout << "TrackerEditor::setup before setup_scroller" << std::endl;
 	setup_scroller ();
+	std::cout << "TrackerEditor::setup before setup_toolbars" << std::endl;
 	setup_toolbars ();
+	std::cout << "TrackerEditor::setup before setup_grid_header" << std::endl;
 	setup_grid_header ();
 
+	std::cout << "TrackerEditor::setup before grid.redisplay_model" << std::endl;
 	grid.redisplay_model ();
 
+	std::cout << "TrackerEditor::setup before vbox.show ()" << std::endl;
 	vbox.show ();
 
 	vbox.set_spacing (6);
@@ -160,6 +142,19 @@ boost::shared_ptr<MidiModel>
 TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
 {
 	return midi_region->midi_source(0)->model();
+}
+
+void
+TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
+{
+	// Changing midi content re-render the grid
+	boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_region->midi_source(0)->model();
+	midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
+	                                     boost::bind (&Grid::redisplay_model, &grid), gui_context());
+
+	// Changing the region time zone re-render the grid
+	midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
+	                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
 }
 
 void
@@ -194,8 +189,11 @@ TrackerEditor::setup_toolbars ()
 void
 TrackerEditor::setup_grid_header()
 {
+	std::cout << "TrackerEditor::setup before delete grid_header" << std::endl;
 	delete grid_header;
+	std::cout << "TrackerEditor::setup before new grid_header" << std::endl;
 	grid_header = new GridHeader (*this);
+	std::cout << "TrackerEditor::setup after new grid_header" << std::endl;
 }
 
 void
