@@ -17,6 +17,7 @@
 */
 
 #include "midi_region_pattern.h"
+#include "tracker_editor.h"
 
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
@@ -32,6 +33,7 @@ MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
 	, midi_model(region->midi_source(0)->model())
 	, midi_region(region)
 {
+	tracker_editor.connect_midi_region(midi_region);
 }
 
 MidiRegionPattern::~MidiRegionPattern ()
