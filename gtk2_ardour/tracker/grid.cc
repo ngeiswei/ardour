@@ -103,9 +103,6 @@ Grid::Grid (TrackerEditor& te)
 	, last_keyval (GDK_VoidSymbol)
 	, time_column (0)
 {
-	// VVT: we probably want to remove that and run it during
-	// TrackerEditor::setup instead.
-	setup ();
 }
 
 Grid::~Grid ()
@@ -829,7 +826,6 @@ Grid::redisplay_global_columns ()
 {
 	// If no global changes, then skip
 	if (!_phenomenal_diff.full) {
-		// std::cout << "Grid::redisplay_global_columns skip" << std::endl;
 		return;
 	}
 
@@ -861,13 +857,6 @@ Grid::redisplay_global_columns ()
 		row[columns._family] = "Monospace";
 
 		row[columns._time_background_color] = row_background_color;
-
-		std::cout << "Grid::redisplay_global_columns rowi = " << rowi
-		          << ", row_beats = " << row_beats
-		          << ", row_sample = " << row_sample
-		          << ", row_bbt = " << row_bbt
-		          << ", is_row_beat = " << is_row_beat
-		          << ", is_row_bar = " << is_row_bar << std::endl;
 	}
 }
 
@@ -1407,7 +1396,6 @@ Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
-	std::cout << "Grid::redisplay_midi_track mpt = " << mtp.to_string();
 	if (mtp_diff == 0 || mtp_diff->full) {
 		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size(); mri++) {
