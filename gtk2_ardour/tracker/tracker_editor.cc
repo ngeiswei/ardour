@@ -99,25 +99,18 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
-	std::cout << "TrackerEditor::setup" << std::endl;
+	// VVT: support commulative calls of TrackerEditor::setup
 
 	region_selection = rs;
 	set_title (window_name(rs));
 
-	std::cout << "TrackerEditor::setup before setup_grid" << std::endl;
-
 	setup_grid ();
-	std::cout << "TrackerEditor::setup before setup_scroller" << std::endl;
 	setup_scroller ();
-	std::cout << "TrackerEditor::setup before setup_toolbars" << std::endl;
 	setup_toolbars ();
-	std::cout << "TrackerEditor::setup before setup_grid_header" << std::endl;
 	setup_grid_header ();
 
-	std::cout << "TrackerEditor::setup before grid.redisplay_model" << std::endl;
 	grid.redisplay_model ();
 
-	std::cout << "TrackerEditor::setup before vbox.show ()" << std::endl;
 	vbox.show ();
 
 	vbox.set_spacing (6);
@@ -189,11 +182,8 @@ TrackerEditor::setup_toolbars ()
 void
 TrackerEditor::setup_grid_header()
 {
-	std::cout << "TrackerEditor::setup before delete grid_header" << std::endl;
 	delete grid_header;
-	std::cout << "TrackerEditor::setup before new grid_header" << std::endl;
 	grid_header = new GridHeader (*this);
-	std::cout << "TrackerEditor::setup after new grid_header" << std::endl;
 }
 
 void
