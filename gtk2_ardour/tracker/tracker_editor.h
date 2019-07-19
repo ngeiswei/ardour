@@ -81,6 +81,7 @@ public:
 
 	void resize_width ();
 
+	void connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
 	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actrl);
 	
 	ARDOUR::Session* session;
