@@ -49,6 +49,11 @@ NotePattern::NotePattern(TrackerEditor& te,
 NotePattern&
 NotePattern::operator=(const NotePattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	BasePattern::operator=(other);
 	ntracks = other.ntracks;
 	nreqtracks = other.nreqtracks;
@@ -167,6 +172,8 @@ NotePatternPhenomenalDiff
 NotePattern::phenomenal_diff(const NotePattern& other) const
 {
 	NotePatternPhenomenalDiff diff;
+	if (!enabled)
+		return diff;
 
 	diff.full = ntracks != other.ntracks;
 	if (diff.full)
