@@ -196,7 +196,7 @@ void
 TrackerEditor::setup_vbox ()
 {
 	if (!_first)
-		continue;
+		return;
 
 	vbox.show ();
 	vbox.set_spacing (6);
