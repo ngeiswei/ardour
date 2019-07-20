@@ -107,6 +107,10 @@ private:
 	void setup_grid ();
 	void setup_grid_header ();
 	void setup_scroller ();
+	void setup_vbox ();
+
+	// To not redo first time initialization when setup() is called again
+	bool _first;
 };
 
 // Determine the window name of a selection of regions.
