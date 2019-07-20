@@ -53,6 +53,11 @@ MidiTrackPattern::~MidiTrackPattern ()
 MidiTrackPattern&
 MidiTrackPattern::operator=(const MidiTrackPattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	TrackAutomationPattern::operator=(other);
 	midi_track = other.midi_track;
 	assert(mrps.size() == other.mrps.size());
@@ -69,6 +74,8 @@ MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
 	MidiTrackPatternPhenomenalDiff diff;
+	if (!enabled)
+		return diff;
 
 	diff.full = row_offset != prev.row_offset;
 	if (diff.full)

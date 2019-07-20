@@ -46,6 +46,11 @@ RegionAutomationPattern::RegionAutomationPattern(TrackerEditor& te,
 RegionAutomationPattern&
 RegionAutomationPattern::operator=(const RegionAutomationPattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	AutomationPattern::operator=(other);
 	midi_track = other.midi_track;
 	midi_model = other.midi_model;
@@ -57,6 +62,9 @@ RegionAutomationPatternPhenomenalDiff
 RegionAutomationPattern::phenomenal_diff(const RegionAutomationPattern& other) const
 {
 	RegionAutomationPatternPhenomenalDiff diff;
+	if (!enabled)
+		return diff;
+
 	diff.ap_diff = AutomationPattern::phenomenal_diff(other);
 	return diff;
 }
