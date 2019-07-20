@@ -88,6 +88,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	, grid (*this)
 	, main_toolbar (*this)
 	, grid_header (0)
+	, _first (true)
 {
 	set_session (s);
 }
@@ -112,15 +113,8 @@ void TrackerEditor::setup (RegionSelection& rs)
 
 	grid.redisplay_model ();
 
-	vbox.show ();
+	setup_vbox ();
 
-	vbox.set_spacing (6);
-	vbox.set_border_width (6);
-	vbox.pack_start (main_toolbar, false, false);
-	vbox.pack_start (*grid_header, false, false);
-	vbox.pack_start (scroller, true, true);
-
-	add (vbox);
 	set_size_request (-1, 400);
 
 	set_focus(grid);
@@ -130,6 +124,8 @@ void TrackerEditor::setup (RegionSelection& rs)
 
 	// To align header and grid
 	grid.redisplay_model ();
+
+	_first = false;
 }
 
 boost::shared_ptr<MidiModel>
@@ -142,13 +138,14 @@ void
 TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
 {
 	// Changing midi content re-render the grid
-	boost::shared_ptr<ARDOUR::MidiModel> midi_model = midi_region->midi_source(0)->model();
-	midi_model->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                     boost::bind (&Grid::redisplay_model, &grid), gui_context());
+	to_model(midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
+	                                                boost::bind (&Grid::redisplay_model, &grid),
+	                                                gui_context());
 
 	// Changing the region time zone re-render the grid
 	midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-	                                            boost::bind (&Grid::redisplay_model, &grid), gui_context());
+	                                            boost::bind (&Grid::redisplay_model, &grid),
+	                                            gui_context());
 }
 
 void
@@ -193,6 +190,21 @@ TrackerEditor::setup_scroller ()
 	scroller.add (grid);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
 	scroller.show ();
+}
+
+void
+TrackerEditor::setup_vbox ()
+{
+	if (!_first)
+		continue;
+
+	vbox.show ();
+	vbox.set_spacing (6);
+	vbox.set_border_width (6);
+	vbox.pack_start (main_toolbar, false, false);
+	vbox.pack_start (*grid_header, false, false);
+	vbox.pack_start (scroller, true, true);
+	add (vbox);
 }
 
 string
