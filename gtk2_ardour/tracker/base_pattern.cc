@@ -41,6 +41,7 @@ BasePattern::BasePattern(TrackerEditor& te,
 	, length(region->length())
 	, first_sample(region->first_sample())
 	, last_sample(region->last_sample())
+	, enabled(true)
 	, _session(tracker_editor.session)
 	, _conv(_session->tempo_map(), region->position())
 {
@@ -66,6 +67,11 @@ BasePattern::BasePattern(TrackerEditor& te,
 BasePattern&
 BasePattern::operator=(const BasePattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	position = other.position;
 	start = other.start;
 	length = other.length;
@@ -263,6 +269,7 @@ BasePattern::to_string(const std::string& indent) const
 	ss << header << "position_row_beats = " << position_row_beats << std::endl;
 	ss << header << "end_row_beats = " << end_row_beats << std::endl;
 	ss << header << "nrows = " << nrows << std::endl;
+	ss << header << "enabled = " << enabled << std::endl;
 	ss << header << "_ticks_per_row = " << _ticks_per_row;
 
 	return ss.str();

@@ -171,6 +171,9 @@ public:
 	// Number of rows of that region (given the choosen resolution)
 	uint32_t nrows;
 
+	// If pattern disabled, do not display or update it
+	bool enabled;
+
 protected:
 	uint32_t _ticks_per_row;		// number of ticks per rows
 	ARDOUR::Session* _session;

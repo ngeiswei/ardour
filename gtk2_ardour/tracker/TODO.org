@@ -1,9 +1,15 @@
 - Make TrackerEditor persistent
+- Fix displaying pattern without notes
+- Fix cursor when first pattern has a time delta
 - Fix pattern position when tempo change
 - Underline the digit to be edited according to position
+- Const when possible
+- Take care of code style
+- Try to improve color usage, how to label them, what can be reused
+- Make virtual keyboard keys not hardcoded
 - Create wscript under tracker folder
 - Add copy/move, etc, notes + popup menu
-- Deal with *** in a "proper" manner...
+- Deal with *** in a "proper" manner
 - Support arbitrary number of tracks (put all properties in tracker_column)
 - Fix bug in updating playhead
 - Fix alignment with track toolbar
@@ -11,16 +17,12 @@
 - Fix window focus (the tracker editor window should have focus right away)
 - Support Gtk::Expander to grid header (see cpuload_expander)
 - Try to replace as many gtk widgets by cairo widgets
-- Take care of code style
-- Try to improve color usage, how to label them, what can be reused
-- const when possible
 - Support shift-tab to move from right to left
 - Add shortcut for parameters, steps, etc
 - Transfer Ardour shortcuts, spacebar, etc
 - Support layered regions
 - Add piano keyboard display (see gtk_pianokeyboard.h)
 - Support midi input
-- Make virtual keyboard keys not hardcoded
 - Only have Octave, Ch, Vel in main toolbar is there is a midi track, maybe
 - Play note velocity at which it is gonna be recorded (use already existing)
 - Use signals whenever possible (instead of for instance calling
