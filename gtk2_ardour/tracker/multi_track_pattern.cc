@@ -48,6 +48,11 @@ MultiTrackPattern::~MultiTrackPattern ()
 MultiTrackPattern&
 MultiTrackPattern::operator=(const MultiTrackPattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	// BasePattern
 	BasePattern::operator=(other);
 
@@ -77,6 +82,8 @@ MultiTrackPatternPhenomenalDiff
 MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 {
 	MultiTrackPatternPhenomenalDiff diff;
+	if (!enabled)
+		return diff;
 
 	diff.full = prev.global_nrows != global_nrows || prev.tps.size() != tps.size();
 
