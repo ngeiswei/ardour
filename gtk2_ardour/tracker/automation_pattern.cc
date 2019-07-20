@@ -49,6 +49,11 @@ AutomationPattern::AutomationPattern(TrackerEditor& te,
 AutomationPattern&
 AutomationPattern::operator=(const AutomationPattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	BasePattern::operator=(other);
 
 	// Deep copy _automation_controls to be sure that changing the event doesn't
@@ -135,6 +140,8 @@ AutomationPatternPhenomenalDiff
 AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 {
 	AutomationPatternPhenomenalDiff diff;
+	if (!enabled)
+		return diff;
 
 	for (ParamToEnabled::const_iterator pe_it = param_to_enabled.begin(); pe_it != param_to_enabled.end(); pe_it++) {
 		const Evoral::Parameter& param = pe_it->first;

@@ -99,7 +99,8 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
-	// VVT: support commulative calls of TrackerEditor::setup
+	// VVT: support commulative calls of TrackerEditor::setup.
+	//      Disable non selected patterns
 
 	region_selection = rs;
 	set_title (window_name(rs));

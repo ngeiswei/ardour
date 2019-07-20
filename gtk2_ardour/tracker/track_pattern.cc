@@ -56,6 +56,11 @@ TrackPattern::~TrackPattern ()
 TrackPattern&
 TrackPattern::operator=(const TrackPattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	AutomationPattern::operator=(other);
 	track = other.track;
 
