@@ -51,6 +51,8 @@ public:
 	              Temporal::samplepos_t lst);
 	virtual ~TrackPattern ();
 
+	virtual void setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >&);
+
 	TrackPattern& operator=(const TrackPattern& other);
 
 	// TODO: for now do not worry about memory leaking, create a new
