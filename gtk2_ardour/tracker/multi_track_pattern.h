@@ -56,6 +56,7 @@ public:
 	void setup_region_views_per_track ();
 	void setup_regions_per_track ();
 	void setup_track_patterns ();
+	void add_track_pattern (boost::shared_ptr<ARDOUR::Track>, const std::vector<boost::shared_ptr<ARDOUR::Region> >&);
 	void setup_row_offset ();
 
 	void update ();
@@ -153,6 +154,9 @@ public:
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
+
+	// Return the track pattern assicuated to track, or 0 if it doesn't exist
+	TrackPattern* find_track_pattern (boost::shared_ptr<ARDOUR::Track> track);
 
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;

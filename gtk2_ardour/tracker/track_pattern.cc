@@ -53,6 +53,12 @@ TrackPattern::~TrackPattern ()
 {
 }
 
+void
+TrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >&)
+{
+	// Do nothing since there are no region by default
+}
+
 TrackPattern&
 TrackPattern::operator=(const TrackPattern& other)
 {
@@ -142,7 +148,8 @@ TrackPattern::region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) c
 	return Temporal::Beats();
 }
 
-int64_t TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const
+int64_t
+TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const
 {
 	return 0;
 }
@@ -159,7 +166,8 @@ TrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral
 	return param_to_row_to_ali.find(param)->second.count(rowi);
 }
 
-Evoral::ControlEvent* TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+Evoral::ControlEvent*
+TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
 	return *param_to_row_to_ali.find(param)->second.find(rowi)->second;
 }
@@ -209,13 +217,13 @@ TrackPattern::get_automation_value (size_t rowi, size_t mri, const Evoral::Param
 void
 TrackPattern::set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay)
 {
-	return AutomationPattern::set_automation_value (val, rowi, param, delay);
+	AutomationPattern::set_automation_value (val, rowi, param, delay);
 }
 
 void
 TrackPattern::delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param)
 {
-	return AutomationPattern::delete_automation_value (rowi, param);
+	AutomationPattern::delete_automation_value (rowi, param);
 }
 
 std::pair<int, bool>
@@ -227,5 +235,5 @@ TrackPattern::get_automation_delay (size_t rowi, size_t mri, const Evoral::Param
 void
 TrackPattern::set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param)
 {
-	return AutomationPattern::set_automation_delay (delay, rowi, param);
+	AutomationPattern::set_automation_delay (delay, rowi, param);
 }

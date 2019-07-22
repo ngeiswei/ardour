@@ -44,6 +44,8 @@ public:
 	                  Temporal::samplepos_t last_sample);
 	virtual ~MidiTrackPattern ();
 
+	void setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+
 	MidiTrackPattern& operator=(const MidiTrackPattern& other);
 
 	MidiTrackPatternPhenomenalDiff phenomenal_diff(const MidiTrackPattern& prev) const;
@@ -132,6 +134,7 @@ public:
 	bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+	bool has_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region) const;
 
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 

@@ -100,12 +100,10 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
-	// VVT: support commulative calls of TrackerEditor::setup.
-	//      Disable non selected patterns
-
 	region_selection = rs;
 	set_title (window_name(rs));
 
+	// VVT: support commulative calls of TrackerEditor::setup
 	setup_grid ();
 	setup_scroller ();
 	setup_toolbars ();
@@ -180,6 +178,9 @@ TrackerEditor::setup_toolbars ()
 void
 TrackerEditor::setup_grid_header()
 {
+	if (!_first)
+		return;
+
 	delete grid_header;
 	grid_header = new GridHeader (*this);
 }
@@ -187,6 +188,9 @@ TrackerEditor::setup_grid_header()
 void
 TrackerEditor::setup_scroller ()
 {
+	if (!_first)
+		return;
+
 	scroller.add (grid);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
 	scroller.show ();
