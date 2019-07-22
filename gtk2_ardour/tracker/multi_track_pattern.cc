@@ -102,6 +102,8 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 void
 MultiTrackPattern::setup ()
 {
+	// VVT: make sure that position, etc are updated as well
+	std::cout << "MultiTrackPattern[" << this << "]::setup" << std::endl;
 	setup_region_views_per_track ();
 	setup_regions_per_track ();
 	setup_track_patterns ();
@@ -114,7 +116,11 @@ MultiTrackPattern::setup_region_views_per_track ()
 	// Associate track to its region selections
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
 		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
-		region_views_per_track[track].push_back(*it);
+		std::vector<RegionView*>& region_views = region_views_per_track[track];
+		if (std::find(region_views.begin(), region_views.end(), *it) == region_views.end()) {
+			std::cout << "MultiTrackPattern::setup_region_views_per_track region_views_per_track[" << track << "].push_back(" << *it << ")" << std::endl;
+			region_views.push_back(*it);
+		}
 	}
 }
 
@@ -125,36 +131,49 @@ MultiTrackPattern::setup_regions_per_track ()
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
 		boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
 		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
-		regions_per_track[track].push_back(region);
+		std::vector<boost::shared_ptr<ARDOUR::Region> >& regions = regions_per_track[track];
+		if (std::find(regions.begin(), regions.end(), region) == regions.end()) {
+			std::cout << "MultiTrackPattern::setup_regions_per_track region_per_track[" << track << "].push_back(" << *it << ")" << std::endl;
+			regions.push_back(region);
+		}
 	}
-	// Chronologically sort regions per track 
-	for (TrackRegionsMap::iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++)
-		std::sort(it->second.begin(), it->second.end(), region_position_less());
 }
 
 void
 MultiTrackPattern::setup_track_patterns()
 {
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
-		boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(it->first);
-		if (midi_track) {
-			MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor,
-			                                             it->first, region_views_per_track[midi_track], it->second,
-			                                             position, length, first_sample, last_sample);
-			tps.push_back(mtp);
+		boost::shared_ptr<ARDOUR::Track> track = it->first;
+		TrackPattern* tp = find_track_pattern(track);
+		if (tp) {
+			tp->setup (it->second);
+		} else {
+			add_track_pattern (track, it->second);
 		}
-		boost::shared_ptr<ARDOUR::AudioTrack> audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack>(it->first);
-		if (audio_track) {
-			AudioTrackPattern* atp = new AudioTrackPattern(tracker_editor, it->first, it->second,
-			                                               position, length, first_sample, last_sample);
-			tps.push_back(atp);
-		}
+	}
+}
+
+void
+MultiTrackPattern::add_track_pattern(boost::shared_ptr<ARDOUR::Track> track, const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+{
+	boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(track);
+	if (midi_track) {
+		MidiTrackPattern* mtp = new MidiTrackPattern(tracker_editor, track, region_views_per_track[midi_track], regions,
+		                                             position, length, first_sample, last_sample);
+		tps.push_back(mtp);
+	}
+	boost::shared_ptr<ARDOUR::AudioTrack> audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack>(track);
+	if (audio_track) {
+		AudioTrackPattern* atp = new AudioTrackPattern(tracker_editor, track, regions,
+		                                               position, length, first_sample, last_sample);
+		tps.push_back(atp);
 	}
 }
 
 void
 MultiTrackPattern::setup_row_offset()
 {
+	// VVT: make sure that it can be called multiple times
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		row_offset.push_back(0);
 		nrows.push_back(0);
@@ -426,6 +445,15 @@ void
 MultiTrackPattern::set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri(rowi, mti), mri, param);
+}
+
+TrackPattern*
+MultiTrackPattern::find_track_pattern(boost::shared_ptr<ARDOUR::Track> track)
+{
+	for (size_t i = 0; i < tps.size(); i++)
+		if (tps[i]->track == track)
+			return tps[i];
+	return 0;
 }
 
 std::string
