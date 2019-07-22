@@ -97,6 +97,12 @@ BasePattern::operator=(const BasePattern& other)
 	return *this;
 }
 
+bool
+BasePattern::operator<(const BasePattern& other) const
+{
+	return position < other.position;
+}
+
 void
 BasePattern::set_rows_per_beat(uint16_t rpb)
 {
