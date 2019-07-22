@@ -42,12 +42,25 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
 	, rvs(region_views)
 	, row_offset(regions.size(), 0)
 {
-	for (size_t i = 0; i < regions.size(); i++)
-		mrps.push_back(MidiRegionPattern(te, midi_track, boost::static_pointer_cast<ARDOUR::MidiRegion>(regions[i])));
+	setup (regions);
 }
 
 MidiTrackPattern::~MidiTrackPattern ()
 {
+}
+
+void
+MidiTrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+{
+	// Add new regions
+	for (size_t i = 0; i < regions.size(); i++) {
+		boost::shared_ptr<ARDOUR::MidiRegion> midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion>(regions[i]);
+		if (!has_midi_region(midi_region)) {
+			mrps.push_back(MidiRegionPattern(tracker_editor, midi_track, midi_region));
+		}
+	}
+	// Chronologically sort regions per track
+	std::sort(mrps.begin(), mrps.end());
 }
 
 MidiTrackPattern&
@@ -368,6 +381,15 @@ MidiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const
 	return TrackerUtils::is_region_automation (param) ?
 		*mrps[mri].rap.param_to_row_to_ali.find(param)->second.find(to_rrri(rowi, mri))->second
 		: *TrackAutomationPattern::param_to_row_to_ali.find(param)->second.find(rowi)->second;
+}
+
+bool
+MidiTrackPattern::has_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region) const
+{
+	for (size_t mri = 0; mri < mrps.size(); mri++)
+		if (mrps[mri].midi_region == midi_region)
+			return true;
+	return false;
 }
 
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>

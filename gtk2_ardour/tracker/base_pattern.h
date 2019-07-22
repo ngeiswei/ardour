@@ -61,6 +61,10 @@ public:
 	// for phenomenal_diff to correctly operate.
 	BasePattern& operator=(const BasePattern& other);
 
+	// Return true iff this->position < other.position
+	// WARNING: not a total order.
+	bool operator<(const BasePattern& other) const;
+
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update().
