@@ -100,6 +100,8 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
+	// VVT: for now let's add the new region selection rs to region_selection
+	// rather than overwriting it
 	region_selection = rs;
 	set_title (window_name(rs));
 
