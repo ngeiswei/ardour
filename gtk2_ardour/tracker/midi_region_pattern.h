@@ -54,6 +54,9 @@ public:
 	// i.e. call update().
 	void set_rows_per_beat(uint16_t rpb);
 
+	// Update position, etc, of this, np and rap, based on midi_region
+	void update_position_etc();
+
 	// Set position_row_beats, end_row_beats and nrows
 	void set_row_range();
 
