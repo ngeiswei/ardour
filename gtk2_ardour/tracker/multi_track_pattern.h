@@ -60,6 +60,7 @@ public:
 	void setup_row_offset ();
 
 	void update ();
+	void update_position_etc ();
 	void update_rows_per_beat ();
 	void update_content ();
 	void update_earliest_mtp ();  // earliest midi track

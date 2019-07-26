@@ -102,8 +102,6 @@ MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 void
 MultiTrackPattern::setup ()
 {
-	// VVT: make sure that position, etc are updated as well
-	std::cout << "MultiTrackPattern[" << this << "]::setup" << std::endl;
 	setup_region_views_per_track ();
 	setup_regions_per_track ();
 	setup_track_patterns ();
@@ -173,21 +171,35 @@ MultiTrackPattern::add_track_pattern(boost::shared_ptr<ARDOUR::Track> track, con
 void
 MultiTrackPattern::setup_row_offset()
 {
-	// VVT: make sure that it can be called multiple times
-	for (size_t mti = 0; mti < tps.size(); mti++) {
-		row_offset.push_back(0);
-		nrows.push_back(0);
-	}
+	row_offset.resize(tps.size());
+	nrows.resize(tps.size());
 }
 
 void
 MultiTrackPattern::update ()
 {
+	update_position_etc ();
 	update_rows_per_beat ();
 	set_row_range ();
 	update_content ();
 	update_earliest_mtp ();
 	update_global_nrows ();
+}
+
+void
+MultiTrackPattern::update_position_etc ()
+{
+	position = TrackerUtils::get_position(tracker_editor.region_selection);
+	length = TrackerUtils::get_length(tracker_editor.region_selection);
+	first_sample = TrackerUtils::get_first_sample(tracker_editor.region_selection);
+	last_sample = TrackerUtils::get_last_sample(tracker_editor.region_selection);
+	for (size_t mti = 0; mti < tps.size(); mti++) {
+		TrackPattern* tp = tps[mti];
+		tp->position = position;
+		tp->length = length;
+		tp->first_sample = first_sample;
+		tp->last_sample = last_sample;
+	}
 }
 
 void

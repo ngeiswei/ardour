@@ -74,6 +74,26 @@ MidiRegionPattern::set_rows_per_beat(uint16_t rpb)
 }
 
 void
+MidiRegionPattern::update_position_etc()
+{
+	position = midi_region->position();
+	start = midi_region->start();
+	length = midi_region->length();
+	first_sample = midi_region->first_sample();
+	last_sample = midi_region->last_sample();
+	np.position = position;
+	np.start = start;
+	np.length = length;
+	np.first_sample = first_sample;
+	np.last_sample = last_sample;
+	rap.position = position;
+	rap.start = start;
+	rap.length = length;
+	rap.first_sample = first_sample;
+	rap.last_sample = last_sample;
+}
+
+void
 MidiRegionPattern::set_row_range()
 {
 	BasePattern::set_row_range();
@@ -92,6 +112,7 @@ MidiRegionPattern::set_row_range()
 void
 MidiRegionPattern::update()
 {
+	update_position_etc();
 	set_row_range();
 	np.update();
 	rap.update();
