@@ -732,8 +732,6 @@ Grid::first_defined_col ()
 void
 Grid::setup ()
 {
-	// VVT: make sure that it can be called multiple times
-
 	pattern.setup ();
 
 	// Setup previous pattern in order to instantiate its tracks in
@@ -741,6 +739,8 @@ Grid::setup ()
 	// buffer to calculate phenomenal differences with the current (updated)
 	// pattern.
 	prev_pattern.setup ();
+
+	// VVT: make sure that it can be called multiple times
 
 	// Ininitialize columns
 	init_columns ();
