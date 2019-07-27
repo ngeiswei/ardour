@@ -116,7 +116,6 @@ MultiTrackPattern::setup_region_views_per_track ()
 		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
 		std::vector<RegionView*>& region_views = region_views_per_track[track];
 		if (std::find(region_views.begin(), region_views.end(), *it) == region_views.end()) {
-			std::cout << "MultiTrackPattern::setup_region_views_per_track region_views_per_track[" << track << "].push_back(" << *it << ")" << std::endl;
 			region_views.push_back(*it);
 		}
 	}
@@ -131,7 +130,6 @@ MultiTrackPattern::setup_regions_per_track ()
 		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
 		std::vector<boost::shared_ptr<ARDOUR::Region> >& regions = regions_per_track[track];
 		if (std::find(regions.begin(), regions.end(), region) == regions.end()) {
-			std::cout << "MultiTrackPattern::setup_regions_per_track region_per_track[" << track << "].push_back(" << *it << ")" << std::endl;
 			regions.push_back(region);
 		}
 	}
