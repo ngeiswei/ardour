@@ -39,6 +39,7 @@ public:
 	GridHeader(TrackerEditor& te);
 	~GridHeader();
 
+	void setup_track_headers();
 	void set_time_header_size(int width=-1, int height=-1);
 	void set_track_header_size(size_t mti, int width=-1, int height=-1);
 
