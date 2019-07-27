@@ -702,6 +702,9 @@ void
 Grid::init_columns ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		if (mti < left_separator_columns.size())
+			continue;
+
 		left_separator_columns.push_back(0);
 		region_name_columns.push_back(0);
 		note_columns.push_back(std::vector<NoteColumn*>(MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
@@ -715,6 +718,16 @@ Grid::init_columns ()
 		right_separator_columns.push_back(0);
 		track_separator_columns.push_back(0);
 	}
+}
+
+void
+Grid:: init_model ()
+{
+	if (!tracker_editor._first)
+		return;
+
+	model = ListStore::create (columns);
+	set_model (model);
 }
 
 int
@@ -740,69 +753,12 @@ Grid::setup ()
 	// pattern.
 	prev_pattern.setup ();
 
-	// VVT: make sure that it can be called multiple times
-
-	// Ininitialize columns
 	init_columns ();
-
-	model = ListStore::create (columns);
-	set_model (model);
-
-	setup_time_column();
-
-	// Instantiate tracks
-	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		setup_left_separator_column(mti);
-		setup_region_name_column(mti);
-
-		// Setup column info
-		gain_columns.push_back(0);
-		trim_columns.push_back(0);
-		mute_columns.push_back(0);
-		col2params.push_back(IndexParamBimap());
-		col2auto_cgi.push_back(IndexBimap());
-		pan_columns.push_back(vector<size_t>());
-		available_automation_columns.push_back(set<size_t>());
-
-		// Instantiate note tracks
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
-			setup_note_column(mti, cgi);
-			setup_note_channel_column(mti, cgi);
-			setup_note_velocity_column(mti, cgi);
-			setup_note_delay_column(mti, cgi);
-			setup_note_separator_column(mti, cgi);
-		}
-
-		// Instantiate automation tracks
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-			setup_automation_column(mti, cgi);
-			setup_automation_delay_column(mti, cgi);
-			setup_automation_separator_column(mti, cgi);
-		}
-
-		setup_right_separator_column(mti);
-		setup_track_separator_column(mti);
-	}
-
-	// Connect to key press events
-	signal_key_press_event().connect (sigc::mem_fun (*this, &Grid::key_press), false);
-	signal_key_release_event().connect (sigc::mem_fun (*this, &Grid::key_release), false);
-
-	// Connect to mouse button events
-	//
-	// Disabled for now because it doesn't work as expected
-	//
-	signal_button_press_event().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
-	// signal_scroll_event().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
-
-	// Connect to clock to follow current row
-	ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_current_row));
-
-	set_headers_visible (true);
-	set_rules_hint (true);
-	set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
-	get_selection()->set_mode (SELECTION_NONE);
-	set_enable_search(false);
+	init_model ();
+	setup_time_column ();
+	setup_data_columns ();
+	connect_events ();
+	setup_tree_view ();
 
 	show ();
 }
@@ -2428,8 +2384,45 @@ Grid::follow_current_row (samplepos_t pos)
 }
 
 void
+Grid::connect_events()
+{
+	if (!tracker_editor._first)
+		return;
+
+	// Connect to key press events
+	signal_key_press_event().connect (sigc::mem_fun (*this, &Grid::key_press), false);
+	signal_key_release_event().connect (sigc::mem_fun (*this, &Grid::key_release), false);
+
+	// Connect to mouse button events
+	//
+	// Disabled for now because it doesn't work as expected
+	//
+	signal_button_press_event().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
+	// signal_scroll_event().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
+
+	// Connect to clock to follow current row
+	ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_current_row));
+}
+
+void
+Grid::setup_tree_view ()
+{
+	if (!tracker_editor._first)
+		return;
+
+	set_headers_visible (true);
+	set_rules_hint (true);
+	set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
+	get_selection()->set_mode (SELECTION_NONE);
+	set_enable_search(false);
+}
+
+void
 Grid::setup_time_column()
 {
+	if (time_column)
+		return;
+
 	time_column = new TreeViewColumn (_("Time"), columns.time);
 	CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
@@ -2437,6 +2430,46 @@ Grid::setup_time_column()
 	time_column->add_attribute(time_cellrenderer->property_cell_background (), columns._time_background_color);
 
 	append_column (*time_column);
+}
+
+void
+Grid::setup_data_columns ()
+{
+	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+		if (mti < gain_columns.size())
+			continue;
+
+		setup_left_separator_column(mti);
+		setup_region_name_column(mti);
+
+		// Setup column info
+		gain_columns.push_back(0);
+		trim_columns.push_back(0);
+		mute_columns.push_back(0);
+		col2params.push_back(IndexParamBimap());
+		col2auto_cgi.push_back(IndexBimap());
+		pan_columns.push_back(vector<size_t>());
+		available_automation_columns.push_back(set<size_t>());
+
+		// Instantiate note tracks
+		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+			setup_note_column(mti, cgi);
+			setup_note_channel_column(mti, cgi);
+			setup_note_velocity_column(mti, cgi);
+			setup_note_delay_column(mti, cgi);
+			setup_note_separator_column(mti, cgi);
+		}
+
+		// Instantiate automation tracks
+		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+			setup_automation_column(mti, cgi);
+			setup_automation_delay_column(mti, cgi);
+			setup_automation_separator_column(mti, cgi);
+		}
+
+		setup_right_separator_column(mti);
+		setup_track_separator_column(mti);
+	}
 }
 
 void

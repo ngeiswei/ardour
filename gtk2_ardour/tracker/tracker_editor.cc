@@ -105,9 +105,9 @@ void TrackerEditor::setup (RegionSelection& rs)
 	region_selection = rs;
 	set_title (window_name(rs));
 
-	// VVT: support commulative calls of TrackerEditor::setup
 	setup_grid ();
 	setup_scroller ();
+	// VVT: support commulative calls of TrackerEditor::setup
 	setup_toolbars ();
 	setup_grid_header ();
 

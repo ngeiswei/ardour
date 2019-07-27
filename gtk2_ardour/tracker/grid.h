@@ -272,7 +272,11 @@ public:
 
 private:
 	void init_columns ();
+	void init_model ();
+	void connect_events ();
+	void setup_tree_view ();
 	void setup_time_column ();
+	void setup_data_columns ();
 	void setup_left_separator_column (size_t mti);
 	void setup_region_name_column (size_t mti);
 	void setup_note_column (size_t mti, size_t cgi);
