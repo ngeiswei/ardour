@@ -26,13 +26,19 @@ GridHeader::GridHeader(TrackerEditor& te)
 {
 	time_header.show();
 	pack_start (time_header, Gtk::PACK_SHRINK);
-	for (size_t mti = 0; mti < te.grid.pattern.tps.size(); mti++) {
-		TrackPattern* tp = te.grid.pattern.tps[mti];
-		TrackHeader* th = new TrackHeader (te, tp, mti);
+	setup_track_headers ();
+	show();
+}
+
+void
+GridHeader::setup_track_headers()
+{
+	for (size_t mti = track_headers.size(); mti < tracker_editor.grid.pattern.tps.size(); mti++) {
+		TrackPattern* tp = tracker_editor.grid.pattern.tps[mti];
+		TrackHeader* th = new TrackHeader (tracker_editor, tp, mti);
 		track_headers.push_back(th);
 		pack_start (*th, Gtk::PACK_SHRINK);
 	}
-	show();
 }
 
 GridHeader::~GridHeader()
