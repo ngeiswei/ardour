@@ -1,4 +1,4 @@
-- Make TrackerEditor persistent
+- Disable unselected regions between two persistent instances 
 - Fix displaying pattern without notes
 - Fix cursor when first pattern has a time delta
 - Fix pattern position when tempo change
@@ -6,8 +6,8 @@
 - Const when possible
 - Take care of code style
 - Try to improve color usage, how to label them, what can be reused
-- Make virtual keyboard keys not hardcoded
 - Create wscript under tracker folder
+- Make virtual keyboard keys not hardcoded
 - Add copy/move, etc, notes + popup menu
 - Deal with *** in a "proper" manner
 - Support arbitrary number of tracks (put all properties in tracker_column)
