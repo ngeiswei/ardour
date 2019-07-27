@@ -100,9 +100,7 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
-	// VVT: for now let's add the new region selection rs to region_selection
-	// rather than overwriting it
-	region_selection = rs;
+	add_region_selection (rs);
 	set_title (window_name(rs));
 
 	setup_grid ();
@@ -162,6 +160,13 @@ TrackerEditor::resize_width()
 	int width, height;
 	get_size(width, height);
 	resize(1, height);
+}
+
+void
+TrackerEditor::add_region_selection (const RegionSelection& rs)
+{
+	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it)
+		region_selection.add (*it);
 }
 
 void
