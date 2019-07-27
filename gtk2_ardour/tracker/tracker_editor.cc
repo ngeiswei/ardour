@@ -107,7 +107,6 @@ void TrackerEditor::setup (RegionSelection& rs)
 
 	setup_grid ();
 	setup_scroller ();
-	// VVT: support commulative calls of TrackerEditor::setup
 	setup_toolbars ();
 	setup_grid_header ();
 
@@ -174,6 +173,9 @@ TrackerEditor::setup_grid ()
 void
 TrackerEditor::setup_toolbars ()
 {
+	if (!_first)
+		return;
+
 	main_toolbar.setup ();
 }
 
