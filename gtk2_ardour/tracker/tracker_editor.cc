@@ -182,11 +182,11 @@ TrackerEditor::setup_toolbars ()
 void
 TrackerEditor::setup_grid_header()
 {
-	if (!_first)
-		return;
-
-	delete grid_header;
-	grid_header = new GridHeader (*this);
+	if (grid_header) {
+		grid_header->setup_track_headers ();
+	} else {
+		grid_header = new GridHeader (*this);
+	}
 }
 
 void
