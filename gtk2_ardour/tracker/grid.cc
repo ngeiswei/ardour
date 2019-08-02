@@ -457,7 +457,8 @@ Grid::redisplay_visible_note()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
-			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+			bool visible = pattern.tps[mti]->enabled
+				&& pattern.tps[mti]->is_midi_track_pattern()
 				&& cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note;
 			get_column(note_colnum(mti, cgi))->set_visible (visible);
@@ -506,7 +507,8 @@ Grid::redisplay_visible_channel()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
-			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+			bool visible = pattern.tps[mti]->enabled
+				&& pattern.tps[mti]->is_midi_track_pattern()
 				&& cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_channel;
@@ -534,7 +536,8 @@ Grid::redisplay_visible_velocity()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
-			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+			bool visible = pattern.tps[mti]->enabled
+				&& pattern.tps[mti]->is_midi_track_pattern()
 				&& cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_velocity;
@@ -562,7 +565,8 @@ Grid::redisplay_visible_delay()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
-			bool visible = pattern.tps[mti]->is_midi_track_pattern()
+			bool visible = pattern.tps[mti]->enabled
+				&& pattern.tps[mti]->is_midi_track_pattern()
 				&& cgi < pattern.tps[mti]->midi_track_pattern()->get_ntracks()
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay;
@@ -592,7 +596,7 @@ Grid::redisplay_visible_note_separator()
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
 			bool visible = false;
-			if (pattern.tps[mti]->is_midi_track_pattern()) {
+			if (pattern.tps[mti]->enabled && pattern.tps[mti]->is_midi_track_pattern()) {
 				bool hva = has_visible_automation(mti);
 				size_t ntracks = pattern.tps[mti]->midi_track_pattern()->get_ntracks();
 				bool visible_note = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar()->visible_note && 0 < ntracks;
@@ -618,7 +622,7 @@ Grid::redisplay_visible_automation()
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 			size_t col = automation_colnum(mti, cgi);
-			bool visible = TrackerUtils::is_in(col, visible_automation_columns);
+			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in(col, visible_automation_columns);
 			get_column(col)->set_visible(visible);
 		}
 	}
@@ -647,7 +651,9 @@ Grid::redisplay_visible_automation_delay()
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 			size_t col = automation_delay_colnum(mti, cgi);
-			bool visible = tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay && TrackerUtils::is_in(col - 1, visible_automation_columns);
+			bool visible = pattern.tps[mti]->enabled
+				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay
+				&& TrackerUtils::is_in(col - 1, visible_automation_columns);
 			get_column(col)->set_visible (visible);
 		}
 	}
@@ -672,7 +678,7 @@ Grid::redisplay_visible_automation_separator()
 		size_t greatest_visible_col = 0;
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 			size_t col = automation_separator_colnum(mti, cgi);
-			bool visible = TrackerUtils::is_in(col - 2, visible_automation_columns);
+			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in(col - 2, visible_automation_columns);
 			if (visible)
 				greatest_visible_col = std::max(greatest_visible_col, col);
 			get_column(col)->set_visible (visible);
@@ -1250,6 +1256,10 @@ Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, u
 void
 Grid::redisplay_model ()
 {
+	// VVT: do not redisplay disabled tracks or regions. Specifically check
+	// whether phenomenal diff is indeed ignoring the disabled tracks, weirdly
+	// it should be ignored but it doesn't appear to be.
+
 	if (editing_editable)
 		return;
 

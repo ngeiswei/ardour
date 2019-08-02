@@ -100,6 +100,7 @@ TrackerEditor::~TrackerEditor ()
 
 void TrackerEditor::setup (RegionSelection& rs)
 {
+	// VVT: actually probably assign rs to region_selection
 	add_region_selection (rs);
 	set_title (window_name(rs));
 
