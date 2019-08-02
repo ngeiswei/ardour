@@ -134,7 +134,9 @@ public:
 	bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
-	bool has_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region) const;
+
+	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
+	MidiRegionPattern* find_midi_region_pattern (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
 
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
