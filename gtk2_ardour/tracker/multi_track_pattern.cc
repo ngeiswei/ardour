@@ -124,20 +124,23 @@ MultiTrackPattern::setup_region_views_per_track ()
 void
 MultiTrackPattern::setup_regions_per_track ()
 {
+	regions_per_track.clear();
 	// Associate track to its regions
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin(); it != tracker_editor.region_selection.end(); ++it) {
 		boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
 		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&>((*it)->get_time_axis_view()).track();
-		std::vector<boost::shared_ptr<ARDOUR::Region> >& regions = regions_per_track[track];
-		if (std::find(regions.begin(), regions.end(), region) == regions.end()) {
-			regions.push_back(region);
-		}
+		regions_per_track[track].push_back(region);
 	}
 }
 
 void
 MultiTrackPattern::setup_track_patterns()
 {
+	// Disable all existing tracks
+	for (size_t tpi = 0; tpi < tps.size(); tpi++)
+		tps[tpi]->enabled = false;
+
+	// Add new track or re-enable existing ones
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
 		boost::shared_ptr<ARDOUR::Track> track = it->first;
 		TrackPattern* tp = find_track_pattern(track);
