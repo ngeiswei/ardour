@@ -1256,10 +1256,6 @@ Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, u
 void
 Grid::redisplay_model ()
 {
-	// VVT: do not redisplay disabled tracks or regions. Specifically check
-	// whether phenomenal diff is indeed ignoring the disabled tracks, weirdly
-	// it should be ignored but it doesn't appear to be.
-
 	if (editing_editable)
 		return;
 

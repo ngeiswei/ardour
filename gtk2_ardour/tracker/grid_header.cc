@@ -33,6 +33,7 @@ GridHeader::GridHeader(TrackerEditor& te)
 void
 GridHeader::setup_track_headers()
 {
+	// VVT: hide track toolbars that are not in new selection
 	for (size_t mti = track_headers.size(); mti < tracker_editor.grid.pattern.tps.size(); mti++) {
 		TrackPattern* tp = tracker_editor.grid.pattern.tps[mti];
 		TrackHeader* th = new TrackHeader (tracker_editor, tp, mti);
