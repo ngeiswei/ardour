@@ -102,7 +102,7 @@ public:
 	PBD::ScopedConnectionList content_connections;
 
 private:
-	void add_region_selection (const RegionSelection&);
+	void set_region_selection (const RegionSelection&);
 	void setup_toolbars ();
 	void setup_main_toolbar ();
 	void setup_grid ();
