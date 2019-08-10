@@ -59,6 +59,7 @@ BasePattern::BasePattern(TrackerEditor& te,
 	, length(len)
 	, first_sample(fir)
 	, last_sample(las)
+	, enabled(true)
 	, _session(tracker_editor.session)
 	, _conv(tracker_editor.session->tempo_map(), position)
 {
