@@ -481,12 +481,12 @@ std::string
 MultiTrackPattern::to_string(const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePattern::to_string(indent);
+	ss << BasePattern::to_string(indent) << std::endl;
 
 	std::string header = indent + self_to_string() + " ";
 	for (size_t i = 0; i != tps.size(); i++)
 		ss << header << "tps[" << i << "]:" << std::endl
-		   << tps[i]->to_string(indent + "  ");
+		   << tps[i]->to_string(indent + "  ") << std::endl;
 
 	ss << header << "earliest_mti = " << earliest_mti << std::endl;
 	ss << header << "earliest_tp = " << earliest_tp << std::endl;
