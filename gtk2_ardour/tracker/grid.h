@@ -130,6 +130,7 @@ public:
 	void redisplay_visible_note ();
 	int mti_col_offset(size_t mti) const;
 	int left_separator_colnum (size_t mti) const;
+	void redisplay_visible_left_separator (size_t mti) const;
 	int region_name_colnum (size_t mti) const;
 	int note_colnum (size_t mti, size_t cgi /* column group index */) const;
 	void redisplay_visible_channel ();
@@ -148,6 +149,7 @@ public:
 	void redisplay_visible_automation_separator ();
 	int automation_separator_colnum (size_t mti, size_t cgi) const;
 	int right_separator_colnum (size_t mti) const;
+	void redisplay_visible_right_separator (size_t mti) const;
 
 	// Return the column of the first defined cell
 	int first_defined_col ();
@@ -160,7 +162,7 @@ public:
 	void redisplay_left_right_separator_columns ();
 	void redisplay_left_right_separator_columns (size_t mti);
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
-	void redisplay_track_separator (Gtk::TreeModel::Row& row, size_t mti);
+	void redisplay_track_separator (size_t mti);
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
