@@ -490,6 +490,12 @@ Grid::left_separator_colnum(size_t mti) const
 	return mti_col_offset(mti) + 1 /* left separator */;
 }
 
+void
+Grid::redisplay_visible_left_separator (size_t mti) const
+{
+	left_separator_columns[mti]->set_visible (pattern.tps[mti]->enabled);
+}
+
 int
 Grid::region_name_colnum(size_t mti) const
 {
@@ -705,6 +711,12 @@ Grid::right_separator_colnum(size_t mti) const
 }
 
 void
+Grid::redisplay_visible_right_separator (size_t mti) const
+{
+	right_separator_columns[mti]->set_visible (pattern.tps[mti]->enabled);
+}
+
+void
 Grid::init_columns ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
@@ -880,6 +892,12 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, size_t rowi, size_t 
 			redisplay_undefined_automation (row, mti, cgi);
 		}
 	}
+}
+
+void
+Grid::redisplay_track_separator (size_t mti)
+{
+	track_separator_columns[mti]->set_visible (pattern.tps[mti]->enabled);
 }
 
 void
@@ -2442,8 +2460,12 @@ void
 Grid::setup_data_columns ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-		if (mti < gain_columns.size())
+		if (mti < gain_columns.size()) {
+			redisplay_visible_left_separator (mti);
+			redisplay_visible_right_separator (mti);
+			redisplay_track_separator (mti);
 			continue;
+		}
 
 		setup_left_separator_column(mti);
 		setup_region_name_column(mti);
