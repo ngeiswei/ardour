@@ -1,4 +1,3 @@
-- Disable unselected regions between two persistent instances 
 - Fix displaying pattern without notes
 - Fix cursor when first pattern has a time delta
 - Fix pattern position when tempo change
