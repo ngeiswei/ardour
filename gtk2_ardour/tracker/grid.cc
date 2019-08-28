@@ -1296,7 +1296,7 @@ Grid::redisplay_model ()
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff(prev_pattern);
 
-	std::cout << "Grid::redisplay_model _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
+	// std::cout << "Grid::redisplay_model _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
 
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
@@ -1354,8 +1354,8 @@ Grid::redisplay_model ()
 	// into prev_pattern to make sure that the note pointers do capture a
 	// different, if it exists.
 
-	std::cout << "pattern:" << std::endl << pattern.to_string("  ");
-	std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
+	// std::cout << "pattern:" << std::endl << pattern.to_string("  ");
+	// std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
 
 	prev_pattern = pattern;
 }
