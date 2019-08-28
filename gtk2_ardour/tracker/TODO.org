@@ -1,4 +1,3 @@
-- Fix pattern position when tempo change
 - Underline the digit to be edited according to position
 - Const when possible
 - Take care of code style
