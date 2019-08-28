@@ -43,7 +43,7 @@ BasePattern::BasePattern(TrackerEditor& te,
 	, last_sample(region->last_sample())
 	, enabled(true)
 	, _session(tracker_editor.session)
-	, _conv(_session->tempo_map(), region->position())
+	, _conv(_session->tempo_map(), 0)
 {
 }
 
@@ -61,7 +61,7 @@ BasePattern::BasePattern(TrackerEditor& te,
 	, last_sample(las)
 	, enabled(true)
 	, _session(tracker_editor.session)
-	, _conv(tracker_editor.session->tempo_map(), position)
+	, _conv(tracker_editor.session->tempo_map(), 0)
 {
 }
 
