@@ -1323,8 +1323,10 @@ Grid::redisplay_model ()
 
 		// Used to draw the background of the current row and cursor
 		if (rowi == current_rowi_from_beats) {
-			if (current_col <= 0)
+			if (current_col <= 0) {
 				current_col = first_defined_col ();
+				current_mti = get_mti(get_column (current_col));
+			}
 			current_rowi = current_rowi_from_beats;
 			current_row = row;
 			redisplay_current_row_background ();
