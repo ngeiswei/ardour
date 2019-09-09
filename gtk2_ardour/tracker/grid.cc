@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include <pangomm/attributes.h>
 #include <gtkmm/cellrenderercombo.h>
 
 #include "pbd/file_utils.h"
@@ -147,12 +148,15 @@ Grid::GridModelColumns::GridModelColumns()
 			add (channel[mti][cgi]);
 			add (_channel_background_color[mti][cgi]);
 			add (_channel_foreground_color[mti][cgi]);
+			add (_channel_attributes[mti][cgi]);
 			add (velocity[mti][cgi]);
 			add (_velocity_background_color[mti][cgi]);
 			add (_velocity_foreground_color[mti][cgi]);
+			add (_velocity_attributes[mti][cgi]);
 			add (delay[mti][cgi]);
 			add (_delay_background_color[mti][cgi]);
 			add (_delay_foreground_color[mti][cgi]);
+			add (_delay_attributes[mti][cgi]);
 			add (_on_note[mti][cgi]);		// We keep that around to play and edit
 			add (_off_note[mti][cgi]);		// We keep that around to play and edit
 			add (_empty);
@@ -161,9 +165,11 @@ Grid::GridModelColumns::GridModelColumns()
 			add (automation[mti][cgi]);
 			add (_automation_background_color[mti][cgi]);
 			add (_automation_foreground_color[mti][cgi]);
+			add (_automation_attributes[mti][cgi]);
 			add (automation_delay[mti][cgi]);
 			add (_automation_delay_background_color[mti][cgi]);
 			add (_automation_delay_foreground_color[mti][cgi]);
+			add (_automation_delay_attributes[mti][cgi]);
 			add (_empty);
 		}
 		add (right_separator[mti]);
@@ -1105,11 +1111,11 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 		// Notes on
 		note = pattern.on_note (rowi, mti, mri, cgi);
 		if (note) {
-			row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
-			row[columns.velocity[mti][cgi]] = to_string ((int)note->velocity());
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns.velocity[mti][cgi]] = to_string ((int)note->velocity());
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 
 			int64_t delay = pattern.region_relative_delay_ticks(note->time(), rowi, mti, mri);
@@ -1582,6 +1588,143 @@ Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const Not
 }
 
 void
+Grid::unset_underline_current_step_edit_cell ()
+{
+	// VVT: make sure it doesn't affect blank cells
+	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
+		unset_underline_current_step_edit_note_cell ();
+	else
+		unset_underline_current_step_edit_auto_cell ();
+}
+
+void
+Grid::unset_underline_current_step_edit_note_cell ()
+{
+	Gtk::TreeModel::Row& row = current_row;
+	size_t mti = current_mti;
+	size_t cgi = current_cgi;
+	switch (current_note_type) {
+	case TrackerColumn::NOTE:
+		break;
+	case TrackerColumn::CHANNEL: {
+		std::string val_str = row[columns.channel[mti][cgi]];
+		row[columns.channel[mti][cgi]] = TrackerUtils::int_unpad (val_str);
+		row[columns._channel_attributes[mti][cgi]] = Pango::AttrList();
+		break;
+	}
+	case TrackerColumn::VELOCITY: {
+		std::string val_str = row[columns.velocity[mti][cgi]];
+		row[columns.velocity[mti][cgi]] = TrackerUtils::int_unpad (val_str);
+		row[columns._velocity_attributes[mti][cgi]] = Pango::AttrList();
+		break;
+	}
+	case TrackerColumn::DELAY: {
+		std::string val_str = row[columns.delay[mti][cgi]];
+		row[columns.delay[mti][cgi]] = TrackerUtils::int_unpad (val_str);
+		row[columns._delay_attributes[mti][cgi]] = Pango::AttrList();
+		break;
+	}
+	default:
+		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
+	}
+}
+
+void
+Grid::unset_underline_current_step_edit_auto_cell ()
+{
+	Gtk::TreeModel::Row& row = current_row;
+	size_t mti = current_mti;
+	size_t cgi = current_cgi;
+	switch (current_auto_type) {
+	case TrackerColumn::AUTOMATION: {
+		std::string val_str = row[columns.automation[mti][cgi]];
+		row[columns.automation[mti][cgi]] = TrackerUtils::float_unpad (val_str);
+		row[columns._automation_attributes[mti][cgi]] = Pango::AttrList();
+		break;
+	}
+	case TrackerColumn::AUTOMATION_DELAY: {
+		std::string val_str = row[columns.automation_delay[mti][cgi]];
+		row[columns.automation_delay[mti][cgi]] = TrackerUtils::int_unpad (val_str);
+		row[columns._automation_delay_attributes[mti][cgi]] = Pango::AttrList();
+		break;
+	}
+	default:
+		cerr << "Grid::redisplay_current_auto_cursor: Implementation Error!" << endl;
+	}
+}
+
+void
+Grid::set_underline_current_step_edit_cell ()
+{
+	// VVT: make sure it doesn't affect blank cells
+	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
+		set_underline_current_step_edit_note_cell ();
+	else
+		set_underline_current_step_edit_auto_cell ();
+}
+
+void
+Grid::set_underline_current_step_edit_note_cell ()
+{
+	Gtk::TreeModel::Row& row = current_row;
+	size_t mti = current_mti;
+	size_t cgi = current_cgi;
+	switch (current_note_type) {
+	case TrackerColumn::NOTE:
+		break;
+	case TrackerColumn::CHANNEL: {
+		std::string val_str = row[columns.channel[mti][cgi]];
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		row[columns.channel[mti][cgi]] = ul.first;
+		row[columns._channel_attributes[mti][cgi]] = ul.second;
+		break;
+	}
+	case TrackerColumn::VELOCITY: {
+		std::string val_str = row[columns.velocity[mti][cgi]];
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		row[columns.velocity[mti][cgi]] = ul.first;
+		row[columns._velocity_attributes[mti][cgi]] = ul.second;
+		break;
+	}
+	case TrackerColumn::DELAY: {
+		std::string val_str = row[columns.delay[mti][cgi]];
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		row[columns.delay[mti][cgi]] = ul.first;
+		row[columns._delay_attributes[mti][cgi]] = ul.second;
+		break;
+	}
+	default:
+		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
+	}
+}
+
+void
+Grid::set_underline_current_step_edit_auto_cell ()
+{
+	Gtk::TreeModel::Row& row = current_row;
+	size_t mti = current_mti;
+	size_t cgi = current_cgi;
+	switch (current_auto_type) {
+	case TrackerColumn::AUTOMATION: {
+		std::string val_str = row[columns.automation[mti][cgi]];
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		row[columns.automation[mti][cgi]] = ul.first;
+		row[columns._automation_attributes[mti][cgi]] = ul.second;
+		break;
+	}
+	case TrackerColumn::AUTOMATION_DELAY: {
+		std::string val_str = row[columns.automation_delay[mti][cgi]];
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		row[columns.automation_delay[mti][cgi]] = ul.first;
+		row[columns._automation_delay_attributes[mti][cgi]] = ul.second;
+		break;
+	}
+	default:
+		cerr << "Grid::redisplay_current_auto_cursor: Implementation Error!" << endl;
+	}
+}
+
+void
 Grid::redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
 {
 	// VT: implement
@@ -1652,6 +1795,39 @@ bool
 Grid::is_enabled(size_t mti, const Evoral::Parameter& param) const
 {
 	return pattern.tps[mti]->is_enabled(param);
+}
+
+Pango::AttrList
+Grid::char_underline(int ul_idx) const
+{
+	Pango::Attribute ul_attr = Pango::Attribute::create_attr_underline(Pango::UNDERLINE_LOW);
+	ul_attr.set_start_index(ul_idx);
+	ul_attr.set_end_index(ul_idx + 1);
+	Pango::AttrList attributes;
+	attributes.insert(ul_attr);
+	return attributes;
+}
+
+std::pair<std::string, Pango::AttrList>
+Grid::underlined_value(int val) const
+{
+	return underlined_value(to_string (val));
+}
+
+std::pair<std::string, Pango::AttrList>
+Grid::underlined_value(float val) const
+{
+	return underlined_value(to_string (val));
+}
+
+std::pair<std::string, Pango::AttrList>
+Grid::underlined_value(const std::string& val_str) const
+{
+	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
+	std::string padded_val_str = TrackerUtils::pad (val_str, position);
+	size_t point_pos = TrackerUtils::point_position(padded_val_str);
+	int ul_idx = point_pos - position - (position < 0 ? 0 : 1);
+	return make_pair(padded_val_str, char_underline(ul_idx));
 }
 
 /////////////////////
@@ -2215,7 +2391,10 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 
 	// Reset background color over the previous row
 	redisplay_row_background (current_row, current_rowi);
-	
+
+	// Unset underline over previous cursor
+	unset_underline_current_step_edit_cell ();
+
 	// Update current row
 	current_path = path;
 	current_rowi = get_row_index (path);
@@ -2236,6 +2415,9 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	// Now display current row and cursor background colors
 	redisplay_current_row_background ();
 	redisplay_current_cursor ();
+
+	// Set underline
+	set_underline_current_step_edit_cell ();
 
 	// Readjust scroller
 	scroll_to_row(path);
@@ -2566,6 +2748,9 @@ Grid::setup_note_channel_column (size_t mti, size_t cgi)
 	channel_columns[mti][cgi]->add_attribute(channel_cellrenderer->property_cell_background (), columns._channel_background_color[mti][cgi]);
 	channel_columns[mti][cgi]->add_attribute(channel_cellrenderer->property_foreground (), columns._channel_foreground_color[mti][cgi]);
 
+	// Link attributes
+	channel_columns[mti][cgi]->add_attribute(channel_cellrenderer->property_attributes (), columns._channel_attributes[mti][cgi]);
+
 	// Link to editing methods
 	channel_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_channel_started), mti, cgi));
 	channel_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
@@ -2585,6 +2770,9 @@ Grid::setup_note_velocity_column (size_t mti, size_t cgi)
 	velocity_columns[mti][cgi]->add_attribute(velocity_cellrenderer->property_cell_background (), columns._velocity_background_color[mti][cgi]);
 	velocity_columns[mti][cgi]->add_attribute(velocity_cellrenderer->property_foreground (), columns._velocity_foreground_color[mti][cgi]);
 
+	// Link attributes
+	velocity_columns[mti][cgi]->add_attribute(velocity_cellrenderer->property_attributes (), columns._velocity_attributes[mti][cgi]);
+
 	// Link to editing methods
 	velocity_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_velocity_started), mti, cgi));
 	velocity_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
@@ -2603,6 +2791,9 @@ Grid::setup_note_delay_column (size_t mti, size_t cgi)
 	// Link to color attribute
 	delay_columns[mti][cgi]->add_attribute(delay_cellrenderer->property_cell_background (), columns._delay_background_color[mti][cgi]);
 	delay_columns[mti][cgi]->add_attribute(delay_cellrenderer->property_foreground (), columns._delay_foreground_color[mti][cgi]);
+
+	// Link attributes
+	delay_columns[mti][cgi]->add_attribute(delay_cellrenderer->property_attributes (), columns._delay_attributes[mti][cgi]);
 
 	// Link to editing methods
 	delay_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_delay_started), mti, cgi));
@@ -2635,6 +2826,9 @@ Grid::setup_automation_column (size_t mti, size_t cgi)
 	automation_columns[mti][cgi]->add_attribute(automation_cellrenderer->property_cell_background (), columns._automation_background_color[mti][cgi]);
 	automation_columns[mti][cgi]->add_attribute(automation_cellrenderer->property_foreground (), columns._automation_foreground_color[mti][cgi]);
 
+	// Link attributes
+	automation_columns[mti][cgi]->add_attribute(automation_cellrenderer->property_attributes (), columns._automation_attributes[mti][cgi]);
+
 	// Link to editing methods
 	automation_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_automation_started), mti, cgi));
 	automation_cellrenderer->signal_editing_canceled().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
@@ -2657,6 +2851,9 @@ Grid::setup_automation_delay_column (size_t mti, size_t cgi)
 	// Link to color attributes
 	automation_delay_columns[mti][cgi]->add_attribute(automation_delay_cellrenderer->property_cell_background (), columns._automation_delay_background_color[mti][cgi]);
 	automation_delay_columns[mti][cgi]->add_attribute(automation_delay_cellrenderer->property_foreground (), columns._automation_delay_foreground_color[mti][cgi]);
+
+	// Link attributes
+	automation_delay_columns[mti][cgi]->add_attribute(automation_delay_cellrenderer->property_attributes (), columns._automation_delay_attributes[mti][cgi]);
 
 	// Link to editing methods
 	automation_delay_cellrenderer->signal_editing_started().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_automation_delay_started), mti, cgi));
