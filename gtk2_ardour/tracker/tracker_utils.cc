@@ -16,6 +16,8 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <cstdlib>
+
 #include "tracker_utils.h"
 
 #include "ardour/parameter_types.h"
@@ -69,6 +71,13 @@ TrackerUtils::char_to_digit(char c, int base)
 	return string_to_num<int>(std::string(0, c));
 }
 
+size_t
+TrackerUtils::point_position(const std::string& str)
+{
+	size_t point_pos = str.find(".");
+	return point_pos == std::string::npos ? str.size() : point_pos;
+}
+
 std::pair<int, int>
 TrackerUtils::position_range (const std::string& str)
 {
@@ -86,6 +95,14 @@ TrackerUtils::position_range (const std::string& str)
 std::string
 TrackerUtils::pad (const std::string& str, int position)
 {
+	bool is_neg = str[0] == '-';
+	std::string ng_str = is_neg ? str.substr(1) : str;
+	return std::string(is_neg ? "-" : "") + non_negative_pad (ng_str, position);
+}
+
+std::string
+TrackerUtils::non_negative_pad (const std::string& str, int position)
+{
 	std::pair<int, int> pr = position_range (str);
 	if (position < pr.first) {
 		int diff = pr.first - position;
@@ -96,6 +113,18 @@ TrackerUtils::pad (const std::string& str, int position)
 		return std::string(diff, '0') + str;
 	}
 	return str;
+}
+
+std::string
+TrackerUtils::int_unpad (const std::string& str)
+{
+	return to_string(std::atoi(str.c_str()));
+}
+
+std::string
+TrackerUtils::float_unpad (const std::string& str)
+{
+	return to_string(std::atof(str.c_str()));
 }
 
 size_t
