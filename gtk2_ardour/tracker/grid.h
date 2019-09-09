@@ -478,6 +478,17 @@ private:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 	void follow_current_row (samplepos_t);
 
+	/**
+	 * Create a string of n blank chars.
+	 */
+	static const char blank_char = '-';
+	static std::string mk_blank(size_t n);
+
+	/**
+	 * Check whether a string is blank such as "----"
+	 */
+	static bool is_blank(const std::string& str);
+
 	// Map column index to automation cgi and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> IndexBimap;
 
