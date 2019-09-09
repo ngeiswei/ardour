@@ -76,20 +76,25 @@ public:
 		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _channel_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<Pango::AttrList> _channel_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> velocity[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _velocity_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<Pango::AttrList> _velocity_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<Pango::AttrList> _delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<Pango::AttrList> _automation_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
+		Gtk::TreeModelColumn<Pango::AttrList> _automation_delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> right_separator[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> track_separator[MAX_NUMBER_OF_TRACKS];
 	};
@@ -203,6 +208,12 @@ public:
 	void redisplay_region_automation_param_row (size_t mti, size_t mri, size_t cgi, size_t rowi, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
 	void redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np);
+	void unset_underline_current_step_edit_cell ();
+	void unset_underline_current_step_edit_note_cell ();
+	void unset_underline_current_step_edit_auto_cell ();
+	void set_underline_current_step_edit_cell ();
+	void set_underline_current_step_edit_note_cell ();
+	void set_underline_current_step_edit_auto_cell ();
 
 	// To align grid header
 	int get_time_width() const;
@@ -214,6 +225,12 @@ public:
 
 	void set_enabled(size_t mti, const Evoral::Parameter& param, bool enabled);
 	bool is_enabled(size_t mti, const Evoral::Parameter& param) const;
+
+	// Render a val with the position to be affected by step editing underlined
+	Pango::AttrList char_underline(int ul_idx) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(int val) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(float val) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str) const;
 
 	TrackerEditor& tracker_editor;
 
@@ -257,7 +274,8 @@ public:
 	// Clock position
 	samplepos_t                  clock_pos;
 
-	// Coordonates associated to edit cursor
+	// Coordonates associated to edited note and value (this is *not* related to
+	// step edit).
 	// TODO: is everything below used?
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_rowi;
