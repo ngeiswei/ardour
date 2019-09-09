@@ -1070,10 +1070,10 @@ void
 Grid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	// Fill with blank
-	row[columns.note_name[mti][cgi]] = "----";
-	row[columns.channel[mti][cgi]] = "--";
-	row[columns.velocity[mti][cgi]] = "---";
-	row[columns.delay[mti][cgi]] = "-----";
+	row[columns.note_name[mti][cgi]] = mk_blank(4);
+	row[columns.channel[mti][cgi]] = mk_blank(2);
+	row[columns.velocity[mti][cgi]] = mk_blank(3);
+	row[columns.delay[mti][cgi]] = mk_blank(5);
 
 	// Grey out infoless cells
 	row[columns._note_foreground_color[mti][cgi]] = blank_foreground_color;
@@ -1101,7 +1101,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
 			int64_t delay = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = to_string (delay);
+				row[columns.delay[mti][cgi]] = TrackerUtils::to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 			// Keep the note off around for playing and editing
@@ -1113,14 +1113,14 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 		if (note) {
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.channel[mti][cgi]] = to_string (note->channel() + 1);
+			row[columns.channel[mti][cgi]] = TrackerUtils::to_string (note->channel() + 1);
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.velocity[mti][cgi]] = to_string ((int)note->velocity());
+			row[columns.velocity[mti][cgi]] = TrackerUtils::to_string ((int)note->velocity());
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 
 			int64_t delay = pattern.region_relative_delay_ticks(note->time(), rowi, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = to_string (delay);
+				row[columns.delay[mti][cgi]] = TrackerUtils::to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 			// Keep the note around for playing and editing
@@ -1163,8 +1163,8 @@ void
 Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	// Fill with blank
-	row[columns.automation[mti][cgi]] = "---";
-	row[columns.automation_delay[mti][cgi]] = "-----";
+	row[columns.automation[mti][cgi]] = mk_blank(3);
+	row[columns.automation_delay[mti][cgi]] = mk_blank(5);
 
 	// Fill default foreground color
 	row[columns._automation_delay_foreground_color[mti][cgi]] = blank_foreground_color;
@@ -1176,13 +1176,13 @@ Grid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size
 	if (pattern.is_auto_displayable(rowi, mti, mti, param)) {
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, mri, param);
 		double aval = ctl_event->value;
-		row[columns.automation[mti][cgi]] = to_string (aval);
+		row[columns.automation[mti][cgi]] = TrackerUtils::to_string (aval);
 		double awhen = ctl_event->when;
 		int64_t delay = TrackerUtils::is_region_automation (param) ?
 			pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti, mri)
 			: pattern.delay_ticks((samplepos_t)awhen, rowi, mti);
 		if (delay != 0) {
-			row[columns.automation_delay[mti][cgi]] = to_string (delay);
+			row[columns.automation_delay[mti][cgi]] = TrackerUtils::to_string (delay);
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
 		}
 	} else {
@@ -1207,7 +1207,7 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t m
 		bool ok;
 		inter_auto_val = alist->rt_safe_eval(awhen, ok);
 	}
-	row[columns.automation[mti][cgi]] = to_string (inter_auto_val);
+	row[columns.automation[mti][cgi]] = TrackerUtils::to_string (inter_auto_val);
 	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
 }
 
@@ -1590,7 +1590,6 @@ Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const Not
 void
 Grid::unset_underline_current_step_edit_cell ()
 {
-	// VVT: make sure it doesn't affect blank cells
 	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
 		unset_underline_current_step_edit_note_cell ();
 	else
@@ -1608,18 +1607,24 @@ Grid::unset_underline_current_step_edit_note_cell ()
 		break;
 	case TrackerColumn::CHANNEL: {
 		std::string val_str = row[columns.channel[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		row[columns.channel[mti][cgi]] = TrackerUtils::int_unpad (val_str);
 		row[columns._channel_attributes[mti][cgi]] = Pango::AttrList();
 		break;
 	}
 	case TrackerColumn::VELOCITY: {
 		std::string val_str = row[columns.velocity[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		row[columns.velocity[mti][cgi]] = TrackerUtils::int_unpad (val_str);
 		row[columns._velocity_attributes[mti][cgi]] = Pango::AttrList();
 		break;
 	}
 	case TrackerColumn::DELAY: {
 		std::string val_str = row[columns.delay[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		row[columns.delay[mti][cgi]] = TrackerUtils::int_unpad (val_str);
 		row[columns._delay_attributes[mti][cgi]] = Pango::AttrList();
 		break;
@@ -1638,12 +1643,16 @@ Grid::unset_underline_current_step_edit_auto_cell ()
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION: {
 		std::string val_str = row[columns.automation[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		row[columns.automation[mti][cgi]] = TrackerUtils::float_unpad (val_str);
 		row[columns._automation_attributes[mti][cgi]] = Pango::AttrList();
 		break;
 	}
 	case TrackerColumn::AUTOMATION_DELAY: {
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		row[columns.automation_delay[mti][cgi]] = TrackerUtils::int_unpad (val_str);
 		row[columns._automation_delay_attributes[mti][cgi]] = Pango::AttrList();
 		break;
@@ -1656,7 +1665,6 @@ Grid::unset_underline_current_step_edit_auto_cell ()
 void
 Grid::set_underline_current_step_edit_cell ()
 {
-	// VVT: make sure it doesn't affect blank cells
 	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
 		set_underline_current_step_edit_note_cell ();
 	else
@@ -1674,6 +1682,8 @@ Grid::set_underline_current_step_edit_note_cell ()
 		break;
 	case TrackerColumn::CHANNEL: {
 		std::string val_str = row[columns.channel[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.channel[mti][cgi]] = ul.first;
 		row[columns._channel_attributes[mti][cgi]] = ul.second;
@@ -1681,6 +1691,8 @@ Grid::set_underline_current_step_edit_note_cell ()
 	}
 	case TrackerColumn::VELOCITY: {
 		std::string val_str = row[columns.velocity[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.velocity[mti][cgi]] = ul.first;
 		row[columns._velocity_attributes[mti][cgi]] = ul.second;
@@ -1688,6 +1700,8 @@ Grid::set_underline_current_step_edit_note_cell ()
 	}
 	case TrackerColumn::DELAY: {
 		std::string val_str = row[columns.delay[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.delay[mti][cgi]] = ul.first;
 		row[columns._delay_attributes[mti][cgi]] = ul.second;
@@ -1707,6 +1721,8 @@ Grid::set_underline_current_step_edit_auto_cell ()
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION: {
 		std::string val_str = row[columns.automation[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.automation[mti][cgi]] = ul.first;
 		row[columns._automation_attributes[mti][cgi]] = ul.second;
@@ -1714,6 +1730,8 @@ Grid::set_underline_current_step_edit_auto_cell ()
 	}
 	case TrackerColumn::AUTOMATION_DELAY: {
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
+		if (is_blank(val_str))
+			break;
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.automation_delay[mti][cgi]] = ul.first;
 		row[columns._automation_delay_attributes[mti][cgi]] = ul.second;
@@ -1811,13 +1829,13 @@ Grid::char_underline(int ul_idx) const
 std::pair<std::string, Pango::AttrList>
 Grid::underlined_value(int val) const
 {
-	return underlined_value(to_string (val));
+	return underlined_value(TrackerUtils::to_string (val));
 }
 
 std::pair<std::string, Pango::AttrList>
 Grid::underlined_value(float val) const
 {
-	return underlined_value(to_string (val));
+	return underlined_value(TrackerUtils::to_string (val));
 }
 
 std::pair<std::string, Pango::AttrList>
@@ -2589,6 +2607,18 @@ Grid::follow_current_row (samplepos_t pos)
 			vertical_move_current_cursor (rowi - current_rowi, false, false, false);
 	}
 	clock_pos = pos;
+}
+
+std::string
+Grid::mk_blank(size_t n)
+{
+	return std::string(n, blank_char);
+}
+
+bool
+Grid::is_blank(const std::string& str)
+{
+	return str.back() == blank_char;
 }
 
 void
