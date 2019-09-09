@@ -106,12 +106,20 @@ public:
 	static int char_to_digit(char c, int base=10);
 
 	/**
+	 * Given a string representing a float, return the position of the point (a
+	 * dot in US local). If no such point exist then return the string size,
+	 * assuming that the point is implicitly after the last character.
+	 */
+	static size_t point_position(const std::string& str);
+
+	/**
 	 * Given a string representing a number, find a pair l, u representing the
 	 * position range [l, u] of that number. For instance
 	 *
 	 * position_range ("123.0") = <-1, 2>
 	 * position_range ("123") = <0, 2>
 	 * position_range ("0123") = <0, 3>
+	 * position_range ("-0123") = <0, 3>
 	 */
 	static std::pair<int, int> position_range (const std::string& str);
 
@@ -123,8 +131,21 @@ public:
 	 * pad ("123", -1) = "123.0"
 	 * pad ("123", 0) = "123"
 	 * pad ("123", 3) = "0123"
+	 * pad ("-123, 3) = "-0123"
 	 */
 	static std::string pad (const std::string& str, int position);
+
+	/**
+	 * Like pad but only supports non negative numbers
+	 */
+	static std::string non_negative_pad (const std::string& str, int position);
+
+	/**
+	 * Performs the inverse operation of pad, that is remove the unnecessary
+	 * leading (and perhaps trailing as well) zeros.
+	 */
+	static std::string int_unpad (const std::string& str);
+	static std::string float_unpad (const std::string& str);
 
 	/**
 	 * Given the string corresponding to a number and a position in the
