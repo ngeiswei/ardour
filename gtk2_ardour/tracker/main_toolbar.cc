@@ -73,7 +73,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, delay_adjustment (0, 0, 0, 1, 4)
 	, delay_spinner (delay_adjustment)
 	, position_label (_("Position"))
-	, position_adjustment (0, -5, 5, 1, 2)
+	, position_adjustment (0, min_position, max_position, 1, 2)
 	, position_spinner (position_adjustment)
 	, steps_label (_("Steps"))
 	  // TODO set the boundaries to not be above the number of rows
@@ -163,6 +163,7 @@ MainToolbar::setup_layout ()
 	pack_start (position_separator, false, false);
 	position_label.show ();
 	pack_start (position_label, false, false);
+	position_spinner.signal_value_changed().connect (sigc::mem_fun(*this, &MainToolbar::change_position), false);
 	position_spinner.set_activates_default ();
 	position_spinner.show ();
 	pack_start (position_spinner, false, false);
@@ -406,7 +407,22 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 	step_edit = !step_edit;
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
+	// TODO: possibly replace by signal
 	tracker_editor.grid.redisplay_model();
+	if (step_edit)
+		tracker_editor.grid.set_underline_current_step_edit_cell ();
+	else
+		tracker_editor.grid.unset_underline_current_step_edit_cell ();
 
 	return false;
+}
+
+void
+MainToolbar::change_position ()
+{
+	// TODO: possibly replace by signal
+	if (step_edit) {
+		tracker_editor.grid.unset_underline_current_step_edit_cell ();
+		tracker_editor.grid.set_underline_current_step_edit_cell ();
+	}
 }
