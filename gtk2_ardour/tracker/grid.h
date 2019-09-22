@@ -29,6 +29,7 @@
 #include "multi_track_pattern.h"
 #include "midi_region_pattern.h"
 #include "tracker_utils.h"
+#include "main_toolbar.h"
 
 namespace Tracker {
 
@@ -228,9 +229,9 @@ public:
 
 	// Render a val with the position to be affected by step editing underlined
 	Pango::AttrList char_underline(int ul_idx) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(int val) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(float val) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(int val, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(float val, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
 
 	TrackerEditor& tracker_editor;
 
@@ -464,7 +465,12 @@ private:
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
 	// TODO: can you make that const?
-	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi); // return <0.0, false> if undefined
+	// Return automation value at given coordinates. The flag is true iff such
+	// value exists.
+	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi);
+	// In case no such value exists, then return its interpolation (or default)
+	double get_automation_interpolation_value (int rowi, int mti, int mri, int cgi);
+	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param);
 	void set_automation_value (double val, int rowi, int mti, int mri, int automation_cgi);
 	void delete_automation_value (int rowi, int mti, int mri, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);

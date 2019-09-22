@@ -88,12 +88,40 @@ public:
 		return std::max(l, std::min(u, x));
 	}
 
+	/**
+	 * Give a string representing a floating point number, remove all zeros
+	 * after a point, and trailing point if any. For instance
+	 *
+	 * "1.0000"
+	 *
+	 * returns
+	 *
+	 * "1"
+	 */
+	static std::string rm_point_zeros(const std::string& str)
+	{
+		std::string::size_type point_pos = str.rfind('.');
+		if (point_pos == std::string::npos)
+			return str;
+		std::string::size_type zero_pos = str.size();
+		while (point_pos < zero_pos) {
+			if (str[zero_pos - 1] == '0')
+				zero_pos--;
+			else
+				break;
+		}
+		return str.substr(0, point_pos + 1 == zero_pos ? point_pos : zero_pos);
+	}
+
+	/**
+	 * Convert number to string without scientific notation.
+	 */
 	template<typename Num>
 	static std::string num_to_string(Num n, int base=10)
 	{
 		std::stringstream ss;
-		ss << n;
-		return ss.str();
+		ss << std::fixed << std::setprecision(12) << n;
+		return rm_point_zeros(ss.str());
 	}
 
 	template<typename Num>
