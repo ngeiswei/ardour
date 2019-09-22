@@ -64,9 +64,17 @@ public:
 	 */
 	bool step_edit_press (GdkEventButton* ev);
 
+	/**
+	 * Trigger when position_spinner value is changed.
+	 */
+	void change_position ();
+
 	TrackerEditor& tracker_editor;
 
 	Gtkmm2ext::Bindings* bindings;
+
+	static const int min_position = -5;
+	static const int max_position = 5;
 
 	ArdourWidgets::ArdourDropdown beats_per_row_selector;
 	std::vector<std::string>     beats_per_row_strings;

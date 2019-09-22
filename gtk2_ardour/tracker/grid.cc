@@ -1101,7 +1101,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
 			int64_t delay = pattern.region_relative_delay_ticks(note->end_time(), rowi, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = TrackerUtils::to_string (delay);
+				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 			// Keep the note off around for playing and editing
@@ -1113,14 +1113,14 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 		if (note) {
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note());
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.channel[mti][cgi]] = TrackerUtils::to_string (note->channel() + 1);
+			row[columns.channel[mti][cgi]] = TrackerUtils::num_to_string (note->channel() + 1);
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.velocity[mti][cgi]] = TrackerUtils::to_string ((int)note->velocity());
+			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity());
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 
 			int64_t delay = pattern.region_relative_delay_ticks(note->time(), rowi, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = TrackerUtils::to_string (delay);
+				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 			// Keep the note around for playing and editing
@@ -1176,13 +1176,13 @@ Grid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size
 	if (pattern.is_auto_displayable(rowi, mti, mti, param)) {
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, mri, param);
 		double aval = ctl_event->value;
-		row[columns.automation[mti][cgi]] = TrackerUtils::to_string (aval);
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval);
 		double awhen = ctl_event->when;
 		int64_t delay = TrackerUtils::is_region_automation (param) ?
 			pattern.region_relative_delay_ticks(Temporal::Beats(awhen), rowi, mti, mri)
 			: pattern.delay_ticks((samplepos_t)awhen, rowi, mti);
 		if (delay != 0) {
-			row[columns.automation_delay[mti][cgi]] = TrackerUtils::to_string (delay);
+			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
 		}
 	} else {
@@ -1194,20 +1194,8 @@ Grid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size
 void
 Grid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
-	double inter_auto_val = 0;
-	if (boost::shared_ptr<AutomationList> alist = pattern.get_alist (mti, mri, param)) {
-		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
-		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
-		// of the WriteLock in ControlList::erase and such, then eval can be used.
-		// Get corresponding beats and samples
-		Temporal::Beats row_relative_beats = pattern.region_relative_beats(rowi, mti, mri);
-		uint32_t row_sample = pattern.sample_at_row_at_mti(rowi, mti);
-		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
-		// Get interpolation
-		bool ok;
-		inter_auto_val = alist->rt_safe_eval(awhen, ok);
-	}
-	row[columns.automation[mti][cgi]] = TrackerUtils::to_string (inter_auto_val);
+	double inter_auto_val = get_automation_interpolation_value (rowi, mti, mri, param);
+	row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_auto_val);
 	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
 }
 
@@ -1665,10 +1653,12 @@ Grid::unset_underline_current_step_edit_auto_cell ()
 void
 Grid::set_underline_current_step_edit_cell ()
 {
-	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
-		set_underline_current_step_edit_note_cell ();
-	else
-		set_underline_current_step_edit_auto_cell ();
+	if (tracker_editor.main_toolbar.step_edit) {
+		if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR)
+			set_underline_current_step_edit_note_cell ();
+		else
+			set_underline_current_step_edit_auto_cell ();
+	}
 }
 
 void
@@ -1684,7 +1674,7 @@ Grid::set_underline_current_step_edit_note_cell ()
 		std::string val_str = row[columns.channel[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 1);
 		row[columns.channel[mti][cgi]] = ul.first;
 		row[columns._channel_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1693,7 +1683,7 @@ Grid::set_underline_current_step_edit_note_cell ()
 		std::string val_str = row[columns.velocity[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 2);
 		row[columns.velocity[mti][cgi]] = ul.first;
 		row[columns._velocity_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1702,7 +1692,7 @@ Grid::set_underline_current_step_edit_note_cell ()
 		std::string val_str = row[columns.delay[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 5);
 		row[columns.delay[mti][cgi]] = ul.first;
 		row[columns._delay_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1732,7 +1722,7 @@ Grid::set_underline_current_step_edit_auto_cell ()
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 5);
 		row[columns.automation_delay[mti][cgi]] = ul.first;
 		row[columns._automation_delay_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1827,21 +1817,22 @@ Grid::char_underline(int ul_idx) const
 }
 
 std::pair<std::string, Pango::AttrList>
-Grid::underlined_value(int val) const
+Grid::underlined_value(int val, int min_pos, int max_pos) const
 {
-	return underlined_value(TrackerUtils::to_string (val));
+	return underlined_value(TrackerUtils::num_to_string (val), min_pos, max_pos);
 }
 
 std::pair<std::string, Pango::AttrList>
-Grid::underlined_value(float val) const
+Grid::underlined_value(float val, int min_pos, int max_pos) const
 {
-	return underlined_value(TrackerUtils::to_string (val));
+	return underlined_value(TrackerUtils::num_to_string (val), min_pos, max_pos);
 }
 
 std::pair<std::string, Pango::AttrList>
-Grid::underlined_value(const std::string& val_str) const
+Grid::underlined_value(const std::string& val_str, int min_pos, int max_pos) const
 {
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
+	position = TrackerUtils::clamp(position, min_pos, max_pos);
 	std::string padded_val_str = TrackerUtils::pad (val_str, position);
 	size_t point_pos = TrackerUtils::point_position(padded_val_str);
 	int ul_idx = point_pos - position - (position < 0 ? 0 : 1);
@@ -2516,6 +2507,31 @@ Grid::get_automation_value (int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.get_automation_value (rowi, mti, mri, param);
+}
+
+double
+Grid::get_automation_interpolation_value (int rowi, int mti, int mri, int cgi)
+{
+	return get_automation_interpolation_value(rowi, mti, mri, get_param (mti, cgi));
+}
+
+double
+Grid::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param)
+{
+	double inter_auto_val = 0;
+	if (boost::shared_ptr<AutomationList> alist = pattern.get_alist (mti, mri, param)) {
+		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
+		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
+		// of the WriteLock in ControlList::erase and such, then eval can be used.
+		// Get corresponding beats and samples
+		Temporal::Beats row_relative_beats = pattern.region_relative_beats(rowi, mti, mri);
+		uint32_t row_sample = pattern.sample_at_row_at_mti(rowi, mti);
+		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double() : row_sample;
+		// Get interpolation
+		bool ok;
+		inter_auto_val = alist->rt_safe_eval(awhen, ok);
+	}
+	return inter_auto_val;
 }
 
 void
@@ -3795,12 +3811,14 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 	// Minus
 	case GDK_minus:
 	case GDK_underscore:
+		// Change sign
 		ret = step_editing_set_automation_value (-1);
 		break;
 
 	// Plus
 	case GDK_plus:
 	case GDK_equal:
+		// Delete automation
 		ret = step_editing_set_automation_value (100);
 		break;
 
@@ -3837,8 +3855,9 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_automation_value (int digit)
 {
+	// VVT: when step editing bender, it blocks
 	pair<double, bool> val_def = get_automation_value(current_rowi, current_mti, current_mri, current_cgi);
-	double oval = val_def.first;
+	double oval = val_def.second ? val_def.first : get_automation_interpolation_value(current_rowi, current_mti, current_mri, current_cgi);
 
 	// Set new value
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
@@ -3852,6 +3871,9 @@ Grid::step_editing_set_automation_value (int digit)
 	// Redisplay model with the new value
 	// TODO: optimize
 	redisplay_model ();
+	// TODO: Need to rerun because apparently redisplay_model overwrite the
+	// underlined cell, once optimized avoid such redundancy as well.
+	set_underline_current_step_edit_cell ();
 
 	return true;
 }
