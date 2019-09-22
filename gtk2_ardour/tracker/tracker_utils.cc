@@ -118,13 +118,13 @@ TrackerUtils::non_negative_pad (const std::string& str, int position)
 std::string
 TrackerUtils::int_unpad (const std::string& str)
 {
-	return to_string(std::atoi(str.c_str()));
+	return num_to_string(std::atoi(str.c_str()));
 }
 
 std::string
 TrackerUtils::float_unpad (const std::string& str)
 {
-	return to_string(std::atof(str.c_str()));
+	return num_to_string(std::atof(str.c_str()));
 }
 
 size_t
