@@ -1195,7 +1195,10 @@ void
 Grid::redisplay_auto_interpolation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
 	double inter_auto_val = get_automation_interpolation_value (rowi, mti, mri, param);
-	row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_auto_val);
+	if (is_int_param (param))
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (std::round (inter_auto_val));
+	else
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_auto_val);
 	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
 }
 
@@ -1837,6 +1840,12 @@ Grid::underlined_value(const std::string& val_str, int min_pos, int max_pos) con
 	size_t point_pos = TrackerUtils::point_position(padded_val_str);
 	int ul_idx = point_pos - position - (position < 0 ? 0 : 1);
 	return make_pair(padded_val_str, char_underline(ul_idx));
+}
+
+bool
+Grid::is_int_param (const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param);
 }
 
 /////////////////////
@@ -3861,6 +3870,12 @@ Grid::step_editing_set_automation_value (int digit)
 
 	// Set new value
 	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
+	// Round in case it is int automation
+	if (is_int_param (get_param (current_mti, current_cgi))) {
+		position = std::max(0, position);
+		oval = std::round(oval);
+	}
+
 	double nval = TrackerUtils::change_digit_or_sign (oval, digit, position);
 	set_automation_value (nval, current_rowi, current_mti, current_mri, current_cgi);
 

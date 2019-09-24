@@ -233,6 +233,8 @@ public:
 	std::pair<std::string, Pango::AttrList> underlined_value(float val, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
 	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
 
+	bool is_int_param (const Evoral::Parameter& param) const;
+
 	TrackerEditor& tracker_editor;
 
 	// Map column index to automation parameter and vice versa
