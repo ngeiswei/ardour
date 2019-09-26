@@ -134,8 +134,6 @@ TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
 void
 TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
 {
-	// VVT: disabling this unlocks step editing midi automation
-	//
 	// Changing midi content re-render the grid
 	to_model(midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
 	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
