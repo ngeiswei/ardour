@@ -125,7 +125,7 @@ public:
 
 	virtual int get_min_width() const;
 
-	void redisplay_model ();
+	void redisplay_grid ();
 
 	TrackerEditor& tracker_editor;
 	boost::shared_ptr<ARDOUR::Track> track;
