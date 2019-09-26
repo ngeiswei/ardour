@@ -221,12 +221,12 @@ AutomationPattern::update_automations()
 void
 AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl, const std::string& name)
 {
-	// NT: try to understand why some controls are inserted twice
+	// NEXT TODO: try to understand why some controls are inserted twice
 
 	Evoral::Parameter param = actrl->parameter();
 	std::pair<ParamToAutomationControl::iterator, bool> actrl_result = param_to_actrl.insert(std::make_pair(param, actrl));
 	param_to_name.insert(std::make_pair(param, name));
-	// NT: re-enable connecting automation
+	// // NEXT TODO: re-enable connecting automation
 	// if (actrl_result.second)
 	// 	tracker_editor.connect_automation(actrl);
 }

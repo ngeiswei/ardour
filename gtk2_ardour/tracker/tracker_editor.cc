@@ -108,7 +108,7 @@ void TrackerEditor::setup (RegionSelection& rs)
 	setup_toolbars ();
 	setup_grid_header ();
 
-	grid.redisplay_model ();
+	grid.redisplay_grid_direct_call ();
 
 	setup_vbox ();
 
@@ -120,7 +120,7 @@ void TrackerEditor::setup (RegionSelection& rs)
 	show();
 
 	// To align header and grid
-	grid.redisplay_model ();
+	grid.redisplay_grid_direct_call ();
 
 	_first = false;
 }
@@ -134,24 +134,26 @@ TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
 void
 TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
 {
+	// VVT: disabling this unlocks step editing midi automation
+	//
 	// Changing midi content re-render the grid
 	to_model(midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                                boost::bind (&Grid::redisplay_model, &grid),
+	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
 	                                                gui_context());
 
 	// Changing the region time zone re-render the grid
 	midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-	                                            boost::bind (&Grid::redisplay_model, &grid),
+	                                            boost::bind (&Grid::redisplay_grid_connect_call, &grid),
 	                                            gui_context());
 }
 
 void
 TrackerEditor::connect_automation (boost::shared_ptr<AutomationControl> actrl)
 {
-	// TODO: call a more direct redisplay method than redisplay_model to speed up redisplay
+	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
 	boost::shared_ptr<AutomationList> alist = actrl->alist();
-	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_model, &grid), gui_context());
-	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_model, &grid), gui_context());
+	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context());
 }
 
 void
