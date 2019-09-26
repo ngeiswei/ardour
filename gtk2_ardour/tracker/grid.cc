@@ -102,6 +102,7 @@ Grid::Grid (TrackerEditor& te)
 	, edit_cgi (-1)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
+	, redisplay_grid_connect_call_enabled (true)
 	, time_column (0)
 {
 }
@@ -313,7 +314,7 @@ Grid::update_automation_column_visibility (size_t mti, const Evoral::Parameter& 
 	set_automation_column_visible (mti, param, column, showit);
 
 	/* now trigger a redisplay */
-	redisplay_model ();
+	redisplay_grid_direct_call ();
 }
 
 bool
@@ -394,7 +395,7 @@ Grid::update_gain_column_visibility (size_t mti)
 	set_automation_column_visible (mti, Evoral::Parameter(GainAutomation), gain_columns[mti], showit);
 
 	/* now trigger a redisplay */
-	redisplay_model ();
+	redisplay_grid_direct_call ();
 }
 
 void
@@ -412,7 +413,7 @@ Grid::update_trim_column_visibility (size_t mti)
 	set_automation_column_visible (mti, Evoral::Parameter(TrimAutomation), trim_columns[mti], showit);
 
 	/* now trigger a redisplay */
-	redisplay_model ();
+	redisplay_grid_direct_call ();
 }
 
 void
@@ -430,7 +431,7 @@ Grid::update_mute_column_visibility (size_t mti)
 	set_automation_column_visible (mti, Evoral::Parameter(MuteAutomation), mute_columns[mti], showit);
 
 	/* now trigger a redisplay */
-	redisplay_model ();
+	redisplay_grid_direct_call ();
 }
 
 void
@@ -455,7 +456,7 @@ Grid::update_pan_columns_visibility (size_t mti)
 	}
 
 	/* now trigger a redisplay */
-	redisplay_model ();
+	redisplay_grid_direct_call ();
 }
 
 void
@@ -847,6 +848,111 @@ Grid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	row[columns._off_note[mti][cgi]] = 0;
 	row[columns._on_note[mti][cgi]] = 0;
+}
+
+void
+Grid::redisplay_grid ()
+{
+	if (editing_editable)
+		return;
+
+	if (!tracker_editor.session)
+		return;
+
+	// In case the resolution (lines per beat) has changed
+	// TODO: support multi track multi region
+	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.tps.front()->delay_ticks_min());
+	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.tps.front()->delay_ticks_max());
+
+	// Load colors from config
+	read_colors ();
+
+	// Update pattern settings and content
+	pattern.update ();
+
+	// After update, compare pattern and prev_pattern to come up with a list of
+	// differences to display. For now only worry about redisplaying the
+	// changed mti.
+	_phenomenal_diff = pattern.phenomenal_diff(prev_pattern);
+
+	// std::cout << "Grid::redisplay_grid _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
+
+	// Set time column, row background colors and font
+	redisplay_global_columns ();
+
+	// Redisplay cell contents
+	if (_phenomenal_diff.full) {
+		for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
+			redisplay_track(mti);
+		}
+	} else {
+		for (MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.begin(); it != _phenomenal_diff.mti2tp_diff.end(); ++it) {
+			redisplay_track(it->first, it->second);
+		}
+	}
+
+	// Redisplay current row and cursor
+	// TODO: optimize
+	uint32_t current_rowi_from_beats = pattern.row_at_beats(current_beats);
+	TreeModel::Children::iterator row_it = model->children().begin();
+	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
+
+		// Get row
+		TreeModel::Row row = *row_it++;
+
+		// Used to draw the background of the current row and cursor
+		if (rowi == current_rowi_from_beats) {
+			if (current_col <= 0) {
+				current_col = first_defined_col ();
+				current_mti = get_mti(get_column (current_col));
+			}
+			current_rowi = current_rowi_from_beats;
+			current_row = row;
+			redisplay_current_row_background ();
+			redisplay_current_cursor ();
+		}
+	}
+
+	// Remove unused rows
+	for (; row_it != model->children().end();)
+		row_it = model->erase(row_it);
+
+	set_model (model);
+
+	// In case tracks have been added or removed
+	redisplay_visible_note();
+	redisplay_visible_channel();
+	redisplay_visible_velocity();
+	redisplay_visible_delay();
+	redisplay_visible_note_separator();
+	redisplay_visible_automation();
+	redisplay_visible_automation_separator();
+
+	redisplay_left_right_separator_columns ();
+	tracker_editor.grid_header->align();
+
+	// Save the state of pattern to prev_pattern. We may need to do a deep copy
+	// into prev_pattern to make sure that the note pointers do capture a
+	// different, if it exists.
+
+	// std::cout << "pattern:" << std::endl << pattern.to_string("  ");
+	// std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
+
+	prev_pattern = pattern;
+}
+
+void
+Grid::redisplay_grid_direct_call ()
+{
+	redisplay_grid ();
+}
+
+void
+Grid::redisplay_grid_connect_call ()
+{
+	if (redisplay_grid_connect_call_enabled) {
+		redisplay_grid ();
+	}
 }
 
 void
@@ -1266,97 +1372,6 @@ Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, u
 			row[columns._automation_delay_background_color[mti][cgi]] = color;
 		}
 	}
-}
-
-void
-Grid::redisplay_model ()
-{
-	if (editing_editable)
-		return;
-
-	if (!tracker_editor.session)
-		return;
-
-	// In case the resolution (lines per beat) has changed
-	// TODO: support multi track multi region
-	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_lower(pattern.tps.front()->delay_ticks_min());
-	tracker_editor.main_toolbar.delay_spinner.get_adjustment()->set_upper(pattern.tps.front()->delay_ticks_max());
-
-	// Load colors from config
-	read_colors ();
-
-	// Update pattern settings and content
-	pattern.update ();
-
-	// After update, compare pattern and prev_pattern to come up with a list of
-	// differences to display. For now only worry about redisplaying the
-	// changed mti.
-	_phenomenal_diff = pattern.phenomenal_diff(prev_pattern);
-
-	// std::cout << "Grid::redisplay_model _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
-
-	// Set time column, row background colors and font
-	redisplay_global_columns ();
-
-	// Redisplay cell contents
-	if (_phenomenal_diff.full) {
-		for (size_t mti = 0; mti < pattern.tps.size(); mti++) {
-			redisplay_track(mti);
-		}
-	} else {
-		for (MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.begin(); it != _phenomenal_diff.mti2tp_diff.end(); ++it) {
-			redisplay_track(it->first, it->second);
-		}
-	}
-
-	// Redisplay current row and cursor
-	// TODO: optimize
-	uint32_t current_rowi_from_beats = pattern.row_at_beats(current_beats);
-	TreeModel::Children::iterator row_it = model->children().begin();
-	for (uint32_t rowi = 0; rowi < pattern.global_nrows; rowi++) {
-
-		// Get row
-		TreeModel::Row row = *row_it++;
-
-		// Used to draw the background of the current row and cursor
-		if (rowi == current_rowi_from_beats) {
-			if (current_col <= 0) {
-				current_col = first_defined_col ();
-				current_mti = get_mti(get_column (current_col));
-			}
-			current_rowi = current_rowi_from_beats;
-			current_row = row;
-			redisplay_current_row_background ();
-			redisplay_current_cursor ();
-		}
-	}
-
-	// Remove unused rows
-	for (; row_it != model->children().end();)
-		row_it = model->erase(row_it);
-
-	set_model (model);
-
-	// In case tracks have been added or removed
-	redisplay_visible_note();
-	redisplay_visible_channel();
-	redisplay_visible_velocity();
-	redisplay_visible_delay();
-	redisplay_visible_note_separator();
-	redisplay_visible_automation();
-	redisplay_visible_automation_separator();
-
-	redisplay_left_right_separator_columns ();
-	tracker_editor.grid_header->align();
-
-	// Save the state of pattern to prev_pattern. We may need to do a deep copy
-	// into prev_pattern to make sure that the note pointers do capture a
-	// different, if it exists.
-
-	// std::cout << "pattern:" << std::endl << pattern.to_string("  ");
-	// std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string("  ");
-
-	prev_pattern = pattern;
 }
 
 void
@@ -2007,7 +2022,7 @@ Grid::clear_editables ()
 	edit_cgi = -1;
 	editing_editable = 0;
 
-	redisplay_model ();
+	redisplay_grid_direct_call ();
 }
 
 void
@@ -3877,6 +3892,10 @@ Grid::step_editing_set_automation_value (int digit)
 	}
 
 	double nval = TrackerUtils::change_digit_or_sign (oval, digit, position);
+
+	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
+	// return when such lock is taken.
+	redisplay_grid_connect_call_enabled = false;
 	set_automation_value (nval, current_rowi, current_mti, current_mri, current_cgi);
 
 	// Move cursor
@@ -3885,11 +3904,12 @@ Grid::step_editing_set_automation_value (int digit)
 
 	// Redisplay model with the new value
 	// TODO: optimize
-	redisplay_model ();
-	// TODO: Need to rerun because apparently redisplay_model overwrite the
+	redisplay_grid_direct_call ();
+	// TODO: Need to rerun because apparently redisplay_grid overwrite the
 	// underlined cell, once optimized avoid such redundancy as well.
 	set_underline_current_step_edit_cell ();
 
+	redisplay_grid_connect_call_enabled = true;
 	return true;
 }
 
