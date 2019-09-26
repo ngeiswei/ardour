@@ -140,6 +140,9 @@ public:
 
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
+	double lower (int rowi, const Evoral::Parameter& param) const;
+	double upper (int rowi, const Evoral::Parameter& param) const;
+
 	// For representing pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
 	virtual std::string to_string(const std::string& indent = std::string()) const;

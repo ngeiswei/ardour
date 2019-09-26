@@ -52,6 +52,10 @@ namespace Tracker {
 #define GROUP_SEPARATOR_WIDTH 8
 #define TRACK_SEPARATOR_WIDTH 8
 
+// Number digits required to represent delay. 5 char because delay requires 4
+// digit + 1 char for - sign.
+#define DELAY_DIGITS 5
+
 class TrackerEditor;
 
 class Grid : public Gtk::TreeView
@@ -231,9 +235,9 @@ public:
 
 	// Render a val with the position to be affected by step editing underlined
 	Pango::AttrList char_underline(int ul_idx) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(int val, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(float val, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str, int min_pos = MainToolbar::min_position, int max_pos = MainToolbar::max_position) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(int val) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(float val) const;
+	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str) const;
 
 	bool is_int_param (const Evoral::Parameter& param) const;
 
@@ -272,6 +276,7 @@ public:
 	TrackPattern*                current_mtp;
 	int                          current_mri; // midi region index
 	int                          current_cgi; // column group index
+	int                          current_pos; // toolbar position, once adjusted
 
 	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
 	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
@@ -384,6 +389,9 @@ private:
 	// Set current cursor
 	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col, bool set_playhead=false);
 
+	// Set current position (from main toolbar position spinner)
+	void set_current_pos (int min_pos, int max_pos);
+
 	/////////////////////
 	// Editing Actions //
 	/////////////////////
@@ -485,6 +493,10 @@ private:
 	void automation_delay_edited (const std::string& path, const std::string& text);
 	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, int cgi); // return (0, false) if undefined
 	void set_automation_delay (int delay, int rowi, int mti, int mri, int automation_cgi);
+
+	// Return lower and upper bounds of the given parameter
+	double lower (int rowi, int mti, const Evoral::Parameter& param) const;
+	double upper (int rowi, int mti, const Evoral::Parameter& param) const;
 
 public:
 	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
