@@ -98,7 +98,6 @@ public:
 	bool is_displayable(uint32_t row, const Evoral::Parameter& param) const;
 	static bool is_displayable(uint32_t row, RowToAutomationListIt r2a);
 
-
 	// Return the control list iterator associated to param at rowi if exists or
 	// end() pointer if it does not.
 	//
@@ -145,6 +144,10 @@ public:
 
 	virtual void set_enabled(const Evoral::Parameter& param, bool enabled);
 	virtual bool is_enabled(const Evoral::Parameter& param) const;
+
+	// Return the lower and upper value bounds of the given parameter
+	double lower (const Evoral::Parameter& param) const;
+	double upper (const Evoral::Parameter& param) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string() const;
