@@ -91,6 +91,7 @@ Grid::Grid (TrackerEditor& te)
 	, current_mtp (0)
 	, current_mri (0)
 	, current_cgi (0)
+	, current_pos (0)
 	, current_note_type (TrackerColumn::NOTE)
 	, current_auto_type (TrackerColumn::AUTOMATION_SEPARATOR)
 	, clock_pos (0)
@@ -1179,7 +1180,7 @@ Grid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, size_t c
 	row[columns.note_name[mti][cgi]] = mk_blank(4);
 	row[columns.channel[mti][cgi]] = mk_blank(2);
 	row[columns.velocity[mti][cgi]] = mk_blank(3);
-	row[columns.delay[mti][cgi]] = mk_blank(5);
+	row[columns.delay[mti][cgi]] = mk_blank(DELAY_DIGITS);
 
 	// Grey out infoless cells
 	row[columns._note_foreground_color[mti][cgi]] = blank_foreground_color;
@@ -1270,7 +1271,7 @@ Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t c
 {
 	// Fill with blank
 	row[columns.automation[mti][cgi]] = mk_blank(3);
-	row[columns.automation_delay[mti][cgi]] = mk_blank(5);
+	row[columns.automation_delay[mti][cgi]] = mk_blank(DELAY_DIGITS);
 
 	// Fill default foreground color
 	row[columns._automation_delay_foreground_color[mti][cgi]] = blank_foreground_color;
@@ -1692,7 +1693,8 @@ Grid::set_underline_current_step_edit_note_cell ()
 		std::string val_str = row[columns.channel[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 1);
+		set_current_pos (0, 1);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.channel[mti][cgi]] = ul.first;
 		row[columns._channel_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1701,16 +1703,19 @@ Grid::set_underline_current_step_edit_note_cell ()
 		std::string val_str = row[columns.velocity[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 2);
+		set_current_pos (0, 2);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.velocity[mti][cgi]] = ul.first;
 		row[columns._velocity_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	case TrackerColumn::DELAY: {
+		// VVT: fix blank delay (show 0000 with underlined digit)
 		std::string val_str = row[columns.delay[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 5);
+		set_current_pos (0, 3);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.delay[mti][cgi]] = ul.first;
 		row[columns._delay_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1724,23 +1729,32 @@ void
 Grid::set_underline_current_step_edit_auto_cell ()
 {
 	Gtk::TreeModel::Row& row = current_row;
-	size_t mti = current_mti;
-	size_t cgi = current_cgi;
+	int mti = current_mti;
+	int cgi = current_cgi;
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION: {
 		std::string val_str = row[columns.automation[mti][cgi]];
 		if (is_blank(val_str))
 			break;
+		Evoral::Parameter param = get_param (mti, cgi);
+		double l = lower (current_row, mti, param);
+		double u = upper (current_row, mti, param);
+		double mlu = std::max(std::abs(l), std::abs(u));
+		int min_pos = is_int_param (param) ? 0 : MainToolbar::min_position;
+		int max_pos = std::floor(std::log10(mlu));
+		set_current_pos (min_pos, max_pos);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.automation[mti][cgi]] = ul.first;
 		row[columns._automation_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	case TrackerColumn::AUTOMATION_DELAY: {
+		// VVT: fix blank delay (show 0000 with underlined digit)
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str, 0, 5);
+		set_current_pos (0, 3);
+		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.automation_delay[mti][cgi]] = ul.first;
 		row[columns._automation_delay_attributes[mti][cgi]] = ul.second;
 		break;
@@ -1835,25 +1849,23 @@ Grid::char_underline(int ul_idx) const
 }
 
 std::pair<std::string, Pango::AttrList>
-Grid::underlined_value(int val, int min_pos, int max_pos) const
+Grid::underlined_value(int val) const
 {
-	return underlined_value(TrackerUtils::num_to_string (val), min_pos, max_pos);
+	return underlined_value(TrackerUtils::num_to_string (val));
 }
 
 std::pair<std::string, Pango::AttrList>
-Grid::underlined_value(float val, int min_pos, int max_pos) const
+Grid::underlined_value(float val) const
 {
-	return underlined_value(TrackerUtils::num_to_string (val), min_pos, max_pos);
+	return underlined_value(TrackerUtils::num_to_string (val));
 }
 
 std::pair<std::string, Pango::AttrList>
-Grid::underlined_value(const std::string& val_str, int min_pos, int max_pos) const
+Grid::underlined_value(const std::string& val_str) const
 {
-	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-	position = TrackerUtils::clamp(position, min_pos, max_pos);
-	std::string padded_val_str = TrackerUtils::pad (val_str, position);
+	std::string padded_val_str = TrackerUtils::pad (val_str, current_pos);
 	size_t point_pos = TrackerUtils::point_position(padded_val_str);
-	int ul_idx = point_pos - position - (position < 0 ? 0 : 1);
+	int ul_idx = point_pos - current_pos - (current_pos < 0 ? 0 : 1);
 	return make_pair(padded_val_str, char_underline(ul_idx));
 }
 
@@ -2467,6 +2479,13 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	tracker_editor.grid_header->align();
 }
 
+void
+Grid::set_current_pos (int min_pos, int max_pos)
+{
+	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
+	current_pos = TrackerUtils::clamp(position, min_pos, max_pos);
+}
+
 Evoral::Parameter
 Grid::get_param (size_t mti, size_t cgi)
 {
@@ -2619,6 +2638,18 @@ Grid::set_automation_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.set_automation_delay (delay, rowi, mti, mri, param);
+}
+
+double
+Grid::lower (int rowi, int mti, const Evoral::Parameter& param) const
+{
+	return pattern.tps[mti]->lower (rowi, param);
+}
+
+double
+Grid::upper (int rowi, int mti, const Evoral::Parameter& param) const
+{
+	return pattern.tps[mti]->upper (rowi, param);
 }
 
 void
@@ -3616,8 +3647,7 @@ Grid::step_editing_set_note_channel (int digit)
 	NoteTypePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		int ch = note->channel();
-		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-		int new_ch = TrackerUtils::change_digit (ch + 1, digit, position);
+		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos);
 		set_note_channel (current_mti, current_mri, note, new_ch - 1);
 	}
 
@@ -3693,8 +3723,7 @@ Grid::step_editing_set_note_velocity (int digit)
 	NoteTypePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		int vel = note->velocity();
-		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-		int new_vel = TrackerUtils::change_digit (vel, digit, position);
+		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos);
 		set_note_velocity (current_mti, current_mri, note, new_vel);
 	}
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
@@ -3778,7 +3807,6 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_note_delay (int digit)
 {
-	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	NoteTypePtr on_note = get_on_note (current_rowi, current_mti, current_cgi);
 	NoteTypePtr off_note = get_off_note (current_rowi, current_mti, current_cgi);
@@ -3792,7 +3820,7 @@ Grid::step_editing_set_note_delay (int digit)
 		: pattern.region_relative_delay_ticks(off_note->end_time(), current_rowi, current_mti, current_mri);
 
 	// Update delay
-	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, position);
+	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, current_pos);
 	set_note_delay (new_delay, current_rowi, current_mti, current_mri, current_cgi);
 
 	// Move the cursor
@@ -3879,19 +3907,16 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_automation_value (int digit)
 {
-	// VVT: when step editing bender, it blocks
 	pair<double, bool> val_def = get_automation_value(current_rowi, current_mti, current_mri, current_cgi);
 	double oval = val_def.second ? val_def.first : get_automation_interpolation_value(current_rowi, current_mti, current_mri, current_cgi);
 
 	// Set new value
-	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
 	// Round in case it is int automation
 	if (is_int_param (get_param (current_mti, current_cgi))) {
-		position = std::max(0, position);
 		oval = std::round(oval);
 	}
 
-	double nval = TrackerUtils::change_digit_or_sign (oval, digit, position);
+	double nval = TrackerUtils::change_digit_or_sign (oval, digit, current_pos);
 
 	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
 	// return when such lock is taken.
@@ -3994,8 +4019,7 @@ Grid::step_editing_set_automation_delay (int digit)
 
 	// Set new value
 	if (val_def.second) {
-		int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int();
-		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, position);
+		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos);
 		set_automation_delay (new_delay, current_rowi, current_mti, current_mri, current_cgi);
 	}
 

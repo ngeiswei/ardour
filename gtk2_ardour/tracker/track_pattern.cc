@@ -237,3 +237,15 @@ TrackPattern::set_automation_delay (int delay, size_t rowi, size_t mri, const Ev
 {
 	AutomationPattern::set_automation_delay (delay, rowi, param);
 }
+
+double
+TrackPattern::lower (int rowi, const Evoral::Parameter& param) const
+{
+	return AutomationPattern::lower (param);
+}
+
+double
+TrackPattern::upper (int rowi, const Evoral::Parameter& param) const
+{
+	return AutomationPattern::upper (param);
+}

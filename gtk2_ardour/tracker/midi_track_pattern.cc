@@ -411,6 +411,22 @@ MidiTrackPattern::get_device_names ()
 	return mtav->get_device_names ();
 }
 
+double
+MidiTrackPattern::lower (int rowi, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[to_mri(rowi)].rap.lower (param)
+		: AutomationPattern::lower (param);
+}
+
+double
+MidiTrackPattern::upper (int rowi, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[to_mri(rowi)].rap.upper (param)
+		: AutomationPattern::upper (param);
+}
+
 std::string
 MidiTrackPattern::self_to_string() const
 {
