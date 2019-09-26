@@ -87,6 +87,8 @@ public:
 	virtual void delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
 	virtual std::pair<int, bool> get_automation_delay (size_t rowi, size_t mri, const Evoral::Parameter& param);
 	virtual void set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param);
+	virtual double lower (int rowi, const Evoral::Parameter& param) const;
+	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
 	boost::shared_ptr<ARDOUR::Track> track;
 };

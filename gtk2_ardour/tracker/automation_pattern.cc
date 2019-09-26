@@ -543,6 +543,24 @@ AutomationPattern::is_enabled(const Evoral::Parameter& param) const
 	return param_to_enabled[param];
 }
 
+double
+AutomationPattern::lower (const Evoral::Parameter& param) const
+{
+	const boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param);
+	if (!actrl)
+		return -1e16;             // TODO: replace by something better
+	return actrl->lower ();
+}
+
+double
+AutomationPattern::upper (const Evoral::Parameter& param) const
+{
+	const boost::shared_ptr<ARDOUR::AutomationControl> actrl = get_actrl(param);
+	if (!actrl)
+		return 1e16;             // TODO: replace by something better
+	return actrl->upper ();
+}
+
 std::string
 AutomationPattern::self_to_string() const
 {
