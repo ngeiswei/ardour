@@ -357,7 +357,7 @@ MainToolbar::beats_per_row_chosen (GridType st)
 		set_beats_per_row_to (st);
 
 		// TODO: alternatively send signal to TrackerEditor
-		tracker_editor.grid.redisplay_model ();
+		tracker_editor.grid.redisplay_grid_direct_call ();
 	}
 }
 
@@ -408,7 +408,7 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// TODO: possibly replace by signal
-	tracker_editor.grid.redisplay_model();
+	tracker_editor.grid.redisplay_grid_direct_call();
 	if (step_edit)
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
 	else
