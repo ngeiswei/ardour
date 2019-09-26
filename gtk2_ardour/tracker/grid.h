@@ -165,6 +165,9 @@ public:
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 
+	void redisplay_grid ();
+	void redisplay_grid_direct_call ();
+	void redisplay_grid_connect_call ();
 	void redisplay_left_right_separator_columns ();
 	void redisplay_left_right_separator_columns (size_t mti);
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
@@ -193,8 +196,7 @@ public:
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, const std::string& color);
 	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color);
 	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color);
-	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color);
-	void redisplay_model ();
+	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color);	
 	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
 	void redisplay_inter_midi_regions (size_t mti);
 	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
@@ -247,7 +249,7 @@ public:
 	// Represent patterns across all tracks
 	MultiTrackPattern pattern;
 
-	// Store previous pattern to optimize redisplay_model by only redisplaying
+	// Store previous pattern to optimize redisplay_grid by only redisplaying
 	// difference
 	MultiTrackPattern prev_pattern;
 
@@ -292,6 +294,11 @@ public:
 
 	// Keep track of the last keyval to avoid repeating key (except cursor move)
 	guint                        last_keyval;
+
+	// Disable redisplay grid by connect call. Used to avoid lock created when
+	// editing. TODO: should probably be replaced by a lock, and have
+	// redisplay_grid_connect_call immediately return when such lock is taken.
+	bool                         redisplay_grid_connect_call_enabled;
 
 private:
 	void init_columns ();
@@ -541,7 +548,7 @@ private:
 	std::string current_step_edit_row_color;
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
-	// speed up redisplay_model
+	// speed up redisplay_grid
 	MultiTrackPatternPhenomenalDiff _phenomenal_diff;
 };
 
