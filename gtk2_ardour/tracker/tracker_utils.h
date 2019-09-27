@@ -120,7 +120,7 @@ public:
 	static std::string num_to_string(Num n, int base=10)
 	{
 		std::stringstream ss;
-		ss << std::fixed << std::setprecision(6) << n;
+		ss << std::fixed << std::setprecision(5) << n;
 		return rm_point_zeros(ss.str());
 	}
 
