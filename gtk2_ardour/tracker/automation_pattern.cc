@@ -355,7 +355,7 @@ AutomationPattern::get_automation_value (size_t rowi, const Evoral::Parameter& p
 	if (const Evoral::ControlEvent* ce = get_control_event (rowi, param))
 		return std::make_pair(ce->value, true);
 
-	return std::make_pair(0.0, false);	
+	return std::make_pair(0.0, false);
 }
 
 void

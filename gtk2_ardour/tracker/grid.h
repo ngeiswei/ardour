@@ -447,6 +447,10 @@ private:
 	NoteTypePtr get_off_note (int rowi, int mti, int cgi);
 	NoteTypePtr get_off_note (const std::string& path, int mti, int cgi);
 	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	// Get on or off note from path, mti and cgi
+	NoteTypePtr get_note (int rowi, int mti, int cgi);
+	NoteTypePtr get_note (const std::string& path, int mti, int cgi);
+	NoteTypePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
