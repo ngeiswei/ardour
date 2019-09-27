@@ -1630,9 +1630,13 @@ Grid::unset_underline_current_step_edit_note_cell ()
 	}
 	case TrackerColumn::DELAY: {
 		std::string val_str = row[columns.delay[mti][cgi]];
-		if (is_blank(val_str))
+		if (is_blank(val_str)) {
+			// For some unknown reason the attributes must be reset
+			row[columns._delay_attributes[mti][cgi]] = Pango::AttrList();
 			break;
-		row[columns.delay[mti][cgi]] = TrackerUtils::int_unpad (val_str);
+		}
+		bool is_null = std::stoi(val_str) == 0;
+		row[columns.delay[mti][cgi]] = is_null ? mk_blank(DELAY_DIGITS) : TrackerUtils::int_unpad (val_str);
 		row[columns._delay_attributes[mti][cgi]] = Pango::AttrList();
 		break;
 	}
@@ -1660,7 +1664,8 @@ Grid::unset_underline_current_step_edit_auto_cell ()
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
 		if (is_blank(val_str))
 			break;
-		row[columns.automation_delay[mti][cgi]] = TrackerUtils::int_unpad (val_str);
+		bool is_null = std::stoi(val_str) == 0;
+		row[columns.automation_delay[mti][cgi]] = is_null ? mk_blank(DELAY_DIGITS) : TrackerUtils::int_unpad (val_str);
 		row[columns._automation_delay_attributes[mti][cgi]] = Pango::AttrList();
 		break;
 	}
@@ -1684,8 +1689,9 @@ void
 Grid::set_underline_current_step_edit_note_cell ()
 {
 	Gtk::TreeModel::Row& row = current_row;
-	size_t mti = current_mti;
-	size_t cgi = current_cgi;
+	int rowi = current_rowi;
+	int mti = current_mti;
+	int cgi = current_cgi;
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
 		break;
@@ -1710,10 +1716,12 @@ Grid::set_underline_current_step_edit_note_cell ()
 		break;
 	}
 	case TrackerColumn::DELAY: {
-		// VVT: fix blank delay (show 0000 with underlined digit)
 		std::string val_str = row[columns.delay[mti][cgi]];
-		if (is_blank(val_str))
+		NoteTypePtr note = get_note (rowi, mti, cgi);
+		if (!note)
 			break;
+		if (is_blank(val_str))
+			val_str = "0";
 		set_current_pos (0, 3);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.delay[mti][cgi]] = ul.first;
@@ -1729,7 +1737,9 @@ void
 Grid::set_underline_current_step_edit_auto_cell ()
 {
 	Gtk::TreeModel::Row& row = current_row;
+	int rowi = current_rowi;
 	int mti = current_mti;
+	int mri = current_mri;
 	int cgi = current_cgi;
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION: {
@@ -1749,10 +1759,12 @@ Grid::set_underline_current_step_edit_auto_cell ()
 		break;
 	}
 	case TrackerColumn::AUTOMATION_DELAY: {
-		// VVT: fix blank delay (show 0000 with underlined digit)
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
-		if (is_blank(val_str))
+		pair<int, bool> val_def = get_automation_delay (rowi, mti, mri, cgi);
+		if (!val_def.second)
 			break;
+		if (is_blank(val_str))
+			val_str = "0";
 		set_current_pos (0, 3);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value(val_str);
 		row[columns.automation_delay[mti][cgi]] = ul.first;
@@ -1963,6 +1975,27 @@ Grid::get_off_note(const TreeModel::Path& path, int mti, int cgi)
 	if (!iter)
 		return NoteTypePtr();
 	return (*iter)[columns._off_note[mti][cgi]];
+}
+
+NoteTypePtr
+Grid::get_note (int rowi, int mti, int cgi)
+{
+	return get_note (TreeModel::Path (1U, rowi), mti, cgi);
+}
+
+NoteTypePtr
+Grid::get_note (const string& path, int mti, int cgi)
+{
+	return get_note (TreeModel::Path (path), mti, cgi);
+}
+
+NoteTypePtr
+Grid::get_note (const TreeModel::Path& path, int mti, int cgi)
+{
+	NoteTypePtr on_note = get_on_note (path, mti, cgi);
+	if (on_note)
+		return on_note;
+	return get_off_note (path, mti, cgi);
 }
 
 void
@@ -3793,6 +3826,7 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 
 	// Cell edit
 	case GDK_Return:
+		// TODO: when leaving text editing underline should be reset
 		set_cursor (current_path, *get_column (current_col), true);
 		ret = true;
 		break;
@@ -3811,7 +3845,7 @@ Grid::step_editing_set_note_delay (int digit)
 	NoteTypePtr on_note = get_on_note (current_rowi, current_mti, current_cgi);
 	NoteTypePtr off_note = get_off_note (current_rowi, current_mti, current_cgi);
 	if (!on_note && !off_note) {
-		vertical_move_edit_cursor (steps);
+		vertical_move_current_cursor (steps);
 		return true;
 	}
 
@@ -4017,6 +4051,11 @@ Grid::step_editing_set_automation_delay (int digit)
 	pair<int, bool> val_def = get_automation_delay (current_rowi, current_mti, current_mri, current_cgi);
 	int old_delay = val_def.first;
 
+	// For some unknown reason, changing the delay does not trigger a
+	// redisplay_grid_connect_call. For that reason we directly call it. But
+	// before that we have to disable connect calls.
+	redisplay_grid_connect_call_enabled = false;
+
 	// Set new value
 	if (val_def.second) {
 		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos);
@@ -4026,6 +4065,11 @@ Grid::step_editing_set_automation_delay (int digit)
 	// Move cursor
 	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	vertical_move_current_cursor (steps);
+
+	// TODO: this highly inefficient, optimize
+	redisplay_grid_direct_call ();
+	set_underline_current_step_edit_cell ();
+	redisplay_grid_connect_call_enabled = true;
 
 	return true;
 }
