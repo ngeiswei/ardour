@@ -1,4 +1,3 @@
-- Replace size_t, uint32_t and shit by int
 - Const when possible
 - Take care of code style
 - Try to improve color usage, how to label them, what can be reused
