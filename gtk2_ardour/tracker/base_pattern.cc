@@ -41,7 +41,10 @@ BasePattern::BasePattern(TrackerEditor& te,
 	, length(region->length())
 	, first_sample(region->first_sample())
 	, last_sample(region->last_sample())
+	, rows_per_beat(0)
+	, nrows(0)
 	, enabled(true)
+	, _ticks_per_row(0)
 	, _session(tracker_editor.session)
 	, _conv(_session->tempo_map(), 0)
 {
@@ -59,7 +62,10 @@ BasePattern::BasePattern(TrackerEditor& te,
 	, length(len)
 	, first_sample(fir)
 	, last_sample(las)
+	, rows_per_beat(0)
+	, nrows(0)
 	, enabled(true)
+	, _ticks_per_row(0)
 	, _session(tracker_editor.session)
 	, _conv(tracker_editor.session->tempo_map(), 0)
 {

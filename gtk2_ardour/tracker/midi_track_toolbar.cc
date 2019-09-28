@@ -657,7 +657,7 @@ MidiTrackToolbar::hide_midi_automations ()
 {
 	std::set<size_t> to_remove;
 	for (std::set<size_t>::iterator it = grid.visible_automation_columns.begin();
-	     it != grid.visible_automation_columns.end(); it++) {
+	     it != grid.visible_automation_columns.end(); ++it) {
 		size_t column = *it;
 		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
 		if (c2p_it == grid.col2params[track_index].left.end())
@@ -670,7 +670,7 @@ MidiTrackToolbar::hide_midi_automations ()
 			to_remove.insert(column);
 	}
 	for (std::set<size_t>::iterator it = to_remove.begin();
-	     it != to_remove.end(); it++)
+	     it != to_remove.end(); ++it)
 		grid.visible_automation_columns.erase (*it);
 }
 

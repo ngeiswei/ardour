@@ -36,7 +36,7 @@ namespace Tracker {
 class GridHeader : public Gtk::HBox
 {
 public:
-	GridHeader(TrackerEditor& te);
+	explicit GridHeader(TrackerEditor& te);
 	~GridHeader();
 
 	void setup_track_headers();

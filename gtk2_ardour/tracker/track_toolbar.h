@@ -50,7 +50,7 @@ struct ProcessorAutomationNode {
 };
 
 struct ProcessorAutomationInfo {
-	ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
+	explicit ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
 		: processor (i), menu (0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationInfo ();
