@@ -214,8 +214,8 @@ NotePattern::update_track_to_notes()
 	const MidiModel::Notes& notes = _midi_model->notes();
 	MidiModel::StrictNotes strict_notes;
 	Temporal::Beats end_time = start_beats + _conv.from (length);
-	MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound(start_beats);
-	for (; it != notes.end() && (*it)->time() < end_time; ++it)
+	for (MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound(start_beats);
+	     it != notes.end() && (*it)->time() < end_time; ++it)
 		strict_notes.insert(*it);
 
 	// Remove missing notes

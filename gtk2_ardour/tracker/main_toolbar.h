@@ -39,7 +39,7 @@ class TrackerEditor;
 class MainToolbar : public Gtk::HBox
 {
 public:
-	MainToolbar (TrackerEditor& te);
+	explicit MainToolbar (TrackerEditor& te);
 	void setup ();
 
 	/**

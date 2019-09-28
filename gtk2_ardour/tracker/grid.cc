@@ -998,7 +998,7 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, size_t rowi, size_t 
 										  // should be the same in all other regions
 	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
 	AutomationPattern& ap = mrp.rap;
-	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
+	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
 			int cgi = get_cgi (mti, param);
@@ -1365,7 +1365,7 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, uint32
 void
 Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color)
 {
-	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); it++) {
+	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin(); it != ap.param_to_enabled.end(); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
 			int cgi = get_cgi (mti, param);
@@ -1412,12 +1412,12 @@ void
 Grid::redisplay_track_automations(size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
 {
 	if (auto_diff == 0 || auto_diff->full) {
-		for (AutomationPattern::ParamToEnabled::const_iterator it = tap.param_to_enabled.begin(); it != tap.param_to_enabled.end(); it++) {
+		for (AutomationPattern::ParamToEnabled::const_iterator it = tap.param_to_enabled.begin(); it != tap.param_to_enabled.end(); ++it) {
 			if (it->second)
 				redisplay_track_automation_param(mti, tap, it->first);
 		}
 	} else {
-		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = auto_diff->param2rows_diff.begin(); it != auto_diff->param2rows_diff.end(); it++) {
+		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = auto_diff->param2rows_diff.begin(); it != auto_diff->param2rows_diff.end(); ++it) {
 			redisplay_track_automation_param(mti, tap, it->first, &it->second);
 		}
 	}
@@ -1435,7 +1435,7 @@ Grid::redisplay_track_automation_param(size_t mti, const TrackAutomationPattern&
 			redisplay_track_automation_param_row(mti, cgi, rowi, tap, param);
 		}
 	} else {
-		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); it++) {
+		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); ++it) {
 			redisplay_track_automation_param_row(mti, cgi, *it, tap, param);
 		}
 	}
@@ -1492,7 +1492,7 @@ Grid::redisplay_region_notes (size_t mti, size_t mri, const NotePattern& np, con
 		}
 	} else {
 		const NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = np_diff->cgi2rows_diff;
-		for (NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin(); it != cgi2rows_diff.end(); it++) {
+		for (NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin(); it != cgi2rows_diff.end(); ++it) {
 			redisplay_note_column (mti, mri, it->first, np, &it->second);
 		}
 	}
@@ -1502,14 +1502,14 @@ void
 Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* rap_diff)
 {
 	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
-		for (AutomationPattern::ParamToEnabled::const_iterator it = rap.param_to_enabled.begin(); it != rap.param_to_enabled.end(); it++)
+		for (AutomationPattern::ParamToEnabled::const_iterator it = rap.param_to_enabled.begin(); it != rap.param_to_enabled.end(); ++it)
 		{
 			if (it->second)
 				redisplay_region_automation_param(mti, mri, rap, it->first);
 		}
 	} else {
 		const AutomationPatternPhenomenalDiff& ap_diff = rap_diff->ap_diff;
-		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = ap_diff.param2rows_diff.begin(); it != ap_diff.param2rows_diff.end(); it++)
+		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = ap_diff.param2rows_diff.begin(); it != ap_diff.param2rows_diff.end(); ++it)
 		{
 			redisplay_region_automation_param(mti, mri, rap, it->first, &it->second);
 		}
@@ -1530,7 +1530,7 @@ Grid::redisplay_region_automation_param (size_t mti, size_t mri, const RegionAut
 			redisplay_region_automation_param_row (mti, mri, cgi, rowi + row_offset, rap, param);
 		}
 	} else {
-		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); it++) {
+		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin(); it != rows_diff->rows.end(); ++it) {
 			redisplay_region_automation_param_row (mti, mri, cgi, *it + row_offset, rap, param);
 		}
 	}

@@ -61,7 +61,7 @@ class TrackerEditor;
 class Grid : public Gtk::TreeView
 {
 public:
-	Grid(TrackerEditor& te);
+	explicit Grid(TrackerEditor& te);
 	~Grid();
 
 	struct GridModelColumns : public Gtk::TreeModel::ColumnRecord {

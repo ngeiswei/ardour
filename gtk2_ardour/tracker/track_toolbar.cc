@@ -48,6 +48,10 @@ TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti)
 	, visible_delay (true)
 	, automation_action_menu (0)
 	, controller_menu (0)
+	, gain_automation_item (0)
+	, trim_automation_item (0)
+	, mute_automation_item (0)
+	, pan_automation_item (0)
 {
 }
 

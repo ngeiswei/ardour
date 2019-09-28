@@ -72,7 +72,7 @@ MultiTrackPattern::operator=(const MultiTrackPattern& other)
 	earliest_mti = other.earliest_mti;
 	earliest_tp = other.tps[earliest_mti];
 	row_offset = other.row_offset;
-	nrows = other.nrows;
+	tracks_nrows = other.tracks_nrows;
 	global_nrows = other.global_nrows;
 
 	return *this;
@@ -141,7 +141,7 @@ MultiTrackPattern::setup_track_patterns()
 		tps[tpi]->enabled = false;
 
 	// Add new track or re-enable existing ones
-	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); it++) {
+	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); ++it) {
 		boost::shared_ptr<ARDOUR::Track> track = it->first;
 		TrackPattern* tp = find_track_pattern(track);
 		if (tp) {
@@ -173,7 +173,7 @@ void
 MultiTrackPattern::setup_row_offset()
 {
 	row_offset.resize(tps.size());
-	nrows.resize(tps.size());
+	tracks_nrows.resize(tps.size());
 }
 
 void
@@ -246,8 +246,8 @@ MultiTrackPattern::update_global_nrows ()
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		TrackPattern* tp = tps[mti];
 		row_offset[mti] = (int32_t)tp->row_distance(earliest_tp->position_row_beats, tp->position_row_beats);
-		nrows[mti] = tp->nrows;
-		global_nrows = std::max(global_nrows, row_offset[mti] + nrows[mti]);
+		tracks_nrows[mti] = tp->nrows;
+		global_nrows = std::max(global_nrows, row_offset[mti] + tracks_nrows[mti]);
 	}
 }
 
@@ -492,8 +492,8 @@ MultiTrackPattern::to_string(const std::string& indent) const
 	ss << header << "earliest_tp = " << earliest_tp << std::endl;
 	for (size_t i = 0; i != row_offset.size(); i++)
 		ss << header << "row_offset[" << i << "] = " << row_offset[i] << std::endl;
-	for (size_t i = 0; i != nrows.size(); i++)
-		ss << header << "nrows[" << i << "] = " << nrows[i] << std::endl;
+	for (size_t i = 0; i != tracks_nrows.size(); i++)
+		ss << header << "tracks_nrows[" << i << "] = " << tracks_nrows[i] << std::endl;
 	ss << header << "global_nrows = " << global_nrows << std::endl;
 
 	return ss.str();
