@@ -42,7 +42,7 @@ class TrackerEditor;
 class MultiTrackPattern : public BasePattern
 {
 public:
-	MultiTrackPattern (TrackerEditor& te);
+	explicit MultiTrackPattern (TrackerEditor& te);
 	~MultiTrackPattern ();
 
 	// Phenomenal overload of operator=(), only need to copy what is necessary
@@ -177,7 +177,7 @@ public:
 	size_t                       earliest_mti;
 	TrackPattern*                earliest_tp;
 	std::vector<uint32_t>        row_offset;
-	std::vector<uint32_t>        nrows;
+	std::vector<uint32_t>        tracks_nrows;
 	uint32_t                     global_nrows;
 };
 

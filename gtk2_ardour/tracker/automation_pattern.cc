@@ -59,11 +59,11 @@ AutomationPattern::operator=(const AutomationPattern& other)
 	// Deep copy _automation_controls to be sure that changing the event doesn't
 	// change the copy
 	param_to_actrl.clear();
-	for (ParamToAutomationControl::const_iterator it = other.param_to_actrl.begin(); it != other.param_to_actrl.end(); it++)
+	for (ParamToAutomationControl::const_iterator it = other.param_to_actrl.begin(); it != other.param_to_actrl.end(); ++it)
 		param_to_actrl.insert(clone_param_actrl(*it));
 
 	param_to_name.clear();
-	for (ParamToName::const_iterator it = other.param_to_name.begin(); it != other.param_to_name.end(); it++)
+	for (ParamToName::const_iterator it = other.param_to_name.begin(); it != other.param_to_name.end(); ++it)
 		param_to_name.insert(*it);
 
 	// Update automations using the deep copy
@@ -143,7 +143,7 @@ AutomationPattern::phenomenal_diff(const AutomationPattern& other) const
 	if (!enabled)
 		return diff;
 
-	for (ParamToEnabled::const_iterator pe_it = param_to_enabled.begin(); pe_it != param_to_enabled.end(); pe_it++) {
+	for (ParamToEnabled::const_iterator pe_it = param_to_enabled.begin(); pe_it != param_to_enabled.end(); ++pe_it) {
 		const Evoral::Parameter& param = pe_it->first;
 		RowsPhenomenalDiff rd;
 		
@@ -222,13 +222,11 @@ void
 AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl> actrl, const std::string& name)
 {
 	// NEXT TODO: try to understand why some controls are inserted twice
-
 	Evoral::Parameter param = actrl->parameter();
 	std::pair<ParamToAutomationControl::iterator, bool> actrl_result = param_to_actrl.insert(std::make_pair(param, actrl));
 	param_to_name.insert(std::make_pair(param, name));
-	// // NEXT TODO: re-enable connecting automation
-	// if (actrl_result.second)
-	// 	tracker_editor.connect_automation(actrl);
+	if (actrl_result.second)
+		tracker_editor.connect_automation(actrl);
 }
 
 bool
