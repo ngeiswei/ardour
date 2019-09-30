@@ -1760,8 +1760,7 @@ Grid::set_underline_current_step_edit_auto_cell ()
 	}
 	case TrackerColumn::AUTOMATION_DELAY: {
 		std::string val_str = row[columns.automation_delay[mti][cgi]];
-		pair<int, bool> val_def = get_automation_delay (rowi, mti, mri, cgi);
-		if (!val_def.second)
+		if (!has_automation_delay (rowi, mti, mri, cgi))
 			break;
 		if (is_blank(val_str))
 			val_str = "0";
@@ -2585,6 +2584,12 @@ Grid::get_automation_value (int rowi, int mti, int mri, int cgi)
 	return pattern.get_automation_value (rowi, mti, mri, param);
 }
 
+bool
+Grid::has_automation_value (int rowi, int mti, int mri, int cgi)
+{
+	return get_automation_value(rowi, mti, mri, cgi).second;
+}
+
 double
 Grid::get_automation_interpolation_value (int rowi, int mti, int mri, int cgi)
 {
@@ -2625,8 +2630,10 @@ Grid::set_automation_value (double val, int rowi, int mti, int mri, int cgi)
 void
 Grid::delete_automation_value(int rowi, int mti, int mri, int cgi)
 {
-	Evoral::Parameter param = get_param (mti, cgi);
-	return pattern.delete_automation_value (rowi, mti, mri, param);
+	if (has_automation_value (rowi, mti, mri, cgi)) {
+		Evoral::Parameter param = get_param (mti, cgi);
+		pattern.delete_automation_value (rowi, mti, mri, param);
+	}
 }
 
 void
@@ -2666,11 +2673,24 @@ Grid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 	return pattern.get_automation_delay (rowi, mti, mri, param);
 }
 
+bool
+Grid::has_automation_delay (int rowi, int mti, int mri, int cgi)
+{
+	return get_automation_delay (rowi, mti, mri, cgi).second;
+}
+
 void
 Grid::set_automation_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.set_automation_delay (delay, rowi, mti, mri, param);
+}
+
+void
+Grid::delete_automation_delay (int rowi, int mti, int mri, int cgi)
+{
+	if (has_automation_delay (rowi, mti, mri, cgi))
+		set_automation_delay (0, rowi, mti, mri, cgi);
 }
 
 double
@@ -3590,8 +3610,7 @@ Grid::step_editing_set_on_note (uint8_t pitch)
 {
 	play_note (current_mti, pitch);
 	set_on_note (pitch, current_rowi, current_mti, current_mri, current_cgi);
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
 	return true;
 }
 
@@ -3599,8 +3618,7 @@ bool
 Grid::step_editing_set_off_note ()
 {
 	set_off_note (current_rowi, current_mti, current_mri, current_cgi);
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
 	return true;
 }
 
@@ -3608,8 +3626,7 @@ bool
 Grid::step_editing_delete_note ()
 {
 	delete_note (current_rowi, current_mti, current_mri, current_cgi);
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
 	return true;
 }
 
@@ -3683,9 +3700,7 @@ Grid::step_editing_set_note_channel (int digit)
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos);
 		set_note_channel (current_mti, current_mri, note, new_ch - 1);
 	}
-
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
 	return true;
 }
 
@@ -3759,8 +3774,7 @@ Grid::step_editing_set_note_velocity (int digit)
 		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos);
 		set_note_velocity (current_mti, current_mri, note, new_vel);
 	}
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
 	return true;
 }
 
@@ -3824,6 +3838,12 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Delete note delay
+	case GDK_BackSpace:
+	case GDK_Delete:
+		ret = step_editing_delete_note_delay ();
+		break;
+
 	// Cell edit
 	case GDK_Return:
 		// TODO: when leaving text editing underline should be reset
@@ -3841,25 +3861,30 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_note_delay (int digit)
 {
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
 	NoteTypePtr on_note = get_on_note (current_rowi, current_mti, current_cgi);
 	NoteTypePtr off_note = get_off_note (current_rowi, current_mti, current_cgi);
-	if (!on_note && !off_note) {
-		vertical_move_current_cursor (steps);
-		return true;
+	if (on_note || off_note) {
+		// Fetch delay
+		int old_delay = on_note ? pattern.region_relative_delay_ticks(on_note->time(), current_rowi, current_mti, current_mri)
+			: pattern.region_relative_delay_ticks(off_note->end_time(), current_rowi, current_mti, current_mri);
+
+		// Update delay
+		int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, current_pos);
+		set_note_delay (new_delay, current_rowi, current_mti, current_mri, current_cgi);
 	}
 
-	// Fetch delay
-	int old_delay = on_note ? pattern.region_relative_delay_ticks(on_note->time(), current_rowi, current_mti, current_mri)
-		: pattern.region_relative_delay_ticks(off_note->end_time(), current_rowi, current_mti, current_mri);
-
-	// Update delay
-	int new_delay = TrackerUtils::change_digit_or_sign(old_delay, digit, current_pos);
-	set_note_delay (new_delay, current_rowi, current_mti, current_mri, current_cgi);
-
 	// Move the cursor
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
+	return true;
+}
 
+bool
+Grid::step_editing_delete_note_delay ()
+{
+	NoteTypePtr note = get_note (current_rowi, current_mti, current_cgi);
+	if (note)
+		set_note_delay (0, current_rowi, current_mti, current_mri, current_cgi);
+	vertical_move_current_cursor_default_steps ();
 	return true;
 }
 
@@ -3925,6 +3950,12 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Delete automation
+	case GDK_BackSpace:
+	case GDK_Delete:
+		ret = step_editing_delete_automation ();
+		break;
+
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *get_column (current_col), true);
@@ -3958,8 +3989,7 @@ Grid::step_editing_set_automation_value (int digit)
 	set_automation_value (nval, current_rowi, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
 
 	// Redisplay model with the new value
 	// TODO: optimize
@@ -3967,8 +3997,30 @@ Grid::step_editing_set_automation_value (int digit)
 	// TODO: Need to rerun because apparently redisplay_grid overwrite the
 	// underlined cell, once optimized avoid such redundancy as well.
 	set_underline_current_step_edit_cell ();
-
 	redisplay_grid_connect_call_enabled = true;
+
+	return true;
+}
+
+bool
+Grid::step_editing_delete_automation ()
+{
+	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
+	// return when such lock is taken.
+	redisplay_grid_connect_call_enabled = false;
+	delete_automation_value (current_rowi, current_mti, current_mri, current_cgi);
+
+	// Move cursor
+	vertical_move_current_cursor_default_steps ();
+
+	// Redisplay model with the new value
+	// TODO: optimize
+	redisplay_grid_direct_call ();
+	// TODO: Need to rerun because apparently redisplay_grid overwrite the
+	// underlined cell, once optimized avoid such redundancy as well.
+	set_underline_current_step_edit_cell ();
+	redisplay_grid_connect_call_enabled = true;
+
 	return true;
 }
 
@@ -4032,6 +4084,12 @@ Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Delete automation delay
+	case GDK_BackSpace:
+	case GDK_Delete:
+		ret = step_editing_delete_automation_delay ();
+		break;
+
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *get_column (current_col), true);
@@ -4063,8 +4121,27 @@ Grid::step_editing_set_automation_delay (int digit)
 	}
 
 	// Move cursor
-	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
-	vertical_move_current_cursor (steps);
+	vertical_move_current_cursor_default_steps ();
+
+	// TODO: this highly inefficient, optimize
+	redisplay_grid_direct_call ();
+	set_underline_current_step_edit_cell ();
+	redisplay_grid_connect_call_enabled = true;
+
+	return true;
+}
+
+bool
+Grid::step_editing_delete_automation_delay ()
+{
+	// For some unknown reason, changing the delay does not trigger a
+	// redisplay_grid_connect_call. For that reason we directly call it. But
+	// before that we have to disable connect calls.
+	redisplay_grid_connect_call_enabled = false;
+	delete_automation_delay (current_rowi, current_mti, current_mri, current_cgi);
+
+	// Move cursor
+	vertical_move_current_cursor_default_steps ();
 
 	// TODO: this highly inefficient, optimize
 	redisplay_grid_direct_call ();
@@ -4081,6 +4158,13 @@ Grid::vertical_move_current_cursor (int steps, bool wrap, bool jump, bool set_pl
 	TreeViewColumn* col = get_column (current_col);
 	wrap_around_vertical_move (path, col, steps, wrap, jump);
 	set_current_cursor (path, col, set_playhead);
+}
+
+void
+Grid::vertical_move_current_cursor_default_steps (bool wrap, bool jump, bool set_playhead)
+{
+	int steps = tracker_editor.main_toolbar.steps_spinner.get_value_as_int();
+	vertical_move_current_cursor (steps, wrap, jump, set_playhead);
 }
 
 void
