@@ -354,6 +354,9 @@ private:
 	// false, then count the steps, and only move if the final cell is defined.
 	void vertical_move_current_cursor (int steps, bool wrap=true, bool jump=true, bool set_playhead=true);
 
+	// Like vertical_move_current_cursor using steps set in the main toolbar
+	void vertical_move_current_cursor_default_steps (bool wrap=true, bool jump=true, bool set_playhead=true);
+
 	// Move the current cursor steps columns rightwards, or leftwards if steps
 	// is negative.
 	void horizontal_move_current_cursor (int steps, bool tab=false);
@@ -435,10 +438,14 @@ private:
 	bool step_editing_set_note_velocity (int digit);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_set_note_delay (int digit);
+	bool step_editing_delete_note_delay ();
+
 	bool step_editing_automation_key_press (GdkEventKey*);
 	bool step_editing_set_automation_value (int digit);
+	bool step_editing_delete_automation ();
 	bool step_editing_automation_delay_key_press (GdkEventKey*);
 	bool step_editing_set_automation_delay (int digit);
+	bool step_editing_delete_automation_delay ();
 
 	// Get note from path, mti and cgi
 	NoteTypePtr get_on_note (int rowi, int mti, int cgi);
@@ -489,6 +496,7 @@ private:
 	// Return automation value at given coordinates. The flag is true iff such
 	// value exists.
 	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi);
+	bool has_automation_value (int rowi, int mti, int mri, int cgi);
 	// In case no such value exists, then return its interpolation (or default)
 	double get_automation_interpolation_value (int rowi, int mti, int mri, int cgi);
 	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param);
@@ -496,7 +504,9 @@ private:
 	void delete_automation_value (int rowi, int mti, int mri, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);
 	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, int cgi); // return (0, false) if undefined
+	bool has_automation_delay (int rowi, int mti, int mri, int cgi); // Whether automation is defined (regardless of whether it is null)
 	void set_automation_delay (int delay, int rowi, int mti, int mri, int automation_cgi);
+	void delete_automation_delay (int rowi, int mti, int mri, int cgi);
 
 	// Return lower and upper bounds of the given parameter
 	double lower (int rowi, int mti, const Evoral::Parameter& param) const;
