@@ -140,7 +140,7 @@ public:
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	
 	// Return a pair with the automation value and whether it is defined or not
-	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
 	// Set the automation value val at rowi, mti and mri for param
 	void set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay);

@@ -490,11 +490,10 @@ private:
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
-	// TODO: can you make that const?
 	// Return automation value at given coordinates. The flag is true iff such
 	// value exists.
-	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi);
-	bool has_automation_value (int rowi, int mti, int mri, int cgi);
+	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi) const;
+	bool has_automation_value (int rowi, int mti, int mri, int cgi) const;
 	// In case no such value exists, then return its interpolation (or default)
 	double get_automation_interpolation_value (int rowi, int mti, int mri, int cgi);
 	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param);
