@@ -430,6 +430,12 @@ MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
 	return tps[mti]->get_alist_at_mri (mri, param);
 }
 
+const boost::shared_ptr<ARDOUR::AutomationList>
+MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param) const
+{
+	return tps[mti]->get_alist_at_mri (mri, param);
+}
+
 std::pair<double, bool>
 MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
@@ -449,7 +455,7 @@ MultiTrackPattern::delete_automation_value (int rowi, int mti, int mri, const Ev
 }
 
 std::pair<int, bool>
-MultiTrackPattern::get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
+MultiTrackPattern::get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_delay (to_rri(rowi, mti), mri, param);
 }
