@@ -1575,7 +1575,7 @@ void
 Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np)
 {
 	// TODO: optimize!
-	Gtk::TreeModel::Row row = get_row(rowi);
+	Gtk::TreeModel::Row row = get_row (rowi);
 
 	// Fill background colors
 	// TODO: optimize, should only need to redisplay note bg once
@@ -1915,9 +1915,9 @@ Grid::get_row_size (size_t mti, size_t mri) const
 }
 
 Gtk::TreeModel::Row
-Grid::get_row (uint32_t row_idx)
+Grid::get_row (uint32_t row_idx) const
 {
-	TreeModel::Children::iterator row_it = model->children().begin();
+	TreeModel::Children::const_iterator row_it = model->children().begin();
 	std::advance(row_it, (int)row_idx);
 	return *row_it;
 }
@@ -2591,13 +2591,13 @@ Grid::has_automation_value (int rowi, int mti, int mri, int cgi) const
 }
 
 double
-Grid::get_automation_interpolation_value (int rowi, int mti, int mri, int cgi)
+Grid::get_automation_interpolation_value (int rowi, int mti, int mri, int cgi) const
 {
 	return get_automation_interpolation_value(rowi, mti, mri, get_param (mti, cgi));
 }
 
 double
-Grid::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param)
+Grid::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	double inter_auto_val = 0;
 	if (boost::shared_ptr<AutomationList> alist = pattern.get_alist (mti, mri, param)) {
@@ -2666,7 +2666,7 @@ Grid::automation_delay_edited (const string& path, const string& text)
 }
 
 pair<int, bool>
-Grid::get_automation_delay (int rowi, int mti, int mri, int cgi)
+Grid::get_automation_delay (int rowi, int mti, int mri, int cgi) const
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_param (mti, cgi);
@@ -2674,7 +2674,7 @@ Grid::get_automation_delay (int rowi, int mti, int mri, int cgi)
 }
 
 bool
-Grid::has_automation_delay (int rowi, int mti, int mri, int cgi)
+Grid::has_automation_delay (int rowi, int mti, int mri, int cgi) const
 {
 	return get_automation_delay (rowi, mti, mri, cgi).second;
 }
