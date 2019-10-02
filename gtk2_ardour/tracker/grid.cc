@@ -2578,14 +2578,14 @@ Grid::automation_edited (const string& path, const string& text)
 }
 
 pair<double, bool>
-Grid::get_automation_value (int rowi, int mti, int mri, int cgi)
+Grid::get_automation_value (int rowi, int mti, int mri, int cgi) const
 {
 	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.get_automation_value (rowi, mti, mri, param);
 }
 
 bool
-Grid::has_automation_value (int rowi, int mti, int mri, int cgi)
+Grid::has_automation_value (int rowi, int mti, int mri, int cgi) const
 {
 	return get_automation_value(rowi, mti, mri, cgi).second;
 }

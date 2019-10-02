@@ -110,7 +110,7 @@ public:
 	const Evoral::ControlEvent* get_control_event (size_t rowi, const Evoral::Parameter& param) const;
 	
 	// Return a pair with the automation value and whether it is defined or not	
-	std::pair<double, bool> get_automation_value (size_t rowi, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (size_t rowi, const Evoral::Parameter& param) const;
 
 	// Set the automation value val at rowi for param
 	void set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay);
