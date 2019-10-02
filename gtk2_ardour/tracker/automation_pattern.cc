@@ -348,7 +348,7 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 }
 
 std::pair<double, bool>
-AutomationPattern::get_automation_value (size_t rowi, const Evoral::Parameter& param)
+AutomationPattern::get_automation_value (size_t rowi, const Evoral::Parameter& param) const
 {
 	if (const Evoral::ControlEvent* ce = get_control_event (rowi, param))
 		return std::make_pair(ce->value, true);
