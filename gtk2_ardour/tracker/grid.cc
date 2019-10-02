@@ -2551,6 +2551,12 @@ Grid::get_alist (int mti, int mri, const Evoral::Parameter& param)
 	return pattern.get_alist (mti, mri, param);
 }
 
+const boost::shared_ptr<AutomationList>
+Grid::get_alist (int mti, int mri, const Evoral::Parameter& param) const
+{
+	return pattern.get_alist (mti, mri, param);
+}
+
 void
 Grid::automation_edited (const string& path, const string& text)
 {
@@ -2600,7 +2606,7 @@ double
 Grid::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	double inter_auto_val = 0;
-	if (boost::shared_ptr<AutomationList> alist = pattern.get_alist (mti, mri, param)) {
+	if (const boost::shared_ptr<AutomationList> alist = get_alist (mti, mri, param)) {
 		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
