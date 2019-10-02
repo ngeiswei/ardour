@@ -431,7 +431,7 @@ MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
 }
 
 std::pair<double, bool>
-MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param)
+MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_value (to_rri(rowi, mti), mri, param);
 }
