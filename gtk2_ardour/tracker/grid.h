@@ -517,7 +517,7 @@ public:
 
 private:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
-	void follow_current_row (samplepos_t);
+	void follow_playhead (samplepos_t);
 
 	/**
 	 * Create a string of n blank chars.
@@ -576,6 +576,13 @@ private:
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
 	MultiTrackPatternPhenomenalDiff _phenomenal_diff;
+
+	// Stack keeping track of when to skip follow_playhead to avoid
+	// inconsistencies due to the delays between calling set_current_cursor with
+	// set_playhead set to true and Ardour actually setting the playhead.
+	//
+	// TODO: maybe make sure that it is thread safe.
+	std::stack<int> skip_follow_playhead;
 };
 
 } // ~namespace tracker
