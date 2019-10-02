@@ -489,6 +489,8 @@ private:
 	int get_cgi (size_t mti, const Evoral::Parameter& param) const;
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
+	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param) const;
+
 	void automation_edited (const std::string& path, const std::string& text);
 	// Return automation value at given coordinates. The flag is true iff such
 	// value exists.
