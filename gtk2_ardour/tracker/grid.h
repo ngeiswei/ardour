@@ -377,7 +377,7 @@ private:
 	uint32_t get_row_size (size_t mti, size_t mri) const;
 
 	// Return the row corresponding to a given row index
-	Gtk::TreeModel::Row get_row (uint32_t row_idx);
+	Gtk::TreeModel::Row get_row (uint32_t row_idx) const;
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.
 	// Warning: can't be const because of a get_columns()
@@ -495,13 +495,13 @@ private:
 	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi) const;
 	bool has_automation_value (int rowi, int mti, int mri, int cgi) const;
 	// In case no such value exists, then return its interpolation (or default)
-	double get_automation_interpolation_value (int rowi, int mti, int mri, int cgi);
-	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param);
+	double get_automation_interpolation_value (int rowi, int mti, int mri, int cgi) const;
+	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 	void set_automation_value (double val, int rowi, int mti, int mri, int automation_cgi);
 	void delete_automation_value (int rowi, int mti, int mri, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);
-	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, int cgi); // return (0, false) if undefined
-	bool has_automation_delay (int rowi, int mti, int mri, int cgi); // Whether automation is defined (regardless of whether it is null)
+	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, int cgi) const; // return (0, false) if undefined
+	bool has_automation_delay (int rowi, int mti, int mri, int cgi) const; // Whether automation is defined (regardless of whether it is null)
 	void set_automation_delay (int delay, int rowi, int mti, int mri, int automation_cgi);
 	void delete_automation_delay (int rowi, int mti, int mri, int cgi);
 
