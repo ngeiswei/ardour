@@ -138,6 +138,7 @@ public:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
+	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 	
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
@@ -151,7 +152,7 @@ public:
 	// Get a pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
+	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);

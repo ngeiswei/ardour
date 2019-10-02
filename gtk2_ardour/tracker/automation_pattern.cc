@@ -409,9 +409,9 @@ AutomationPattern::delete_automation_value(int rowi, const Evoral::Parameter& pa
 }
 
 std::pair<int, bool>
-AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& param)
+AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& param) const
 {
-	if (Evoral::ControlEvent* ce = get_control_event(rowi, param)) {
+	if (const Evoral::ControlEvent* ce = get_control_event(rowi, param)) {
 		double awhen = ce->when;
 		int delay = TrackerUtils::is_region_automation (param) ?
 			region_relative_delay_ticks_at_row(Temporal::Beats(awhen), rowi)
