@@ -2519,7 +2519,7 @@ Grid::set_current_pos (int min_pos, int max_pos)
 }
 
 Evoral::Parameter
-Grid::get_param (size_t mti, size_t cgi)
+Grid::get_param (size_t mti, size_t cgi) const
 {
 	IndexBimap::right_const_iterator ac_it = col2auto_cgi[mti].right.find(cgi);
 	if (ac_it == col2auto_cgi[mti].right.end())
@@ -2533,7 +2533,7 @@ Grid::get_param (size_t mti, size_t cgi)
 }
 
 int
-Grid::get_cgi (size_t mti, const Evoral::Parameter& param)
+Grid::get_cgi (size_t mti, const Evoral::Parameter& param) const
 {
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find(param);
 	if (cp_it == col2params[mti].right.end())
@@ -3221,7 +3221,7 @@ Grid::is_region_defined (uint32_t rowi, int mti) const
 }
 
 bool
-Grid::is_automation_defined (uint32_t rowi, int mti, int cgi)
+Grid::is_automation_defined (uint32_t rowi, int mti, int cgi) const
 {
 	Evoral::Parameter param = get_param(mti, cgi);
 	if (param == Evoral::Parameter())
