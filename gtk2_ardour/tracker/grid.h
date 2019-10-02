@@ -286,10 +286,8 @@ public:
 
 	// Coordonates associated to edited note and value (this is *not* related to
 	// step edit).
-	// TODO: is everything below used?
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_rowi;
-	// TreeModel::Row*              edit_row;
 	int                          edit_col;
 	int                          edit_mti;
 	TrackPattern*                edit_mtp;
@@ -411,7 +409,7 @@ private:
 	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (uint32_t rowi, int mti) const;
-	bool is_automation_defined (uint32_t rowi, int mti, int cgi); // TODO: make this const
+	bool is_automation_defined (uint32_t rowi, int mti, int cgi) const;
 
 	// Return mti corresponding col, or -1 if invalid
 	int get_mti(const Gtk::TreeViewColumn* col) const;
@@ -485,10 +483,10 @@ private:
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
-	Evoral::Parameter get_param (size_t mti, size_t auto_cgi); // TODO: make const
+	Evoral::Parameter get_param (size_t mti, size_t auto_cgi) const;
 
 	// Return cgi associated to param at mti. If undefined for param return -1.
-	int get_cgi (size_t mti, const Evoral::Parameter& param); // TODO make const
+	int get_cgi (size_t mti, const Evoral::Parameter& param) const;
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
 	void automation_edited (const std::string& path, const std::string& text);
