@@ -2499,12 +2499,12 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	// Readjust scroller
 	scroll_to_row(path);
 
-	// TODO: temporarily disabled because it sporadically crashes Ardour
-	// // Update playhead accordingly
-	// if (set_playhead) {
-	// 	clock_pos = pattern.sample_at_row(current_rowi);
-	// 	tracker_editor.session->request_locate (clock_pos);
-	// }
+	// Update playhead accordingly
+	if (set_playhead) {
+		clock_pos = pattern.sample_at_row(current_rowi);
+		skip_follow_playhead.push(current_rowi);
+		tracker_editor.session->request_locate (clock_pos);
+	}
 
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
@@ -2722,15 +2722,19 @@ Grid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
 }
 
 void
-Grid::follow_current_row (samplepos_t pos)
+Grid::follow_playhead (samplepos_t pos)
 {
-	// TODO: relax that interval so that follow goes to the extremes 
-	if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
-		int rowi = pattern.row_at_sample(pos);
-		if (rowi != current_rowi)
-			vertical_move_current_cursor (rowi - current_rowi, false, false, false);
+	if (skip_follow_playhead.empty()) { // Do not skip
+		// TODO: relax that interval so that follow goes to the extremes
+		if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
+			int rowi = pattern.row_at_sample(pos);
+			if (rowi != current_rowi)
+				vertical_move_current_cursor (rowi - current_rowi, false, false, false);
+		}
+		clock_pos = pos;
+	} else { // Skip
+		skip_follow_playhead.pop();
 	}
-	clock_pos = pos;
 }
 
 std::string
@@ -2763,7 +2767,7 @@ Grid::connect_events()
 	// signal_scroll_event().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
 	// Connect to clock to follow current row
-	ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_current_row));
+	ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_playhead));
 }
 
 void
