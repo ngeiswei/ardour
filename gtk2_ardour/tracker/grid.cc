@@ -44,6 +44,7 @@
 #include "ardour/midi_track.h"
 #include "ardour/midi_patch_manager.h"
 #include "ardour/midi_playlist.h"
+#include "ardour/parameter_descriptor.h"
 
 #include "gtkmm2ext/gui_thread.h"
 #include "gtkmm2ext/keyboard.h"
@@ -3618,9 +3619,9 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch)
 {
-	play_note (current_mti, pitch);
 	set_on_note (pitch, current_rowi, current_mti, current_mri, current_cgi);
 	vertical_move_current_cursor_default_steps ();
+	play_note (current_mti, pitch);
 	return true;
 }
 
