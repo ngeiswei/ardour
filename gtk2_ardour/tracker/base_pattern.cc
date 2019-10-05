@@ -20,8 +20,8 @@
 #include <map>
 
 #include "ardour/beats_samples_converter.h"
-#include "ardour/session.h"
 #include "ardour/region.h"
+#include "ardour/session.h"
 #include "ardour/tempo.h"
 
 #include "base_pattern.h"

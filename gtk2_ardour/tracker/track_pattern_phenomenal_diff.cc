@@ -19,9 +19,9 @@
 #include <iostream>
 #include <sstream>
 
-#include "track_pattern_phenomenal_diff.h"
-#include "midi_track_pattern_phenomenal_diff.h"
 #include "audio_track_pattern_phenomenal_diff.h"
+#include "midi_track_pattern_phenomenal_diff.h"
+#include "track_pattern_phenomenal_diff.h"
 
 using namespace Tracker;
 

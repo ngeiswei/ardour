@@ -19,10 +19,10 @@
 #ifndef __ardour_tracker_track_pattern_h_
 #define __ardour_tracker_track_pattern_h_
 
-#include "ardour/track.h"
-#include "ardour/midi_track.h"
 #include "ardour/audio_track.h"
+#include "ardour/midi_track.h"
 #include "ardour/region.h"
+#include "ardour/track.h"
 
 #include "automation_pattern.h"
 #include "track_pattern_phenomenal_diff.h"
