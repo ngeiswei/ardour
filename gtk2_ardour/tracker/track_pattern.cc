@@ -28,13 +28,13 @@ using namespace Tracker;
 TrackPattern::TrackPattern (TrackerEditor& te,
                             boost::shared_ptr<ARDOUR::Track> trk,
                             const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
-	: AutomationPattern(te,
-	                    TrackerUtils::get_position(regions),
+	: AutomationPattern (te,
+	                    TrackerUtils::get_position (regions),
 	                    0,
-	                    TrackerUtils::get_length(regions),
-	                    TrackerUtils::get_first_sample(regions),
-	                    TrackerUtils::get_last_sample(regions))
-	, track(trk)
+	                    TrackerUtils::get_length (regions),
+	                    TrackerUtils::get_first_sample (regions),
+	                    TrackerUtils::get_last_sample (regions))
+	, track (trk)
 {
 }
 
@@ -44,8 +44,8 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             Temporal::samplecnt_t len,
                             Temporal::samplepos_t fst,
                             Temporal::samplepos_t lst)
-	: AutomationPattern(te, pos, 0, len, fst, lst)
-	, track(trk)
+	: AutomationPattern (te, pos, 0, len, fst, lst)
+	, track (trk)
 {
 }
 
@@ -60,33 +60,33 @@ TrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >&)
 }
 
 TrackPattern&
-TrackPattern::operator=(const TrackPattern& other)
+TrackPattern::operator= (const TrackPattern& other)
 {
 	if (!other.enabled) {
 		enabled = false;
 		return *this;
 	}
 
-	AutomationPattern::operator=(other);
+	AutomationPattern::operator= (other);
 	track = other.track;
 
 	return *this;
 }
 
 TrackPatternPhenomenalDiff*
-TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
+TrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 {
 	TrackPatternPhenomenalDiff* diff_ptr;
 	if (is_midi_track_pattern ()) {
 		const MidiTrackPattern* mtp = midi_track_pattern ();
 		const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
-		MidiTrackPatternPhenomenalDiff mtp_diff = mtp->phenomenal_diff(*prev_mtp);
-		diff_ptr = new MidiTrackPatternPhenomenalDiff(mtp_diff);
+		MidiTrackPatternPhenomenalDiff mtp_diff = mtp->phenomenal_diff (*prev_mtp);
+		diff_ptr = new MidiTrackPatternPhenomenalDiff (mtp_diff);
 	} else if (is_audio_track_pattern ()) {
 		const AudioTrackPattern* atp = audio_track_pattern ();
 		const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
-		AudioTrackPatternPhenomenalDiff atp_diff = atp->phenomenal_diff(*prev_atp);
-		diff_ptr = new AudioTrackPatternPhenomenalDiff(atp_diff);
+		AudioTrackPatternPhenomenalDiff atp_diff = atp->phenomenal_diff (*prev_atp);
+		diff_ptr = new AudioTrackPatternPhenomenalDiff (atp_diff);
 	} else {
 		std::cout << "Not implemented" << std::endl;
 		diff_ptr = 0;
@@ -97,13 +97,13 @@ TrackPattern::phenomenal_diff_ptr(const TrackPattern* prev) const
 boost::shared_ptr<ARDOUR::MidiTrack>
 TrackPattern::midi_track ()
 {
-	return boost::dynamic_pointer_cast<ARDOUR::MidiTrack>(track);
+	return boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 }
 
 boost::shared_ptr<ARDOUR::AudioTrack>
 TrackPattern::audio_track ()
 {
-	return boost::dynamic_pointer_cast<ARDOUR::AudioTrack>(track);
+	return boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 }
 
 bool
@@ -121,31 +121,31 @@ TrackPattern::is_audio_track_pattern () const
 const MidiTrackPattern*
 TrackPattern::midi_track_pattern () const
 {
-	return dynamic_cast<const MidiTrackPattern*>(this);
+	return dynamic_cast<const MidiTrackPattern*> (this);
 }
 
 const AudioTrackPattern*
 TrackPattern::audio_track_pattern () const
 {
-	return dynamic_cast<const AudioTrackPattern*>(this);
+	return dynamic_cast<const AudioTrackPattern*> (this);
 }
 
 MidiTrackPattern*
 TrackPattern::midi_track_pattern ()
 {
-	return dynamic_cast<MidiTrackPattern*>(this);
+	return dynamic_cast<MidiTrackPattern*> (this);
 }
 
 AudioTrackPattern*
 TrackPattern::audio_track_pattern ()
 {
-	return dynamic_cast<AudioTrackPattern*>(this);
+	return dynamic_cast<AudioTrackPattern*> (this);
 }
 
 Temporal::Beats
 TrackPattern::region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const
 {
-	return Temporal::Beats();
+	return Temporal::Beats ();
 }
 
 int64_t
@@ -163,13 +163,13 @@ TrackPattern::is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Para
 size_t
 TrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
-	return param_to_row_to_ali.find(param)->second.count(rowi);
+	return param_to_row_to_ali.find (param)->second.count (rowi);
 }
 
 Evoral::ControlEvent*
 TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
-	return *param_to_row_to_ali.find(param)->second.find(rowi)->second;
+	return *param_to_row_to_ali.find (param)->second.find (rowi)->second;
 }
 
 bool
@@ -199,13 +199,13 @@ TrackPattern::to_mri (uint32_t rowi) const
 boost::shared_ptr<ARDOUR::AutomationList>
 TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 {
-	return AutomationPattern::get_alist(param);
+	return AutomationPattern::get_alist (param);
 }
 
 const boost::shared_ptr<ARDOUR::AutomationList>
 TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
 {
-	return AutomationPattern::get_alist(param);
+	return AutomationPattern::get_alist (param);
 }
 
 std::pair<double, bool>

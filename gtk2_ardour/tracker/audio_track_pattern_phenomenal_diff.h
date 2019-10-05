@@ -26,8 +26,8 @@ namespace Tracker {
 // Represent the differences that may impact grid rendition.
 struct AudioTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
 {
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
+	bool empty () const;
+	std::string to_string (const std::string& indent = std::string ()) const;
 };
 
 } // ~namespace Tracker

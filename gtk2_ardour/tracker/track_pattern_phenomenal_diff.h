@@ -30,16 +30,16 @@ class AudioTrackPatternPhenomenalDiff;
 	
 struct TrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	virtual bool empty() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
+	virtual bool empty () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
-	bool is_midi_track_pattern_phenomenal_diff() const;
-	bool is_audio_track_pattern_phenomenal_diff() const;
+	bool is_midi_track_pattern_phenomenal_diff () const;
+	bool is_audio_track_pattern_phenomenal_diff () const;
 
-	const MidiTrackPatternPhenomenalDiff* midi_track_pattern_phenomenal_diff() const;
-	const AudioTrackPatternPhenomenalDiff* audio_track_pattern_phenomenal_diff() const;
-	MidiTrackPatternPhenomenalDiff* midi_track_pattern_phenomenal_diff();
-	AudioTrackPatternPhenomenalDiff* audio_track_pattern_phenomenal_diff();
+	const MidiTrackPatternPhenomenalDiff* midi_track_pattern_phenomenal_diff () const;
+	const AudioTrackPatternPhenomenalDiff* audio_track_pattern_phenomenal_diff () const;
+	MidiTrackPatternPhenomenalDiff* midi_track_pattern_phenomenal_diff ();
+	AudioTrackPatternPhenomenalDiff* audio_track_pattern_phenomenal_diff ();
 };
 
 } // ~namespace tracker

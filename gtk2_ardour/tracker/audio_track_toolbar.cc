@@ -23,8 +23,8 @@ using namespace Tracker;
 AudioTrackToolbar::AudioTrackToolbar (TrackerEditor& te,
                                       AudioTrackPattern& atp,
                                       size_t mti)
-	// : TrackToolbar(te, dynamic_cast<TrackPattern*>(&atp), mti)
-	: TrackToolbar(te, &atp, mti)
+	// : TrackToolbar (te, dynamic_cast<TrackPattern*> (&atp), mti)
+	: TrackToolbar (te, &atp, mti)
 {
 	setup_processor_menu_and_curves ();
 	setup ();

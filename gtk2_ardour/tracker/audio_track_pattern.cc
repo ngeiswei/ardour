@@ -30,7 +30,7 @@ AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
                                       Temporal::samplecnt_t length,
                                       Temporal::samplepos_t first_sample,
                                       Temporal::samplepos_t last_sample)
-	: TrackAutomationPattern(te, trk, position, length, first_sample, last_sample)
+	: TrackAutomationPattern (te, trk, position, length, first_sample, last_sample)
 {
 }
 
@@ -39,8 +39,8 @@ AudioTrackPattern::~AudioTrackPattern ()
 }
 
 AudioTrackPatternPhenomenalDiff
-AudioTrackPattern::phenomenal_diff(const AudioTrackPattern& prev) const
+AudioTrackPattern::phenomenal_diff (const AudioTrackPattern& prev) const
 {
 	// VT: implement
-	return AudioTrackPatternPhenomenalDiff();
+	return AudioTrackPatternPhenomenalDiff ();
 }

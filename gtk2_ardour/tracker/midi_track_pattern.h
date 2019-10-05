@@ -46,19 +46,19 @@ public:
 
 	void setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 
-	MidiTrackPattern& operator=(const MidiTrackPattern& other);
+	MidiTrackPattern& operator= (const MidiTrackPattern& other);
 
-	MidiTrackPatternPhenomenalDiff phenomenal_diff(const MidiTrackPattern& prev) const;
+	MidiTrackPatternPhenomenalDiff phenomenal_diff (const MidiTrackPattern& prev) const;
 
-	std::string get_name(const Evoral::Parameter& param) const;
+	std::string get_name (const Evoral::Parameter& param) const;
 
-	void set_enabled(const Evoral::Parameter& param, bool enabled);
-	bool is_enabled(const Evoral::Parameter& param) const;
+	void set_enabled (const Evoral::Parameter& param, bool enabled);
+	bool is_enabled (const Evoral::Parameter& param) const;
 
 	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 
-	// Insert the automation control(s) corresponding to param (and connect it
+	// Insert the automation control (s) corresponding to param (and connect it
 	// to the grid for changes)
 	void insert (const Evoral::Parameter& param);
 
@@ -144,8 +144,8 @@ public:
 	double upper (int rowi, const Evoral::Parameter& param) const;
 
 	// For representing pattern data. Mostly for debugging
-	virtual std::string self_to_string() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
+	virtual std::string self_to_string () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	std::vector<RegionView*> rvs; // to get access to device names

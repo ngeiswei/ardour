@@ -24,28 +24,30 @@ using namespace std;
 using namespace Gtk;
 using namespace Tracker;
 
-TrackerColumn::TrackerColumn(const Glib::ustring& title,
-                             const TreeModelColumn<string>& column,
-                             int mti, int cgi,
-                             midi_note_type mnt, automation_type at)
-	: TreeViewColumn(title, column),
-	  midi_track_idx(mti), col_group_idx(cgi),
-	  note_type(mnt), auto_type(at) {}
+TrackerColumn::TrackerColumn (const Glib::ustring& title,
+                              const TreeModelColumn<string>& column,
+                              int mti, int cgi,
+                              midi_note_type mnt, automation_type at)
+	: TreeViewColumn (title, column)
+	, midi_track_idx (mti)
+	, col_group_idx (cgi)
+	, note_type (mnt)
+	, auto_type (at) {}
 
-NoteColumn::NoteColumn(const TreeModelColumn<string>& column, int mti, int cgi)
-	: TrackerColumn(_("Note"), column, mti, cgi, NOTE, AUTOMATION_SEPARATOR) {}
+NoteColumn::NoteColumn (const TreeModelColumn<string>& column, int mti, int cgi)
+	: TrackerColumn (_("Note"), column, mti, cgi, NOTE, AUTOMATION_SEPARATOR) {}
 
-ChannelColumn::ChannelColumn(const TreeModelColumn<string>& column, int mti, int cgi)
-	: TrackerColumn(S_("Channel|Ch"), column, mti, cgi, CHANNEL, AUTOMATION_SEPARATOR) {}
+ChannelColumn::ChannelColumn (const TreeModelColumn<string>& column, int mti, int cgi)
+	: TrackerColumn (S_("Channel|Ch"), column, mti, cgi, CHANNEL, AUTOMATION_SEPARATOR) {}
 
-VelocityColumn::VelocityColumn(const TreeModelColumn<string>& column, int mti, int cgi)
-	: TrackerColumn(S_("Velocity|Vel"), column, mti, cgi, VELOCITY, AUTOMATION_SEPARATOR) {}
+VelocityColumn::VelocityColumn (const TreeModelColumn<string>& column, int mti, int cgi)
+	: TrackerColumn (S_("Velocity|Vel"), column, mti, cgi, VELOCITY, AUTOMATION_SEPARATOR) {}
 
-DelayColumn::DelayColumn(const TreeModelColumn<string>& column, int mti, int cgi)
-	: TrackerColumn(_("Delay"), column, mti, cgi, DELAY, AUTOMATION_SEPARATOR) {}
+DelayColumn::DelayColumn (const TreeModelColumn<string>& column, int mti, int cgi)
+	: TrackerColumn (_("Delay"), column, mti, cgi, DELAY, AUTOMATION_SEPARATOR) {}
 
-AutomationColumn::AutomationColumn(const TreeModelColumn<string>& column, int mti, int cgi)
-	: TrackerColumn("", column, mti, cgi, SEPARATOR, AUTOMATION) {}
+AutomationColumn::AutomationColumn (const TreeModelColumn<string>& column, int mti, int cgi)
+	: TrackerColumn ("", column, mti, cgi, SEPARATOR, AUTOMATION) {}
 
-AutomationDelayColumn::AutomationDelayColumn(const TreeModelColumn<string>& column, int mti, int cgi)
-	: TrackerColumn(_("Delay"), column, mti, cgi, SEPARATOR, AUTOMATION_DELAY) {}
+AutomationDelayColumn::AutomationDelayColumn (const TreeModelColumn<string>& column, int mti, int cgi)
+	: TrackerColumn (_("Delay"), column, mti, cgi, SEPARATOR, AUTOMATION_DELAY) {}
