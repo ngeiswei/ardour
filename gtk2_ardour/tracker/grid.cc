@@ -1414,6 +1414,9 @@ Grid::redisplay_row_mti_automations_background_color(Gtk::TreeModel::Row& row, u
 void
 Grid::redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff)
 {
+	if (!pattern.tps[mti]->enabled)
+		return;
+
 	if (pattern.tps[mti]->is_midi_track_pattern ()) {
 		redisplay_midi_track(mti,
 		                     *pattern.tps[mti]->midi_track_pattern (),
@@ -1518,6 +1521,9 @@ Grid::redisplay_inter_midi_regions (size_t mti)
 void
 Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
+	if (!pattern.midi_region_pattern (mti, mri).enabled)
+		return;
+
 	redisplay_region_notes (mti, mri, mrp.np, mrp_diff ? &mrp_diff->np_diff : 0);
 	redisplay_region_automations (mti, mri, mrp.rap, mrp_diff ? &mrp_diff->rap_diff : 0);
 }
