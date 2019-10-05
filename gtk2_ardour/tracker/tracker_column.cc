@@ -16,9 +16,9 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "tracker_column.h"
-
 #include "pbd/i18n.h"
+
+#include "tracker_column.h"
 
 using namespace std;
 using namespace Gtk;

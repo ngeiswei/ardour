@@ -19,9 +19,9 @@
 #ifndef __ardour_tracker_multi_track_pattern_phenomenal_diff_h_
 #define __ardour_tracker_multi_track_pattern_phenomenal_diff_h_
 
-#include "track_pattern_phenomenal_diff.h"
-
 #include <map>
+
+#include "track_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 

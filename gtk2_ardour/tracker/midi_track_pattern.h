@@ -19,11 +19,11 @@
 #ifndef __ardour_tracker_midi_track_pattern_h_
 #define __ardour_tracker_midi_track_pattern_h_
 
+#include "midi++2/midi++/midnam_patch.h"
+
 #include "midi_region_pattern.h"
 #include "track_pattern.h"
 #include "track_automation_pattern.h"
-
-#include "midi++2/midi++/midnam_patch.h"
 
 namespace Tracker {
 

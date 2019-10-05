@@ -19,8 +19,6 @@
 #ifndef __ardour_tracker_tracker_editor_h_
 #define __ardour_tracker_tracker_editor_h_
 
-// TODO: remove useless includes
-
 #include <cmath>
 
 #include <gtkmm/table.h>
