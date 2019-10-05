@@ -19,12 +19,12 @@
 #include <cmath>
 #include <map>
 
-#include "ardour/region.h"
 #include "ardour/pannable.h"
 #include "ardour/panner.h"
+#include "ardour/region.h"
 
-#include "tracker_utils.h"
 #include "track_automation_pattern.h"
+#include "tracker_utils.h"
 
 using namespace std;
 using namespace ARDOUR;

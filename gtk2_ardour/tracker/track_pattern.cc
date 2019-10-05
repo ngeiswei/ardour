@@ -16,12 +16,12 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include "audio_track_pattern.h"
+#include "audio_track_pattern_phenomenal_diff.h"
+#include "midi_track_pattern.h"
+#include "midi_track_pattern_phenomenal_diff.h"
 #include "track_pattern.h"
 #include "tracker_utils.h"
-#include "midi_track_pattern.h"
-#include "audio_track_pattern.h"
-#include "midi_track_pattern_phenomenal_diff.h"
-#include "audio_track_pattern_phenomenal_diff.h"
 
 using namespace Tracker;
 
