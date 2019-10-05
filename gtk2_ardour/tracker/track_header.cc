@@ -27,9 +27,9 @@ using namespace Tracker;
 TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti)
 {
 	// Instantiate TrackToolbar
-	if (tp->is_midi_track_pattern ())
+	if (tp->is_midi_track_pattern ()) {
 		track_toolbar = new MidiTrackToolbar (te, *tp->midi_track_pattern(), mti);
-	else if (tp->is_audio_track_pattern ()) {
+	} else if (tp->is_audio_track_pattern ()) {
 		track_toolbar = new AudioTrackToolbar (te, *tp->audio_track_pattern(), mti);
 	} else {
 		std::cerr << "[ERROR] TrackHeader::TrackHeader track type not implemented" << std::endl;

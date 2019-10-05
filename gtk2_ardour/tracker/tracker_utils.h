@@ -102,14 +102,16 @@ public:
 	static std::string rm_point_zeros(const std::string& str)
 	{
 		std::string::size_type point_pos = str.rfind('.');
-		if (point_pos == std::string::npos)
+		if (point_pos == std::string::npos) {
 			return str;
+		}
 		std::string::size_type zero_pos = str.size();
 		while (point_pos < zero_pos) {
-			if (str[zero_pos - 1] == '0')
+			if (str[zero_pos - 1] == '0') {
 				zero_pos--;
-			else
+			} else {
 				break;
+			}
 		}
 		return str.substr(0, point_pos + 1 == zero_pos ? point_pos : zero_pos);
 	}
@@ -197,11 +199,13 @@ public:
 	template <typename Num>
 	static Num change_digit_or_sign (Num val, int digit, int position, int base=10)
 	{
-		if (0 <= digit && digit < base)
+		if (0 <= digit && digit < base) {
 			return change_digit (val, digit, position);
+		}
 
-		if ((digit < 0 && 0 < val) || (base <= digit && val < 0))
+		if ((digit < 0 && 0 < val) || (base <= digit && val < 0)) {
 			return -val;
+		}
 
 		return val;;
 	}

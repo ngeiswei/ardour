@@ -165,8 +165,9 @@ TrackerEditor::set_region_selection (const RegionSelection& rs)
 {
 	region_selection = rs;
 	// Replace by the following code if you want to add up the new selection instead of replace the previous one
-	// for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it)
+	// for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
 	// 	region_selection.add (*it);
+	// }
 }
 
 void
@@ -178,8 +179,9 @@ TrackerEditor::setup_grid ()
 void
 TrackerEditor::setup_toolbars ()
 {
-	if (!_first)
+	if (!_first) {
 		return;
+	}
 
 	main_toolbar.setup ();
 }
@@ -197,8 +199,9 @@ TrackerEditor::setup_grid_header()
 void
 TrackerEditor::setup_scroller ()
 {
-	if (!_first)
+	if (!_first) {
 		return;
+	}
 
 	scroller.add (grid);
 	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
@@ -208,8 +211,9 @@ TrackerEditor::setup_scroller ()
 void
 TrackerEditor::setup_vbox ()
 {
-	if (!_first)
+	if (!_first) {
 		return;
+	}
 
 	vbox.show ();
 	vbox.set_spacing (6);

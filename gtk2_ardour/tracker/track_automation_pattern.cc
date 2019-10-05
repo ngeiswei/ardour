@@ -76,8 +76,9 @@ void TrackAutomationPattern::setup_main_automation_controls ()
 
 	// Pan
 	set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
-	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p)
+	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
 		AutomationPattern::insert(track->pannable()->automation_control(*p), track->panner()->describe_parameter (*p));
+	}
 }
 
 void TrackAutomationPattern::setup_processors_automation_controls ()
@@ -90,12 +91,14 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 {
 	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
 
-	if (!processor || !processor->display_to_user ())
+	if (!processor || !processor->display_to_user ()) {
 		return;
+	}
 
 	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
-	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait)
+	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait) {
 		AutomationPattern::insert(boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait)), processor->describe_parameter (*ait));
+	}
 }
 
 void TrackAutomationPattern::insert(const Evoral::Parameter& param)
@@ -108,11 +111,13 @@ TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::
 {
 	samplepos_t sample = event->when;
 
-	if (sample < first_sample || last_sample < sample)
+	if (sample < first_sample || last_sample < sample) {
 		return INVALID_ROW;
+	}
 
 	uint32_t row = row_at_sample(sample);
-	if (param_to_row_to_ali[param].count(row) != 0)
+	if (param_to_row_to_ali[param].count(row) != 0) {
 		row = row_at_sample_min_delay(sample);
+	}
 	return row;
 }

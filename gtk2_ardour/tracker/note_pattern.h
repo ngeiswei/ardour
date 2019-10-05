@@ -166,9 +166,11 @@ typename NoteContainer::const_iterator NotePattern::find_eq_id(const NoteContain
 {
 	Evoral::event_id_t id = note->id();
 	typename NoteContainer::const_iterator it = notes.begin();
-	for (; it != notes.end(); ++it)
-		if ((*it)->id() == id)
+	for (; it != notes.end(); ++it) {
+		if ((*it)->id() == id) {
 			return it;
+		}
+	}
 	return notes.end();
 }
 
@@ -177,9 +179,11 @@ typename NoteContainer::iterator NotePattern::find_eq_id(NoteContainer& notes, N
 {
 	Evoral::event_id_t id = note->id();
 	typename NoteContainer::iterator it = notes.begin();
-	for (; it != notes.end(); ++it)
-		if ((*it)->id() == id)
+	for (; it != notes.end(); ++it) {
+		if ((*it)->id() == id) {
 			return it;
+		}
+	}
 	return notes.end();
 }
 
