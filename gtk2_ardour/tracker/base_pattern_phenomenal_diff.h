@@ -34,10 +34,10 @@ namespace Tracker {
 
 class BasePatternPhenomenalDiff {
 public:
-	BasePatternPhenomenalDiff();
+	BasePatternPhenomenalDiff ();
 
-	virtual bool empty() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
+	virtual bool empty () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	bool full;
 };

@@ -31,8 +31,8 @@ struct MultiTrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff {
 	typedef std::map<size_t, TrackPatternPhenomenalDiff*> Mti2TrackPatternDiff;
 	Mti2TrackPatternDiff mti2tp_diff;
 
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
+	bool empty () const;
+	std::string to_string (const std::string& indent = std::string ()) const;
 };
 
 } // ~namespace Tracker

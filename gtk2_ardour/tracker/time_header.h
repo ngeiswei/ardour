@@ -34,8 +34,8 @@ class TimeHeader : public Gtk::Table
 {
 	// Empty for now, it's nor clear what to put, and what not to put there ATM.
 public:
-	TimeHeader();
-	~TimeHeader();
+	TimeHeader ();
+	~TimeHeader ();
 };
 
 } // ~namespace tracker

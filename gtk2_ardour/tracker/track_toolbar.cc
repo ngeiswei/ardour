@@ -80,9 +80,9 @@ void
 TrackToolbar::setup_label ()
 {
 	// Add label
-	std::string label = track->name();
+	std::string label = track->name ();
 	label += ":\t";
-	Gtk::Label* mtt_label = new Gtk::Label (label.c_str());
+	Gtk::Label* mtt_label = new Gtk::Label (label.c_str ());
 	mtt_label->show ();
 	pack_start (*mtt_label, false, false);
 }
@@ -95,7 +95,7 @@ TrackToolbar::setup_delay ()
 	visible_delay_button.set_text (S_("Delay|D"));
 	update_visible_delay_button ();
 	visible_delay_button.show ();
-	visible_delay_button.signal_button_press_event().connect (sigc::mem_fun(*this, &TrackToolbar::visible_delay_press), false);
+	visible_delay_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &TrackToolbar::visible_delay_press), false);
 	pack_start (visible_delay_button, false, false);
 }
 
@@ -122,7 +122,7 @@ TrackToolbar::setup_tooltips ()
 }
 
 bool
-TrackToolbar::visible_delay_press(GdkEventButton* ev)
+TrackToolbar::visible_delay_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -130,8 +130,8 @@ TrackToolbar::visible_delay_press(GdkEventButton* ev)
 	}
 
 	visible_delay = !visible_delay;
-	// grid.redisplay_visible_delay();
-	redisplay_grid();
+	// grid.redisplay_visible_delay ();
+	redisplay_grid ();
 	return false;
 }
 
@@ -139,7 +139,7 @@ void
 TrackToolbar::automation_click ()
 {
 	build_automation_menu ();
-	automation_action_menu->popup (1, gtk_get_current_event_time());
+	automation_action_menu->popup (1, gtk_get_current_event_time ());
 }
 
 void
@@ -152,7 +152,7 @@ TrackToolbar::build_automation_menu ()
 	delete automation_action_menu;
 	automation_action_menu = new Menu;
 
-	MenuList& items = automation_action_menu->items();
+	MenuList& items = automation_action_menu->items ();
 
 	automation_action_menu->set_name ("ArdourContextMenu");
 
@@ -165,10 +165,10 @@ TrackToolbar::build_automation_menu ()
 	// TODO could be optimized, no need to rebuild everything!
 	setup_processor_menu_and_curves ();
 
-	if (!subplugin_menu.items().empty()) {
+	if (!subplugin_menu.items ().empty ()) {
 		items.push_back (SeparatorElem ());
 		items.push_back (MenuElem (_("Processor automation"), subplugin_menu));
-		items.back().set_sensitive (true);
+		items.back ().set_sensitive (true);
 	}
 
 	/* Add any route automation */
@@ -176,25 +176,25 @@ TrackToolbar::build_automation_menu ()
 	if (true) {
 		items.push_back (CheckMenuElem (_("Fader"), sigc::bind (sigc::mem_fun (grid, &Grid::update_gain_column_visibility), track_index)));
 		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		gain_automation_item->set_active (grid.is_gain_visible(track_index));
+		gain_automation_item->set_active (grid.is_gain_visible (track_index));
 	}
 
-	if (is_audio_track_toolbar() /*trim_track*/) {
+	if (is_audio_track_toolbar () /*trim_track*/) {
 		items.push_back (CheckMenuElem (_("Trim"), sigc::bind (sigc::mem_fun (grid, &Grid::update_trim_column_visibility), track_index)));
 		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		trim_automation_item->set_active (grid.is_trim_visible(track_index));
+		trim_automation_item->set_active (grid.is_trim_visible (track_index));
 	}
 
 	if (true /*mute_track*/) {
 		items.push_back (CheckMenuElem (_("Mute"), sigc::bind (sigc::mem_fun (grid, &Grid::update_mute_column_visibility), track_index)));
 		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		mute_automation_item->set_active (grid.is_mute_visible(track_index));
+		mute_automation_item->set_active (grid.is_mute_visible (track_index));
 	}
 
 	if (true /*pan_tracks*/) {
 		items.push_back (CheckMenuElem (_("Pan"), sigc::bind (sigc::mem_fun (grid, &Grid::update_pan_columns_visibility), track_index)));
 		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		pan_automation_item->set_active (grid.is_pan_visible(track_index));
+		pan_automation_item->set_active (grid.is_pan_visible (track_index));
 	}
 }
 
@@ -219,7 +219,7 @@ void
 TrackToolbar::setup_processor_menu_and_curves ()
 {
 	_subplugin_menu_map.clear ();
-	subplugin_menu.items().clear ();
+	subplugin_menu.items ().clear ();
 	track->foreach_processor (sigc::mem_fun (*this, &TrackToolbar::add_processor_to_subplugin_menu));
 }
 
@@ -247,29 +247,29 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 
 	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
 
-	if (automatable.empty()) {
+	if (automatable.empty ()) {
 		return;
 	}
 
-	for (x = processor_automation.begin(); x != processor_automation.end(); ++x) {
+	for (x = processor_automation.begin (); x != processor_automation.end (); ++x) {
 		if ((*x)->processor == processor) {
 			break;
 		}
 	}
 
-	if (x == processor_automation.end()) {
+	if (x == processor_automation.end ()) {
 		rai = new ProcessorAutomationInfo (processor);
 		processor_automation.push_back (rai);
 	} else {
 		rai = *x;
 	}
 
-	/* any older menu was deleted at the top of processors_changed()
+	/* any older menu was deleted at the top of processors_changed ()
 	   when we cleared the subplugin menu.
 	*/
 
 	rai->menu = manage (new Menu);
-	MenuList& items = rai->menu->items();
+	MenuList& items = rai->menu->items ();
 	rai->menu->set_name ("ArdourContextMenu");
 
 	items.clear ();
@@ -277,7 +277,7 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 	std::set<Evoral::Parameter> has_visible_automation;
 	// AutomationTimeAxisView::what_has_visible_automation (processor, has_visible_automation);
 
-	for (std::set<Evoral::Parameter>::const_iterator i = automatable.begin(); i != automatable.end(); ++i) {
+	for (std::set<Evoral::Parameter>::const_iterator i = automatable.begin (); i != automatable.end (); ++i) {
 
 		ProcessorAutomationNode* pauno = 0;
 		CheckMenuItem* mitem;
@@ -289,12 +289,12 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		}
 
 		items.push_back (CheckMenuElem (name));
-		mitem = dynamic_cast<CheckMenuItem*> (&items.back());
+		mitem = dynamic_cast<CheckMenuItem*> (&items.back ());
 
 		_subplugin_menu_map[*i] = mitem;
 
-		if (TrackerUtils::is_in(*i, has_visible_automation)) {
-			mitem->set_active(true);
+		if (TrackerUtils::is_in (*i, has_visible_automation)) {
+			mitem->set_active (true);
 		}
 
 		if ((pauno = find_processor_automation_node (processor, *i)) == 0) {
@@ -305,26 +305,26 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 			pauno->menu_item = mitem;
 		}
 
-		mitem->signal_toggled().connect (sigc::bind (sigc::mem_fun(*this, &TrackToolbar::processor_menu_item_toggled), rai, pauno));
+		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), rai, pauno));
 	}
 
-	if (items.size() == 0) {
+	if (items.size () == 0) {
 		return;
 	}
 
 	/* add the menu for this processor, because the subplugin
-	   menu is always cleared at the top of processors_changed().
+	   menu is always cleared at the top of processors_changed ().
 	   this is the result of some poor design in gtkmm and/or
 	   GTK+.
 	*/
 
-	subplugin_menu.items().push_back (MenuElem (processor->name(), *rai->menu));
+	subplugin_menu.items ().push_back (MenuElem (processor->name (), *rai->menu));
 }
 
 void
 TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, ProcessorAutomationNode* pauno)
 {
-	const bool showit = pauno->menu_item->get_active();
+	const bool showit = pauno->menu_item->get_active ();
 
 	if (pauno->column == 0) {
 		grid.add_processor_automation_column (track_index, rai->processor, pauno->param);
@@ -339,11 +339,11 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Process
 ProcessorAutomationNode*
 TrackToolbar::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter param)
 {
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin(); i != processor_automation.end(); ++i) {
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin (); i != processor_automation.end (); ++i) {
 
 		if ((*i)->processor == processor) {
 
-			for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+			for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 				if ((*ii)->param == param) {
 					return *ii;
 				}
@@ -393,7 +393,7 @@ TrackToolbar::show_all_main_automations ()
 	grid.update_gain_column_visibility (track_index);
 
 	// Trim
-	if (is_audio_track_toolbar()) {
+	if (is_audio_track_toolbar ()) {
 		trim_automation_item->set_active (true);
 		grid.update_trim_column_visibility (track_index);
 	}
@@ -411,27 +411,27 @@ void
 TrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = !track_pattern->is_empty(Evoral::Parameter(GainAutomation));
+	bool gain_visible = !track_pattern->is_empty (Evoral::Parameter (GainAutomation));
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
 
 	// Trim
-	if (is_audio_track_toolbar()) {
-		bool trim_visible = !track_pattern->is_empty(Evoral::Parameter(GainAutomation));
+	if (is_audio_track_toolbar ()) {
+		bool trim_visible = !track_pattern->is_empty (Evoral::Parameter (GainAutomation));
 		trim_automation_item->set_active (trim_visible);
 		grid.update_gain_column_visibility (track_index);
 	}
 
 	// Mute
-	bool mute_visible = !track_pattern->is_empty(Evoral::Parameter(MuteAutomation));
+	bool mute_visible = !track_pattern->is_empty (Evoral::Parameter (MuteAutomation));
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility (track_index);
 
 	// Pan
 	bool pan_visible = false;
-	std::set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
-	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		if (!track_pattern->is_empty(*p)) {
+	std::set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
+	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
+		if (!track_pattern->is_empty (*p)) {
 			pan_visible = true;
 			break;
 		}
@@ -448,7 +448,7 @@ TrackToolbar::hide_main_automations ()
 	grid.update_gain_column_visibility (track_index);
 
 	// Trim
-	if (is_audio_track_toolbar()) {
+	if (is_audio_track_toolbar ()) {
 		trim_automation_item->set_active (false);
 		grid.update_trim_column_visibility (track_index);
 	}
@@ -465,9 +465,9 @@ TrackToolbar::hide_main_automations ()
 void
 TrackToolbar::show_all_processor_automations ()
 {
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin();
-	     i != processor_automation.end(); ++i) {
-		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
+	     i != processor_automation.end (); ++i) {
+		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			size_t& column = (*ii)->column;
 			if (column == 0) {
 				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->param);
@@ -488,11 +488,11 @@ TrackToolbar::show_all_processor_automations ()
 void
 TrackToolbar::show_existing_processor_automations ()
 {
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin();
-	     i != processor_automation.end(); ++i) {
-		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
+	     i != processor_automation.end (); ++i) {
+		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			size_t& column = (*ii)->column;
-			bool exist = !track_pattern->is_empty((*ii)->param);
+			bool exist = !track_pattern->is_empty ((*ii)->param);
 
 			// Create automation column if necessary
 			if (exist) {
@@ -516,9 +516,9 @@ TrackToolbar::show_existing_processor_automations ()
 void
 TrackToolbar::hide_processor_automations ()
 {
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin();
-	     i != processor_automation.end(); ++i) {
-		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin(); ii != (*i)->columns.end(); ++ii) {
+	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
+	     i != processor_automation.end (); ++i) {
+		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			size_t column = (*ii)->column;
 			if (column != 0) {
 				grid.set_automation_column_visible (track_index, (*ii)->param, column, false);
@@ -529,64 +529,64 @@ TrackToolbar::hide_processor_automations ()
 }
 
 void
-TrackToolbar::update_visible_delay_button()
+TrackToolbar::update_visible_delay_button ()
 {
 	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }
 
 void
-TrackToolbar::update_automation_button()
+TrackToolbar::update_automation_button ()
 {
-	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &TrackToolbar::automation_click));
+	automation_button.signal_clicked.connect (sigc::mem_fun (*this, &TrackToolbar::automation_click));
 }
 
 bool
-TrackToolbar::is_midi_track_toolbar() const
+TrackToolbar::is_midi_track_toolbar () const
 {
-	return (bool)midi_track_toolbar();
+	return (bool)midi_track_toolbar ();
 }
 
 bool
-TrackToolbar::is_audio_track_toolbar() const
+TrackToolbar::is_audio_track_toolbar () const
 {
-	return (bool)audio_track_toolbar();
+	return (bool)audio_track_toolbar ();
 }
 
 const MidiTrackToolbar*
-TrackToolbar::midi_track_toolbar() const
+TrackToolbar::midi_track_toolbar () const
 {
-	return dynamic_cast<const MidiTrackToolbar*>(this);
+	return dynamic_cast<const MidiTrackToolbar*> (this);
 }
 
 MidiTrackToolbar*
-TrackToolbar::midi_track_toolbar()
+TrackToolbar::midi_track_toolbar ()
 {
-	return dynamic_cast<MidiTrackToolbar*>(this);
+	return dynamic_cast<MidiTrackToolbar*> (this);
 }
 
 const AudioTrackToolbar*
-TrackToolbar::audio_track_toolbar() const
+TrackToolbar::audio_track_toolbar () const
 {
-	return dynamic_cast<const AudioTrackToolbar*>(this);
+	return dynamic_cast<const AudioTrackToolbar*> (this);
 }
 
 AudioTrackToolbar*
-TrackToolbar::audio_track_toolbar()
+TrackToolbar::audio_track_toolbar ()
 {
-	return dynamic_cast<AudioTrackToolbar*>(this);
+	return dynamic_cast<AudioTrackToolbar*> (this);
 }
 
 int
-TrackToolbar::get_min_width() const
+TrackToolbar::get_min_width () const
 {
-	int width = visible_delay_button.get_width() + spacing +
-		+ automation_separator.get_width() + spacing
-		+ automation_button.get_width();
+	int width = visible_delay_button.get_width () + spacing +
+		+ automation_separator.get_width () + spacing
+		+ automation_button.get_width ();
 	return width;
 }
 
 void
-TrackToolbar::redisplay_grid()
+TrackToolbar::redisplay_grid ()
 {
 	tracker_editor.grid.redisplay_grid_direct_call ();
 }

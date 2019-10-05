@@ -23,21 +23,21 @@
 using namespace Tracker;
 
 bool
-MidiTrackPatternPhenomenalDiff::empty() const
+MidiTrackPatternPhenomenalDiff::empty () const
 {
-	return !full && mri2mrp_diff.empty() && auto_diff.empty();
+	return !full && mri2mrp_diff.empty () && auto_diff.empty ();
 }
 
 std::string
-MidiTrackPatternPhenomenalDiff::to_string(const std::string& indent) const
+MidiTrackPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << indent << "mri2mrp_diff:" << std::endl;
-	for (Mri2MidiRegionPatternDiff::const_iterator it = mri2mrp_diff.begin(); it != mri2mrp_diff.end(); ++it) {
+	for (Mri2MidiRegionPatternDiff::const_iterator it = mri2mrp_diff.begin (); it != mri2mrp_diff.end (); ++it) {
 		ss << indent + "  " << "midi_region_pattern_diff[" << it->first << "]:" << std::endl
-		   << it->second.to_string(indent + "    ") << std::endl;
+		   << it->second.to_string (indent + "    ") << std::endl;
 	}
 	ss << indent << "auto_diff:" << std::endl;
-	ss << auto_diff.to_string(indent + "  ");
-	return ss.str();
+	ss << auto_diff.to_string (indent + "  ");
+	return ss.str ();
 }

@@ -23,19 +23,19 @@
 using namespace Tracker;
 
 bool
-MidiRegionPatternPhenomenalDiff::empty() const
+MidiRegionPatternPhenomenalDiff::empty () const
 {
-	return !full && np_diff.empty() && rap_diff.empty();
+	return !full && np_diff.empty () && rap_diff.empty ();
 }
 
 std::string
-MidiRegionPatternPhenomenalDiff::to_string(const std::string& indent) const
+MidiRegionPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
+	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl
 	   << indent << "np_diff:" << std::endl
-	   << np_diff.to_string(indent + "  ") << std::endl
+	   << np_diff.to_string (indent + "  ") << std::endl
 	   << indent << "rap_diff:" << std::endl
-	   << rap_diff.to_string(indent + "  ");
-	return ss.str();
+	   << rap_diff.to_string (indent + "  ");
+	return ss.str ();
 }

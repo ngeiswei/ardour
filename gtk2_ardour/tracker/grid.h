@@ -62,11 +62,11 @@ class TrackerEditor;
 class Grid : public Gtk::TreeView
 {
 public:
-	explicit Grid(TrackerEditor& te);
-	~Grid();
+	explicit Grid (TrackerEditor& te);
+	~Grid ();
 
 	struct GridModelColumns : public Gtk::TreeModel::ColumnRecord {
-		GridModelColumns();
+		GridModelColumns ();
 		// TODO: add empty columns to separate between each note track and each automations
 		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color, maybe
 		Gtk::TreeModelColumn<std::string> _family; // font family
@@ -117,12 +117,12 @@ public:
 	void update_automation_column_visibility (size_t mti, const Evoral::Parameter& param);
 
 	// Return if the automation column associated to this parameter is currently visible
-	bool is_automation_visible(size_t mti, const Evoral::Parameter& param) const;
+	bool is_automation_visible (size_t mti, const Evoral::Parameter& param) const;
 
-	void set_automation_column_visible(size_t mti, const Evoral::Parameter& param, size_t column, bool showit);
+	void set_automation_column_visible (size_t mti, const Evoral::Parameter& param, size_t column, bool showit);
 
 	// Return true iff there exists some automation in that mti that is visible
-	bool has_visible_automation(size_t mti) const;
+	bool has_visible_automation (size_t mti) const;
 
 	// Return true if the gain column is visible
 	bool is_gain_visible (size_t mti) const;
@@ -139,7 +139,7 @@ public:
 	////////////////////////
 
 	void redisplay_visible_note ();
-	int mti_col_offset(size_t mti) const;
+	int mti_col_offset (size_t mti) const;
 	int left_separator_colnum (size_t mti) const;
 	void redisplay_visible_left_separator (size_t mti) const;
 	int region_name_colnum (size_t mti) const;
@@ -153,7 +153,7 @@ public:
 	void redisplay_visible_note_separator ();
 	int note_separator_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_automation ();
-	size_t automation_col_offset(size_t mti) const;
+	size_t automation_col_offset (size_t mti) const;
 	int automation_colnum (size_t mti, size_t cgi) const;
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (size_t mti, size_t cgi) const;
@@ -224,21 +224,21 @@ public:
 	void set_underline_current_step_edit_auto_cell ();
 
 	// To align grid header
-	int get_time_width() const;
-	int get_track_width(size_t mti) const;
-	int get_right_separator_width(size_t mti) const;
-	int get_track_separator_width() const;
+	int get_time_width () const;
+	int get_track_width (size_t mti) const;
+	int get_right_separator_width (size_t mti) const;
+	int get_track_separator_width () const;
 
-	std::string get_name(size_t mti, const Evoral::Parameter& param) const;
+	std::string get_name (size_t mti, const Evoral::Parameter& param) const;
 
-	void set_enabled(size_t mti, const Evoral::Parameter& param, bool enabled);
-	bool is_enabled(size_t mti, const Evoral::Parameter& param) const;
+	void set_enabled (size_t mti, const Evoral::Parameter& param, bool enabled);
+	bool is_enabled (size_t mti, const Evoral::Parameter& param) const;
 
 	// Render a val with the position to be affected by step editing underlined
-	Pango::AttrList char_underline(int ul_idx) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(int val) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(float val) const;
-	std::pair<std::string, Pango::AttrList> underlined_value(const std::string& val_str) const;
+	Pango::AttrList char_underline (int ul_idx) const;
+	std::pair<std::string, Pango::AttrList> underlined_value (int val) const;
+	std::pair<std::string, Pango::AttrList> underlined_value (float val) const;
+	std::pair<std::string, Pango::AttrList> underlined_value (const std::string& val_str) const;
 
 	bool is_int_param (const Evoral::Parameter& param) const;
 
@@ -381,12 +381,12 @@ private:
 	Gtk::TreeModel::Row get_row (uint32_t row_idx) const;
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.
-	// Warning: can't be const because of a get_columns()
+	// Warning: can't be const because of a get_columns ()
 	int get_col_index (const Gtk::TreeViewColumn* col);
 
 	// Play note
-	void play_note(int mti, uint8_t pitch);
-	void release_note(int mti, uint8_t pitch);
+	void play_note (int mti, uint8_t pitch);
+	void release_note (int mti, uint8_t pitch);
 
 	// Set current cursor
 	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col, bool set_playhead=false);
@@ -413,12 +413,12 @@ private:
 	bool is_automation_defined (uint32_t rowi, int mti, int cgi) const;
 
 	// Return mti corresponding col, or -1 if invalid
-	int get_mti(const Gtk::TreeViewColumn* col) const;
+	int get_mti (const Gtk::TreeViewColumn* col) const;
 
-	size_t get_cgi(const Gtk::TreeViewColumn* col) const;
-	TrackerColumn::midi_note_type get_note_type(const Gtk::TreeViewColumn* col) const;
-	TrackerColumn::automation_type get_auto_type(const Gtk::TreeViewColumn* col) const;
-	bool is_note_type(const Gtk::TreeViewColumn* col) const;
+	size_t get_cgi (const Gtk::TreeViewColumn* col) const;
+	TrackerColumn::midi_note_type get_note_type (const Gtk::TreeViewColumn* col) const;
+	TrackerColumn::automation_type get_auto_type (const Gtk::TreeViewColumn* col) const;
+	bool is_note_type (const Gtk::TreeViewColumn* col) const;
 
 	// Move the editing cursor steps columns rightwards, or leftwards if steps
 	// is negative.
@@ -523,12 +523,12 @@ private:
 	 * Create a string of n blank chars.
 	 */
 	static const char blank_char = '-';
-	static std::string mk_blank(size_t n);
+	static std::string mk_blank (size_t n);
 
 	/**
 	 * Check whether a string is blank such as "----"
 	 */
-	static bool is_blank(const std::string& str);
+	static bool is_blank (const std::string& str);
 
 	// Map column index to automation cgi and vice versa
 	typedef boost::bimaps::bimap<size_t, size_t> IndexBimap;

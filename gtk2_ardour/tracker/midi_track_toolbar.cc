@@ -79,7 +79,7 @@ MidiTrackToolbar::setup_note ()
 	visible_note_button.set_text (S_("Note|N"));
 	update_visible_note_button ();
 	visible_note_button.show ();
-	visible_note_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::visible_note_press), false);
+	visible_note_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MidiTrackToolbar::visible_note_press), false);
 	pack_start (visible_note_button, false, false);
 }
 
@@ -91,7 +91,7 @@ MidiTrackToolbar::setup_channel ()
 	visible_channel_button.set_text (S_("Channel|C"));
 	update_visible_channel_button ();
 	visible_channel_button.show ();
-	visible_channel_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::visible_channel_press), false);
+	visible_channel_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MidiTrackToolbar::visible_channel_press), false);
 	pack_start (visible_channel_button, false, false);
 }
 
@@ -103,7 +103,7 @@ MidiTrackToolbar::setup_velocity ()
 	visible_velocity_button.set_text (S_("Velocity|V"));
 	update_visible_velocity_button ();
 	visible_velocity_button.show ();
-	visible_velocity_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::visible_velocity_press), false);
+	visible_velocity_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MidiTrackToolbar::visible_velocity_press), false);
 	pack_start (visible_velocity_button, false, false);
 }
 
@@ -113,13 +113,13 @@ MidiTrackToolbar::setup_rm_add_note_col ()
 	// Remove/add note column
 	remove_note_column_button.set_name ("remove note column");
 	remove_note_column_button.set_text (S_("Remove|-"));
-	remove_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::remove_note_column_press), false);
+	remove_note_column_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MidiTrackToolbar::remove_note_column_press), false);
 	remove_note_column_button.show ();
 	remove_note_column_button.set_sensitive (false);
 	pack_start (remove_note_column_button, false, false);
 	add_note_column_button.set_name ("add note column");
 	add_note_column_button.set_text (S_("Add|+"));
-	add_note_column_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MidiTrackToolbar::add_note_column_press), false);
+	add_note_column_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MidiTrackToolbar::add_note_column_press), false);
 	add_note_column_button.show ();
 	pack_start (add_note_column_button, false, false);
 
@@ -156,7 +156,7 @@ MidiTrackToolbar::setup_tooltips ()
 }
 
 bool
-MidiTrackToolbar::visible_note_press(GdkEventButton* ev)
+MidiTrackToolbar::visible_note_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -164,17 +164,17 @@ MidiTrackToolbar::visible_note_press(GdkEventButton* ev)
 	}
 
 	visible_note = !visible_note;
-	// grid.redisplay_visible_note();
-	// grid.redisplay_visible_channel();
-	// grid.redisplay_visible_velocity();
-	// grid.redisplay_visible_delay();
-	// grid.redisplay_visible_note_separator();
-	redisplay_grid();
+	// grid.redisplay_visible_note ();
+	// grid.redisplay_visible_channel ();
+	// grid.redisplay_visible_velocity ();
+	// grid.redisplay_visible_delay ();
+	// grid.redisplay_visible_note_separator ();
+	redisplay_grid ();
 	return false;
 }
 
 bool
-MidiTrackToolbar::visible_channel_press(GdkEventButton* ev)
+MidiTrackToolbar::visible_channel_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -182,13 +182,13 @@ MidiTrackToolbar::visible_channel_press(GdkEventButton* ev)
 	}
 
 	visible_channel = !visible_channel;
-	// grid.redisplay_visible_channel();
-	redisplay_grid();
+	// grid.redisplay_visible_channel ();
+	redisplay_grid ();
 	return false;
 }
 
 bool
-MidiTrackToolbar::visible_velocity_press(GdkEventButton* ev)
+MidiTrackToolbar::visible_velocity_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -196,8 +196,8 @@ MidiTrackToolbar::visible_velocity_press(GdkEventButton* ev)
 	}
 
 	visible_velocity = !visible_velocity;
-	// grid.redisplay_visible_velocity();
-	redisplay_grid();
+	// grid.redisplay_visible_velocity ();
+	redisplay_grid ();
 	return false;
 }
 
@@ -205,11 +205,11 @@ void
 MidiTrackToolbar::automation_click ()
 {
 	build_automation_menu ();
-	automation_action_menu->popup (1, gtk_get_current_event_time());
+	automation_action_menu->popup (1, gtk_get_current_event_time ());
 }
 
 bool
-MidiTrackToolbar::remove_note_column_press(GdkEventButton* ev)
+MidiTrackToolbar::remove_note_column_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
@@ -268,13 +268,13 @@ MidiTrackToolbar::build_midi_automation_menu ()
 
 	_channel_command_menu_map.clear ();
 
-	Menu_Helpers::MenuList& automation_items = automation_action_menu->items();
+	Menu_Helpers::MenuList& automation_items = automation_action_menu->items ();
 
-	uint16_t selected_channels = midi_track->get_playback_channel_mask();
+	uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 
 	if (selected_channels !=  0) {
 
-		automation_items.push_back (Menu_Helpers::SeparatorElem());
+		automation_items.push_back (Menu_Helpers::SeparatorElem ());
 
 		/* these 2 MIDI "command" types are semantically more like automation
 		   than note data, but they are not MIDI controllers. We give them
@@ -285,10 +285,10 @@ MidiTrackToolbar::build_midi_automation_menu ()
 
 		add_channel_command_menu_item (
 			automation_items, _("Bender"), MidiPitchBenderAutomation, 0);
-		automation_items.back().set_sensitive (true);
+		automation_items.back ().set_sensitive (true);
 		add_channel_command_menu_item (
 			automation_items, _("Pressure"), MidiChannelPressureAutomation, 0);
-		automation_items.back().set_sensitive (true);
+		automation_items.back ().set_sensitive (true);
 
 		/* now all MIDI controllers. Always offer the possibility that we will
 		   rebuild the controllers menu since it might need to be updated after
@@ -299,11 +299,11 @@ MidiTrackToolbar::build_midi_automation_menu ()
 		build_controller_menu ();
 
 		automation_items.push_back (Menu_Helpers::MenuElem (_("Controllers"), *controller_menu));
-		automation_items.back().set_sensitive (true);
+		automation_items.back ().set_sensitive (true);
 	} else {
 		automation_items.push_back (
 			Menu_Helpers::MenuElem (string_compose ("<i>%1</i>", _("No MIDI Channels selected"))));
-		dynamic_cast<Label*> (automation_items.back().get_child())->set_use_markup (true);
+		dynamic_cast<Label*> (automation_items.back ().get_child ())->set_use_markup (true);
 	}
 }
 
@@ -317,14 +317,14 @@ MidiTrackToolbar::build_controller_menu ()
 	delete controller_menu;
 
 	controller_menu = new Menu; // explicitly managed by us
-	Menu_Helpers::MenuList& items (controller_menu->items());
+	Menu_Helpers::MenuList& items (controller_menu->items ());
 
 	/* create several "top level" menu items for sets of controllers (16 at a
 	   time), and populate each one with a submenu for each controller+channel
 	   combination covering the currently selected channels for this track
 	*/
 
-	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 
 	/* count the number of selected channels because we will build a different menu
 	   structure if there is more than 1 selected.
@@ -342,21 +342,21 @@ MidiTrackToolbar::build_controller_menu ()
 	using namespace MIDI::Name;
 	boost::shared_ptr<MasterDeviceNames> device_names = get_device_names ();
 
-	if (device_names && !device_names->controls().empty()) {
+	if (device_names && !device_names->controls ().empty ()) {
 		/* Controllers names available in midnam file, generate fancy menu */
 		unsigned n_items  = 0;
 		unsigned n_groups = 0;
 
 		/* TODO: This is not correct, should look up the currently applicable ControlNameList
 		   and only build a menu for that one. */
-		for (MasterDeviceNames::ControlNameLists::const_iterator l = device_names->controls().begin();
-		     l != device_names->controls().end(); ++l) {
+		for (MasterDeviceNames::ControlNameLists::const_iterator l = device_names->controls ().begin ();
+		     l != device_names->controls ().end (); ++l) {
 			boost::shared_ptr<ControlNameList> name_list = l->second;
 			Menu*                              ctl_menu  = 0;
 
-			for (ControlNameList::Controls::const_iterator c = name_list->controls().begin();
-			     c != name_list->controls().end();) {
-				const uint16_t ctl = c->second->number();
+			for (ControlNameList::Controls::const_iterator c = name_list->controls ().begin ();
+			     c != name_list->controls ().end ();) {
+				const uint16_t ctl = c->second->number ();
 				if (ctl != MIDI_CTL_MSB_BANK && ctl != MIDI_CTL_LSB_BANK) {
 					/* Skip bank select controllers since they're handled specially */
 					if (n_items == 0) {
@@ -364,21 +364,21 @@ MidiTrackToolbar::build_controller_menu ()
 						ctl_menu = manage (new Menu);
 					}
 
-					Menu_Helpers::MenuList& ctl_items (ctl_menu->items());
+					Menu_Helpers::MenuList& ctl_items (ctl_menu->items ());
 					if (chn_cnt > 1) {
-						add_multi_channel_controller_item(ctl_items, ctl, c->second->name());
+						add_multi_channel_controller_item (ctl_items, ctl, c->second->name ());
 					} else {
-						add_single_channel_controller_item(ctl_items, ctl, c->second->name());
+						add_single_channel_controller_item (ctl_items, ctl, c->second->name ());
 					}
 				}
 
 				++c;
-				if (ctl_menu && (++n_items == 16 || c == name_list->controls().end())) {
+				if (ctl_menu && (++n_items == 16 || c == name_list->controls ().end ())) {
 					/* Submenu has 16 items or we're done, add it to controller menu and reset */
-					items.push_back(
-						Menu_Helpers::MenuElem(string_compose(_("Controllers %1-%2"),
-						                                      (16 * n_groups), (16 * n_groups) + n_items - 1),
-						         *ctl_menu));
+					items.push_back (
+						Menu_Helpers::MenuElem (string_compose (_("Controllers %1-%2"),
+						                                        (16 * n_groups), (16 * n_groups) + n_items - 1),
+						                        *ctl_menu));
 					ctl_menu = 0;
 					n_items  = 0;
 					++n_groups;
@@ -389,7 +389,7 @@ MidiTrackToolbar::build_controller_menu ()
 		/* No controllers names, generate generic numeric menu */
 		for (int i = 0; i < 127; i += 16) {
 			Menu*     ctl_menu = manage (new Menu);
-			Menu_Helpers::MenuList& ctl_items (ctl_menu->items());
+			Menu_Helpers::MenuList& ctl_items (ctl_menu->items ());
 
 			for (int ctl = i; ctl < i+16; ++ctl) {
 				if (ctl == MIDI_CTL_MSB_BANK || ctl == MIDI_CTL_LSB_BANK) {
@@ -398,11 +398,11 @@ MidiTrackToolbar::build_controller_menu ()
 				}
 
 				if (chn_cnt > 1) {
-					add_multi_channel_controller_item(
-						ctl_items, ctl, string_compose(_("Controller %1"), ctl));
+					add_multi_channel_controller_item (
+						ctl_items, ctl, string_compose (_("Controller %1"), ctl));
 				} else {
-					add_single_channel_controller_item(
-						ctl_items, ctl, string_compose(_("Controller %1"), ctl));
+					add_single_channel_controller_item (
+						ctl_items, ctl, string_compose (_("Controller %1"), ctl));
 				}
 			}
 
@@ -426,7 +426,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 	   structure if there is more than 1 selected.
 	 */
 
-	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 	int chn_cnt = 0;
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
@@ -442,7 +442,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 		/* multiple channels - create a submenu, with 1 item per channel */
 
 		Menu* chn_menu = manage (new Menu);
-		Menu_Helpers::MenuList& chn_items (chn_menu->items());
+		Menu_Helpers::MenuList& chn_items (chn_menu->items ());
 		Evoral::Parameter param_without_channel (auto_type, 0, cmd);
 
 		/* add a couple of items to hide/show all of them */
@@ -467,9 +467,9 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 					                           track_index, fully_qualified_param)));
 
-				bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
+				bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
 
-				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
+				CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&chn_items.back ());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
 				cmi->set_active (visible);
 			}
@@ -492,9 +492,9 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 					                           track_index, fully_qualified_param)));
 
-				bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
+				bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
 
-				CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&items.back());
+				CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&items.back ());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
 				cmi->set_active (visible);
 
@@ -507,13 +507,13 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 /** Add a single menu item for a controller on one channel. */
 void
-MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
-                                                     int                     ctl,
-                                                     const std::string&      name)
+MidiTrackToolbar::add_single_channel_controller_item (Menu_Helpers::MenuList& ctl_items,
+                                                      int                     ctl,
+                                                      const std::string&      name)
 {
 	using namespace Menu_Helpers;
 
-	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 	for (uint8_t chn = 0; chn < 16; chn++) {
 		if (selected_channels & (0x0001 << chn)) {
 
@@ -524,11 +524,11 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 					sigc::bind (
 						sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 						track_index, fully_qualified_param)));
-			dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
+			dynamic_cast<Label*> (ctl_items.back ().get_child ())->set_use_markup (true);
 
-			bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
+			bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
 
-			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&ctl_items.back());
+			CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&ctl_items.back ());
 			_controller_menu_map[fully_qualified_param] = cmi;
 			cmi->set_active (visible);
 
@@ -540,16 +540,16 @@ MidiTrackToolbar::add_single_channel_controller_item(Menu_Helpers::MenuList& ctl
 
 /** Add a submenu with 1 item per channel for a controller on many channels. */
 void
-MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_items,
-                                                    int                     ctl,
-                                                    const std::string&      name)
+MidiTrackToolbar::add_multi_channel_controller_item (Menu_Helpers::MenuList& ctl_items,
+                                                     int                     ctl,
+                                                     const std::string&      name)
 {
 	using namespace Menu_Helpers;
 
-	const uint16_t selected_channels = midi_track->get_playback_channel_mask();
+	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 
 	Menu* chn_menu = manage (new Menu);
-	Menu_Helpers::MenuList& chn_items (chn_menu->items());
+	Menu_Helpers::MenuList& chn_items (chn_menu->items ());
 
 	/* add a couple of items to hide/show this controller on all channels */
 
@@ -574,9 +574,9 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 				               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 				                           track_index, fully_qualified_param)));
 
-			bool visible = grid.is_automation_visible(track_index, fully_qualified_param);
+			bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
 
-			CheckMenuItem* cmi = static_cast<CheckMenuItem*>(&chn_items.back());
+			CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&chn_items.back ());
 			_controller_menu_map[fully_qualified_param] = cmi;
 			cmi->set_active (visible);
 		}
@@ -585,17 +585,17 @@ MidiTrackToolbar::add_multi_channel_controller_item(Menu_Helpers::MenuList& ctl_
 	/* add the per-channel menu to the list of controllers, with the name of the controller */
 	ctl_items.push_back (Menu_Helpers::MenuElem (string_compose ("<b>%1</b>: %2", ctl, name),
 	                                             *chn_menu));
-	dynamic_cast<Label*> (ctl_items.back().get_child())->set_use_markup (true);
+	dynamic_cast<Label*> (ctl_items.back ().get_child ())->set_use_markup (true);
 }
 
-CheckMenuItem* MidiTrackToolbar::automation_child_menu_item(const Evoral::Parameter& param)
+CheckMenuItem* MidiTrackToolbar::automation_child_menu_item (const Evoral::Parameter& param)
 {
-	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find(param);
-	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find(param);
+	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find (param);
+	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find (param);
 	CheckMenuItem* mitem = 0;
-	if (cmm_it != _controller_menu_map.end()) {
+	if (cmm_it != _controller_menu_map.end ()) {
 		mitem = cmm_it->second;
-	} else if (ccmm_it != _channel_command_menu_map.end()) {
+	} else if (ccmm_it != _channel_command_menu_map.end ()) {
 		mitem = ccmm_it->second;
 	}
 	return mitem;
@@ -639,10 +639,10 @@ MidiTrackToolbar::hide_all_automation ()
 void
 MidiTrackToolbar::show_existing_midi_automations ()
 {
-	const std::set<Evoral::Parameter> params = midi_track->midi_playlist()->contained_automation();
-	for (std::set<Evoral::Parameter>::const_iterator p = params.begin(); p != params.end(); ++p) {
-		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find(*p);
-		size_t column = (it == grid.col2params[track_index].right.end()) || (it->second == 0) ?
+	const std::set<Evoral::Parameter> params = midi_track->midi_playlist ()->contained_automation ();
+	for (std::set<Evoral::Parameter>::const_iterator p = params.begin (); p != params.end (); ++p) {
+		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find (*p);
+		size_t column = (it == grid.col2params[track_index].right.end ()) || (it->second == 0) ?
 			grid.add_midi_automation_column (track_index, *p) : it->second;
 
 		// Still no column available, skip
@@ -658,40 +658,40 @@ void
 MidiTrackToolbar::hide_midi_automations ()
 {
 	std::set<size_t> to_remove;
-	for (std::set<size_t>::iterator it = grid.visible_automation_columns.begin();
-	     it != grid.visible_automation_columns.end(); ++it) {
+	for (std::set<size_t>::iterator it = grid.visible_automation_columns.begin ();
+	     it != grid.visible_automation_columns.end (); ++it) {
 		size_t column = *it;
-		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
-		if (c2p_it == grid.col2params[track_index].left.end()) {
+		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find (column);
+		if (c2p_it == grid.col2params[track_index].left.end ()) {
 			continue;
 		}
 
 		Evoral::Parameter param = c2p_it->second;
-		CheckMenuItem* mitem = automation_child_menu_item(param);
+		CheckMenuItem* mitem = automation_child_menu_item (param);
 
 		if (mitem) {
-			to_remove.insert(column);
+			to_remove.insert (column);
 		}
 	}
-	for (std::set<size_t>::iterator it = to_remove.begin();
-	     it != to_remove.end(); ++it)
+	for (std::set<size_t>::iterator it = to_remove.begin ();
+	     it != to_remove.end (); ++it)
 		grid.visible_automation_columns.erase (*it);
 }
 
 void
-MidiTrackToolbar::update_visible_note_button()
+MidiTrackToolbar::update_visible_note_button ()
 {
 	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }
 
 void
-MidiTrackToolbar::update_visible_channel_button()
+MidiTrackToolbar::update_visible_channel_button ()
 {
 	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }
 
 void
-MidiTrackToolbar::update_visible_velocity_button()
+MidiTrackToolbar::update_visible_velocity_button ()
 {
 	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }
@@ -699,46 +699,46 @@ MidiTrackToolbar::update_visible_velocity_button()
 void
 MidiTrackToolbar::update_remove_note_column_button ()
 {
-	remove_note_column_button.set_sensitive (midi_track_pattern.get_nreqtracks() < midi_track_pattern.get_ntracks());
+	remove_note_column_button.set_sensitive (midi_track_pattern.get_nreqtracks () < midi_track_pattern.get_ntracks ());
 }
 
 void
 MidiTrackToolbar::update_add_note_column_button ()
 {
-	add_note_column_button.set_sensitive (midi_track_pattern.get_ntracks() < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK);
+	add_note_column_button.set_sensitive (midi_track_pattern.get_ntracks () < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK);
 }
 
 void
-MidiTrackToolbar::update_automation_button()
+MidiTrackToolbar::update_automation_button ()
 {
-	automation_button.signal_clicked.connect (sigc::mem_fun(*this, &MidiTrackToolbar::automation_click));
+	automation_button.signal_clicked.connect (sigc::mem_fun (*this, &MidiTrackToolbar::automation_click));
 }
 
 void
-MidiTrackToolbar::print_widths() const
+MidiTrackToolbar::print_widths () const
 {
-	std::cout << "visible_note_button.get_width() = " << visible_note_button.get_width() << std::endl;
-	std::cout << "visible_channel_button.get_width() = " << visible_channel_button.get_width() << std::endl;
-	std::cout << "visible_velocity_button.get_width() = " << visible_velocity_button.get_width() << std::endl;
-	std::cout << "remove_note_column_button.get_width() = " << remove_note_column_button.get_width() << std::endl;
-	std::cout << "add_note_column_button.get_width() = " << add_note_column_button.get_width() << std::endl;
-	std::cout << "rm_add_note_column_separator.get_width() = " << rm_add_note_column_separator.get_width() << std::endl;
-	std::cout << "automation_separator.get_width() = " << automation_separator.get_width() << std::endl;
-	std::cout << "automation_button.get_width() = " << automation_button.get_width() << std::endl;
+	std::cout << "visible_note_button.get_width () = " << visible_note_button.get_width () << std::endl;
+	std::cout << "visible_channel_button.get_width () = " << visible_channel_button.get_width () << std::endl;
+	std::cout << "visible_velocity_button.get_width () = " << visible_velocity_button.get_width () << std::endl;
+	std::cout << "remove_note_column_button.get_width () = " << remove_note_column_button.get_width () << std::endl;
+	std::cout << "add_note_column_button.get_width () = " << add_note_column_button.get_width () << std::endl;
+	std::cout << "rm_add_note_column_separator.get_width () = " << rm_add_note_column_separator.get_width () << std::endl;
+	std::cout << "automation_separator.get_width () = " << automation_separator.get_width () << std::endl;
+	std::cout << "automation_button.get_width () = " << automation_button.get_width () << std::endl;
 }
 
 int
-MidiTrackToolbar::get_min_width() const
+MidiTrackToolbar::get_min_width () const
 {
-	int width = visible_note_button.get_width() + spacing +
-		visible_channel_button.get_width() + spacing +
-		visible_velocity_button.get_width() + spacing +
-		remove_note_column_button.get_width() + spacing +
-		add_note_column_button.get_width() + spacing +
-		rm_add_note_column_separator.get_width() + spacing +
-		visible_delay_button.get_width() + spacing +
-		automation_separator.get_width() + spacing +
-		automation_button.get_width();
+	int width = visible_note_button.get_width () + spacing +
+		visible_channel_button.get_width () + spacing +
+		visible_velocity_button.get_width () + spacing +
+		remove_note_column_button.get_width () + spacing +
+		add_note_column_button.get_width () + spacing +
+		rm_add_note_column_separator.get_width () + spacing +
+		visible_delay_button.get_width () + spacing +
+		automation_separator.get_width () + spacing +
+		automation_button.get_width ();
 
 	return width;
 }

@@ -45,11 +45,11 @@ public:
 	explicit MultiTrackPattern (TrackerEditor& te);
 	~MultiTrackPattern ();
 
-	// Phenomenal overload of operator=(), only need to copy what is necessary
+	// Phenomenal overload of operator= (), only need to copy what is necessary
 	// for phenomenal_diff to correctly operate.
-	MultiTrackPattern& operator=(const MultiTrackPattern& other);
+	MultiTrackPattern& operator= (const MultiTrackPattern& other);
 
-	MultiTrackPatternPhenomenalDiff phenomenal_diff(const MultiTrackPattern& prev) const;
+	MultiTrackPatternPhenomenalDiff phenomenal_diff (const MultiTrackPattern& prev) const;
 	
 	void setup ();
 	void setup_positions ();
@@ -99,12 +99,12 @@ public:
 	size_t get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
-	NoteTypePtr find_prev_note(uint32_t rowi, size_t mti, size_t mri, int cgi) const;
-	NoteTypePtr find_next_note(uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NoteTypePtr find_prev_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NoteTypePtr find_next_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
-	Temporal::Beats next_off(uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	Temporal::Beats next_off (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
 	// Return the row index relative to the start of pattern at mti.
 	int to_rri (uint32_t rowi, size_t mti) const;
@@ -118,9 +118,9 @@ public:
 	// mri is defined, then return -1.
 	int to_mri (uint32_t rowi, size_t mti) const;
 
-	// Insert the automation control(s) associated to param at mti (and connect
+	// Insert the automation control (s) associated to param at mti (and connect
 	// it to the grid for changes)
-	void insert(size_t mti, const Evoral::Parameter& param);
+	void insert (size_t mti, const Evoral::Parameter& param);
 
 	// Return the midi model at mti and mri
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model (size_t mti, size_t mri);
@@ -160,8 +160,8 @@ public:
 	// Return the track pattern assicuated to track, or 0 if it doesn't exist
 	TrackPattern* find_track_pattern (boost::shared_ptr<ARDOUR::Track> track);
 
-	virtual std::string self_to_string() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
+	virtual std::string self_to_string () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	// Mapping track to region views
 	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<RegionView*>, ARDOUR::Stripable::Sorter> TrackRegionViewsMap;
