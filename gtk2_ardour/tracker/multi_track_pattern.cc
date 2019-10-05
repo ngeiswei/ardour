@@ -16,10 +16,10 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "multi_track_pattern.h"
-
 #include "midi_region_view.h"
 #include "audio_region_view.h"
+
+#include "multi_track_pattern.h"
 #include "tracker_editor.h"
 #include "midi_track_pattern_phenomenal_diff.h"
 #include "audio_track_pattern_phenomenal_diff.h"

@@ -16,11 +16,11 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "midi_region_pattern.h"
-#include "tracker_editor.h"
-
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
+
+#include "midi_region_pattern.h"
+#include "tracker_editor.h"
 
 using namespace Tracker;
 

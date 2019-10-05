@@ -24,7 +24,6 @@
 #include "ardour/panner.h"
 
 #include "tracker_utils.h"
-
 #include "track_automation_pattern.h"
 
 using namespace std;
