@@ -42,13 +42,6 @@ public:
 
 	MidiRegionPatternPhenomenalDiff phenomenal_diff(const MidiRegionPattern& prev) const;
 
-	// TODO attempt to move TrackerEditor::param2actrl + its ctor here
-	// TODO attempt to move TrackerEditor::update_automation_patterns here
-	// TODO attempt to move TrackerEditor::get_automation_pattern here
-	// TODO attempt to move that sort of code here:
-	// int delay_ticks = is_region_automation (param) ?
-	// mtp->region_relative_delay_ticks(Temporal::Beats(awhen), rowidx) : mtp->delay_ticks((samplepos_t)awhen, rowidx);
-
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update().
