@@ -1,27 +1,29 @@
-- Take care of code style
-- Try to improve color usage, how to label them, what can be reused
-- Create wscript under tracker folder
-- Create PR
-- Save octave value per each track and maybe more
-- Make virtual keyboard keys not hardcoded
-- Add copy/move, etc, notes + popup menu
-- Deal with *** in a "proper" manner
-- Support arbitrary number of tracks (put all properties in tracker_column)
-- Fix bug in updating playhead
-- Fix alignment with track toolbar
-- Fix grid focus. When click on a button, bring focus immediately back to the grid.
-- Fix window focus (the tracker editor window should have focus right away)
-- Support Gtk::Expander to grid header (see cpuload_expander)
-- Try to replace as many gtk widgets by cairo widgets
-- Support shift-tab to move from right to left
-- Add shortcut for parameters, steps, etc
-- Transfer Ardour shortcuts, spacebar, etc
-- Support layered regions
-- Add piano keyboard display (see gtk_pianokeyboard.h)
-- Support midi input
-- Only have Octave, Ch, Vel in main toolbar is there is a midi track, maybe
-- Play note velocity at which it is gonna be recorded (use already existing)
-- Use signals whenever possible (instead of for instance calling
+- [ ] Take care of code style
+- [ ] Try to improve color usage, how to label them, what can be reused
+- [ ] Create wscript under tracker folder
+- [ ] Create PR
+- [ ] Add copy/move, etc, notes + popup menu
+- [ ] Save octave value per each track and maybe more
+- [ ] Make virtual keyboard keys not hardcoded
+- [ ] Deal with *** in a "proper" manner
+- [ ] Fix bug in updating playhead
+- [ ] Support arbitrary number of tracks (put all properties in tracker_column)
+- [ ] Fix alignment with track toolbar
+- [ ] Fix grid focus. When click on a button, bring focus immediately back to
+  the grid.
+- [ ] Fix window focus (the tracker editor window should have focus right away)
+- [ ] Support Gtk::Expander to grid header (see cpuload_expander)
+- [ ] Try to replace as many gtk widgets by cairo widgets
+- [ ] Support shift-tab to move from right to left
+- [ ] Add shortcut for parameters, steps, etc
+- [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
+- [ ] Transfer Ardour shortcuts, spacebar, etc
+- [ ] Support layered regions
+- [ ] Support midi input
+- [ ] Only have Octave, Ch, Vel in main toolbar is there is a midi track, maybe
+- [ ] Play note velocity at which it is gonna be recorded (use already
+  existing)
+- [ ] Use signals whenever possible (instead of for instance calling
   Grid::redisplay_grid) to not block. This can make ardour crash when jack
   buffer size is too short.
-- Fix updating grib when note or automations are updated in the editor
+- [ ] Fix updating grib when note or automations are updated in the editor
