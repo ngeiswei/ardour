@@ -37,8 +37,9 @@ RowsPhenomenalDiff::to_string(const std::string& indent) const
 	   << indent << "size = " << rows.size()
 	   << std::endl << indent << "  rows=";
 	for (std::set<size_t>::const_iterator it = rows.begin(); it != rows.end(); ++it) {
-		if (it != rows.begin())
+		if (it != rows.begin()) {
 			ss << ",";
+		}
 		ss << *it;
 	}
 	return ss.str();

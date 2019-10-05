@@ -62,8 +62,9 @@ RegionAutomationPatternPhenomenalDiff
 RegionAutomationPattern::phenomenal_diff(const RegionAutomationPattern& other) const
 {
 	RegionAutomationPatternPhenomenalDiff diff;
-	if (!enabled)
+	if (!enabled) {
 		return diff;
+	}
 
 	diff.ap_diff = AutomationPattern::phenomenal_diff(other);
 	return diff;
@@ -72,8 +73,9 @@ RegionAutomationPattern::phenomenal_diff(const RegionAutomationPattern& other) c
 void RegionAutomationPattern::setup_automation_controls ()
 {
 	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
-	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i)
+	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i) {
 		AutomationPattern::insert(midi_model->automation_control(*i), midi_track->describe_parameter (*i));
+	}
 }
 
 void RegionAutomationPattern::insert(const Evoral::Parameter& param)
@@ -86,13 +88,15 @@ RegionAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral:
 {
 	Temporal::Beats relative_beats(event->when);
 
-	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats)
+	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats) {
 		return INVALID_ROW;
+	}
 
 	Temporal::Beats beats(relative_beats + position_beats - start_beats);
 	uint32_t row = row_at_beats(beats);
-	if (param_to_row_to_ali[param].count(row) != 0)
+	if (param_to_row_to_ali[param].count(row) != 0) {
 		row = row_at_beats_min_delay(beats);
+	}
 	return row;
 }
 

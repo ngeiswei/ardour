@@ -53,8 +53,9 @@ void
 MidiTrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
 	// Disable all existing regions
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].enabled = false;
+	}
 
 	// Add new regions or re-enable existing ones
 	for (size_t i = 0; i < regions.size(); i++) {
@@ -85,11 +86,13 @@ MidiTrackPattern::operator=(const MidiTrackPattern& other)
 	TrackAutomationPattern::operator=(other);
 	midi_track = other.midi_track;
 	assert(mrps.size() == other.mrps.size());
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri] = other.mrps[mri];
+	}
 	assert(row_offset.size() == other.row_offset.size());
-	for (size_t mri = 0; mri < row_offset.size(); mri++)
+	for (size_t mri = 0; mri < row_offset.size(); mri++) {
 		row_offset[mri] = other.row_offset[mri];
+	}
 
 	return *this;
 }
@@ -98,16 +101,19 @@ MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 {
 	MidiTrackPatternPhenomenalDiff diff;
-	if (!enabled)
+	if (!enabled) {
 		return diff;
+	}
 
 	diff.full = row_offset != prev.row_offset;
-	if (diff.full)
+	if (diff.full) {
 		return diff;
+	}
 
 	diff.full = mrps.size() != prev.mrps.size();
-	if (diff.full)
+	if (diff.full) {
 		return diff;
+	}
 
 	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		MidiRegionPatternPhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff(prev.mrps[mri]);
@@ -123,64 +129,75 @@ MidiTrackPattern::phenomenal_diff(const MidiTrackPattern& prev) const
 std::string
 MidiTrackPattern::get_name(const Evoral::Parameter& param) const
 {
-	if (TrackerUtils::is_region_automation (param))
+	if (TrackerUtils::is_region_automation (param)) {
 		return midi_track->describe_parameter(param);
+	}
 	return AutomationPattern::get_name(param);
 }
 
 void
 MidiTrackPattern::set_enabled(const Evoral::Parameter& param, bool enabled)
 {
-	if (TrackerUtils::is_region_automation (param))
-		for (size_t mri = 0; mri < mrps.size(); mri++)
+	if (TrackerUtils::is_region_automation (param)) {
+		for (size_t mri = 0; mri < mrps.size(); mri++) {
 			mrps[mri].rap.set_enabled(param, enabled);
-	else AutomationPattern::set_enabled(param, enabled);
+		}
+	}
+	else {
+		AutomationPattern::set_enabled(param, enabled);
+	}
 }
 
 bool
 MidiTrackPattern::is_enabled(const Evoral::Parameter& param) const
 {
-	if (TrackerUtils::is_region_automation (param))
+	if (TrackerUtils::is_region_automation (param)) {
 		// If param is enabled in the first region we can assume it is in all
 		// region
 		return mrps[0].rap.is_enabled(param);
+	}
 	return AutomationPattern::is_enabled(param);
 }
 
 boost::shared_ptr<ARDOUR::AutomationList>
 MidiTrackPattern::get_alist_at_mri(int mri, const Evoral::Parameter& param)
 {
-	if (TrackerUtils::is_region_automation (param))
+	if (TrackerUtils::is_region_automation (param)) {
 		return mrps[mri].rap.get_alist(param);
-	else
+	} else {
 		return TrackAutomationPattern::get_alist(param);
+	}
 }
 
 const boost::shared_ptr<ARDOUR::AutomationList>
 MidiTrackPattern::get_alist_at_mri(int mri, const Evoral::Parameter& param) const
 {
-	if (TrackerUtils::is_region_automation (param))
+	if (TrackerUtils::is_region_automation (param)) {
 		return mrps[mri].rap.get_alist(param);
-	else
+	} else {
 		return TrackAutomationPattern::get_alist(param);
+	}
 }
 
 void
 MidiTrackPattern::insert(const Evoral::Parameter& param)
 {
-	if (TrackerUtils::is_region_automation (param))
-		for (size_t mri = 0; mri < mrps.size(); mri++)
+	if (TrackerUtils::is_region_automation (param)) {
+		for (size_t mri = 0; mri < mrps.size(); mri++) {
 			mrps[mri].insert(param);
-	else
+		}
+	} else {
 		TrackAutomationPattern::insert(param);
+	}
 }
 
 void
 MidiTrackPattern::set_rows_per_beat(uint16_t rpb)
 {
 	BasePattern::set_rows_per_beat(rpb);
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].set_rows_per_beat(rpb);
+	}
 	TrackAutomationPattern::set_rows_per_beat(rpb);
 }
 
@@ -188,8 +205,9 @@ void
 MidiTrackPattern::set_row_range()
 {
 	BasePattern::set_row_range();
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].set_row_range();
+	}
 	TrackAutomationPattern::set_row_range();
 }
 
@@ -213,15 +231,17 @@ MidiTrackPattern::update()
 void
 MidiTrackPattern::update_midi_regions()
 {
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].update();
+	}
 }
 
 void
 MidiTrackPattern::update_row_offset()
 {
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		row_offset[mri] = mrps[mri].row_distance(position_row_beats, mrps[mri].position_row_beats);
+	}
 }
 
 bool
@@ -246,13 +266,16 @@ int
 MidiTrackPattern::to_mri (uint32_t rowi) const
 {
 	// Disgard is out of midi track pattern range
-	if (!BasePattern::is_defined (rowi))
+	if (!BasePattern::is_defined (rowi)) {
 		return -1;
+	}
 
 	// Check if rowi points to an existing region
-	for (size_t mri = 0; mri < mrps.size(); mri++)
-		if (mrps[mri].is_defined(to_rrri((uint32_t)rowi, mri)))
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
+		if (mrps[mri].is_defined(to_rrri((uint32_t)rowi, mri))) {
 			return mri;
+		}
+	}
 
 	// Within range but no region defined there
 	return -1;
@@ -262,8 +285,9 @@ uint16_t
 MidiTrackPattern::get_ntracks () const
 {
 	uint16_t ntracks = 0;
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		ntracks = std::max(ntracks, mrps[mri].np.ntracks);
+	}
 
 	if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK) {
 		// TODO: use Ardour's logger instead of stdout
@@ -279,30 +303,34 @@ MidiTrackPattern::get_ntracks () const
 void
 MidiTrackPattern::set_ntracks (uint16_t n)
 {
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].np.set_ntracks(n);
+	}
 }
 
 void
 MidiTrackPattern::inc_ntracks ()
 {
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].np.inc_ntracks();
+	}
 }
 
 void
 MidiTrackPattern::dec_ntracks ()
 {
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		mrps[mri].np.dec_ntracks();
+	}
 }
 
 uint16_t
 MidiTrackPattern::get_nreqtracks () const
 {
 	uint16_t nreqtracks = 0;
-	for (size_t mri = 0; mri < mrps.size(); mri++)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
 		nreqtracks = std::max(nreqtracks, mrps[mri].np.nreqtracks);
+	}
 	return nreqtracks;
 }
 
@@ -310,9 +338,11 @@ bool
 MidiTrackPattern::is_empty (const Evoral::Parameter& param) const
 {
 	if (TrackerUtils::is_region_automation (param)) {
-		for (size_t mri = 0; mri < mrps.size(); mri++)
-			if (!mrps[mri].rap.is_empty(param))
+		for (size_t mri = 0; mri < mrps.size(); mri++) {
+			if (!mrps[mri].rap.is_empty(param)) {
 				return false;
+			}
+		}
 		return true;
 	}
 	return TrackAutomationPattern::is_empty(param);
@@ -397,9 +427,11 @@ MidiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const
 MidiRegionPattern*
 MidiTrackPattern::find_midi_region_pattern (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
 {
-	for (size_t mri = 0; mri < mrps.size(); mri++)
-		if (mrps[mri].midi_region == midi_region)
+	for (size_t mri = 0; mri < mrps.size(); mri++) {
+		if (mrps[mri].midi_region == midi_region) {
 			return &mrps[mri];
+		}
+	}
 	return 0;
 }
 
@@ -443,11 +475,13 @@ MidiTrackPattern::to_string(const std::string& indent) const
 
 	std::string header = indent + self_to_string() + " ";
 	ss << header << "midi_track = " << midi_track.get();
-	for (size_t mri = 0; mri != mrps.size(); mri++)
+	for (size_t mri = 0; mri != mrps.size(); mri++) {
 		ss << std::endl << header << "mrps[" << mri << "]:" << std::endl
 		   << mrps[mri].to_string(indent + "  ");
-	for (size_t mri = 0; mri != row_offset.size(); mri++)
+	}
+	for (size_t mri = 0; mri != row_offset.size(); mri++) {
 		ss << std::endl << header << "row_offset[" << mri << "] = " << row_offset[mri];
+	}
 
 	return ss.str();
 }

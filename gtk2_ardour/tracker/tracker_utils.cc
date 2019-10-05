@@ -150,8 +150,9 @@ uint8_t
 TrackerUtils::parse_pitch (std::string text, int default_octave)
 {
 	// Add default octave, if the octave digit is missing
-	if (!text.empty() && !std::isdigit(*text.rbegin()))
+	if (!text.empty() && !std::isdigit(*text.rbegin())) {
 		text += to_string(default_octave);
+	}
 
 	// Parse the note per se
 	return ARDOUR::ParameterDescriptor::midi_note_num(text);
@@ -174,8 +175,9 @@ TrackerUtils::get_position(const std::vector<boost::shared_ptr<ARDOUR::Region> >
 {
 	size_t i = 0;
 	Temporal::samplepos_t position = regions[i++]->position();
-	for (; i < regions.size(); i++)
+	for (; i < regions.size(); i++) {
 		position = std::min(position, regions[i]->position());
+	}
 	return position;
 }
 
@@ -184,8 +186,9 @@ TrackerUtils::get_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegio
 {
 	size_t i = 0;
 	Temporal::samplepos_t position = regions[i++]->position();
-	for (; i < regions.size(); i++)
+	for (; i < regions.size(); i++) {
 		position = std::min(position, regions[i]->position());
+	}
 	return position;
 }
 
@@ -195,8 +198,9 @@ TrackerUtils::get_position(const RegionSelection& region_selection)
 	RegionSelection::const_iterator it = region_selection.begin();
 	Temporal::samplepos_t position = (*it)->region()->position();
 	++it;
-	for (; it != region_selection.end(); ++it)
+	for (; it != region_selection.end(); ++it) {
 		position = std::min(position, (*it)->region()->position());
+	}
 	return position;
 }
 
@@ -223,8 +227,9 @@ TrackerUtils::get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiR
 {
 	size_t i = 0;
 	Temporal::samplepos_t first_sample = regions[i++]->first_sample();
-	for (; i < regions.size(); i++)
+	for (; i < regions.size(); i++) {
 		first_sample = std::min(first_sample, regions[i]->first_sample());
+	}
 	return first_sample;
 }
 
@@ -233,8 +238,9 @@ TrackerUtils::get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Regio
 {
 	size_t i = 0;
 	Temporal::samplepos_t first_sample = regions[i++]->first_sample();
-	for (; i < regions.size(); i++)
+	for (; i < regions.size(); i++) {
 		first_sample = std::min(first_sample, regions[i]->first_sample());
+	}
 	return first_sample;
 }
 
@@ -244,8 +250,9 @@ TrackerUtils::get_first_sample(const RegionSelection& region_selection)
 	RegionSelection::const_iterator it = region_selection.begin();
 	Temporal::samplepos_t first_sample = (*it)->region()->first_sample();
 	++it;
-	for (; it != region_selection.end(); ++it)
+	for (; it != region_selection.end(); ++it) {
 		first_sample = std::min(first_sample, (*it)->region()->first_sample());
+	}
 	return first_sample;
 }
 
@@ -254,8 +261,9 @@ TrackerUtils::get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::Region
 {
 	size_t i = 0;
 	Temporal::samplepos_t last_sample = regions[i++]->last_sample();
-	for (; i < regions.size(); i++)
+	for (; i < regions.size(); i++) {
 		last_sample = std::max(last_sample, regions[i]->last_sample());
+	}
 	return last_sample;
 }
 
@@ -264,8 +272,9 @@ TrackerUtils::get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRe
 {
 	size_t i = 0;
 	Temporal::samplepos_t last_sample = regions[i++]->last_sample();
-	for (; i < regions.size(); i++)
+	for (; i < regions.size(); i++) {
 		last_sample = std::max(last_sample, regions[i]->last_sample());
+	}
 	return last_sample;
 }
 
@@ -275,8 +284,9 @@ TrackerUtils::get_last_sample(const RegionSelection& region_selection)
 	RegionSelection::const_iterator it = region_selection.begin();
 	Temporal::samplepos_t last_sample = (*it)->region()->last_sample();
 	++it;
-	for (; it != region_selection.end(); ++it)
+	for (; it != region_selection.end(); ++it) {
 		last_sample = std::max(last_sample, (*it)->region()->last_sample());
+	}
 	return last_sample;
 }
 
