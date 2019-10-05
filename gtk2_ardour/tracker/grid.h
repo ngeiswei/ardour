@@ -28,6 +28,7 @@
 #include "main_toolbar.h"
 #include "midi_region_pattern.h"
 #include "multi_track_pattern.h"
+#include "track_automation_pattern.h"
 #include "tracker_column.h"
 #include "tracker_utils.h"
 
