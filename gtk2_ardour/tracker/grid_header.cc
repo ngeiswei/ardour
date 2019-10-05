@@ -21,63 +21,63 @@
 
 using namespace Tracker;
 
-GridHeader::GridHeader(TrackerEditor& te)
-	: tracker_editor(te)
+GridHeader::GridHeader (TrackerEditor& te)
+	: tracker_editor (te)
 {
-	time_header.show();
+	time_header.show ();
 	pack_start (time_header, Gtk::PACK_SHRINK);
 	setup_track_headers ();
-	show();
+	show ();
 }
 
 void
-GridHeader::setup_track_headers()
+GridHeader::setup_track_headers ()
 {
-	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size(); mti++) {
-		if (mti < track_headers.size()) {
+	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size (); mti++) {
+		if (mti < track_headers.size ()) {
 			if (tracker_editor.grid.pattern.tps[mti]->enabled) {
-				track_headers[mti]->show();
+				track_headers[mti]->show ();
 			} else {
-				track_headers[mti]->hide();
+				track_headers[mti]->hide ();
 			}
 		} else {
 			TrackPattern* tp = tracker_editor.grid.pattern.tps[mti];
 			TrackHeader* th = new TrackHeader (tracker_editor, tp, mti);
-			track_headers.push_back(th);
+			track_headers.push_back (th);
 			pack_start (*th, Gtk::PACK_SHRINK);
 		}
 	}
 }
 
-GridHeader::~GridHeader()
+GridHeader::~GridHeader ()
 {
-	for (std::vector<TrackHeader*>::iterator it = track_headers.begin(); it != track_headers.end(); ++it) {
+	for (std::vector<TrackHeader*>::iterator it = track_headers.begin (); it != track_headers.end (); ++it) {
 		delete *it;
 	}
 }
 
 void
-GridHeader::set_time_header_size(int width, int height)
+GridHeader::set_time_header_size (int width, int height)
 {
-	time_header.set_size_request(width, height);
+	time_header.set_size_request (width, height);
 }
 
 void
-GridHeader::set_track_header_size(size_t mti, int width, int height)
+GridHeader::set_track_header_size (size_t mti, int width, int height)
 {
-	width = std::max(width, track_headers[mti]->get_min_width());
-	track_headers[mti]->set_size_request(width, height);
+	width = std::max (width, track_headers[mti]->get_min_width ());
+	track_headers[mti]->set_size_request (width, height);
 }
 
 void
-GridHeader::align()
+GridHeader::align ()
 {
-	int track_separator_width = tracker_editor.grid.get_track_separator_width();
-	int time_width = tracker_editor.grid.get_time_width();
+	int track_separator_width = tracker_editor.grid.get_track_separator_width ();
+	int time_width = tracker_editor.grid.get_time_width ();
 	set_spacing (track_separator_width);
 	set_time_header_size (time_width - track_separator_width);
-	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size(); mti++) {
-		int track_width = tracker_editor.grid.get_track_width(mti);
-		set_track_header_size(mti, track_width);
+	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size (); mti++) {
+		int track_width = tracker_editor.grid.get_track_width (mti);
+		set_track_header_size (mti, track_width);
 	}
 }

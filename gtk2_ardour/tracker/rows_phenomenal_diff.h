@@ -29,8 +29,8 @@ struct RowsPhenomenalDiff : public BasePatternPhenomenalDiff
 {
 	std::set<size_t> rows;
 
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
+	bool empty () const;
+	std::string to_string (const std::string& indent = std::string ()) const;
 };
 
 }

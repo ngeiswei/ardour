@@ -26,12 +26,12 @@
 using namespace Tracker;
 
 bool
-TrackPatternPhenomenalDiff::empty() const
+TrackPatternPhenomenalDiff::empty () const
 {
-	if (is_midi_track_pattern_phenomenal_diff()) {
-		return midi_track_pattern_phenomenal_diff()->empty();
-	} else if (is_audio_track_pattern_phenomenal_diff()) {
-		return audio_track_pattern_phenomenal_diff()->empty();
+	if (is_midi_track_pattern_phenomenal_diff ()) {
+		return midi_track_pattern_phenomenal_diff ()->empty ();
+	} else if (is_audio_track_pattern_phenomenal_diff ()) {
+		return audio_track_pattern_phenomenal_diff ()->empty ();
 	} else {
 		std::cout << "Not implemented" << std::endl;
 		return false;
@@ -39,52 +39,52 @@ TrackPatternPhenomenalDiff::empty() const
 }
 
 std::string
-TrackPatternPhenomenalDiff::to_string(const std::string& indent) const
+TrackPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl;
-	if (is_midi_track_pattern_phenomenal_diff()) {
-		ss << midi_track_pattern_phenomenal_diff()->to_string(indent);
-	} else if (is_audio_track_pattern_phenomenal_diff()) {
-		ss << audio_track_pattern_phenomenal_diff()->to_string(indent);
+	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl;
+	if (is_midi_track_pattern_phenomenal_diff ()) {
+		ss << midi_track_pattern_phenomenal_diff ()->to_string (indent);
+	} else if (is_audio_track_pattern_phenomenal_diff ()) {
+		ss << audio_track_pattern_phenomenal_diff ()->to_string (indent);
 	} else {
 		std::cout << "Not implemented" << std::endl;
 	}
-	return ss.str();
+	return ss.str ();
 }
 
 bool
-TrackPatternPhenomenalDiff::is_midi_track_pattern_phenomenal_diff() const
+TrackPatternPhenomenalDiff::is_midi_track_pattern_phenomenal_diff () const
 {
-	return dynamic_cast<const MidiTrackPatternPhenomenalDiff*>(this);
+	return dynamic_cast<const MidiTrackPatternPhenomenalDiff*> (this);
 }
 
 bool
-TrackPatternPhenomenalDiff::is_audio_track_pattern_phenomenal_diff() const
+TrackPatternPhenomenalDiff::is_audio_track_pattern_phenomenal_diff () const
 {
-	return dynamic_cast<const AudioTrackPatternPhenomenalDiff*>(this);
+	return dynamic_cast<const AudioTrackPatternPhenomenalDiff*> (this);
 }
 
 const MidiTrackPatternPhenomenalDiff*
-TrackPatternPhenomenalDiff::midi_track_pattern_phenomenal_diff() const
+TrackPatternPhenomenalDiff::midi_track_pattern_phenomenal_diff () const
 {
-	return dynamic_cast<const MidiTrackPatternPhenomenalDiff*>(this);
+	return dynamic_cast<const MidiTrackPatternPhenomenalDiff*> (this);
 }
 
 const AudioTrackPatternPhenomenalDiff*
-TrackPatternPhenomenalDiff::audio_track_pattern_phenomenal_diff() const
+TrackPatternPhenomenalDiff::audio_track_pattern_phenomenal_diff () const
 {
-	return dynamic_cast<const AudioTrackPatternPhenomenalDiff*>(this);
+	return dynamic_cast<const AudioTrackPatternPhenomenalDiff*> (this);
 }
 
 MidiTrackPatternPhenomenalDiff*
-TrackPatternPhenomenalDiff::midi_track_pattern_phenomenal_diff()
+TrackPatternPhenomenalDiff::midi_track_pattern_phenomenal_diff ()
 {
-	return dynamic_cast<MidiTrackPatternPhenomenalDiff*>(this);
+	return dynamic_cast<MidiTrackPatternPhenomenalDiff*> (this);
 }
 
 AudioTrackPatternPhenomenalDiff*
-TrackPatternPhenomenalDiff::audio_track_pattern_phenomenal_diff()
+TrackPatternPhenomenalDiff::audio_track_pattern_phenomenal_diff ()
 {
-	return dynamic_cast<AudioTrackPatternPhenomenalDiff*>(this);
+	return dynamic_cast<AudioTrackPatternPhenomenalDiff*> (this);
 }

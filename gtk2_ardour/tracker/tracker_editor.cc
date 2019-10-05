@@ -76,13 +76,13 @@ namespace Tracker {
 // TrackerEditor //
 ///////////////////
 
-// TODO: fix grid focus (use get_focus() to gather information on which widget
+// TODO: fix grid focus (use get_focus () to gather information on which widget
 //       has a current focus)
 
 TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	: ArdourWindow ("")
-	, session(s)
-	, public_editor(dynamic_cast<RouteTimeAxisView&>(rs.front()->get_time_axis_view ()).editor ())
+	, session (s)
+	, public_editor (dynamic_cast<RouteTimeAxisView&> (rs.front ()->get_time_axis_view ()).editor ())
 	, region_selection (rs)
 	, grid (*this)
 	, main_toolbar (*this)
@@ -100,7 +100,7 @@ TrackerEditor::~TrackerEditor ()
 void TrackerEditor::setup (RegionSelection& rs)
 {
 	set_region_selection (rs);
-	set_title (window_name(rs));
+	set_title (window_name (rs));
 
 	setup_grid ();
 	setup_scroller ();
@@ -113,10 +113,10 @@ void TrackerEditor::setup (RegionSelection& rs)
 
 	set_size_request (-1, 400);
 
-	set_focus(grid);
-	// raise(); // TODO: crashes ardour, maybe it would be effective otherwise for getting the focus
+	set_focus (grid);
+	// raise (); // TODO: crashes ardour, maybe it would be effective otherwise for getting the focus
 
-	show();
+	show ();
 
 	// To align header and grid
 	grid.redisplay_grid_direct_call ();
@@ -127,38 +127,38 @@ void TrackerEditor::setup (RegionSelection& rs)
 boost::shared_ptr<MidiModel>
 TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
 {
-	return midi_region->midi_source(0)->model();
+	return midi_region->midi_source (0)->model ();
 }
 
 void
 TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
 {
 	// Changing midi content re-render the grid
-	to_model(midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
+	to_model (midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
 	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
-	                                                gui_context());
+	                                                gui_context ());
 
 	// Changing the region time zone re-render the grid
 	midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
 	                                            boost::bind (&Grid::redisplay_grid_connect_call, &grid),
-	                                            gui_context());
+	                                            gui_context ());
 }
 
 void
 TrackerEditor::connect_automation (boost::shared_ptr<AutomationControl> actrl)
 {
 	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
-	boost::shared_ptr<AutomationList> alist = actrl->alist();
-	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context());
-	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context());
+	boost::shared_ptr<AutomationList> alist = actrl->alist ();
+	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context ());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context ());
 }
 
 void
-TrackerEditor::resize_width()
+TrackerEditor::resize_width ()
 {
 	int width, height;
-	get_size(width, height);
-	resize(1, height);
+	get_size (width, height);
+	resize (1, height);
 }
 
 void
@@ -166,7 +166,7 @@ TrackerEditor::set_region_selection (const RegionSelection& rs)
 {
 	region_selection = rs;
 	// Replace by the following code if you want to add up the new selection instead of replace the previous one
-	// for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
+	// for (RegionSelection::const_iterator it = rs.begin (); it != rs.end (); ++it) {
 	// 	region_selection.add (*it);
 	// }
 }
@@ -174,7 +174,7 @@ TrackerEditor::set_region_selection (const RegionSelection& rs)
 void
 TrackerEditor::setup_grid ()
 {
-	grid.setup();
+	grid.setup ();
 }
 
 void
@@ -188,7 +188,7 @@ TrackerEditor::setup_toolbars ()
 }
 
 void
-TrackerEditor::setup_grid_header()
+TrackerEditor::setup_grid_header ()
 {
 	if (grid_header) {
 		grid_header->setup_track_headers ();
@@ -226,15 +226,15 @@ TrackerEditor::setup_vbox ()
 }
 
 string
-window_name(RegionSelection& rs)
+window_name (RegionSelection& rs)
 {
-	string wn("Tracker Editor:");
+	string wn ("Tracker Editor:");
 	static const unsigned wn_max_size = 64;
-	for (RegionSelection::const_iterator it = rs.begin(); it != rs.end(); ++it) {
+	for (RegionSelection::const_iterator it = rs.begin (); it != rs.end (); ++it) {
 		wn += " ";
-		if (wn.size() <= wn_max_size) {
-			boost::shared_ptr<ARDOUR::Region> region = (*it)->region();
-			wn += region->name();
+		if (wn.size () <= wn_max_size) {
+			boost::shared_ptr<ARDOUR::Region> region = (*it)->region ();
+			wn += region->name ();
 		} else {
 			wn += "...";
 			break;

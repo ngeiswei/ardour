@@ -33,25 +33,25 @@ using namespace Tracker;
 // RegionAutomationPattern //
 /////////////////////////////
 
-RegionAutomationPattern::RegionAutomationPattern(TrackerEditor& te,
-                                                 boost::shared_ptr<MidiTrack> mt,
-                                                 boost::shared_ptr<MidiRegion> region)
-	: AutomationPattern(te, region)
-	, midi_track(mt)
-	, midi_model(region->midi_source(0)->model())
+RegionAutomationPattern::RegionAutomationPattern (TrackerEditor& te,
+                                                  boost::shared_ptr<MidiTrack> mt,
+                                                  boost::shared_ptr<MidiRegion> region)
+	: AutomationPattern (te, region)
+	, midi_track (mt)
+	, midi_model (region->midi_source (0)->model ())
 {
 	setup_automation_controls ();
 }
 
 RegionAutomationPattern&
-RegionAutomationPattern::operator=(const RegionAutomationPattern& other)
+RegionAutomationPattern::operator= (const RegionAutomationPattern& other)
 {
 	if (!other.enabled) {
 		enabled = false;
 		return *this;
 	}
 
-	AutomationPattern::operator=(other);
+	AutomationPattern::operator= (other);
 	midi_track = other.midi_track;
 	midi_model = other.midi_model;
 
@@ -59,64 +59,64 @@ RegionAutomationPattern::operator=(const RegionAutomationPattern& other)
 }
 
 RegionAutomationPatternPhenomenalDiff
-RegionAutomationPattern::phenomenal_diff(const RegionAutomationPattern& other) const
+RegionAutomationPattern::phenomenal_diff (const RegionAutomationPattern& other) const
 {
 	RegionAutomationPatternPhenomenalDiff diff;
 	if (!enabled) {
 		return diff;
 	}
 
-	diff.ap_diff = AutomationPattern::phenomenal_diff(other);
+	diff.ap_diff = AutomationPattern::phenomenal_diff (other);
 	return diff;
 }
 
 void RegionAutomationPattern::setup_automation_controls ()
 {
-	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist()->contained_automation();
-	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin(); i != midi_params.end(); ++i) {
-		AutomationPattern::insert(midi_model->automation_control(*i), midi_track->describe_parameter (*i));
+	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist ()->contained_automation ();
+	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin (); i != midi_params.end (); ++i) {
+		AutomationPattern::insert (midi_model->automation_control (*i), midi_track->describe_parameter (*i));
 	}
 }
 
-void RegionAutomationPattern::insert(const Evoral::Parameter& param)
+void RegionAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	AutomationPattern::insert(midi_model->automation_control(param, true), midi_track->describe_parameter (param));
+	AutomationPattern::insert (midi_model->automation_control (param, true), midi_track->describe_parameter (param));
 }
 
 uint32_t
-RegionAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+RegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	Temporal::Beats relative_beats(event->when);
+	Temporal::Beats relative_beats (event->when);
 
 	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats) {
 		return INVALID_ROW;
 	}
 
-	Temporal::Beats beats(relative_beats + position_beats - start_beats);
-	uint32_t row = row_at_beats(beats);
-	if (param_to_row_to_ali[param].count(row) != 0) {
-		row = row_at_beats_min_delay(beats);
+	Temporal::Beats beats (relative_beats + position_beats - start_beats);
+	uint32_t row = row_at_beats (beats);
+	if (param_to_row_to_ali[param].count (row) != 0) {
+		row = row_at_beats_min_delay (beats);
 	}
 	return row;
 }
 
 std::string
-RegionAutomationPattern::self_to_string() const
+RegionAutomationPattern::self_to_string () const
 {
 	std::stringstream ss;
 	ss << "RegionAutomationPattern[" << this << "]";
-	return ss.str();
+	return ss.str ();
 }
 
 std::string
-RegionAutomationPattern::to_string(const std::string& indent) const
+RegionAutomationPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << AutomationPattern::to_string(indent) << std::endl;
+	ss << AutomationPattern::to_string (indent) << std::endl;
 
-	std::string header = indent + self_to_string() + " ";
+	std::string header = indent + self_to_string () + " ";
 	ss << header << "midi_track = " << midi_track << std::endl;
 	ss << header << "midi_model = " << midi_model;
 
-	return ss.str();
+	return ss.str ();
 }

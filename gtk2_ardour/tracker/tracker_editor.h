@@ -70,8 +70,8 @@ namespace Tracker {
 class TrackerEditor : public ArdourWindow
 {
 public:
-	TrackerEditor(ARDOUR::Session*, RegionSelection& rs);
-	~TrackerEditor();
+	TrackerEditor (ARDOUR::Session*, RegionSelection& rs);
+	~TrackerEditor ();
 
 	void setup (RegionSelection& rs);
 
@@ -109,12 +109,12 @@ private:
 	void setup_vbox ();
 
 public:
-	// To not redo first time initialization when setup() is called again
+	// To not redo first time initialization when setup () is called again
 	bool _first;
 };
 
 // Determine the window name of a selection of regions.
-std::string window_name(RegionSelection& rs);
+std::string window_name (RegionSelection& rs);
 
 } // ~namespace tracker
 

@@ -31,8 +31,8 @@ struct MidiTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
 	Mri2MidiRegionPatternDiff mri2mrp_diff;
 	AutomationPatternPhenomenalDiff auto_diff;
 
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
+	bool empty () const;
+	std::string to_string (const std::string& indent = std::string ()) const;
 };
 
 } // ~namespace Tracker

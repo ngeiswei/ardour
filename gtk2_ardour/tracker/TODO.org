@@ -1,4 +1,3 @@
-- [ ] Fix space between function call and arguments
 - [ ] Try to improve color usage, how to label them, what can be reused
 - [ ] Create wscript under tracker folder
 - [ ] Create PR

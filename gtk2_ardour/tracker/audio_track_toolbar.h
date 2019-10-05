@@ -27,9 +27,9 @@ namespace Tracker {
 class AudioTrackToolbar : public TrackToolbar
 {
 public:
-	AudioTrackToolbar(TrackerEditor& te,
-	                  AudioTrackPattern& atp,
-	                  size_t mti);
+	AudioTrackToolbar (TrackerEditor& te,
+	                   AudioTrackPattern& atp,
+	                   size_t mti);
 	~AudioTrackToolbar ();
 };
 

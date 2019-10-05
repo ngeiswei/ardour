@@ -22,19 +22,19 @@
 
 using namespace Tracker;
 
-BasePatternPhenomenalDiff::BasePatternPhenomenalDiff()
-	: full(false) {}
+BasePatternPhenomenalDiff::BasePatternPhenomenalDiff ()
+	: full (false) {}
 
 bool
-BasePatternPhenomenalDiff::empty() const
+BasePatternPhenomenalDiff::empty () const
 {
 	return !full;
 }
 
 std::string
-BasePatternPhenomenalDiff::to_string(const std::string& indent) const
+BasePatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << indent << "full = " << full;
-	return ss.str();
+	return ss.str ();
 }
