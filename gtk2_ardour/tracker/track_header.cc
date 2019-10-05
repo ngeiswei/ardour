@@ -19,7 +19,6 @@
 #include <iostream>
 
 #include "track_header.h"
-
 #include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
 
