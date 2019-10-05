@@ -18,9 +18,9 @@
 
 #include <iostream>
 
-#include "track_header.h"
-#include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
+#include "midi_track_toolbar.h"
+#include "track_header.h"
 
 using namespace Tracker;
 
@@ -47,7 +47,7 @@ TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti)
 
 TrackHeader::~TrackHeader ()
 {
-	delete (track_toolbar);
+	delete track_toolbar;
 }
 
 int

@@ -19,18 +19,18 @@
 #ifndef __ardour_tracker_multi_track_pattern_h_
 #define __ardour_tracker_multi_track_pattern_h_
 
+#include "ardour/automation_list.h"
 #include "ardour/midi_model.h"
 #include "ardour/stripable.h"
-#include "ardour/automation_list.h"
 #include "ardour/track.h"
 
 #include "region_view.h"
 
-#include "tracker_utils.h"
-#include "note_pattern.h"
 #include "midi_region_pattern.h"
-#include "track_pattern.h"
 #include "multi_track_pattern_phenomenal_diff.h"
+#include "note_pattern.h"
+#include "track_pattern.h"
+#include "tracker_utils.h"
 
 namespace Tracker {
 

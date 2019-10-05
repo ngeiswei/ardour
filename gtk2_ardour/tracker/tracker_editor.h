@@ -21,28 +21,28 @@
 
 #include <cmath>
 
-#include <gtkmm/table.h>
 #include <gtkmm/box.h>
 #include <gtkmm/scrolledwindow.h>
+#include <gtkmm/table.h>
 
 #include "gtkmm2ext/bindings.h"
 
 #include "evoral/types.hpp"
 
-#include "ardour/session_handle.h"
 #include "ardour/automation_list.h"
+#include "ardour/session_handle.h"
 
 #include "ardour_window.h"
+#include "editor.h"
 #include "midi_time_axis.h"
 #include "region_selection.h"
-#include "editor.h"
 
-#include "tracker_types.h"
-#include "main_toolbar.h"
-#include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
 #include "grid.h"
 #include "grid_header.h"
+#include "main_toolbar.h"
+#include "midi_track_toolbar.h"
+#include "tracker_types.h"
 
 namespace Evoral {
 	template<typename Time> class Note;

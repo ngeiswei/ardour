@@ -27,38 +27,39 @@
 
 #include <gtkmm/cellrenderercombo.h>
 
+#include "gtkmm2ext/actions.h"
 #include "gtkmm2ext/gui_thread.h"
 #include "gtkmm2ext/keyboard.h"
-#include "gtkmm2ext/actions.h"
-#include "gtkmm2ext/utils.h"
 #include "gtkmm2ext/rgb_macros.h"
+#include "gtkmm2ext/utils.h"
 
-#include "evoral/midi_util.h"
+#include "widgets/tooltips.h"
+
 #include "evoral/Note.hpp"
+#include "evoral/midi_util.h"
 
 #include "ardour/amp.h"
 #include "ardour/beats_samples_converter.h"
 #include "ardour/midi_model.h"
-#include "ardour/midi_region.h"
-#include "ardour/midi_source.h"
-#include "ardour/session.h"
-#include "ardour/tempo.h"
-#include "ardour/pannable.h"
-#include "ardour/panner.h"
-#include "ardour/midi_track.h"
 #include "ardour/midi_patch_manager.h"
 #include "ardour/midi_playlist.h"
+#include "ardour/midi_region.h"
+#include "ardour/midi_source.h"
+#include "ardour/midi_track.h"
+#include "ardour/pannable.h"
+#include "ardour/panner.h"
+#include "ardour/session.h"
+#include "ardour/tempo.h"
 
-#include "ui_config.h"
-#include "note_player.h"
-#include "widgets/tooltips.h"
 #include "axis_view.h"
 #include "editor.h"
 #include "midi_region_view.h"
+#include "note_player.h"
+#include "ui_config.h"
 
-#include "tracker_utils.h"
 #include "midi_track_toolbar.h"
 #include "tracker_editor.h"
+#include "tracker_utils.h"
 
 using namespace std;
 using namespace Gtk;

@@ -25,12 +25,12 @@
 
 #include "widgets/tooltips.h"
 
-#include "ardour/midi_track.h"
 #include "ardour/amp.h"
+#include "ardour/midi_track.h"
 
+#include "grid.h"
 #include "midi_track_toolbar.h"
 #include "tracker_editor.h"
-#include "grid.h"
 #include "tracker_utils.h"
 
 using namespace Gtk;
@@ -312,11 +312,9 @@ MidiTrackToolbar::build_controller_menu ()
 {
 	using namespace Menu_Helpers;
 
-	if (controller_menu) {
-		/* For some reason an already built controller menu cannot be attached
-		   so let's rebuild it */
-		delete controller_menu;
-	}
+	/* For some reason an already built controller menu cannot be attached
+	   so let's rebuild it */
+	delete controller_menu;
 
 	controller_menu = new Menu; // explicitly managed by us
 	Menu_Helpers::MenuList& items (controller_menu->items());

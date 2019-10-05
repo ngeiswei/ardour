@@ -24,11 +24,12 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "evoral/Parameter.hpp"
 #include "evoral/Note.hpp"
-#include "ardour/types.h"
-#include "ardour/parameter_descriptor.h"
+#include "evoral/Parameter.hpp"
+
 #include "ardour/midi_region.h"
+#include "ardour/parameter_descriptor.h"
+#include "ardour/types.h"
 
 #include "region_selection.h"
 

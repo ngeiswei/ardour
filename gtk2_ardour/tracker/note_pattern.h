@@ -21,12 +21,12 @@
 #ifndef __ardour_tracker_note_pattern_h_
 #define __ardour_tracker_note_pattern_h_
 
-#include "ardour/session_handle.h"
 #include "ardour/midi_model.h"
+#include "ardour/session_handle.h"
 
 #include "base_pattern.h"
-#include "tracker_utils.h"
 #include "note_pattern_phenomenal_diff.h"
+#include "tracker_utils.h"
 
 namespace ARDOUR {
 	class MidiRegion;
