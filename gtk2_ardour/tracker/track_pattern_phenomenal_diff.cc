@@ -16,11 +16,10 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "track_pattern_phenomenal_diff.h"
-
 #include <iostream>
 #include <sstream>
 
+#include "track_pattern_phenomenal_diff.h"
 #include "midi_track_pattern_phenomenal_diff.h"
 #include "audio_track_pattern_phenomenal_diff.h"
 

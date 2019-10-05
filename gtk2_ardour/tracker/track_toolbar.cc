@@ -16,22 +16,24 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <list>
+#include <string>
+
+#include "pbd/i18n.h"
+
+#include "gtkmm2ext/utils.h"
+
+#include "widgets/tooltips.h"
+
+#include "ardour/track.h"
+#include "ardour/amp.h"
+
 #include "track_toolbar.h"
 #include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
 #include "tracker_editor.h"
 #include "grid.h"
 #include "tracker_utils.h"
-
-#include "widgets/tooltips.h"
-#include "ardour/track.h"
-#include "ardour/amp.h"
-
-#include "pbd/i18n.h"
-#include "gtkmm2ext/utils.h"
-
-#include <list>
-#include <string>
 
 using namespace Gtk;
 using namespace Gtkmm2ext;

@@ -16,9 +16,9 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "rows_phenomenal_diff.h"
-
 #include <sstream>
+
+#include "rows_phenomenal_diff.h"
 
 using namespace Tracker;
 

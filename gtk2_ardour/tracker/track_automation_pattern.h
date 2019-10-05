@@ -19,9 +19,9 @@
 #ifndef __ardour_tracker_track_automation_pattern_h_
 #define __ardour_tracker_track_automation_pattern_h_
 
-#include "track_pattern.h"
-
 #include "ardour/track.h"
+
+#include "track_pattern.h"
 
 namespace Tracker {
 
