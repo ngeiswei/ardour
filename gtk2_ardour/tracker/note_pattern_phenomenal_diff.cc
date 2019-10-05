@@ -40,8 +40,9 @@ NotePatternPhenomenalDiff::to_string(const std::string& indent) const
 		const RowsPhenomenalDiff& rows_diff = it->second;
 		const std::set<size_t>& rows = rows_diff.rows;
 		for (std::set<size_t>::const_iterator row_it = rows.begin(); row_it != rows.end(); ++row_it) {
-			if (row_it != rows.begin())
+			if (row_it != rows.begin()) {
 				ss << ",";
+			}
 			ss << *row_it;
 		}
 		ss << ")";

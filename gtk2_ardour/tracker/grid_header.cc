@@ -51,8 +51,9 @@ GridHeader::setup_track_headers()
 
 GridHeader::~GridHeader()
 {
-	for (std::vector<TrackHeader*>::iterator it = track_headers.begin(); it != track_headers.end(); ++it)
+	for (std::vector<TrackHeader*>::iterator it = track_headers.begin(); it != track_headers.end(); ++it) {
 		delete *it;
+	}
 }
 
 void
