@@ -27,10 +27,10 @@ using namespace Tracker;
  * Attempt to aligned with the time column.
  */
 
-TimeHeader::TimeHeader()
+TimeHeader::TimeHeader ()
 {
 }
 
-TimeHeader::~TimeHeader()
+TimeHeader::~TimeHeader ()
 {
 }

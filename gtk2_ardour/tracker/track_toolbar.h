@@ -40,7 +40,7 @@ class AudioTrackToolbar;
 
 struct ProcessorAutomationNode {
 	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem)
-		: param (p), menu_item (mitem), column(0) {}
+		: param (p), menu_item (mitem), column (0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationNode ();
 
@@ -114,17 +114,17 @@ public:
 	/**
 	 * Helpers to update buttons status display
 	 */
-	void update_visible_delay_button();
-	void update_automation_button();
+	void update_visible_delay_button ();
+	void update_automation_button ();
 
-	bool is_midi_track_toolbar() const;
-	bool is_audio_track_toolbar() const;
-	const MidiTrackToolbar* midi_track_toolbar() const;
-	MidiTrackToolbar* midi_track_toolbar();
-	const AudioTrackToolbar* audio_track_toolbar() const;
-	AudioTrackToolbar* audio_track_toolbar();
+	bool is_midi_track_toolbar () const;
+	bool is_audio_track_toolbar () const;
+	const MidiTrackToolbar* midi_track_toolbar () const;
+	MidiTrackToolbar* midi_track_toolbar ();
+	const AudioTrackToolbar* audio_track_toolbar () const;
+	AudioTrackToolbar* audio_track_toolbar ();
 
-	virtual int get_min_width() const;
+	virtual int get_min_width () const;
 
 	void redisplay_grid ();
 

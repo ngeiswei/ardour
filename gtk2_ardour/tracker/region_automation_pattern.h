@@ -33,13 +33,13 @@ namespace Tracker {
  */
 class RegionAutomationPattern : public AutomationPattern {
 public:
-	RegionAutomationPattern(TrackerEditor& te,
+	RegionAutomationPattern (TrackerEditor& te,
 	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
 	                        boost::shared_ptr<ARDOUR::MidiRegion> region);
 
-	RegionAutomationPattern& operator=(const RegionAutomationPattern& other);
+	RegionAutomationPattern& operator= (const RegionAutomationPattern& other);
 
-	RegionAutomationPatternPhenomenalDiff phenomenal_diff(const RegionAutomationPattern& other) const;
+	RegionAutomationPatternPhenomenalDiff phenomenal_diff (const RegionAutomationPattern& other) const;
 
 	// Insert all existing region (midi) automation controls in
 	// _automation_controls and connect then to the grid
@@ -47,14 +47,14 @@ public:
 
 	// Insert automation control corresponding to param in _automation_controls
 	// (and connect it to the grid for changes)
-	void insert(const Evoral::Parameter& param);
+	void insert (const Evoral::Parameter& param);
 
 	// Assign a control event to a row
-	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual uint32_t event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// For displaying pattern data. Mostly for debugging
-	virtual std::string self_to_string() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
+	virtual std::string self_to_string () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
 	boost::shared_ptr<ARDOUR::MidiModel> midi_model;

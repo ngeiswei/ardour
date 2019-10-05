@@ -23,29 +23,29 @@
 using namespace Tracker;
 
 bool
-AutomationPatternPhenomenalDiff::empty() const
+AutomationPatternPhenomenalDiff::empty () const
 {
-	return !full && param2rows_diff.empty();
+	return !full && param2rows_diff.empty ();
 }
 
 std::string
-AutomationPatternPhenomenalDiff::to_string(const std::string& indent) const
+AutomationPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
+	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl
 		<< indent << "param2rows_diff:" << std::endl
-	   << indent << "size = " << param2rows_diff.size();
-	for (Param2RowsPhenomenalDiff::const_iterator it = param2rows_diff.begin(); it != param2rows_diff.end(); ++it) {
-		ss << std::endl << indent << "  " << "(param=" << it->first << ", full=" << it->second.full << ", rows={";
+	   << indent << "size = " << param2rows_diff.size ();
+	for (Param2RowsPhenomenalDiff::const_iterator it = param2rows_diff.begin (); it != param2rows_diff.end (); ++it) {
+		ss << std::endl << indent << "  " << " (param=" << it->first << ", full=" << it->second.full << ", rows={";
 		const RowsPhenomenalDiff& rows_diff = it->second;
 		const std::set<size_t>& rows = rows_diff.rows;
-		for (std::set<size_t>::const_iterator row_it = rows.begin(); row_it != rows.end(); ++row_it) {
-			if (row_it != rows.begin()) {
+		for (std::set<size_t>::const_iterator row_it = rows.begin (); row_it != rows.end (); ++row_it) {
+			if (row_it != rows.begin ()) {
 				ss << ",";
 			}
 			ss << *row_it;
 		}
 		ss << "})";
 	}
-	return ss.str();
+	return ss.str ();
 }

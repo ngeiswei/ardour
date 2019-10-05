@@ -109,7 +109,7 @@ MainToolbar::setup_layout ()
 	pack_start (step_edit_separator, false, false);
 	step_edit_button.set_name ("step edit button");
 	step_edit_button.set_text (S_("Step Edit"));
-	step_edit_button.signal_button_press_event().connect (sigc::mem_fun(*this, &MainToolbar::step_edit_press), false);
+	step_edit_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::step_edit_press), false);
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	step_edit_button.show ();
 	pack_start (step_edit_button, false, false);
@@ -164,7 +164,7 @@ MainToolbar::setup_layout ()
 	pack_start (position_separator, false, false);
 	position_label.show ();
 	pack_start (position_label, false, false);
-	position_spinner.signal_value_changed().connect (sigc::mem_fun(*this, &MainToolbar::change_position), false);
+	position_spinner.signal_value_changed ().connect (sigc::mem_fun (*this, &MainToolbar::change_position), false);
 	position_spinner.set_activates_default ();
 	position_spinner.show ();
 	pack_start (position_spinner, false, false);
@@ -181,7 +181,7 @@ MainToolbar::setup_tooltips ()
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
 	delay_spinner.set_tooltip_text (_("Default delay"));
-	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)"));
+	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^ (position-1)"));
 	steps_spinner.set_tooltip_text (_("Step size"));
 }
 
@@ -191,23 +191,23 @@ MainToolbar::setup_beats_per_row_menu ()
 	using namespace Gtk::Menu_Helpers;
 
 	// TODO GridTypeBar is not yet supported
-	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBar - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBar)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeat - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeat)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv2 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv2)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv3 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv3)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv4 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv4)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv5 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv5)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv6 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv6)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv7 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv7)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv8 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv8)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv10 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv10)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv12 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv12)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv14 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv14)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv16 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv16)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv20 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv20)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv24 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv24)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv28 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv28)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv32 - (int)GridTypeBar], sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv32)));
+	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBar - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBar)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeat - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeat)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv2 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv2)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv3 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv3)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv4 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv4)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv5 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv5)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv6 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv6)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv7 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv7)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv8 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv8)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv10 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv10)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv12 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv12)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv14 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv14)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv16 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv16)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv20 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv20)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv24 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv24)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv28 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv28)));
+	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv32 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv32)));
 
 	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings, COMBO_TRIANGLE_WIDTH, 2);
 }
@@ -225,39 +225,39 @@ MainToolbar::register_actions ()
 	Gtk::RadioAction::Group beats_per_row_choice_group;
 
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv32)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv32)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv28)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv28)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv24)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv24)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv20)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv20)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv16)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv16)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv14)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv14)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv12)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv12)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv10)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv10)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv8)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv8)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv7)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv7)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv6)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv6)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv5)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv5)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv4)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv4)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv3)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv3)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv2)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv2)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeat)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeat)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"),
-	                                      (sigc::bind (sigc::mem_fun(*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBar)));
+	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBar)));
 }
 
 void
@@ -329,18 +329,18 @@ MainToolbar::beats_per_row_action (GridType st)
 		break;
 	default:
 		fatal << string_compose (_("programming error: %1: %2"), "Editor: impossible beats-per-row", (int) st) << endmsg;
-		abort(); /*NOTREACHED*/
+		abort (); /*NOTREACHED*/
 	}
 
 	act = ActionManager::get_action (X_("BeatsPerRow"), action);
 
 	if (act) {
-		Glib::RefPtr<Gtk::RadioAction> ract = Glib::RefPtr<Gtk::RadioAction>::cast_dynamic(act);
+		Glib::RefPtr<Gtk::RadioAction> ract = Glib::RefPtr<Gtk::RadioAction>::cast_dynamic (act);
 		return ract;
 
 	} else  {
 		error << string_compose (_("programming error: %1"), "Tracker::MainToolbar::beats_per_row_chosen could not find action to match type.") << endmsg;
-		return Glib::RefPtr<Gtk::RadioAction>();
+		return Glib::RefPtr<Gtk::RadioAction> ();
 	}
 }
 
@@ -354,7 +354,7 @@ MainToolbar::beats_per_row_chosen (GridType st)
 
 	Glib::RefPtr<Gtk::RadioAction> ract = beats_per_row_action (st);
 
-	if (ract && ract->get_active()) {
+	if (ract && ract->get_active ()) {
 		set_beats_per_row_to (st);
 
 		// TODO: alternatively send signal to TrackerEditor
@@ -369,7 +369,7 @@ MainToolbar::set_beats_per_row_to (GridType st)
 
 	std::string str = beats_per_row_strings[snap_ind];
 
-	if (str != beats_per_row_selector.get_text()) {
+	if (str != beats_per_row_selector.get_text ()) {
 		beats_per_row_selector.set_text (str);
 	}
 
@@ -409,7 +409,7 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// TODO: possibly replace by signal
-	tracker_editor.grid.redisplay_grid_direct_call();
+	tracker_editor.grid.redisplay_grid_direct_call ();
 	if (step_edit) {
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
 	} else {
