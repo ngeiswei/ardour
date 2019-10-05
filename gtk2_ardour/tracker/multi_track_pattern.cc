@@ -41,8 +41,9 @@ MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
 
 MultiTrackPattern::~MultiTrackPattern ()
 {
-	for (std::vector<TrackPattern*>::iterator it = tps.begin(); it != tps.end(); ++it)
+	for (std::vector<TrackPattern*>::iterator it = tps.begin(); it != tps.end(); ++it) {
 		delete *it;
+	}
 }
 
 MultiTrackPattern&
@@ -82,19 +83,22 @@ MultiTrackPatternPhenomenalDiff
 MultiTrackPattern::phenomenal_diff(const MultiTrackPattern& prev) const
 {
 	MultiTrackPatternPhenomenalDiff diff;
-	if (!enabled)
+	if (!enabled) {
 		return diff;
+	}
 
 	diff.full = prev.global_nrows != global_nrows || prev.tps.size() != tps.size();
 
-	if (diff.full)
+	if (diff.full) {
 		return diff;
+	}
 
 	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size(); mti++) {
 		TrackPatternPhenomenalDiff* tp_diff = tps[mti]->phenomenal_diff_ptr(prev.tps[mti]);
-		if (!tp_diff->empty())
+		if (!tp_diff->empty()) {
 			diff.mti2tp_diff[mti] = tp_diff;
+		}
 	}
 	return diff;
 }
@@ -137,8 +141,9 @@ void
 MultiTrackPattern::setup_track_patterns()
 {
 	// Disable all existing tracks
-	for (size_t tpi = 0; tpi < tps.size(); tpi++)
+	for (size_t tpi = 0; tpi < tps.size(); tpi++) {
 		tps[tpi]->enabled = false;
+	}
 
 	// Add new track or re-enable existing ones
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin(); it != regions_per_track.end(); ++it) {
@@ -313,8 +318,9 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) 
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern();
 	NotePattern::RowToNotes::const_iterator i_off = mtp->mrps[mri].np.off_notes[cgi].find(to_rrri(rowi, mti, mri));
-	if (i_off != mtp->mrps[mri].np.off_notes[cgi].end())
+	if (i_off != mtp->mrps[mri].np.off_notes[cgi].end()) {
 		return i_off->second;
+	}
 	return 0;
 }
 
@@ -323,8 +329,9 @@ MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) c
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern();
 	NotePattern::RowToNotes::const_iterator i_on = mtp->mrps[mri].np.on_notes[cgi].find(to_rrri(rowi, mti, mri));
-	if (i_on != mtp->mrps[mri].np.on_notes[cgi].end())
+	if (i_on != mtp->mrps[mri].np.on_notes[cgi].end()) {
 		return i_on->second;
+	}
 	return 0;
 }
 
@@ -469,9 +476,11 @@ MultiTrackPattern::set_automation_delay (int delay, size_t rowi, size_t mti, siz
 TrackPattern*
 MultiTrackPattern::find_track_pattern(boost::shared_ptr<ARDOUR::Track> track)
 {
-	for (size_t i = 0; i < tps.size(); i++)
-		if (tps[i]->track == track)
+	for (size_t i = 0; i < tps.size(); i++) {
+		if (tps[i]->track == track) {
 			return tps[i];
+		}
+	}
 	return 0;
 }
 
@@ -490,16 +499,19 @@ MultiTrackPattern::to_string(const std::string& indent) const
 	ss << BasePattern::to_string(indent) << std::endl;
 
 	std::string header = indent + self_to_string() + " ";
-	for (size_t i = 0; i != tps.size(); i++)
+	for (size_t i = 0; i != tps.size(); i++) {
 		ss << header << "tps[" << i << "]:" << std::endl
 		   << tps[i]->to_string(indent + "  ") << std::endl;
+	}
 
 	ss << header << "earliest_mti = " << earliest_mti << std::endl;
 	ss << header << "earliest_tp = " << earliest_tp << std::endl;
-	for (size_t i = 0; i != row_offset.size(); i++)
+	for (size_t i = 0; i != row_offset.size(); i++) {
 		ss << header << "row_offset[" << i << "] = " << row_offset[i] << std::endl;
-	for (size_t i = 0; i != tracks_nrows.size(); i++)
+	}
+	for (size_t i = 0; i != tracks_nrows.size(); i++) {
 		ss << header << "tracks_nrows[" << i << "] = " << tracks_nrows[i] << std::endl;
+	}
 	ss << header << "global_nrows = " << global_nrows << std::endl;
 
 	return ss.str();

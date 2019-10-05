@@ -172,16 +172,19 @@ NotePatternPhenomenalDiff
 NotePattern::phenomenal_diff(const NotePattern& other) const
 {
 	NotePatternPhenomenalDiff diff;
-	if (!enabled)
+	if (!enabled) {
 		return diff;
+	}
 
 	diff.full = ntracks != other.ntracks;
-	if (diff.full)
+	if (diff.full) {
 		return diff;
+	}
 
 	diff.full = nreqtracks != other.nreqtracks;
-	if (diff.full)
+	if (diff.full) {
 		return diff;
+	}
 
 	assert(on_notes.size() == other.on_notes.size());
 	assert(on_notes.size() == off_notes.size());
@@ -190,8 +193,9 @@ NotePattern::phenomenal_diff(const NotePattern& other) const
 		std::set<size_t> rows;
 		rows_diff(cgi, *this, other, rows);
 		rows_diff(cgi, other, *this, rows);
-		if (!rows.empty())
+		if (!rows.empty()) {
 			diff.cgi2rows_diff[cgi].rows = rows;
+		}
 	}
 
 	return diff;
@@ -224,10 +228,11 @@ NotePattern::update_track_to_notes()
 		MidiModel::Notes::iterator track_notes_it = track_notes.begin();
 		for (; track_notes_it != track_notes.end();) {
 			MidiModel::StrictNotes::iterator notes_it = find_eq_id(strict_notes, *track_notes_it);
-			if (notes_it == strict_notes.end())
+			if (notes_it == strict_notes.end()) {
 				track_notes.erase(track_notes_it++);
-			else
+			} else {
 				++track_notes_it;
+			}
 		}
 	}
 
@@ -246,8 +251,9 @@ NotePattern::update_track_to_notes()
 			}
 		}
 		// Find the first available track
-		if (freetrack < 0)
+		if (freetrack < 0) {
 			freetrack = find_free_track(*it);
+		}
 		// No free track found, create a new one.
 		if (freetrack < 0) {
 			freetrack = track_to_notes.size();
@@ -293,8 +299,9 @@ NotePattern::update_row_to_notes()
 
 			on_notes[itrack].insert(RowToNotes::value_type(on_row, *inote));
 			// Do no display off notes occuring at the very end of the region
-			if (off_time < end_beats)
+			if (off_time < end_beats) {
 				off_notes[itrack].insert(RowToNotes::value_type(off_row, *inote));
+			}
 		}
 	}
 }
@@ -302,8 +309,9 @@ NotePattern::update_row_to_notes()
 void
 NotePattern::set_ntracks(uint16_t n)
 {
-	if (nreqtracks <= n)
+	if (nreqtracks <= n) {
 		ntracks = n;
+	}
 }
 
 void
@@ -315,8 +323,9 @@ NotePattern::inc_ntracks()
 void
 NotePattern::dec_ntracks()
 {
-	if (nreqtracks < ntracks)
+	if (nreqtracks < ntracks) {
 		ntracks--;
+	}
 }
 
 NoteTypePtr
@@ -390,18 +399,21 @@ NotePattern::to_string(const std::string& indent) const
 	for (size_t i = 0; i < track_to_notes.size(); i++) {
 		const ARDOUR::MidiModel::Notes& notes = track_to_notes[i];
 		ss << header << "track_to_notes[" << i << "]:" << std::endl;
-		for (ARDOUR::MidiModel::Notes::const_iterator it = notes.begin(); it != notes.end(); ++it)
+		for (ARDOUR::MidiModel::Notes::const_iterator it = notes.begin(); it != notes.end(); ++it) {
 			ss << indent + "  " << "[" << *it << "] " << **it << std::endl;
+		}
 	}
 	for (size_t i = 0; i < on_notes.size(); i++) {
 		ss << header << "on_notes[" << i << "]:" << std::endl;
-		for (RowToNotes::const_iterator it = on_notes[i].begin(); it != on_notes[i].end(); ++it)
+		for (RowToNotes::const_iterator it = on_notes[i].begin(); it != on_notes[i].end(); ++it) {
 			ss << indent + "  " << "row[" << it->first << "] = " << "[" << it->second << "] " << *it->second << std::endl;
+		}
 	}
 	for (size_t i = 0; i < off_notes.size(); i++) {
 		ss << header << "off_notes[" << i << "]:" << std::endl;
-		for (RowToNotes::const_iterator it = off_notes[i].begin(); it != off_notes[i].end(); ++it)
+		for (RowToNotes::const_iterator it = off_notes[i].begin(); it != off_notes[i].end(); ++it) {
 			ss << indent + "  " << "row[" << it->first << "] = " << "[" << it->second << "] " << *it->second << std::endl;
+		}
 	}
 	ss << header << "_midi_model = " << _midi_model;
 
@@ -412,9 +424,11 @@ NoteTypePtr
 NotePattern::earliest(const RowToNotesRange& rng) const
 {
 	NoteTypePtr result;
-	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it)
-		if (!result || result->time() < it->second->time())
+	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
+		if (!result || result->time() < it->second->time()) {
 			result = it->second;
+		}
+	}
 	return result;
 }
 
@@ -422,18 +436,22 @@ NoteTypePtr
 NotePattern::lattest(const RowToNotesRange& rng) const
 {
 	NoteTypePtr result;
-	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it)
-		if (!result || it->second->time() < result->time())
+	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
+		if (!result || it->second->time() < result->time()) {
 			result = it->second;
+		}
+	}
 	return result;
 }
 
 int
 NotePattern::find_eq_id(NoteTypePtr note) const
 {
-	for (int i = 0; i < (int)track_to_notes.size(); i++)
-		if (find_eq_id(i, note) != track_to_notes[i].end())
+	for (int i = 0; i < (int)track_to_notes.size(); i++) {
+		if (find_eq_id(i, note) != track_to_notes[i].end()) {
 			return i;
+		}
+	}
 	return -1;
 }
 
@@ -466,18 +484,22 @@ NotePattern::is_free(int cgi, NoteTypePtr note) const
 {
 	const MidiModel::Notes& notes = track_to_notes[cgi];
 	MidiModel::Notes::iterator it = notes.begin();
-	for (; it != notes.end(); ++it)
-		if (overlap(*it, note))
+	for (; it != notes.end(); ++it) {
+		if (overlap(*it, note)) {
 			return false;
+		}
+	}
 	return true;
 }
 
 int
 NotePattern::find_free_track(NoteTypePtr note) const
 {
-	for (int i = 0; i < (int)track_to_notes.size(); i++)
-		if (is_free(i, note))
+	for (int i = 0; i < (int)track_to_notes.size(); i++) {
+		if (is_free(i, note)) {
 			return i;
+		}
+	}
 	return -1;
 }
 

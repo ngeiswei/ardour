@@ -595,10 +595,11 @@ CheckMenuItem* MidiTrackToolbar::automation_child_menu_item(const Evoral::Parame
 	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find(param);
 	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find(param);
 	CheckMenuItem* mitem = 0;
-	if (cmm_it != _controller_menu_map.end())
+	if (cmm_it != _controller_menu_map.end()) {
 		mitem = cmm_it->second;
-	else if (ccmm_it != _channel_command_menu_map.end())
+	} else if (ccmm_it != _channel_command_menu_map.end()) {
 		mitem = ccmm_it->second;
+	}
 	return mitem;
 }
 
@@ -647,8 +648,9 @@ MidiTrackToolbar::show_existing_midi_automations ()
 			grid.add_midi_automation_column (track_index, *p) : it->second;
 
 		// Still no column available, skip
-		if (column == 0)
+		if (column == 0) {
 			continue;
+		}
 
 		grid.visible_automation_columns.insert (column);
 	}
@@ -662,14 +664,16 @@ MidiTrackToolbar::hide_midi_automations ()
 	     it != grid.visible_automation_columns.end(); ++it) {
 		size_t column = *it;
 		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find(column);
-		if (c2p_it == grid.col2params[track_index].left.end())
+		if (c2p_it == grid.col2params[track_index].left.end()) {
 			continue;
+		}
 
 		Evoral::Parameter param = c2p_it->second;
 		CheckMenuItem* mitem = automation_child_menu_item(param);
 
-		if (mitem)
+		if (mitem) {
 			to_remove.insert(column);
+		}
 	}
 	for (std::set<size_t>::iterator it = to_remove.begin();
 	     it != to_remove.end(); ++it)

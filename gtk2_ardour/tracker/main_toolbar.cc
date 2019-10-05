@@ -409,10 +409,11 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 
 	// TODO: possibly replace by signal
 	tracker_editor.grid.redisplay_grid_direct_call();
-	if (step_edit)
+	if (step_edit) {
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
-	else
+	} else {
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
+	}
 
 	return false;
 }
