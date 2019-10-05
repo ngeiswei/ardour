@@ -19,9 +19,9 @@
 #include <cmath>
 #include <map>
 
+#include "ardour/midi_playlist.h"
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
-#include "ardour/midi_playlist.h"
 
 #include "region_automation_pattern.h"
 

@@ -16,13 +16,14 @@
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "pbd/i18n.h"
 #include "pbd/error.h"
+#include "pbd/i18n.h"
 
 #include "gtkmm2ext/utils.h"
 
-#include "actions.h"
 #include "widgets/tooltips.h"
+
+#include "actions.h"
 
 #include "main_toolbar.h"
 #include "tracker_editor.h"

@@ -22,8 +22,8 @@
 #include "midi++2/midi++/midnam_patch.h"
 
 #include "midi_region_pattern.h"
-#include "track_pattern.h"
 #include "track_automation_pattern.h"
+#include "track_pattern.h"
 
 namespace Tracker {
 

@@ -23,14 +23,16 @@
 #include <gtkmm/separator.h>
 
 #include "widgets/ardour_button.h"
-#include "ardour/processor.h"
-#include "ardour/pannable.h"
+
 #include "ardour/midi_playlist.h"
+#include "ardour/pannable.h"
+#include "ardour/processor.h"
+
 #include "midi++2/midi++/midnam_patch.h"
 
 #include "midi_track_pattern.h"
-#include "tracker_types.h"
 #include "track_toolbar.h"
+#include "tracker_types.h"
 
 namespace Tracker {
 

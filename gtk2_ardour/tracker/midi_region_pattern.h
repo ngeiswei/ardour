@@ -19,12 +19,12 @@
 #ifndef __ardour_tracker_midi_region_pattern_h_
 #define __ardour_tracker_midi_region_pattern_h_
 
-#include "ardour/midi_track.h"
 #include "ardour/midi_model.h"
+#include "ardour/midi_track.h"
 
+#include "midi_region_pattern_phenomenal_diff.h"
 #include "note_pattern.h"
 #include "region_automation_pattern.h"
-#include "midi_region_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
