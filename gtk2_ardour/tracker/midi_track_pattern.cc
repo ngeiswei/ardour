@@ -18,14 +18,14 @@
 
 #include "ardour/midi_region.h"
 
-#include "region_view.h"
 #include "midi_region_view.h"
+#include "region_view.h"
 
-#include "tracker_utils.h"
+#include "grid.h"
 #include "midi_track_pattern.h"
 #include "midi_track_pattern_phenomenal_diff.h"
-#include "grid.h"
 #include "tracker_editor.h"
+#include "tracker_utils.h"
 
 using namespace Tracker;
 

@@ -19,8 +19,8 @@
 #ifndef __ardour_tracker_audio_track_toolbar_h_
 #define __ardour_tracker_audio_track_toolbar_h_
 
-#include "track_toolbar.h"
 #include "audio_track_pattern.h"
+#include "track_toolbar.h"
 
 namespace Tracker {
 

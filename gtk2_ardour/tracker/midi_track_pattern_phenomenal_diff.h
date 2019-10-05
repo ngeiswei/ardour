@@ -19,8 +19,8 @@
 #ifndef __ardour_tracker_midi_track_pattern_phenomenal_diff_h_
 #define __ardour_tracker_midi_track_pattern_phenomenal_diff_h_
 
-#include "track_pattern_phenomenal_diff.h"
 #include "midi_region_pattern_phenomenal_diff.h"
+#include "track_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 

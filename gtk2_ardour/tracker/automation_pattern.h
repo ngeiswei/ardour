@@ -21,10 +21,10 @@
 
 #include <set>
 
+#include "evoral/ControlList.hpp"
+
 #include "ardour/automation_control.h"
 #include "ardour/automation_list.h"
-
-#include "evoral/ControlList.hpp"
 
 #include "automation_pattern_phenomenal_diff.h"
 #include "base_pattern.h"

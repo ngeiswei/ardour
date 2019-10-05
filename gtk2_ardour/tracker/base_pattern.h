@@ -22,10 +22,11 @@
 #include "temporal/beats.h"
 #include "temporal/types.h"
 
+#include "widgets/ardour_dropdown.h"
+
 #include "ardour/session_handle.h"
 #include "ardour/beats_samples_converter.h"
 
-#include "widgets/ardour_dropdown.h"
 #include "ardour_window.h"
 #include "editing.h"
 

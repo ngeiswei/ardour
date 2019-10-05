@@ -18,9 +18,8 @@
 
 #include "audio_track_pattern.h"
 #include "audio_track_pattern_phenomenal_diff.h"
-
-#include "tracker_utils.h"
 #include "grid.h"
+#include "tracker_utils.h"
 
 using namespace Tracker;
 

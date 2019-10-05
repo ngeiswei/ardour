@@ -25,14 +25,14 @@
 
 #include "widgets/tooltips.h"
 
-#include "ardour/track.h"
 #include "ardour/amp.h"
+#include "ardour/track.h"
 
-#include "track_toolbar.h"
-#include "midi_track_toolbar.h"
 #include "audio_track_toolbar.h"
-#include "tracker_editor.h"
 #include "grid.h"
+#include "midi_track_toolbar.h"
+#include "track_toolbar.h"
+#include "tracker_editor.h"
 #include "tracker_utils.h"
 
 using namespace Gtk;
