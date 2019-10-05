@@ -20,8 +20,8 @@
 #ifndef __ardour_tracker_tracker_column_h_
 #define __ardour_tracker_tracker_column_h_
 
-#include <gtkmm/treeviewcolumn.h>
 #include <gtkmm/treemodelcolumn.h>
+#include <gtkmm/treeviewcolumn.h>
 
 namespace Tracker {
 

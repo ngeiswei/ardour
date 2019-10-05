@@ -23,8 +23,8 @@
 
 #include "evoral/Parameter.hpp"
 
-#include "base_pattern_phenomenal_diff.h"
 #include "automation_pattern_phenomenal_diff.h"
+#include "base_pattern_phenomenal_diff.h"
 #include "rows_phenomenal_diff.h"
 
 namespace Tracker {

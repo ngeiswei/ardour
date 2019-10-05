@@ -21,15 +21,15 @@
 
 #include <boost/bimap/bimap.hpp>
 
-#include <gtkmm/treeview.h>
-#include <gtkmm/liststore.h>
 #include <gdkmm/color.h>
+#include <gtkmm/liststore.h>
+#include <gtkmm/treeview.h>
 
-#include "tracker_column.h"
-#include "multi_track_pattern.h"
-#include "midi_region_pattern.h"
-#include "tracker_utils.h"
 #include "main_toolbar.h"
+#include "midi_region_pattern.h"
+#include "multi_track_pattern.h"
+#include "tracker_column.h"
+#include "tracker_utils.h"
 
 namespace Tracker {
 

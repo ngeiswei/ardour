@@ -19,9 +19,9 @@
 #ifndef __ardour_tracker_main_toolbar_h_
 #define __ardour_tracker_main_toolbar_h_
 
+#include <gtkmm/adjustment.h>
 #include <gtkmm/box.h>
 #include <gtkmm/separator.h>
-#include <gtkmm/adjustment.h>
 #include <gtkmm/spinbutton.h>
 
 #include "gtkmm2ext/actions.h"
