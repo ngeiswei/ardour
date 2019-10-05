@@ -18,12 +18,11 @@
 
 #include <cstdlib>
 
-#include "tracker_utils.h"
-
 #include "ardour/parameter_types.h"
 
 #include "midi_region_view.h"
 #include "audio_region_view.h"
+#include "tracker_utils.h"
 
 using namespace Tracker;
 

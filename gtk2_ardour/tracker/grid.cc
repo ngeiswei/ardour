@@ -23,11 +23,18 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "pbd/file_utils.h"
+#include "pbd/memento_command.h"
+#include "pbd/i18n.h"
+
 #include <pangomm/attributes.h>
 #include <gtkmm/cellrenderercombo.h>
 
-#include "pbd/file_utils.h"
-#include "pbd/memento_command.h"
+#include "gtkmm2ext/gui_thread.h"
+#include "gtkmm2ext/keyboard.h"
+#include "gtkmm2ext/actions.h"
+#include "gtkmm2ext/utils.h"
+#include "gtkmm2ext/rgb_macros.h"
 
 #include "evoral/midi_util.h"
 #include "evoral/Note.hpp"
@@ -46,12 +53,6 @@
 #include "ardour/midi_playlist.h"
 #include "ardour/parameter_descriptor.h"
 
-#include "gtkmm2ext/gui_thread.h"
-#include "gtkmm2ext/keyboard.h"
-#include "gtkmm2ext/actions.h"
-#include "gtkmm2ext/utils.h"
-#include "gtkmm2ext/rgb_macros.h"
-
 #include "ui_config.h"
 #include "note_player.h"
 #include "widgets/tooltips.h"
@@ -59,8 +60,6 @@
 #include "editor.h"
 #include "midi_region_view.h"
 #include "ardour_ui.h"
-
-#include "pbd/i18n.h"
 
 #include "tracker_editor.h"
 #include "track_toolbar.h"
