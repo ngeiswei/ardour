@@ -34,7 +34,7 @@ public:
 	TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti);
 	~TrackHeader ();
 
-	int get_min_width() const;
+	int get_min_width () const;
 
 	TrackToolbar* track_toolbar;
 };

@@ -23,24 +23,24 @@
 using namespace Tracker;
 
 bool
-RowsPhenomenalDiff::empty() const
+RowsPhenomenalDiff::empty () const
 {
-	return !full && rows.empty();
+	return !full && rows.empty ();
 }
 
 std::string
-RowsPhenomenalDiff::to_string(const std::string& indent) const
+RowsPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string(indent) << std::endl
+	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl
 		<< indent << "rows:" << std::endl
-	   << indent << "size = " << rows.size()
+	   << indent << "size = " << rows.size ()
 	   << std::endl << indent << "  rows=";
-	for (std::set<size_t>::const_iterator it = rows.begin(); it != rows.end(); ++it) {
-		if (it != rows.begin()) {
+	for (std::set<size_t>::const_iterator it = rows.begin (); it != rows.end (); ++it) {
+		if (it != rows.begin ()) {
 			ss << ",";
 		}
 		ss << *it;
 	}
-	return ss.str();
+	return ss.str ();
 }

@@ -99,15 +99,15 @@ public:
 	/**
 	 * Helpers to update buttons status display
 	 */
-	void update_visible_note_button();
-	void update_visible_channel_button();
-	void update_visible_velocity_button();
+	void update_visible_note_button ();
+	void update_visible_channel_button ();
+	void update_visible_velocity_button ();
 	void update_remove_note_column_button ();
 	void update_add_note_column_button ();
-	void update_automation_button();
+	void update_automation_button ();
 
-	void print_widths() const;
-	int get_min_width() const;
+	void print_widths () const;
+	int get_min_width () const;
 
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 

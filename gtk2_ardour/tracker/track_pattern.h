@@ -53,11 +53,11 @@ public:
 
 	virtual void setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >&);
 
-	TrackPattern& operator=(const TrackPattern& other);
+	TrackPattern& operator= (const TrackPattern& other);
 
 	// TODO: for now do not worry about memory leaking, create a new
 	// PhenomenalDiff object at every call
-	TrackPatternPhenomenalDiff* phenomenal_diff_ptr(const TrackPattern* prev) const;
+	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
 
 	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
 	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
