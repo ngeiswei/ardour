@@ -43,7 +43,7 @@ typedef boost::shared_ptr<NoteType> NoteTypePtr;
  */
 struct region_position_less
 {
-	bool operator()(boost::shared_ptr<ARDOUR::Region> lhs, boost::shared_ptr<ARDOUR::Region> rhs);
+	bool operator () (boost::shared_ptr<ARDOUR::Region> lhs, boost::shared_ptr<ARDOUR::Region> rhs);
 };
 
 class TrackerUtils
@@ -53,7 +53,7 @@ public:
 	 * Return true iff param pertains to pan control
 	 */
 	static bool is_pan_type (const Evoral::Parameter& param);
-	static std::set<ARDOUR::AutomationType> get_pan_param_types();
+	static std::set<ARDOUR::AutomationType> get_pan_param_types ();
 
 	/**
 	 * Return true iff the given param is for region automation (as opposed to
@@ -65,29 +65,29 @@ public:
 	 * Test if element is in container
 	 */
 	template<typename C>
-	static bool is_in(const typename C::value_type& element, const C& container)
+	static bool is_in (const typename C::value_type& element, const C& container)
 	{
-		return container.find(element) != container.end();
+		return container.find (element) != container.end ();
 	}
 
 	/**
 	 * Test if key is in map
 	 */
 	template<typename M>
-	static bool is_key_in(const typename M::key_type& key, const M& map)
+	static bool is_key_in (const typename M::key_type& key, const M& map)
 	{
-		return map.find(key) != map.end();
+		return map.find (key) != map.end ();
 	}
 
 	/**
-	 * Clamp x to be within [l, u], that is return max(l, min(u, x))
+	 * Clamp x to be within [l, u], that is return max (l, min (u, x))
 	 *
 	 * TODO: can probably use automation_controller.cc clamp function
 	 */
 	template<typename Num>
-	static Num clamp(Num x, Num l, Num u)
+	static Num clamp (Num x, Num l, Num u)
 	{
-		return std::max(l, std::min(u, x));
+		return std::max (l, std::min (u, x));
 	}
 
 	/**
@@ -100,13 +100,13 @@ public:
 	 *
 	 * "1"
 	 */
-	static std::string rm_point_zeros(const std::string& str)
+	static std::string rm_point_zeros (const std::string& str)
 	{
-		std::string::size_type point_pos = str.rfind('.');
+		std::string::size_type point_pos = str.rfind ('.');
 		if (point_pos == std::string::npos) {
 			return str;
 		}
-		std::string::size_type zero_pos = str.size();
+		std::string::size_type zero_pos = str.size ();
 		while (point_pos < zero_pos) {
 			if (str[zero_pos - 1] == '0') {
 				zero_pos--;
@@ -114,35 +114,35 @@ public:
 				break;
 			}
 		}
-		return str.substr(0, point_pos + 1 == zero_pos ? point_pos : zero_pos);
+		return str.substr (0, point_pos + 1 == zero_pos ? point_pos : zero_pos);
 	}
 
 	/**
 	 * Convert number to string without scientific notation.
 	 */
 	template<typename Num>
-	static std::string num_to_string(Num n, int base=10)
+	static std::string num_to_string (Num n, int base=10)
 	{
 		std::stringstream ss;
-		ss << std::fixed << std::setprecision(5) << n;
-		return rm_point_zeros(ss.str());
+		ss << std::fixed << std::setprecision (5) << n;
+		return rm_point_zeros (ss.str ());
 	}
 
 	template<typename Num>
-	static Num string_to_num(const std::string& str, int base=10)
+	static Num string_to_num (const std::string& str, int base=10)
 	{
-		return boost::lexical_cast<Num>(str);
+		return boost::lexical_cast<Num> (str);
 	}
 
-	static char digit_to_char(int digit, int base=10);
-	static int char_to_digit(char c, int base=10);
+	static char digit_to_char (int digit, int base=10);
+	static int char_to_digit (char c, int base=10);
 
 	/**
 	 * Given a string representing a float, return the position of the point (a
 	 * dot in US local). If no such point exist then return the string size,
 	 * assuming that the point is implicitly after the last character.
 	 */
-	static size_t point_position(const std::string& str);
+	static size_t point_position (const std::string& str);
 
 	/**
 	 * Given a string representing a number, find a pair l, u representing the
@@ -232,16 +232,16 @@ public:
 	{
 		std::string padded_val_str = pad (val_str, position);
 		size_t str_pos = locate (padded_val_str, position);
-		padded_val_str[str_pos] = digit_to_char(digit);
+		padded_val_str[str_pos] = digit_to_char (digit);
 		return padded_val_str;
 	}
 
 	// Make it up for the lack of C++11 support
-	template<typename T> static std::string to_string(const T& v)
+	template<typename T> static std::string to_string (const T& v)
 	{
 		std::stringstream ss;
 		ss << v;
-		return ss.str();
+		return ss.str ();
 	}
 
 	// Calculate the midi note pitch given the octave and the number of
@@ -253,40 +253,40 @@ public:
 	static uint8_t parse_pitch (std::string text, int default_octave);
 
 	// Return a sequence of regions sorted by position
-	static std::vector<boost::shared_ptr<ARDOUR::Region> > get_sorted_regions(const RegionSelection& region_selection);
+	static std::vector<boost::shared_ptr<ARDOUR::Region> > get_sorted_regions (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the earliest one
-	static Temporal::samplepos_t get_position(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplepos_t get_position(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
-	static Temporal::samplepos_t get_position(const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplepos_t get_position (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_position (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the length between the very first position of the position very last + 1
-	static Temporal::samplecnt_t get_length(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplecnt_t get_length(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
-	static Temporal::samplepos_t get_length(const RegionSelection& region_selection);
+	static Temporal::samplecnt_t get_length (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplecnt_t get_length (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_length (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the very first sample (it looks identical to get_regions_position)
-	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplepos_t get_first_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
-	static Temporal::samplepos_t get_first_sample(const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplepos_t get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_first_sample (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the last sample.
-	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplepos_t get_last_sample(const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
-	static Temporal::samplepos_t get_last_sample(const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	static Temporal::samplepos_t get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_last_sample (const RegionSelection& region_selection);
 
 	// Compare if two notes have the same on note attributes
-	static bool is_on_equal(NoteTypePtr ln, NoteTypePtr rn);
+	static bool is_on_equal (NoteTypePtr ln, NoteTypePtr rn);
 
 	// Compare if two notes have the same off note attributes
-	static bool is_off_equal(NoteTypePtr ln, NoteTypePtr rn);
+	static bool is_off_equal (NoteTypePtr ln, NoteTypePtr rn);
 
 	// Compare if two control events have the same attributes
-	static bool is_equal(const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);
+	static bool is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);
 };
 
 } // ~namespace tracker

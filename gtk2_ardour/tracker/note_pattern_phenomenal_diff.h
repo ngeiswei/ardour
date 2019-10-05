@@ -33,8 +33,8 @@ struct NotePatternPhenomenalDiff : public BasePatternPhenomenalDiff
 	typedef std::map<size_t, RowsPhenomenalDiff> Cgi2RowsPhenomenalDiff;
 	Cgi2RowsPhenomenalDiff cgi2rows_diff;
 
-	bool empty() const;
-	std::string to_string(const std::string& indent = std::string()) const;
+	bool empty () const;
+	std::string to_string (const std::string& indent = std::string ()) const;
 };
 
 } // ~namespace Tracker

@@ -45,7 +45,7 @@ public:
 		AUTOMATION_SEPARATOR
 	};
 
-	TrackerColumn(const Glib::ustring& title,
+	TrackerColumn (const Glib::ustring& title,
 	              const Gtk::TreeModelColumn<std::string>& column,
 	              int mti, int cgi,
 	              midi_note_type mnt, automation_type at);
@@ -59,37 +59,37 @@ public:
 class NoteColumn : public TrackerColumn
 {
 public:
-	NoteColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
+	NoteColumn (const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
 
 class ChannelColumn : public TrackerColumn
 {
 public:
-	ChannelColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
+	ChannelColumn (const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
 
 class VelocityColumn : public TrackerColumn
 {
 public:
-	VelocityColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
+	VelocityColumn (const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
 
 class DelayColumn : public TrackerColumn
 {
 public:
-	DelayColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
+	DelayColumn (const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
 
 class AutomationColumn : public TrackerColumn
 {
 public:
-	AutomationColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
+	AutomationColumn (const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
 
 class AutomationDelayColumn : public TrackerColumn
 {
 public:
-	AutomationDelayColumn(const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
+	AutomationDelayColumn (const Gtk::TreeModelColumn<std::string>& column, int mti, int cgi);
 };
 
 } // ~namespace Tracker

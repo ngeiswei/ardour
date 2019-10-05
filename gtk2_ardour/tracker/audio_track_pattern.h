@@ -31,16 +31,16 @@ namespace Tracker {
  */
 class AudioTrackPattern : public TrackAutomationPattern {
 public:
-	AudioTrackPattern(TrackerEditor& te,
-	                  boost::shared_ptr<ARDOUR::Track> track,
-	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
-	                  Temporal::samplepos_t position,
-	                  Temporal::samplecnt_t length,
-	                  Temporal::samplepos_t first_sample,
-	                  Temporal::samplepos_t last_sample);
+	AudioTrackPattern (TrackerEditor& te,
+	                   boost::shared_ptr<ARDOUR::Track> track,
+	                   const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
+	                   Temporal::samplepos_t position,
+	                   Temporal::samplecnt_t length,
+	                   Temporal::samplepos_t first_sample,
+	                   Temporal::samplepos_t last_sample);
 	virtual ~AudioTrackPattern ();
 
-	AudioTrackPatternPhenomenalDiff phenomenal_diff(const AudioTrackPattern& prev) const;
+	AudioTrackPatternPhenomenalDiff phenomenal_diff (const AudioTrackPattern& prev) const;
 };
 
 } // ~namespace Tracker

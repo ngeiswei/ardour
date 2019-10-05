@@ -30,10 +30,10 @@ namespace Tracker {
  */
 class TrackAutomationPattern : public TrackPattern {
 public:
-	TrackAutomationPattern(TrackerEditor& te,
+	TrackAutomationPattern (TrackerEditor& te,
 	                       boost::shared_ptr<ARDOUR::Track> track,
 	                       const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	TrackAutomationPattern(TrackerEditor& te,
+	TrackAutomationPattern (TrackerEditor& te,
 	                       boost::shared_ptr<ARDOUR::Track> track,
 	                       Temporal::samplepos_t position,
 	                       Temporal::samplecnt_t length,
@@ -48,10 +48,10 @@ public:
 
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
-	void insert(const Evoral::Parameter& param);
+	void insert (const Evoral::Parameter& param);
 
 	// Assign a control event to a row
-	virtual uint32_t event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual uint32_t event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 };
 
 } // ~namespace tracker

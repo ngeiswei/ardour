@@ -38,29 +38,29 @@ public:
 	                   boost::shared_ptr<ARDOUR::MidiRegion> region);
 	virtual ~MidiRegionPattern ();
 
-	MidiRegionPattern& operator=(const MidiRegionPattern& other);
+	MidiRegionPattern& operator= (const MidiRegionPattern& other);
 
-	MidiRegionPatternPhenomenalDiff phenomenal_diff(const MidiRegionPattern& prev) const;
+	MidiRegionPatternPhenomenalDiff phenomenal_diff (const MidiRegionPattern& prev) const;
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
-	// i.e. call update().
-	void set_rows_per_beat(uint16_t rpb);
+	// i.e. call update ().
+	void set_rows_per_beat (uint16_t rpb);
 
 	// Update position, etc, of this, np and rap, based on midi_region
-	void update_position_etc();
+	void update_position_etc ();
 
 	// Set position_row_beats, end_row_beats and nrows
-	void set_row_range();
+	void set_row_range ();
 
 	// Build or rebuild note and automation pattern
-	void update();
+	void update ();
 
 	// Insert the automation control corresponding to param
 	void insert (const Evoral::Parameter& param);
 
-	virtual std::string self_to_string() const;
-	virtual std::string to_string(const std::string& indent = std::string()) const;
+	virtual std::string self_to_string () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	NotePattern np;
 	RegionAutomationPattern rap;

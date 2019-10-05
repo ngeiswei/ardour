@@ -34,25 +34,25 @@ using namespace Tracker;
 // TrackAutomationPattern //
 ////////////////////////////
 
-TrackAutomationPattern::TrackAutomationPattern(TrackerEditor& te,
-                                               boost::shared_ptr<ARDOUR::Track> trk,
-                                               const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
-	: TrackPattern(te, trk,
-	               TrackerUtils::get_position(regions),
-	               TrackerUtils::get_length(regions),
-	               TrackerUtils::get_first_sample(regions),
-	               TrackerUtils::get_last_sample(regions))
+TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
+                                                boost::shared_ptr<ARDOUR::Track> trk,
+                                                const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+	: TrackPattern (te, trk,
+	                TrackerUtils::get_position (regions),
+	                TrackerUtils::get_length (regions),
+	                TrackerUtils::get_first_sample (regions),
+	                TrackerUtils::get_last_sample (regions))
 {
 	setup_automation_controls ();
 }
 
-TrackAutomationPattern::TrackAutomationPattern(TrackerEditor& te,
-                                               boost::shared_ptr<ARDOUR::Track> trk,
-                                               Temporal::samplepos_t pos,
-                                               Temporal::samplecnt_t len,
-                                               Temporal::samplepos_t fst,
-                                               Temporal::samplepos_t lst)
-	: TrackPattern(te, trk, pos, len, fst, lst)
+TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
+                                                boost::shared_ptr<ARDOUR::Track> trk,
+                                                Temporal::samplepos_t pos,
+                                                Temporal::samplecnt_t len,
+                                                Temporal::samplepos_t fst,
+                                                Temporal::samplepos_t lst)
+	: TrackPattern (te, trk, pos, len, fst, lst)
 {
 	setup_automation_controls ();
 }
@@ -66,18 +66,18 @@ void TrackAutomationPattern::setup_automation_controls ()
 void TrackAutomationPattern::setup_main_automation_controls ()
 {
 	// Gain
-	AutomationPattern::insert(track->gain_control(), track->describe_parameter (Evoral::Parameter(GainAutomation)));
+	AutomationPattern::insert (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
 
 	// Trim
-	AutomationPattern::insert(track->trim_control(), track->describe_parameter (Evoral::Parameter(TrimAutomation)));
+	AutomationPattern::insert (track->trim_control (), track->describe_parameter (Evoral::Parameter (TrimAutomation)));
 
 	// Mute
-	AutomationPattern::insert(track->mute_control(), track->describe_parameter (Evoral::Parameter(MuteAutomation)));
+	AutomationPattern::insert (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
 
 	// Pan
-	set<Evoral::Parameter> const & pan_params = track->pannable()->what_can_be_automated ();
-	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin(); p != pan_params.end(); ++p) {
-		AutomationPattern::insert(track->pannable()->automation_control(*p), track->panner()->describe_parameter (*p));
+	set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
+	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
+		AutomationPattern::insert (track->pannable ()->automation_control (*p), track->panner ()->describe_parameter (*p));
 	}
 }
 
@@ -96,18 +96,18 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 	}
 
 	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
-	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin(); ait != automatable.end(); ++ait) {
-		AutomationPattern::insert(boost::dynamic_pointer_cast<AutomationControl>(processor->control(*ait)), processor->describe_parameter (*ait));
+	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin (); ait != automatable.end (); ++ait) {
+		AutomationPattern::insert (boost::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
 	}
 }
 
-void TrackAutomationPattern::insert(const Evoral::Parameter& param)
+void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	AutomationPattern::insert(track->automation_control(param, true), track->describe_parameter (param));
+	AutomationPattern::insert (track->automation_control (param, true), track->describe_parameter (param));
 }
 
 uint32_t
-TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	samplepos_t sample = event->when;
 
@@ -115,9 +115,9 @@ TrackAutomationPattern::event2row(const Evoral::Parameter& param, const Evoral::
 		return INVALID_ROW;
 	}
 
-	uint32_t row = row_at_sample(sample);
-	if (param_to_row_to_ali[param].count(row) != 0) {
-		row = row_at_sample_min_delay(sample);
+	uint32_t row = row_at_sample (sample);
+	if (param_to_row_to_ali[param].count (row) != 0) {
+		row = row_at_sample_min_delay (sample);
 	}
 	return row;
 }

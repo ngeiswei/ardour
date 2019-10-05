@@ -28,21 +28,21 @@ TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti)
 {
 	// Instantiate TrackToolbar
 	if (tp->is_midi_track_pattern ()) {
-		track_toolbar = new MidiTrackToolbar (te, *tp->midi_track_pattern(), mti);
+		track_toolbar = new MidiTrackToolbar (te, *tp->midi_track_pattern (), mti);
 	} else if (tp->is_audio_track_pattern ()) {
-		track_toolbar = new AudioTrackToolbar (te, *tp->audio_track_pattern(), mti);
+		track_toolbar = new AudioTrackToolbar (te, *tp->audio_track_pattern (), mti);
 	} else {
 		std::cerr << "[ERROR] TrackHeader::TrackHeader track type not implemented" << std::endl;
 	}
 
 	// Set frame title
-	set_label (tp->track->name());
+	set_label (tp->track->name ());
 	set_label_align (0.5);
 
 	// Add toolbar to frame body
 	add (*track_toolbar);
 
-	show();
+	show ();
 }
 
 TrackHeader::~TrackHeader ()
@@ -51,8 +51,8 @@ TrackHeader::~TrackHeader ()
 }
 
 int
-TrackHeader::get_min_width() const
+TrackHeader::get_min_width () const
 {
-	int width = 2*get_border_width() + track_toolbar->get_min_width() + 4;
+	int width = 2*get_border_width () + track_toolbar->get_min_width () + 4;
 	return width;
 }
