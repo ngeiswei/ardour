@@ -921,6 +921,9 @@ def options(opt):
         dest='qm_dsp_include', default='/usr/include/qm-dsp',
         help='directory where the header files of qm-dsp can be found')
     opt.add_option ('--use-lld', action='store_true', default=False, dest='use_lld', help='Use LLD linker instead of ld (Linux only)')
+    opt.add_option('--tracker-interface', action='store_true', default=False, dest='tracker_interface',
+                   help='Enable tracker interface')
+    opt.add_option('--no-tracker-interface', action='store_false', dest='tracker_interface')
 
     for i in children:
         opt.recurse(i)
