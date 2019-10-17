@@ -111,7 +111,7 @@ void TrackerEditor::setup (RegionSelection& rs)
 
 	setup_vbox ();
 
-	set_size_request (-1, 400);
+	set_size_request (-1, 800);
 
 	set_focus (grid);
 	// raise (); // TODO: crashes ardour, maybe it would be effective otherwise for getting the focus
