@@ -155,11 +155,16 @@ public:
 	Temporal::samplepos_t first_sample;
 	Temporal::samplepos_t last_sample;
 
-	// Beats corresponding to typical region's position, start from the source,
-	// end and length in beats.
+	// Beats of the region's position relative to ardour time line, and end
+	// relative to ardour time line as well, thus called global.
 	Temporal::Beats position_beats;
+	Temporal::Beats global_end_beats;
+
+	// Start and end beats relative from the source.
 	Temporal::Beats start_beats;
 	Temporal::Beats end_beats;
+
+	// Length in beats of the visible region.
 	Temporal::Beats length_beats;
 
 	// Number of rows per beat. 0 means one row per bar (TODO not fully
@@ -169,7 +174,8 @@ public:
 	// Determined by the number of rows per beat
 	Temporal::Beats beats_per_row;
 
-	// Beats corresponding to the location and end row
+	// Beats corresponding to the absolute position and end row. Note that end
+	// is absolute, not relative to source, unlike end_beats.
 	Temporal::Beats position_row_beats;
 	Temporal::Beats end_row_beats;
 
