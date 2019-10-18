@@ -86,6 +86,7 @@ BasePattern::operator= (const BasePattern& other)
 	last_sample = other.last_sample;
 
 	position_beats = other.position_beats;
+	global_end_beats = other.global_end_beats;
 	start_beats = other.start_beats;
 	end_beats = other.end_beats;
 	length_beats = other.length_beats;
@@ -128,7 +129,7 @@ BasePattern::find_position_row_beats () const
 Temporal::Beats
 BasePattern::find_end_row_beats () const
 {
-	return end_beats.snap_to (beats_per_row);
+	return global_end_beats.snap_to (beats_per_row);
 }
 
 uint32_t
@@ -141,9 +142,10 @@ void
 BasePattern::set_row_range ()
 {
 	position_beats = _conv.from (position);
+	global_end_beats = _conv.from (last_sample + 1);
+	length_beats = global_end_beats - position_beats;
 	start_beats = _conv.from (start);
-	end_beats = _conv.from (last_sample + 1);
-	length_beats = end_beats - position_beats;
+	end_beats = start_beats + length_beats;
 	position_row_beats = find_position_row_beats ();
 	end_row_beats = find_end_row_beats ();
 	nrows = find_nrows ();
@@ -274,6 +276,7 @@ BasePattern::to_string (const std::string& indent) const
 	ss << header << "first_sample = " << first_sample << std::endl;
 	ss << header << "last_sample = " << last_sample << std::endl;
 	ss << header << "position_beats = " << position_beats << std::endl;
+	ss << header << "global_end_beats = " << global_end_beats << std::endl;
 	ss << header << "start_beats = " << start_beats << std::endl;
 	ss << header << "end_beats = " << end_beats << std::endl;
 	ss << header << "length_beats = " << length_beats << std::endl;

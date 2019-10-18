@@ -280,6 +280,7 @@ NotePattern::update_row_to_notes ()
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
 		     inote != track_to_notes[itrack].end (); ++inote) {
+			// On and off times are absolute, not relative to the region
 			Temporal::Beats on_time = (*inote)->time () + position_beats - start_beats;
 			Temporal::Beats off_time = (*inote)->end_time () + position_beats - start_beats;
 			uint32_t on_max_delay_row = row_at_beats_max_delay (on_time);
@@ -300,7 +301,7 @@ NotePattern::update_row_to_notes ()
 
 			on_notes[itrack].insert (RowToNotes::value_type (on_row, *inote));
 			// Do no display off notes occuring at the very end of the region
-			if (off_time < end_beats) {
+			if (off_time < global_end_beats) {
 				off_notes[itrack].insert (RowToNotes::value_type (off_row, *inote));
 			}
 		}
