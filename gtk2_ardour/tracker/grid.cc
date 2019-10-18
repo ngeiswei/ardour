@@ -2244,6 +2244,11 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
 		Temporal::Beats end = pattern.next_off (rowi, mti, mri, cgi);
+		// If new note occur between the on note and off note of the previous
+		// note, then use the off note of the previous note as off note of the
+		// new note.
+		if (prev_note && here < prev_end && prev_end < end)
+			end = prev_end;
 		Temporal::Beats length = end - here;
 		NoteTypePtr new_note (new NoteType (chan, here, length, pitch, vel));
 		cmd->add (new_note);
