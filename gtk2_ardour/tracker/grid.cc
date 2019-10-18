@@ -2472,10 +2472,11 @@ Grid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 	char const* opname = _("change note delay");
 	MidiModel::NoteDiffCommand* cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 
-	MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
+	// Get corresponding midi region pattern
+	MidiRegionPattern& mrp = pattern.tps[mti]->midi_track_pattern ()->mrps[mri];
 
 	// Check if within acceptable boundaries
-	if (delay < mtp->delay_ticks_min () || mtp->delay_ticks_max () < delay) {
+	if (delay < mrp.delay_ticks_min () || mrp.delay_ticks_max () < delay) {
 		return;
 	}
 
@@ -2487,8 +2488,8 @@ Grid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 		Temporal::Beats relative_beats = Temporal::Beats::ticks (delta);
 		Temporal::Beats new_start = on_note->time () + relative_beats;
 		// Make sure the new_start is still within the visible region
-		if (new_start < mtp->start_beats) {
-			new_start = mtp->start_beats;
+		if (new_start < mrp.start_beats) {
+			new_start = mrp.start_beats;
 			relative_beats = new_start - on_note->time ();
 		}
 		cmd->change (on_note, MidiModel::NoteDiffCommand::StartTime, new_start);
@@ -2514,8 +2515,8 @@ Grid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 			new_length = Temporal::Beats::ticks (1);
 		}
 		// Make sure the off note doesn't go beyong the limit of the region
-		if (mtp->end_beats < off_note->time () + new_length) {
-			new_length = mtp->end_beats - off_note->time ();
+		if (mrp.end_beats < off_note->time () + new_length) {
+			new_length = mrp.end_beats - off_note->time ();
 		}
 		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
 	}
