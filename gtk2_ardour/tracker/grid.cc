@@ -161,8 +161,6 @@ Grid::GridModelColumns::GridModelColumns ()
 			add (_delay_background_color[mti][cgi]);
 			add (_delay_foreground_color[mti][cgi]);
 			add (_delay_attributes[mti][cgi]);
-			add (_on_note[mti][cgi]);		// We keep that around to play and edit
-			add (_off_note[mti][cgi]);		// We keep that around to play and edit
 			add (_empty);
 		}
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
@@ -872,13 +870,6 @@ Grid::redisplay_global_columns ()
 }
 
 void
-Grid::reset_off_on_note (TreeModel::Row& row, size_t mti, size_t cgi)
-{
-	row[columns._off_note[mti][cgi]] = 0;
-	row[columns._on_note[mti][cgi]] = 0;
-}
-
-void
 Grid::redisplay_grid ()
 {
 	if (editing_editable) {
@@ -997,9 +988,6 @@ Grid::redisplay_undefined_notes (TreeModel::Row& row, size_t mti)
 	size_t ntracks = pattern.tps[mti]->midi_track_pattern ()->get_ntracks ();
 	for (size_t cgi = 0; cgi < ntracks; cgi++) {
 		redisplay_undefined_note (row, mti, cgi);
-
-		// Reset keeping track of the on and off notes
-		reset_off_on_note (row, mti, cgi);
 	}
 }
 
@@ -1244,8 +1232,6 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
-			// Keep the note off around for playing and editing
-			row[columns._off_note[mti][cgi]] = note;
 		}
 
 		// Notes on
@@ -1263,8 +1249,6 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
-			// Keep the note around for playing and editing
-			row[columns._on_note[mti][cgi]] = note;
 		}
 	} else {
 		// Too many notes, not displayable
@@ -1630,9 +1614,6 @@ Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const Not
 
 	// Fill with blank foreground text and colors
 	redisplay_blank_note_foreground (row, mti, cgi);
-
-	// Reset keeping track of the on and off notes
-	reset_off_on_note (row, mti, cgi);
 
 	// Display note
 	size_t off_notes_count = pattern.off_notes_count (rowi, mti, mri, cgi);
@@ -2007,12 +1988,6 @@ Grid::get_col_index (const TreeViewColumn* col)
 }
 
 NoteTypePtr
-Grid::get_on_note (int rowi, int mti, int cgi)
-{
-	return get_on_note (TreeModel::Path (1U, rowi), mti, cgi);
-}
-
-NoteTypePtr
 Grid::get_on_note (const string& path, int mti, int cgi)
 {
 	return get_on_note (TreeModel::Path (path), mti, cgi);
@@ -2021,17 +1996,13 @@ Grid::get_on_note (const string& path, int mti, int cgi)
 NoteTypePtr
 Grid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
 {
-	TreeModel::iterator iter = model->get_iter (path);
-	if (!iter) {
-		return NoteTypePtr ();
-	}
-	return (*iter)[columns._on_note[mti][cgi]];
+	return get_on_note (get_row_index (path), mti, cgi);
 }
 
 NoteTypePtr
-Grid::get_off_note (int rowi, int mti, int cgi)
+Grid::get_on_note (int rowi, int mti, int cgi)
 {
-	return get_off_note (TreeModel::Path ((TreeModel::Path::size_type)1, (TreeModel::Path::value_type)rowi), mti, cgi);
+	return pattern.on_note (rowi, mti, pattern.to_mri (rowi, mti), cgi);
 }
 
 NoteTypePtr
@@ -2043,11 +2014,13 @@ Grid::get_off_note (const string& path, int mti, int cgi)
 NoteTypePtr
 Grid::get_off_note (const TreeModel::Path& path, int mti, int cgi)
 {
-	TreeModel::iterator iter = model->get_iter (path);
-	if (!iter) {
-		return NoteTypePtr ();
-	}
-	return (*iter)[columns._off_note[mti][cgi]];
+	return get_off_note (get_row_index (path), mti, cgi);
+}
+
+NoteTypePtr
+Grid::get_off_note (int rowi, int mti, int cgi)
+{
+	return pattern.off_note (rowi, mti, pattern.to_mri (rowi, mti), cgi);
 }
 
 NoteTypePtr
