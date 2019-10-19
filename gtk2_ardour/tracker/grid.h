@@ -91,8 +91,6 @@ public:
 		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<Pango::AttrList> _delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<NoteTypePtr> _on_note[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<NoteTypePtr> _off_note[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
@@ -447,12 +445,12 @@ private:
 	bool step_editing_delete_automation_delay ();
 
 	// Get note from path, mti and cgi
-	NoteTypePtr get_on_note (int rowi, int mti, int cgi);
 	NoteTypePtr get_on_note (const std::string& path, int mti, int cgi);
 	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi);
-	NoteTypePtr get_off_note (int rowi, int mti, int cgi);
+	NoteTypePtr get_on_note (int rowi, int mti, int cgi);
 	NoteTypePtr get_off_note (const std::string& path, int mti, int cgi);
 	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	NoteTypePtr get_off_note (int rowi, int mti, int cgi);
 	// Get on or off note from path, mti and cgi
 	NoteTypePtr get_note (int rowi, int mti, int cgi);
 	NoteTypePtr get_note (const std::string& path, int mti, int cgi);
