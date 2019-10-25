@@ -324,8 +324,8 @@ AutomationPattern::get_alist (const Evoral::Parameter& param) const
 bool
 AutomationPattern::is_displayable (uint32_t row, const Evoral::Parameter& param) const
 {
-	return param_to_row_to_ali.find (param) == param_to_row_to_ali.end ()
-		|| is_displayable (row, param_to_row_to_ali.find (param)->second);
+	ParamToRowToAutomationListIt::const_iterator pit = param_to_row_to_ali.find (param);
+	return pit == param_to_row_to_ali.end () || is_displayable (row, pit->second);
 }
 
 bool
