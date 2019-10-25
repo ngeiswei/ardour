@@ -169,7 +169,15 @@ TrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral
 Evoral::ControlEvent*
 TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
 {
-	return *param_to_row_to_ali.find (param)->second.find (rowi)->second;
+	ParamToRowToAutomationListIt::const_iterator pit = param_to_row_to_ali.find (param);
+	if (pit == param_to_row_to_ali.end())
+		return 0;
+
+	RowToAutomationListIt::const_iterator r2al_it = pit->second.find (rowi);
+	if (r2al_it == pit->second.end())
+		return 0;
+
+	return *r2al_it->second;
 }
 
 bool
