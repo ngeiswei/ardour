@@ -259,7 +259,7 @@ MidiTrackPattern::to_rrri (uint32_t rowi, size_t mri) const
 int
 MidiTrackPattern::to_rrri (uint32_t rowi) const
 {
-	return (int)rowi - (int)row_offset[to_mri (rowi)];
+	return to_rrri (rowi, to_mri (rowi));
 }
 
 int
