@@ -1298,7 +1298,7 @@ Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t c
 void
 Grid::redisplay_automation (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
 {
-	if (pattern.is_auto_displayable (rowi, mti, mti, param)) {
+	if (pattern.is_auto_displayable (rowi, mti, mri, param)) {
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (rowi, mti, mri, param);
 		double aval = ctl_event->value;
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval);
