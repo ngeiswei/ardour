@@ -1393,6 +1393,8 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 		}
 		redisplay_track_automations (mti, mtp);
 	} else {
+		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
+		redisplay_inter_midi_regions (mti);
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, mtp.mrps[mri], &it->second);

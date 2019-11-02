@@ -62,7 +62,7 @@ public:
 
 	void rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<size_t>& rd) const;
 
-	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& other) const;
+	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
 	// Assign a control event to a row
 	virtual uint32_t event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
