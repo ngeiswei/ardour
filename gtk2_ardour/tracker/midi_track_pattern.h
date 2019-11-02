@@ -75,6 +75,9 @@ public:
 
 	// Update midi region patterns
 	void update_midi_regions ();
+
+	// Update enabled flag
+	void update_enabled ();
 	
 	// Update row_offset (representing row offsets of region patterns)
 	void update_row_offset ();

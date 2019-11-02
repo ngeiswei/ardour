@@ -59,14 +59,14 @@ RegionAutomationPattern::operator= (const RegionAutomationPattern& other)
 }
 
 RegionAutomationPatternPhenomenalDiff
-RegionAutomationPattern::phenomenal_diff (const RegionAutomationPattern& other) const
+RegionAutomationPattern::phenomenal_diff (const RegionAutomationPattern& prev) const
 {
 	RegionAutomationPatternPhenomenalDiff diff;
-	if (!enabled) {
+	if (!prev.enabled && !enabled) {
 		return diff;
 	}
 
-	diff.ap_diff = AutomationPattern::phenomenal_diff (other);
+	diff.ap_diff = AutomationPattern::phenomenal_diff (prev);
 	return diff;
 }
 

@@ -256,25 +256,27 @@ public:
 	static std::vector<boost::shared_ptr<ARDOUR::Region> > get_sorted_regions (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
-	// the position of the earliest one
+	// the position of the earliest one.  If empty then return 0.
 	static Temporal::samplepos_t get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_position (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	static Temporal::samplepos_t get_position (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
-	// the length between the very first position of the position very last + 1
+	// the length between the very first position of the position very last + 1.
+	// If empty then return 0.
 	static Temporal::samplecnt_t get_length (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplecnt_t get_length (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	static Temporal::samplepos_t get_length (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
-	// the very first sample (it looks identical to get_regions_position)
+	// the very first sample (it looks identical to get_regions_position).  If
+	// empty then return 0.
 	static Temporal::samplepos_t get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	static Temporal::samplepos_t get_first_sample (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
-	// the position of the last sample.
+	// the position of the last sample.  If empty then return 0.
 	static Temporal::samplepos_t get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
 	static Temporal::samplepos_t get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
 	static Temporal::samplepos_t get_last_sample (const RegionSelection& region_selection);

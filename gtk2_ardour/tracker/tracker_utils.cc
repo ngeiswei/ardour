@@ -173,6 +173,9 @@ TrackerUtils::get_sorted_regions (const RegionSelection& region_selection)
 Temporal::samplepos_t
 TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
+	if (regions.empty ())
+		return 0;
+
 	size_t i = 0;
 	Temporal::samplepos_t position = regions[i++]->position ();
 	for (; i < regions.size (); i++) {
@@ -184,6 +187,9 @@ TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> 
 Temporal::samplepos_t
 TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
+	if (regions.empty ())
+		return 0;
+
 	size_t i = 0;
 	Temporal::samplepos_t position = regions[i++]->position ();
 	for (; i < regions.size (); i++) {
@@ -195,13 +201,7 @@ TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::MidiRegi
 Temporal::samplepos_t
 TrackerUtils::get_position (const RegionSelection& region_selection)
 {
-	RegionSelection::const_iterator it = region_selection.begin ();
-	Temporal::samplepos_t position = (*it)->region ()->position ();
-	++it;
-	for (; it != region_selection.end (); ++it) {
-		position = std::min (position, (*it)->region ()->position ());
-	}
-	return position;
+	return region_selection.start ();
 }
 
 Temporal::samplecnt_t
@@ -225,6 +225,9 @@ TrackerUtils::get_length (const RegionSelection& region_selection)
 Temporal::samplepos_t
 TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
+	if (regions.empty())
+		return 0;
+
 	size_t i = 0;
 	Temporal::samplepos_t first_sample = regions[i++]->first_sample ();
 	for (; i < regions.size (); i++) {
@@ -236,6 +239,9 @@ TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Midi
 Temporal::samplepos_t
 TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
+	if (regions.empty())
+		return 0;
+
 	size_t i = 0;
 	Temporal::samplepos_t first_sample = regions[i++]->first_sample ();
 	for (; i < regions.size (); i++) {
@@ -247,6 +253,9 @@ TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Regi
 Temporal::samplepos_t
 TrackerUtils::get_first_sample (const RegionSelection& region_selection)
 {
+	if (region_selection.empty())
+		return 0;
+
 	RegionSelection::const_iterator it = region_selection.begin ();
 	Temporal::samplepos_t first_sample = (*it)->region ()->first_sample ();
 	++it;
@@ -259,6 +268,9 @@ TrackerUtils::get_first_sample (const RegionSelection& region_selection)
 Temporal::samplepos_t
 TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
 {
+	if (regions.empty())
+		return 0;
+
 	size_t i = 0;
 	Temporal::samplepos_t last_sample = regions[i++]->last_sample ();
 	for (; i < regions.size (); i++) {
@@ -270,6 +282,9 @@ TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Regio
 Temporal::samplepos_t
 TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
 {
+	if (regions.empty())
+		return 0;
+
 	size_t i = 0;
 	Temporal::samplepos_t last_sample = regions[i++]->last_sample ();
 	for (; i < regions.size (); i++) {
@@ -281,13 +296,7 @@ TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiR
 Temporal::samplepos_t
 TrackerUtils::get_last_sample (const RegionSelection& region_selection)
 {
-	RegionSelection::const_iterator it = region_selection.begin ();
-	Temporal::samplepos_t last_sample = (*it)->region ()->last_sample ();
-	++it;
-	for (; it != region_selection.end (); ++it) {
-		last_sample = std::max (last_sample, (*it)->region ()->last_sample ());
-	}
-	return last_sample;
+	return region_selection.end_sample ();
 }
 
 bool

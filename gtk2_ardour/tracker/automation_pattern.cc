@@ -142,10 +142,10 @@ AutomationPattern::rows_diff (const RowToAutomationListIt& l_row2auto, const Row
 }
 
 AutomationPatternPhenomenalDiff
-AutomationPattern::phenomenal_diff (const AutomationPattern& other) const
+AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 {
 	AutomationPatternPhenomenalDiff diff;
-	if (!enabled) {
+	if (!prev.enabled && !enabled) {
 		return diff;
 	}
 
@@ -158,19 +158,19 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& other) const
 		if (!pe_it->second) {
 			continue;
 		}
-		if (pe_it->second != other.param_to_enabled[param]) {
+		if (pe_it->second != prev.param_to_enabled[param]) {
 			rd.full = true;
 			diff.param2rows_diff[param] = rd;
 			continue;
 		}
 
-		// Make sure the parameter is in other, otherwise make the corresponding RowsPhenomenalDiff full
+		// Make sure the parameter is in prev, otherwise make the corresponding RowsPhenomenalDiff full
 		ParamToRowToAutomationListIt::const_iterator pra_it = param_to_row_to_ali.find (param);
-		ParamToRowToAutomationListIt::const_iterator other_pra_it = other.param_to_row_to_ali.find (param);
-		if (pra_it == param_to_row_to_ali.end () && other_pra_it == other.param_to_row_to_ali.end ()) {
+		ParamToRowToAutomationListIt::const_iterator prev_pra_it = prev.param_to_row_to_ali.find (param);
+		if (pra_it == param_to_row_to_ali.end () && prev_pra_it == prev.param_to_row_to_ali.end ()) {
 			continue;
 		}
-		if (pra_it == param_to_row_to_ali.end () || other_pra_it == other.param_to_row_to_ali.end ())
+		if (pra_it == param_to_row_to_ali.end () || prev_pra_it == prev.param_to_row_to_ali.end ())
 		{
 			rd.full = true;
 			diff.param2rows_diff[param] = rd;
@@ -179,9 +179,9 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& other) const
 
 		// Both are defined, consider the rows for phenomenal diff
 		const RowToAutomationListIt& row2auto = pra_it->second;
-		const RowToAutomationListIt& other_row2auto = other_pra_it->second;
-		rows_diff (row2auto, other_row2auto, rd.rows);
-		rows_diff (other_row2auto, row2auto, rd.rows);
+		const RowToAutomationListIt& prev_row2auto = prev_pra_it->second;
+		rows_diff (row2auto, prev_row2auto, rd.rows);
+		rows_diff (prev_row2auto, row2auto, rd.rows);
 		if (!rd.empty ()) {
 			diff.param2rows_diff[param] = rd;
 		}
