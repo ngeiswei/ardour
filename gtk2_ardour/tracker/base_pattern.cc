@@ -248,7 +248,7 @@ BasePattern::delay_ticks_max () const
 bool
 BasePattern::is_defined (int row_idx) const
 {
-	return 0 <= row_idx && row_idx < (int)nrows;
+	return enabled && 0 <= row_idx && row_idx < (int)nrows;
 }
 
 uint32_t

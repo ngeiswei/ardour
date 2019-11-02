@@ -83,11 +83,13 @@ MultiTrackPatternPhenomenalDiff
 MultiTrackPattern::phenomenal_diff (const MultiTrackPattern& prev) const
 {
 	MultiTrackPatternPhenomenalDiff diff;
-	if (!enabled) {
+	if (!prev.enabled && !enabled) {
 		return diff;
 	}
 
-	diff.full = prev.global_nrows != global_nrows || prev.tps.size () != tps.size ();
+	diff.full = prev.enabled != enabled
+		|| prev.global_nrows != global_nrows
+		|| prev.tps.size () != tps.size ();
 
 	if (diff.full) {
 		return diff;
@@ -226,6 +228,12 @@ MultiTrackPattern::update_content ()
 		TrackPattern* tp = tps[mti];
 		tp->update ();
 	}
+
+	// In case some tracks have been disabled, disable their track headers as
+	// well.
+	//
+	// TODO: maybe optimize
+	tracker_editor.grid_header->setup_track_headers ();
 }
 
 void
