@@ -170,30 +170,27 @@ NotePattern::rows_diff (size_t cgi, const NotePattern& lnp, const NotePattern& r
 }
 
 NotePatternPhenomenalDiff
-NotePattern::phenomenal_diff (const NotePattern& other) const
+NotePattern::phenomenal_diff (const NotePattern& prev) const
 {
 	NotePatternPhenomenalDiff diff;
-	if (!enabled) {
+	if (!prev.enabled && !enabled) {
 		return diff;
 	}
 
-	diff.full = ntracks != other.ntracks;
+	diff.full = prev.enabled != enabled
+		|| prev.ntracks != ntracks
+		|| prev.nreqtracks != nreqtracks;
 	if (diff.full) {
 		return diff;
 	}
 
-	diff.full = nreqtracks != other.nreqtracks;
-	if (diff.full) {
-		return diff;
-	}
-
-	assert (on_notes.size () == other.on_notes.size ());
+	assert (on_notes.size () == prev.on_notes.size ());
 	assert (on_notes.size () == off_notes.size ());
-	assert (off_notes.size () == other.off_notes.size ());
+	assert (off_notes.size () == prev.off_notes.size ());
 	for (size_t cgi = 0; cgi != on_notes.size (); cgi++) {
 		std::set<size_t> rows;
-		rows_diff (cgi, *this, other, rows);
-		rows_diff (cgi, other, *this, rows);
+		rows_diff (cgi, *this, prev, rows);
+		rows_diff (cgi, prev, *this, rows);
 		if (!rows.empty ()) {
 			diff.cgi2rows_diff[cgi].rows = rows;
 		}
