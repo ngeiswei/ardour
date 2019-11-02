@@ -1081,37 +1081,6 @@ Grid::redisplay_left_right_separator (TreeModel::Row& row, size_t mti)
 }
 
 void
-Grid::redisplay_region_name (TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri)
-{
-	// TODO: for now (till it gets displayed as super header) use track name for audio
-	if (pattern.tps[mti]->is_audio_track_pattern ()) {
-		const string& name = pattern.tps[mti]->audio_track ()->name ();
-		uint32_t name_offset_idx = rowi % (name.size () + 1);
-		const static string name_sep (" ");
-		string cell_str = " ";
-		cell_str += name_offset_idx == name.size () ? name_sep : string{name[name_offset_idx]};
-		cell_str += " ";
-		row[columns.region_name[mti]] = cell_str;
-		return;
-	}
-
-	// If no region then display undefined region
-	if (!is_region_defined (rowi, mti)) {
-		redisplay_undefined_region_name (row, mti);
-		return;
-	}
-
-	// Render midi region name. Display names vertically
-	const string& name = pattern.midi_region (mti, mri)->name ();
-	uint32_t name_offset_idx = pattern.to_rrri (rowi, mti, mri) % (name.size () + 1);
-	const static string name_sep (" ");
-	string cell_str = " ";
-	cell_str += name_offset_idx == name.size () ? name_sep : string{name[name_offset_idx]};
-	cell_str += " ";
-	row[columns.region_name[mti]] = cell_str;
-}
-
-void
 Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi)
 {
 	// Set empty forground
