@@ -176,7 +176,6 @@ public:
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_track_separator (size_t mti);
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
-	void redisplay_region_name (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
 	void redisplay_undefined_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi); // Display undefined note at row, mti and cgi
 	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, size_t rowi, size_t mti);
