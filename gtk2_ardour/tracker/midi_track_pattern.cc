@@ -101,20 +101,19 @@ MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff (const MidiTrackPattern& prev) const
 {
 	MidiTrackPatternPhenomenalDiff diff;
-	if (!enabled) {
+	if (!prev.enabled && !enabled) {
 		return diff;
 	}
 
-	diff.full = row_offset != prev.row_offset;
+	diff.full = prev.enabled != enabled
+		|| prev.row_offset != row_offset
+		|| prev.mrps.size () != mrps.size ();
+
 	if (diff.full) {
 		return diff;
 	}
 
-	diff.full = mrps.size () != prev.mrps.size ();
-	if (diff.full) {
-		return diff;
-	}
-
+	// No global difference, let's look on a per region basis
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		MidiRegionPatternPhenomenalDiff mrp_diff = mrps[mri].phenomenal_diff (prev.mrps[mri]);
 		if (!mrp_diff.empty ()) {
@@ -208,7 +207,6 @@ MidiTrackPattern::set_row_range ()
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		mrps[mri].set_row_range ();
 	}
-	TrackAutomationPattern::set_row_range ();
 }
 
 void
@@ -217,6 +215,10 @@ MidiTrackPattern::update ()
 	// Update midi regions
 	set_row_range ();
 	update_midi_regions ();
+
+	// Update whether the track is enabled (after midi regions to take into
+	// account whether some are enabled)
+	update_enabled ();
 
 	// Set number of note tracks to its common max and re-update
 	set_ntracks (get_ntracks ());
@@ -234,6 +236,18 @@ MidiTrackPattern::update_midi_regions ()
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		mrps[mri].update ();
 	}
+}
+
+void
+MidiTrackPattern::update_enabled ()
+{
+	for (size_t mri = 0; mri < mrps.size (); mri++) {
+		if (mrps[mri].enabled) {
+			enabled = true;
+			return;
+		}
+	}
+	enabled = false;
 }
 
 void

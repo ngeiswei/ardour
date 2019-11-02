@@ -18,6 +18,7 @@
 
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
+#include "ardour/session_playlists.h"
 
 #include "midi_region_pattern.h"
 #include "tracker_editor.h"
@@ -56,7 +57,7 @@ MidiRegionPatternPhenomenalDiff
 MidiRegionPattern::phenomenal_diff (const MidiRegionPattern& prev) const
 {
 	MidiRegionPatternPhenomenalDiff diff;
-	if (!enabled) {
+	if (!prev.enabled && !enabled) {
 		return diff;
 	}
 
@@ -72,6 +73,14 @@ MidiRegionPattern::set_rows_per_beat (uint16_t rpb)
 	BasePattern::set_rows_per_beat (rpb);
 	np.set_rows_per_beat (rpb);
 	rap.set_rows_per_beat (rpb);
+}
+
+void
+MidiRegionPattern::update_enabled ()
+{
+	enabled = is_region_visible ();
+	np.enabled = is_region_visible ();
+	rap.enabled = is_region_visible ();
 }
 
 void
@@ -113,10 +122,17 @@ MidiRegionPattern::set_row_range ()
 void
 MidiRegionPattern::update ()
 {
+	update_enabled ();
 	update_position_etc ();
 	set_row_range ();
 	np.update ();
 	rap.update ();
+}
+
+bool
+MidiRegionPattern::is_region_visible () const
+{
+	return 0 < _session->playlists ()->region_use_count (midi_region);
 }
 
 void

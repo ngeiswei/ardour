@@ -47,6 +47,9 @@ public:
 	// i.e. call update ().
 	void set_rows_per_beat (uint16_t rpb);
 
+	// Update enabled
+	void update_enabled ();
+
 	// Update position, etc, of this, np and rap, based on midi_region
 	void update_position_etc ();
 
@@ -55,6 +58,9 @@ public:
 
 	// Build or rebuild note and automation pattern
 	void update ();
+
+	// Return true if the region is currently visible in the editor
+	bool is_region_visible () const;
 
 	// Insert the automation control corresponding to param
 	void insert (const Evoral::Parameter& param);

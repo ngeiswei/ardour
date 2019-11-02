@@ -52,7 +52,7 @@ public:
 
 	static void rows_diff (size_t cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd);
 
-	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& other) const;
+	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& prev) const;
 
 	// Map row index to note.
 	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;

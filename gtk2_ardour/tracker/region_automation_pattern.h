@@ -39,7 +39,7 @@ public:
 
 	RegionAutomationPattern& operator= (const RegionAutomationPattern& other);
 
-	RegionAutomationPatternPhenomenalDiff phenomenal_diff (const RegionAutomationPattern& other) const;
+	RegionAutomationPatternPhenomenalDiff phenomenal_diff (const RegionAutomationPattern& prev) const;
 
 	// Insert all existing region (midi) automation controls in
 	// _automation_controls and connect then to the grid
