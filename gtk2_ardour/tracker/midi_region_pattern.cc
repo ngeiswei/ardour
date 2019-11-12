@@ -44,6 +44,11 @@ MidiRegionPattern::~MidiRegionPattern ()
 MidiRegionPattern&
 MidiRegionPattern::operator= (const MidiRegionPattern& other)
 {
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
 	BasePattern::operator= (other);
 	np = other.np;
 	rap = other.rap;
