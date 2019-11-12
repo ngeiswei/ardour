@@ -108,7 +108,7 @@ public:
 	size_t select_available_automation_column (size_t mti /* midi track index */);
 	size_t add_main_automation_column (size_t mti, const Evoral::Parameter& param);
 	size_t add_midi_automation_column (size_t mti, const Evoral::Parameter& param);
-	void add_processor_automation_column (size_t mti, boost::shared_ptr<ARDOUR::Processor> processor,
+	void add_processor_automation_column (size_t mti, ProcessorPtr processor,
 	                                      const Evoral::Parameter& what);
 
 	void change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param);
@@ -444,16 +444,16 @@ private:
 	bool step_editing_delete_automation_delay ();
 
 	// Get note from path, mti and cgi
-	NoteTypePtr get_on_note (const std::string& path, int mti, int cgi);
-	NoteTypePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi);
-	NoteTypePtr get_on_note (int rowi, int mti, int cgi);
-	NoteTypePtr get_off_note (const std::string& path, int mti, int cgi);
-	NoteTypePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
-	NoteTypePtr get_off_note (int rowi, int mti, int cgi);
+	NotePtr get_on_note (const std::string& path, int mti, int cgi);
+	NotePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi);
+	NotePtr get_on_note (int rowi, int mti, int cgi);
+	NotePtr get_off_note (const std::string& path, int mti, int cgi);
+	NotePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	NotePtr get_off_note (int rowi, int mti, int cgi);
 	// Get on or off note from path, mti and cgi
-	NoteTypePtr get_note (int rowi, int mti, int cgi);
-	NoteTypePtr get_note (const std::string& path, int mti, int cgi);
-	NoteTypePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	NotePtr get_note (int rowi, int mti, int cgi);
+	NotePtr get_note (const std::string& path, int mti, int cgi);
+	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
@@ -473,9 +473,9 @@ private:
 	void set_off_note (int rowi, int mti, int mri, int cgi);
 	void delete_note (int rowi, int mti, int mri, int cgi);
 	void note_channel_edited (const std::string& path, const std::string& text);
-	void set_note_channel (int mti, int mri, NoteTypePtr note, int ch);
+	void set_note_channel (int mti, int mri, NotePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
-	void set_note_velocity (int mti, int mri, NoteTypePtr note, int vel);
+	void set_note_velocity (int mti, int mri, NotePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
 	void set_note_delay (int delay, int rowi, int mti, int mri, int cgi);
 
@@ -486,8 +486,8 @@ private:
 	// Return cgi associated to param at mti. If undefined for param return -1.
 	int get_cgi (size_t mti, const Evoral::Parameter& param) const;
 
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
-	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param) const;
+	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
+	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 
 	void automation_edited (const std::string& path, const std::string& text);
 	// Return automation value at given coordinates. The flag is true iff such
@@ -510,7 +510,7 @@ private:
 	double upper (int rowi, int mti, const Evoral::Parameter& param) const;
 
 public:
-	void register_automation_undo (boost::shared_ptr<ARDOUR::AutomationList> alist, const std::string& opname, XMLNode& before, XMLNode& after);
+	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
 
 private:
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);

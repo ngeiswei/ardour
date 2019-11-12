@@ -22,7 +22,6 @@
 namespace Tracker {
 
 // Map Parameter to AutomationControl
-typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > Parameter2AutomationControl;
 
 } // ~namespace tracker
 

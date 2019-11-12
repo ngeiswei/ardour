@@ -26,7 +26,7 @@
 
 using namespace Tracker;
 
-bool region_position_less::operator () (boost::shared_ptr<ARDOUR::Region> lhs, boost::shared_ptr<ARDOUR::Region> rhs)
+bool region_position_less::operator () (RegionPtr lhs, RegionPtr rhs)
 {
 	return lhs->position () < rhs->position ();
 }
@@ -158,12 +158,12 @@ TrackerUtils::parse_pitch (std::string text, int default_octave)
 	return ARDOUR::ParameterDescriptor::midi_note_num (text);
 }
 
-std::vector<boost::shared_ptr<ARDOUR::Region> >
+RegionSeq
 TrackerUtils::get_sorted_regions (const RegionSelection& region_selection)
 {
-	std::vector<boost::shared_ptr<ARDOUR::Region> > regions;
+	RegionSeq regions;
 	for (RegionSelection::const_iterator it = region_selection.begin (); it != region_selection.end (); ++it) {
-		boost::shared_ptr<ARDOUR::Region> region = (*it)->region ();
+		RegionPtr region = (*it)->region ();
 		regions.push_back (region);
 	}
 	std::sort (regions.begin (), regions.end (), region_position_less ());
@@ -171,7 +171,7 @@ TrackerUtils::get_sorted_regions (const RegionSelection& region_selection)
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+TrackerUtils::get_position (const RegionSeq& regions)
 {
 	if (regions.empty ())
 		return 0;
@@ -185,7 +185,7 @@ TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> 
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_position (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+TrackerUtils::get_position (const MidiRegionSeq& regions)
 {
 	if (regions.empty ())
 		return 0;
@@ -204,14 +204,28 @@ TrackerUtils::get_position (const RegionSelection& region_selection)
 	return region_selection.start ();
 }
 
+Temporal::samplepos_t
+TrackerUtils::get_position (const TrackRegionsMap& regions_per_track)
+{
+	if (regions_per_track.empty())
+		return 0;
+
+	TrackRegionsMap::const_iterator it = regions_per_track.begin();
+	Temporal::samplepos_t position = get_position(it->second);
+	for (; it != regions_per_track.end(); ++it) {
+		position = std::min (position, get_position(it->second));
+	}
+	return position;
+}
+
 Temporal::samplecnt_t
-TrackerUtils::get_length (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+TrackerUtils::get_length (const RegionSeq& regions)
 {
 	return get_last_sample (regions) + 1 - get_first_sample (regions);
 }
 
 Temporal::samplecnt_t
-TrackerUtils::get_length (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+TrackerUtils::get_length (const MidiRegionSeq& regions)
 {
 	return get_last_sample (regions) + 1 - get_first_sample (regions);
 }
@@ -223,7 +237,13 @@ TrackerUtils::get_length (const RegionSelection& region_selection)
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+TrackerUtils::get_length (const TrackRegionsMap& regions_per_track)
+{
+	return get_last_sample (regions_per_track) + 1 - get_first_sample (regions_per_track);
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_first_sample (const MidiRegionSeq& regions)
 {
 	if (regions.empty())
 		return 0;
@@ -237,7 +257,7 @@ TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Midi
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+TrackerUtils::get_first_sample (const RegionSeq& regions)
 {
 	if (regions.empty())
 		return 0;
@@ -266,7 +286,21 @@ TrackerUtils::get_first_sample (const RegionSelection& region_selection)
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+TrackerUtils::get_first_sample (const TrackRegionsMap& regions_per_track)
+{
+	if (regions_per_track.empty())
+		return 0;
+
+	TrackRegionsMap::const_iterator it = regions_per_track.begin();
+	Temporal::samplepos_t first_sample = get_first_sample(it->second);
+	for (; it != regions_per_track.end(); ++it) {
+		first_sample = std::min (first_sample, get_first_sample(it->second));
+	}
+	return first_sample;
+}
+
+Temporal::samplepos_t
+TrackerUtils::get_last_sample (const RegionSeq& regions)
 {
 	if (regions.empty())
 		return 0;
@@ -280,7 +314,7 @@ TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Regio
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions)
+TrackerUtils::get_last_sample (const MidiRegionSeq& regions)
 {
 	if (regions.empty())
 		return 0;
@@ -299,8 +333,22 @@ TrackerUtils::get_last_sample (const RegionSelection& region_selection)
 	return region_selection.end_sample ();
 }
 
+Temporal::samplepos_t
+TrackerUtils::get_last_sample (const TrackRegionsMap& regions_per_track)
+{
+	if (regions_per_track.empty())
+		return 0;
+
+	TrackRegionsMap::const_iterator it = regions_per_track.begin();
+	Temporal::samplepos_t last_sample = get_last_sample(it->second);
+	for (; it != regions_per_track.end(); ++it) {
+		last_sample = std::max (last_sample, get_last_sample(it->second));
+	}
+	return last_sample;
+}
+
 bool
-TrackerUtils::is_on_equal (NoteTypePtr ln, NoteTypePtr rn)
+TrackerUtils::is_on_equal (NotePtr ln, NotePtr rn)
 {
 	return ln->time () == rn->time ()
 		&& ln->note () == rn->note ()
@@ -309,7 +357,7 @@ TrackerUtils::is_on_equal (NoteTypePtr ln, NoteTypePtr rn)
 }
 
 bool
-TrackerUtils::is_off_equal (NoteTypePtr ln, NoteTypePtr rn)
+TrackerUtils::is_off_equal (NotePtr ln, NotePtr rn)
 {
 	return ln->end_time () == rn->end_time ();
 }
