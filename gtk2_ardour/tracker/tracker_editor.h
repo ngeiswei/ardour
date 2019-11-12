@@ -75,12 +75,12 @@ public:
 
 	void setup (RegionSelection& rs);
 
-	boost::shared_ptr<ARDOUR::MidiModel> to_model (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
+	MidiModelPtr to_model (MidiRegionPtr midi_region);
 
 	void resize_width ();
 
-	void connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
-	void connect_automation (boost::shared_ptr<ARDOUR::AutomationControl> actrl);
+	void connect_midi_region (MidiRegionPtr midi_region);
+	void connect_automation (AutomationControlPtr actrl);
 	
 	ARDOUR::Session* session;
 

@@ -226,7 +226,7 @@ TrackToolbar::setup_processor_menu_and_curves ()
 void
 TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
 {
-	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
+	ProcessorPtr processor (p.lock ());
 
 	if (!processor || !processor->display_to_user ()) {
 		return;
@@ -337,7 +337,7 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Process
 }
 
 ProcessorAutomationNode*
-TrackToolbar::find_processor_automation_node (boost::shared_ptr<Processor> processor, Evoral::Parameter param)
+TrackToolbar::find_processor_automation_node (ProcessorPtr processor, Evoral::Parameter param)
 {
 	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin (); i != processor_automation.end (); ++i) {
 

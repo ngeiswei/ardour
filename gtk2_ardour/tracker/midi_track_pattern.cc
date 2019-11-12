@@ -30,9 +30,9 @@
 using namespace Tracker;
 
 MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
-                                    boost::shared_ptr<ARDOUR::Track> trk,
+                                    TrackPtr trk,
                                     const std::vector<RegionView*>& region_views,
-                                    const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
+                                    const RegionSeq& regions,
                                     Temporal::samplepos_t position,
                                     Temporal::samplecnt_t length,
                                     Temporal::samplepos_t first_sample,
@@ -50,7 +50,7 @@ MidiTrackPattern::~MidiTrackPattern ()
 }
 
 void
-MidiTrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+MidiTrackPattern::setup (const RegionSeq& regions)
 {
 	// Disable all existing regions
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
@@ -59,7 +59,7 @@ MidiTrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& 
 
 	// Add new regions or re-enable existing ones
 	for (size_t i = 0; i < regions.size (); i++) {
-		boost::shared_ptr<ARDOUR::MidiRegion> midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[i]);
+		MidiRegionPtr midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[i]);
 		MidiRegionPattern* mrp = find_midi_region_pattern (midi_region);
 		if (mrp) {
 			mrp->enabled = true;
@@ -158,7 +158,7 @@ MidiTrackPattern::is_enabled (const Evoral::Parameter& param) const
 	return AutomationPattern::is_enabled (param);
 }
 
-boost::shared_ptr<ARDOUR::AutomationList>
+AutomationListPtr
 MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 {
 	if (TrackerUtils::is_region_automation (param)) {
@@ -168,7 +168,7 @@ MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 	}
 }
 
-const boost::shared_ptr<ARDOUR::AutomationList>
+const AutomationListPtr
 MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
 {
 	if (TrackerUtils::is_region_automation (param)) {
@@ -439,7 +439,7 @@ MidiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const
 }
 
 MidiRegionPattern*
-MidiTrackPattern::find_midi_region_pattern (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
+MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 {
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		if (mrps[mri].midi_region == midi_region) {

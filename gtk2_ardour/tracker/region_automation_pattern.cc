@@ -34,8 +34,8 @@ using namespace Tracker;
 /////////////////////////////
 
 RegionAutomationPattern::RegionAutomationPattern (TrackerEditor& te,
-                                                  boost::shared_ptr<MidiTrack> mt,
-                                                  boost::shared_ptr<MidiRegion> region)
+                                                  MidiTrackPtr mt,
+                                                  MidiRegionPtr region)
 	: AutomationPattern (te, region)
 	, midi_track (mt)
 	, midi_model (region->midi_source (0)->model ())

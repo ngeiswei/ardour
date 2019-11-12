@@ -26,20 +26,20 @@
 using namespace Tracker;
 
 TrackPattern::TrackPattern (TrackerEditor& te,
-                            boost::shared_ptr<ARDOUR::Track> trk,
-                            const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+                            TrackPtr trk,
+                            const RegionSeq& regions)
 	: AutomationPattern (te,
-	                    TrackerUtils::get_position (regions),
-	                    0,
-	                    TrackerUtils::get_length (regions),
-	                    TrackerUtils::get_first_sample (regions),
-	                    TrackerUtils::get_last_sample (regions))
+	                     TrackerUtils::get_position (regions),
+	                     0,
+	                     TrackerUtils::get_length (regions),
+	                     TrackerUtils::get_first_sample (regions),
+	                     TrackerUtils::get_last_sample (regions))
 	, track (trk)
 {
 }
 
 TrackPattern::TrackPattern (TrackerEditor& te,
-                            boost::shared_ptr<ARDOUR::Track> trk,
+                            TrackPtr trk,
                             Temporal::samplepos_t pos,
                             Temporal::samplecnt_t len,
                             Temporal::samplepos_t fst,
@@ -54,7 +54,7 @@ TrackPattern::~TrackPattern ()
 }
 
 void
-TrackPattern::setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >&)
+TrackPattern::setup (const RegionSeq&)
 {
 	// Do nothing since there are no region by default
 }
@@ -94,13 +94,13 @@ TrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 	return diff_ptr;
 }
 
-boost::shared_ptr<ARDOUR::MidiTrack>
+MidiTrackPtr
 TrackPattern::midi_track ()
 {
 	return boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 }
 
-boost::shared_ptr<ARDOUR::AudioTrack>
+AudioTrackPtr
 TrackPattern::audio_track ()
 {
 	return boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
@@ -204,13 +204,13 @@ TrackPattern::to_mri (uint32_t rowi) const
 	return -1;
 }
 
-boost::shared_ptr<ARDOUR::AutomationList>
+AutomationListPtr
 TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 {
 	return AutomationPattern::get_alist (param);
 }
 
-const boost::shared_ptr<ARDOUR::AutomationList>
+const AutomationListPtr
 TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
 {
 	return AutomationPattern::get_alist (param);

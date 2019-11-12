@@ -119,7 +119,7 @@ MultiTrackPattern::setup_region_views_per_track ()
 {
 	// Associate track to its region selections
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
-		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
+		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
 		std::vector<RegionView*>& region_views = region_views_per_track[track];
 		if (std::find (region_views.begin (), region_views.end (), *it) == region_views.end ()) {
 			region_views.push_back (*it);
@@ -133,8 +133,8 @@ MultiTrackPattern::setup_regions_per_track ()
 	regions_per_track.clear ();
 	// Associate track to its regions
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
-		boost::shared_ptr<ARDOUR::Region> region = (*it)->region ();
-		boost::shared_ptr<ARDOUR::Track> track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
+		RegionPtr region = (*it)->region ();
+		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
 		regions_per_track[track].push_back (region);
 	}
 }
@@ -149,7 +149,7 @@ MultiTrackPattern::setup_track_patterns ()
 
 	// Add new track or re-enable existing ones
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin (); it != regions_per_track.end (); ++it) {
-		boost::shared_ptr<ARDOUR::Track> track = it->first;
+		TrackPtr track = it->first;
 		TrackPattern* tp = find_track_pattern (track);
 		if (tp) {
 			tp->setup (it->second);
@@ -160,15 +160,15 @@ MultiTrackPattern::setup_track_patterns ()
 }
 
 void
-MultiTrackPattern::add_track_pattern (boost::shared_ptr<ARDOUR::Track> track, const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
+	MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
 		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
 		                                              position, length, first_sample, last_sample);
 		tps.push_back (mtp);
 	}
-	boost::shared_ptr<ARDOUR::AudioTrack> audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
+	AudioTrackPtr audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 	if (audio_track) {
 		AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
 		                                                position, length, first_sample, last_sample);
@@ -197,10 +197,10 @@ MultiTrackPattern::update ()
 void
 MultiTrackPattern::update_position_etc ()
 {
-	position = TrackerUtils::get_position (tracker_editor.region_selection);
-	length = TrackerUtils::get_length (tracker_editor.region_selection);
-	first_sample = TrackerUtils::get_first_sample (tracker_editor.region_selection);
-	last_sample = TrackerUtils::get_last_sample (tracker_editor.region_selection);
+	position = TrackerUtils::get_position (regions_per_track);
+	length = TrackerUtils::get_length (regions_per_track);
+	first_sample = TrackerUtils::get_first_sample (regions_per_track);
+	last_sample = TrackerUtils::get_last_sample (regions_per_track);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
 		tp->position = position;
@@ -321,7 +321,7 @@ MultiTrackPattern::is_note_displayable (uint32_t rowi, size_t mti, size_t mri, s
 	return mtp->mrps[mri].np.is_displayable (to_rrri (rowi, mti, mri), cgi);
 }
 
-NoteTypePtr
+NotePtr
 MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
@@ -332,7 +332,7 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) 
 	return 0;
 }
 
-NoteTypePtr
+NotePtr
 MultiTrackPattern::on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
@@ -361,13 +361,13 @@ MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, size
 	return tps[mti]->get_automation_control_event (to_rri (rowi, mti), mri, param);
 }
 
-NoteTypePtr
+NotePtr
 MultiTrackPattern::find_prev_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
 {
 	return tps[mti]->midi_track_pattern ()->mrps[mri].np.find_prev (to_rrri (rowi, mti, mri), cgi);
 }
 
-NoteTypePtr
+NotePtr
 MultiTrackPattern::find_next_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
 {
 	return tps[mti]->midi_track_pattern ()->mrps[mri].np.find_next (to_rrri (rowi, mti, mri), cgi);
@@ -409,13 +409,13 @@ MultiTrackPattern::insert (size_t mti, const Evoral::Parameter& param)
 	tps[mti]->insert (param);
 }
 
-boost::shared_ptr<ARDOUR::MidiModel>
+MidiModelPtr
 MultiTrackPattern::midi_model (size_t mti, size_t mri)
 {
 	return midi_region_pattern (mti, mri).midi_model;
 }
 
-boost::shared_ptr<ARDOUR::MidiRegion>
+MidiRegionPtr
 MultiTrackPattern::midi_region (size_t mti, size_t mri)
 {
 	return midi_region_pattern (mti, mri).midi_region;
@@ -439,13 +439,13 @@ MultiTrackPattern::apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::Not
 	midi_model (mti, mri)->apply_command (tracker_editor.session, cmd);
 }
 
-boost::shared_ptr<ARDOUR::AutomationList>
+AutomationListPtr
 MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->get_alist_at_mri (mri, param);
 }
 
-const boost::shared_ptr<ARDOUR::AutomationList>
+const AutomationListPtr
 MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_alist_at_mri (mri, param);
@@ -482,7 +482,7 @@ MultiTrackPattern::set_automation_delay (int delay, size_t rowi, size_t mti, siz
 }
 
 TrackPattern*
-MultiTrackPattern::find_track_pattern (boost::shared_ptr<ARDOUR::Track> track)
+MultiTrackPattern::find_track_pattern (TrackPtr track)
 {
 	for (size_t i = 0; i < tps.size (); i++) {
 		if (tps[i]->track == track) {
@@ -520,7 +520,7 @@ MultiTrackPattern::to_string (const std::string& indent) const
 	for (size_t i = 0; i != tracks_nrows.size (); i++) {
 		ss << header << "tracks_nrows[" << i << "] = " << tracks_nrows[i] << std::endl;
 	}
-	ss << header << "global_nrows = " << global_nrows << std::endl;
+	ss << header << "global_nrows = " << global_nrows;
 
 	return ss.str ();
 }
