@@ -45,17 +45,17 @@ namespace Tracker {
 class NotePattern : public BasePattern {
 public:
 	NotePattern (TrackerEditor& te,
-	            boost::shared_ptr<ARDOUR::MidiRegion> region);
+	             MidiRegionPtr region);
 
 	NotePattern& operator= (const NotePattern& other);
-	NoteTypePtr clone_note (NoteTypePtr note) const;
+	NotePtr clone_note (NotePtr note) const;
 
 	static void rows_diff (size_t cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd);
 
 	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& prev) const;
 
 	// Map row index to note.
-	typedef std::multimap<uint32_t, NoteTypePtr> RowToNotes;
+	typedef std::multimap<uint32_t, NotePtr> RowToNotes;
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
 	// Build or rebuild the pattern (implement BasePattern::update)
@@ -83,8 +83,8 @@ public:
 	// Find the previous (resp. next) note of a given row on a given track
 	// index.
 	// TODO: maybe we want to use uint16_t instead of int
-	NoteTypePtr find_prev (uint32_t row, int cgi) const;
-	NoteTypePtr find_next (uint32_t row, int cgi) const;
+	NotePtr find_prev (uint32_t row, int cgi) const;
+	NotePtr find_next (uint32_t row, int cgi) const;
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
@@ -97,7 +97,7 @@ public:
 
 	// Add note in track_to_notes. Used by the grid so that the note pattern can
 	// know on which track idx a new note should be.
-	void add (int cgi, NoteTypePtr note);
+	void add (int cgi, NotePtr note);
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
@@ -123,44 +123,44 @@ public:
 	std::vector<RowToNotes> off_notes;
 
 private:
-	NoteTypePtr earliest (const RowToNotesRange& rng) const;
-	NoteTypePtr lattest (const RowToNotesRange& rng) const;
+	NotePtr earliest (const RowToNotesRange& rng) const;
+	NotePtr lattest (const RowToNotesRange& rng) const;
 
 	// Find track in track_to_notes containing a note with the same id, return
 	// the track index if found, -1 otherwise.
-	int find_eq_id (NoteTypePtr note) const;
+	int find_eq_id (NotePtr note) const;
 
 	// Find the note in track_to_notes[cgi] containing the same id.
-	ARDOUR::MidiModel::Notes::const_iterator find_eq_id (int cgi, NoteTypePtr note) const;
-	ARDOUR::MidiModel::Notes::iterator find_eq_id (int cgi, NoteTypePtr note);
+	ARDOUR::MidiModel::Notes::const_iterator find_eq_id (int cgi, NotePtr note) const;
+	ARDOUR::MidiModel::Notes::iterator find_eq_id (int cgi, NotePtr note);
 	template <typename NoteContainer>
-	typename NoteContainer::const_iterator find_eq_id (const NoteContainer& notes, NoteTypePtr note) const;
+	typename NoteContainer::const_iterator find_eq_id (const NoteContainer& notes, NotePtr note) const;
 	template <typename NoteContainer>
-	typename NoteContainer::iterator find_eq_id (NoteContainer& notes, NoteTypePtr note);
+	typename NoteContainer::iterator find_eq_id (NoteContainer& notes, NotePtr note);
 
 	// Erase note in given track with the id of the given note.
-	void erase_eq_id (int cgi, NoteTypePtr note);
+	void erase_eq_id (int cgi, NotePtr note);
 
 	// Erase note in given Notes with the id of the given note
-	void erase_eq_id (ARDOUR::MidiModel::Notes& notes, NoteTypePtr note);
+	void erase_eq_id (ARDOUR::MidiModel::Notes& notes, NotePtr note);
 
 	// Erase pointer iterator from notes and return the next iterator
 	ARDOUR::MidiModel::Notes::iterator erase (ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
 	// Check if a track is available to receive a note.
-	bool is_free (int cgi, NoteTypePtr note) const;
+	bool is_free (int cgi, NotePtr note) const;
 
 	// Find the first track ready of receive a note. Return the track index if
 	// found, -1 otherwise.
-	int find_free_track (NoteTypePtr note) const;
+	int find_free_track (NotePtr note) const;
 
-	static bool overlap (NoteTypePtr a, NoteTypePtr b);
+	static bool overlap (NotePtr a, NotePtr b);
 
-	boost::shared_ptr<ARDOUR::MidiModel> _midi_model;
+	MidiModelPtr _midi_model;
 };
 
 template<typename NoteContainer>
-typename NoteContainer::const_iterator NotePattern::find_eq_id (const NoteContainer& notes, NoteTypePtr note) const
+typename NoteContainer::const_iterator NotePattern::find_eq_id (const NoteContainer& notes, NotePtr note) const
 {
 	Evoral::event_id_t id = note->id ();
 	typename NoteContainer::const_iterator it = notes.begin ();
@@ -173,7 +173,7 @@ typename NoteContainer::const_iterator NotePattern::find_eq_id (const NoteContai
 }
 
 template <typename NoteContainer>
-typename NoteContainer::iterator NotePattern::find_eq_id (NoteContainer& notes, NoteTypePtr note)
+typename NoteContainer::iterator NotePattern::find_eq_id (NoteContainer& notes, NotePtr note)
 {
 	Evoral::event_id_t id = note->id ();
 	typename NoteContainer::iterator it = notes.begin ();

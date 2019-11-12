@@ -30,6 +30,8 @@
 #include "ardour_window.h"
 #include "editing.h"
 
+#include "tracker_utils.h"
+
 namespace ARDOUR {
 	class Region;
 	class Session;
@@ -47,7 +49,7 @@ class TrackerEditor;
 class BasePattern {
 public:
 	BasePattern (TrackerEditor& te,
-	             boost::shared_ptr<ARDOUR::Region> region);
+	             RegionPtr region);
 	BasePattern (TrackerEditor& te,
 	             Temporal::samplepos_t position,
 	             Temporal::samplepos_t start,

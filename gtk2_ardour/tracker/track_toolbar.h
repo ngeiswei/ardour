@@ -51,12 +51,12 @@ struct ProcessorAutomationNode {
 };
 
 struct ProcessorAutomationInfo {
-	explicit ProcessorAutomationInfo (boost::shared_ptr<ARDOUR::Processor> i)
+	explicit ProcessorAutomationInfo (ProcessorPtr i)
 		: processor (i), menu (0) {}
 	// TODO: do you really need this?
 	~ProcessorAutomationInfo ();
 
-	boost::shared_ptr<ARDOUR::Processor>  processor;
+	ProcessorPtr  processor;
 	Gtk::Menu*                            menu;
 	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
 };
@@ -94,7 +94,7 @@ public:
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
 	void processor_menu_item_toggled (ProcessorAutomationInfo*, ProcessorAutomationNode*);
-	ProcessorAutomationNode* find_processor_automation_node (boost::shared_ptr<ARDOUR::Processor> processor, Evoral::Parameter what);
+	ProcessorAutomationNode* find_processor_automation_node (ProcessorPtr processor, Evoral::Parameter what);
 
 	/**
 	 * Helpers to update automations
@@ -129,7 +129,7 @@ public:
 	void redisplay_grid ();
 
 	TrackerEditor& tracker_editor;
-	boost::shared_ptr<ARDOUR::Track> track;
+	TrackPtr track;
 	TrackPattern* track_pattern;
 	size_t track_index;
 	Grid& grid;
