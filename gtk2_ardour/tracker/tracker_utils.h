@@ -27,6 +27,8 @@
 #include "evoral/Note.hpp"
 #include "evoral/Parameter.hpp"
 
+#include "ardour/midi_track.h"
+#include "ardour/audio_track.h"
 #include "ardour/midi_region.h"
 #include "ardour/parameter_descriptor.h"
 #include "ardour/types.h"
@@ -35,15 +37,30 @@
 
 namespace Tracker {
 
+typedef boost::shared_ptr<ARDOUR::Track> TrackPtr;
+typedef boost::shared_ptr<ARDOUR::MidiTrack> MidiTrackPtr;
+typedef boost::shared_ptr<ARDOUR::AudioTrack> AudioTrackPtr;
+typedef boost::shared_ptr<ARDOUR::Region> RegionPtr;
+typedef boost::shared_ptr<ARDOUR::MidiRegion> MidiRegionPtr;
+typedef boost::shared_ptr<ARDOUR::MidiModel> MidiModelPtr;
 typedef Evoral::Note<Temporal::Beats> NoteType;
-typedef boost::shared_ptr<NoteType> NoteTypePtr;
+typedef boost::shared_ptr<NoteType> NotePtr;
+typedef boost::shared_ptr<ARDOUR::AutomationControl> AutomationControlPtr;
+typedef boost::shared_ptr<ARDOUR::AutomationList> AutomationListPtr;
+typedef boost::shared_ptr<ARDOUR::Processor> ProcessorPtr;
+
+typedef std::vector<RegionPtr> RegionSeq;
+typedef std::vector<MidiRegionPtr> MidiRegionSeq;
+typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;
+typedef std::map<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlMap;
+typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlPair;
 
 /**
  * Less than operator for regions, order according to position, earlier comes first
  */
 struct region_position_less
 {
-	bool operator () (boost::shared_ptr<ARDOUR::Region> lhs, boost::shared_ptr<ARDOUR::Region> rhs);
+	bool operator () (RegionPtr lhs, RegionPtr rhs);
 };
 
 class TrackerUtils
@@ -253,39 +270,43 @@ public:
 	static uint8_t parse_pitch (std::string text, int default_octave);
 
 	// Return a sequence of regions sorted by position
-	static std::vector<boost::shared_ptr<ARDOUR::Region> > get_sorted_regions (const RegionSelection& region_selection);
+	static RegionSeq get_sorted_regions (const RegionSelection& region_selection);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the earliest one.  If empty then return 0.
-	static Temporal::samplepos_t get_position (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplepos_t get_position (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_position (const RegionSeq& regions);
+	static Temporal::samplepos_t get_position (const MidiRegionSeq& regions);
 	static Temporal::samplepos_t get_position (const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_position (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the length between the very first position of the position very last + 1.
 	// If empty then return 0.
-	static Temporal::samplecnt_t get_length (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplecnt_t get_length (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplecnt_t get_length (const RegionSeq& regions);
+	static Temporal::samplecnt_t get_length (const MidiRegionSeq& regions);
 	static Temporal::samplepos_t get_length (const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_length (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the very first sample (it looks identical to get_regions_position).  If
 	// empty then return 0.
-	static Temporal::samplepos_t get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplepos_t get_first_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_first_sample (const RegionSeq& regions);
+	static Temporal::samplepos_t get_first_sample (const MidiRegionSeq& regions);
 	static Temporal::samplepos_t get_first_sample (const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_first_sample (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the last sample.  If empty then return 0.
-	static Temporal::samplepos_t get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
-	static Temporal::samplepos_t get_last_sample (const std::vector<boost::shared_ptr<ARDOUR::MidiRegion> >& regions);
+	static Temporal::samplepos_t get_last_sample (const RegionSeq& regions);
+	static Temporal::samplepos_t get_last_sample (const MidiRegionSeq& regions);
 	static Temporal::samplepos_t get_last_sample (const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_last_sample (const TrackRegionsMap& regions_per_track);
 
 	// Compare if two notes have the same on note attributes
-	static bool is_on_equal (NoteTypePtr ln, NoteTypePtr rn);
+	static bool is_on_equal (NotePtr ln, NotePtr rn);
 
 	// Compare if two notes have the same off note attributes
-	static bool is_off_equal (NoteTypePtr ln, NoteTypePtr rn);
+	static bool is_off_equal (NotePtr ln, NotePtr rn);
 
 	// Compare if two control events have the same attributes
 	static bool is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);

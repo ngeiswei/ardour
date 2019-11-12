@@ -35,8 +35,8 @@ using namespace Tracker;
 ////////////////////////////
 
 TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
-                                                boost::shared_ptr<ARDOUR::Track> trk,
-                                                const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions)
+                                                TrackPtr trk,
+                                                const RegionSeq& regions)
 	: TrackPattern (te, trk,
 	                TrackerUtils::get_position (regions),
 	                TrackerUtils::get_length (regions),
@@ -47,7 +47,7 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
 }
 
 TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
-                                                boost::shared_ptr<ARDOUR::Track> trk,
+                                                TrackPtr trk,
                                                 Temporal::samplepos_t pos,
                                                 Temporal::samplecnt_t len,
                                                 Temporal::samplepos_t fst,
@@ -89,7 +89,7 @@ void TrackAutomationPattern::setup_processors_automation_controls ()
 void
 TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p)
 {
-	boost::shared_ptr<ARDOUR::Processor> processor (p.lock ());
+	ProcessorPtr processor (p.lock ());
 
 	if (!processor || !processor->display_to_user ()) {
 		return;

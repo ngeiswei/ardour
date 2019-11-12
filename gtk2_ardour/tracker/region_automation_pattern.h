@@ -34,8 +34,8 @@ namespace Tracker {
 class RegionAutomationPattern : public AutomationPattern {
 public:
 	RegionAutomationPattern (TrackerEditor& te,
-	                        boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-	                        boost::shared_ptr<ARDOUR::MidiRegion> region);
+	                         MidiTrackPtr midi_track,
+	                         MidiRegionPtr region);
 
 	RegionAutomationPattern& operator= (const RegionAutomationPattern& other);
 
@@ -56,8 +56,8 @@ public:
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
-	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
+	MidiTrackPtr midi_track;
+	MidiModelPtr midi_model;
 };
 
 } // ~namespace Tracker

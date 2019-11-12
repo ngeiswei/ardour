@@ -239,7 +239,7 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
  * parameter.
  */
 void
-Grid::add_processor_automation_column (size_t mti, boost::shared_ptr<Processor> processor, const Evoral::Parameter& param)
+Grid::add_processor_automation_column (size_t mti, ProcessorPtr processor, const Evoral::Parameter& param)
 {
 	ProcessorAutomationNode* pauno;
 
@@ -896,7 +896,8 @@ Grid::redisplay_grid ()
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
 
-	// std::cout << "Grid::redisplay_grid _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string () << std::endl;
+	// std::cout << "Grid::redisplay_grid _phenomenal_diff:" << std::endl
+	//           << _phenomenal_diff.to_string () << std::endl;
 
 	// Set time column, row background colors and font
 	redisplay_global_columns ();
@@ -957,8 +958,10 @@ Grid::redisplay_grid ()
 	// into prev_pattern to make sure that the note pointers do capture a
 	// different, if it exists.
 
-	// std::cout << "pattern:" << std::endl << pattern.to_string ("  ");
-	// std::cout << "prev_pattern:" << std::endl << prev_pattern.to_string ("  ");
+	// std::cout << "pattern:" << std::endl
+	//           << pattern.to_string ("  ") << std::endl;
+	// std::cout << "prev_pattern:" << std::endl
+	//           << prev_pattern.to_string ("  ") << std::endl;
 
 	prev_pattern = pattern;
 }
@@ -1018,7 +1021,7 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, size_t rowi, size_t 
 										  // should be the same in all other regions
 	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
 	AutomationPattern& ap = mrp.rap;
-	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
+	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
 			int cgi = get_cgi (mti, param);
@@ -1192,7 +1195,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 {
 	if (pattern.is_note_displayable (rowi, mti, mri, cgi)) {
 		// Notes off
-		NoteTypePtr note = pattern.off_note (rowi, mti, mri, cgi);
+		NotePtr note = pattern.off_note (rowi, mti, mri, cgi);
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1354,7 +1357,7 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, uint32
 void
 Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color)
 {
-	for (AutomationPattern::ParamToEnabled::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
+	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
 			int cgi = get_cgi (mti, param);
@@ -1407,7 +1410,7 @@ void
 Grid::redisplay_track_automations (size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff)
 {
 	if (auto_diff == 0 || auto_diff->full) {
-		for (AutomationPattern::ParamToEnabled::const_iterator it = tap.param_to_enabled.begin (); it != tap.param_to_enabled.end (); ++it) {
+		for (AutomationPattern::ParamEnabledMap::const_iterator it = tap.param_to_enabled.begin (); it != tap.param_to_enabled.end (); ++it) {
 			if (it->second) {
 				redisplay_track_automation_param (mti, tap, it->first);
 			}
@@ -1502,7 +1505,7 @@ void
 Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* rap_diff)
 {
 	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
-		for (AutomationPattern::ParamToEnabled::const_iterator it = rap.param_to_enabled.begin (); it != rap.param_to_enabled.end (); ++it)
+		for (AutomationPattern::ParamEnabledMap::const_iterator it = rap.param_to_enabled.begin (); it != rap.param_to_enabled.end (); ++it)
 		{
 			if (it->second) {
 				redisplay_region_automation_param (mti, mri, rap, it->first);
@@ -1725,7 +1728,7 @@ Grid::set_underline_current_step_edit_note_cell ()
 	}
 	case TrackerColumn::DELAY: {
 		std::string val_str = row[columns.delay[mti][cgi]];
-		NoteTypePtr note = get_note (rowi, mti, cgi);
+		NotePtr note = get_note (rowi, mti, cgi);
 		if (!note) {
 			break;
 		}
@@ -1958,58 +1961,58 @@ Grid::get_col_index (const TreeViewColumn* col)
 	return -1;
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_on_note (const string& path, int mti, int cgi)
 {
 	return get_on_note (TreeModel::Path (path), mti, cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
 {
 	return get_on_note (get_row_index (path), mti, cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_on_note (int rowi, int mti, int cgi)
 {
 	return pattern.on_note (rowi, mti, pattern.to_mri (rowi, mti), cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_off_note (const string& path, int mti, int cgi)
 {
 	return get_off_note (TreeModel::Path (path), mti, cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_off_note (const TreeModel::Path& path, int mti, int cgi)
 {
 	return get_off_note (get_row_index (path), mti, cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_off_note (int rowi, int mti, int cgi)
 {
 	return pattern.off_note (rowi, mti, pattern.to_mri (rowi, mti), cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_note (int rowi, int mti, int cgi)
 {
 	return get_note (TreeModel::Path (1U, rowi), mti, cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_note (const string& path, int mti, int cgi)
 {
 	return get_note (TreeModel::Path (path), mti, cgi);
 }
 
-NoteTypePtr
+NotePtr
 Grid::get_note (const TreeModel::Path& path, int mti, int cgi)
 {
-	NoteTypePtr on_note = get_on_note (path, mti, cgi);
+	NotePtr on_note = get_on_note (path, mti, cgi);
 	if (on_note) {
 		return on_note;
 	}
@@ -2134,8 +2137,8 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		return;
 	}
 
-	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
+	NotePtr on_note = get_on_note (rowi, mti, cgi);
+	NotePtr off_note = get_off_note (rowi, mti, cgi);
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
@@ -2155,7 +2158,7 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		Temporal::Beats end = pattern.next_off (rowi, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
-		NoteTypePtr new_note (new NoteType (chan, start, length, pitch, vel));
+		NotePtr new_note (new NoteType (chan, start, length, pitch, vel));
 		char const * opname = _("add note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 		cmd->add (new_note);
@@ -2166,7 +2169,7 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
 		Temporal::Beats here = pattern.region_relative_beats (rowi, mti, mri, delay);
-		NoteTypePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
+		NotePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2194,7 +2197,7 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		if (prev_note && here < prev_end && prev_end < end)
 			end = prev_end;
 		Temporal::Beats length = end - here;
-		NoteTypePtr new_note (new NoteType (chan, here, length, pitch, vel));
+		NotePtr new_note (new NoteType (chan, here, length, pitch, vel));
 		cmd->add (new_note);
 		// Pre-emptively add the note in np so that it knows in which track it is
 		// supposed to be.
@@ -2210,8 +2213,8 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 void
 Grid::set_off_note (int rowi, int mti, int mri, int cgi)
 {
-	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
+	NotePtr on_note = get_on_note (rowi, mti, cgi);
+	NotePtr off_note = get_off_note (rowi, mti, cgi);
 
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
@@ -2226,7 +2229,7 @@ Grid::set_off_note (int rowi, int mti, int mri, int cgi)
 		// If there is no off note, update the length of the preceding node
 		// to match the new off note (smart off note).
 		if (!off_note) {
-			NoteTypePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
+			NotePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
 			if (prev_note) {
 				Temporal::Beats length = on_note->time () - prev_note->time ();
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -2236,7 +2239,7 @@ Grid::set_off_note (int rowi, int mti, int mri, int cgi)
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
 		Temporal::Beats here = pattern.region_relative_beats (rowi, mti, mri, delay);
-		NoteTypePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
+		NotePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2263,8 +2266,8 @@ Grid::set_off_note (int rowi, int mti, int mri, int cgi)
 void
 Grid::delete_note (int rowi, int mti, int mri, int cgi)
 {
-	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
+	NotePtr on_note = get_on_note (rowi, mti, cgi);
+	NotePtr off_note = get_off_note (rowi, mti, cgi);
 
 	MidiModel::NoteDiffCommand* cmd = 0;
 
@@ -2277,7 +2280,7 @@ Grid::delete_note (int rowi, int mti, int mri, int cgi)
 		// If there is an off note, update the length of the preceding note
 		// to match the next note or the end of the region.
 		if (off_note) {
-			NoteTypePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
+			NotePtr prev_note = pattern.find_prev_note (rowi, mti, mri, cgi);
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Temporal::Beats start = prev_note->time ();
@@ -2306,7 +2309,7 @@ Grid::delete_note (int rowi, int mti, int mri, int cgi)
 void
 Grid::note_channel_edited (const string& path, const string& text)
 {
-	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
+	NotePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty () || !note) {
 		clear_editables ();
 		return;
@@ -2328,7 +2331,7 @@ Grid::note_channel_edited (const string& path, const string& text)
 }
 
 void
-Grid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
+Grid::set_note_channel (int mti, int mri, NotePtr note, int ch)
 {
 	if (!note) {
 		return;
@@ -2349,7 +2352,7 @@ Grid::set_note_channel (int mti, int mri, NoteTypePtr note, int ch)
 void
 Grid::note_velocity_edited (const string& path, const string& text)
 {
-	NoteTypePtr note = get_on_note (path, edit_mti, edit_cgi);
+	NotePtr note = get_on_note (path, edit_mti, edit_cgi);
 	if (text.empty () || !note) {
 		clear_editables ();
 		return;
@@ -2371,7 +2374,7 @@ Grid::note_velocity_edited (const string& path, const string& text)
 }
 
 void
-Grid::set_note_velocity (int mti, int mri, NoteTypePtr note, int vel)
+Grid::set_note_velocity (int mti, int mri, NotePtr note, int vel)
 {
 	if (!note) {
 		return;
@@ -2412,8 +2415,8 @@ Grid::note_delay_edited (const string& path, const string& text)
 void
 Grid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 {
-	NoteTypePtr on_note = get_on_note (rowi, mti, cgi);
-	NoteTypePtr off_note = get_off_note (rowi, mti, cgi);
+	NotePtr on_note = get_on_note (rowi, mti, cgi);
+	NotePtr off_note = get_off_note (rowi, mti, cgi);
 	if (!on_note && !off_note) {
 		return;
 	}
@@ -2585,13 +2588,13 @@ Grid::get_cgi (size_t mti, const Evoral::Parameter& param) const
 	return cac_it->second;
 }
 
-boost::shared_ptr<AutomationList>
+AutomationListPtr
 Grid::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
 	return pattern.get_alist (mti, mri, param);
 }
 
-const boost::shared_ptr<AutomationList>
+const AutomationListPtr
 Grid::get_alist (int mti, int mri, const Evoral::Parameter& param) const
 {
 	return pattern.get_alist (mti, mri, param);
@@ -2647,7 +2650,7 @@ double
 Grid::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	double inter_auto_val = 0;
-	if (const boost::shared_ptr<AutomationList> alist = get_alist (mti, mri, param)) {
+	if (const AutomationListPtr alist = get_alist (mti, mri, param)) {
 		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
@@ -2754,7 +2757,7 @@ Grid::upper (int rowi, int mti, const Evoral::Parameter& param) const
 }
 
 void
-Grid::register_automation_undo (boost::shared_ptr<AutomationList> alist, const string& opname, XMLNode& before, XMLNode& after)
+Grid::register_automation_undo (AutomationListPtr alist, const string& opname, XMLNode& before, XMLNode& after)
 {
 	tracker_editor.public_editor.begin_reversible_command (opname);
 	tracker_editor.session->add_command (new MementoCommand<AutomationList> (*alist.get (), &before, &after));
@@ -3762,7 +3765,7 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_note_channel (int digit)
 {
-	NoteTypePtr note = get_on_note (current_rowi, current_mti, current_cgi);
+	NotePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		int ch = note->channel ();
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos);
@@ -3836,7 +3839,7 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_note_velocity (int digit)
 {
-	NoteTypePtr note = get_on_note (current_rowi, current_mti, current_cgi);
+	NotePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		int vel = note->velocity ();
 		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos);
@@ -3929,8 +3932,8 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_note_delay (int digit)
 {
-	NoteTypePtr on_note = get_on_note (current_rowi, current_mti, current_cgi);
-	NoteTypePtr off_note = get_off_note (current_rowi, current_mti, current_cgi);
+	NotePtr on_note = get_on_note (current_rowi, current_mti, current_cgi);
+	NotePtr off_note = get_off_note (current_rowi, current_mti, current_cgi);
 	if (on_note || off_note) {
 		// Fetch delay
 		int old_delay = on_note ? pattern.region_relative_delay_ticks (on_note->time (), current_rowi, current_mti, current_mri)
@@ -3949,7 +3952,7 @@ Grid::step_editing_set_note_delay (int digit)
 bool
 Grid::step_editing_delete_note_delay ()
 {
-	NoteTypePtr note = get_note (current_rowi, current_mti, current_cgi);
+	NotePtr note = get_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		set_note_delay (0, current_rowi, current_mti, current_mri, current_cgi);
 	}

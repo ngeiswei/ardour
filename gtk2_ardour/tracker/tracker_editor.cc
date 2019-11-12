@@ -124,15 +124,19 @@ void TrackerEditor::setup (RegionSelection& rs)
 	_first = false;
 }
 
-boost::shared_ptr<MidiModel>
-TrackerEditor::to_model (boost::shared_ptr<MidiRegion> midi_region)
+MidiModelPtr
+TrackerEditor::to_model (MidiRegionPtr midi_region)
 {
 	return midi_region->midi_source (0)->model ();
 }
 
 void
-TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_region)
+TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 {
+	// TODO: optimize, maybe could call a more direct method than
+	// redisplay_grid_connect_call. Weird, it seems that any operation on a
+	// region triggers redisplaying all other regions.
+
 	// Changing midi content re-render the grid
 	to_model (midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
 	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
@@ -145,12 +149,16 @@ TrackerEditor::connect_midi_region (boost::shared_ptr<ARDOUR::MidiRegion> midi_r
 }
 
 void
-TrackerEditor::connect_automation (boost::shared_ptr<AutomationControl> actrl)
+TrackerEditor::connect_automation (AutomationControlPtr actrl)
 {
 	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
-	boost::shared_ptr<AutomationList> alist = actrl->alist ();
-	alist->StateChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context ());
-	alist->InterpolationChanged.connect (content_connections, invalidator (*this), boost::bind (&Grid::redisplay_grid_connect_call, &grid), gui_context ());
+	AutomationListPtr alist = actrl->alist ();
+	alist->StateChanged.connect (content_connections, invalidator (*this),
+	                             boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                             gui_context ());
+	alist->InterpolationChanged.connect (content_connections, invalidator (*this),
+	                                     boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                                     gui_context ());
 }
 
 void
@@ -233,7 +241,7 @@ window_name (RegionSelection& rs)
 	for (RegionSelection::const_iterator it = rs.begin (); it != rs.end (); ++it) {
 		wn += " ";
 		if (wn.size () <= wn_max_size) {
-			boost::shared_ptr<ARDOUR::Region> region = (*it)->region ();
+			RegionPtr region = (*it)->region ();
 			wn += region->name ();
 		} else {
 			wn += "...";
