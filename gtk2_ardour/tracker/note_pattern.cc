@@ -39,7 +39,7 @@ using namespace Tracker;
 /////////////////
 
 NotePattern::NotePattern (TrackerEditor& te,
-                          boost::shared_ptr<ARDOUR::MidiRegion> region)
+                          MidiRegionPtr region)
 	: BasePattern (te, region)
 	, ntracks (0)
 	, nreqtracks (0)
@@ -62,10 +62,10 @@ NotePattern::operator= (const NotePattern& other)
 	// Clone other.track_to_notes into track_to_notes
 	track_to_notes.clear ();
 	track_to_notes.resize (other.track_to_notes.size ());
-	std::vector<std::map<NoteTypePtr, NoteTypePtr> > to_clone (track_to_notes.size ());
+	std::vector<std::map<NotePtr, NotePtr> > to_clone (track_to_notes.size ());
 	for (size_t i = 0; i < track_to_notes.size (); i++) {
 		for (ARDOUR::MidiModel::Notes::const_iterator it = other.track_to_notes[i].begin (); it != other.track_to_notes[i].end (); ++it) {
-			NoteTypePtr clone = clone_note (*it);
+			NotePtr clone = clone_note (*it);
 			track_to_notes[i].insert (clone);
 			to_clone[i][*it] = clone;
 		}
@@ -94,11 +94,11 @@ NotePattern::operator= (const NotePattern& other)
 	return *this;
 }
 
-NoteTypePtr
-NotePattern::clone_note (NoteTypePtr note) const
+NotePtr
+NotePattern::clone_note (NotePtr note) const
 {
 	// Recreate the note instead of copying it to avoid calling next_event_id
-	return NoteTypePtr (new NoteType (note->channel (), note->time (), note->length (), note->note (), note->velocity ()));
+	return NotePtr (new NoteType (note->channel (), note->time (), note->length (), note->note (), note->velocity ()));
 }
 
 void
@@ -327,29 +327,29 @@ NotePattern::dec_ntracks ()
 	}
 }
 
-NoteTypePtr
+NotePtr
 NotePattern::find_prev (uint32_t row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_reverse_iterator rit =
 		std::reverse_iterator<RowToNotes::const_iterator> (r2n.lower_bound (row));
 	while (rit != r2n.rend () && rit->first == row) { ++rit; };
-	return rit != r2n.rend () ? lattest (r2n.equal_range (rit->first)) : NoteTypePtr ();
+	return rit != r2n.rend () ? lattest (r2n.equal_range (rit->first)) : NotePtr ();
 }
 
-NoteTypePtr
+NotePtr
 NotePattern::find_next (uint32_t row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound (row);
 	while (it != r2n.end () && it->first == row) { ++it; };
-	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NoteTypePtr ();
+	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NotePtr ();
 }
 
 Temporal::Beats
 NotePattern::next_off (uint32_t row, int cgi) const
 {
-	NoteTypePtr next_note = find_next (row, cgi);
+	NotePtr next_note = find_next (row, cgi);
 	return next_note ? next_note->time () : end_beats;
 }
 
@@ -366,7 +366,7 @@ NotePattern::is_displayable (uint32_t row, int cgi) const
 }
 
 void
-NotePattern::add (int cgi, NoteTypePtr note)
+NotePattern::add (int cgi, NotePtr note)
 {
 	// Resize track_to_notes if necessary
 	if (nreqtracks <= cgi) {
@@ -419,10 +419,10 @@ NotePattern::to_string (const std::string& indent) const
 	return ss.str ();
 }
 
-NoteTypePtr
+NotePtr
 NotePattern::earliest (const RowToNotesRange& rng) const
 {
-	NoteTypePtr result;
+	NotePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
 		if (!result || result->time () < it->second->time ()) {
 			result = it->second;
@@ -431,10 +431,10 @@ NotePattern::earliest (const RowToNotesRange& rng) const
 	return result;
 }
 
-NoteTypePtr
+NotePtr
 NotePattern::lattest (const RowToNotesRange& rng) const
 {
-	NoteTypePtr result;
+	NotePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
 		if (!result || it->second->time () < result->time ()) {
 			result = it->second;
@@ -444,7 +444,7 @@ NotePattern::lattest (const RowToNotesRange& rng) const
 }
 
 int
-NotePattern::find_eq_id (NoteTypePtr note) const
+NotePattern::find_eq_id (NotePtr note) const
 {
 	for (int i = 0; i < (int)track_to_notes.size (); i++) {
 		if (find_eq_id (i, note) != track_to_notes[i].end ()) {
@@ -455,31 +455,31 @@ NotePattern::find_eq_id (NoteTypePtr note) const
 }
 
 MidiModel::Notes::const_iterator
-NotePattern::find_eq_id (int cgi, NoteTypePtr note) const
+NotePattern::find_eq_id (int cgi, NotePtr note) const
 {
 	return find_eq_id (track_to_notes[cgi], note);
 }
 
 MidiModel::Notes::iterator
-NotePattern::find_eq_id (int cgi, NoteTypePtr note)
+NotePattern::find_eq_id (int cgi, NotePtr note)
 {
 	return find_eq_id (track_to_notes[cgi], note);
 }
 
 void
-NotePattern::erase_eq_id (int cgi, NoteTypePtr note)
+NotePattern::erase_eq_id (int cgi, NotePtr note)
 {
 	erase_eq_id (track_to_notes[cgi], note);
 }
 
 void
-NotePattern::erase_eq_id (MidiModel::Notes& notes, NoteTypePtr note)
+NotePattern::erase_eq_id (MidiModel::Notes& notes, NotePtr note)
 {
 	notes.erase (find_eq_id (notes, note));
 }
 
 bool
-NotePattern::is_free (int cgi, NoteTypePtr note) const
+NotePattern::is_free (int cgi, NotePtr note) const
 {
 	const MidiModel::Notes& notes = track_to_notes[cgi];
 	MidiModel::Notes::iterator it = notes.begin ();
@@ -492,7 +492,7 @@ NotePattern::is_free (int cgi, NoteTypePtr note) const
 }
 
 int
-NotePattern::find_free_track (NoteTypePtr note) const
+NotePattern::find_free_track (NotePtr note) const
 {
 	for (int i = 0; i < (int)track_to_notes.size (); i++) {
 		if (is_free (i, note)) {
@@ -503,7 +503,7 @@ NotePattern::find_free_track (NoteTypePtr note) const
 }
 
 bool
-NotePattern::overlap (NoteTypePtr a, NoteTypePtr b)
+NotePattern::overlap (NotePtr a, NotePtr b)
 {
 	Temporal::Beats sa = a->time ();
 	Temporal::Beats ea  = a->end_time ();

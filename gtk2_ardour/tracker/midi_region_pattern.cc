@@ -26,8 +26,8 @@
 using namespace Tracker;
 
 MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
-                                      boost::shared_ptr<ARDOUR::MidiTrack> mt,
-                                      boost::shared_ptr<ARDOUR::MidiRegion> region)
+                                      MidiTrackPtr mt,
+                                      MidiRegionPtr region)
 	: BasePattern (te, region)
 	, np (te, region)
 	, rap (te, mt, region)

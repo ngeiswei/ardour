@@ -35,16 +35,16 @@ namespace Tracker {
 class MidiTrackPattern : public TrackAutomationPattern {
 public:
 	MidiTrackPattern (TrackerEditor& te,
-	                  boost::shared_ptr<ARDOUR::Track> track,
+	                  TrackPtr track,
 	                  const std::vector<RegionView*>& region_views,
-	                  const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
+	                  const RegionSeq& regions,
 	                  Temporal::samplepos_t position,
 	                  Temporal::samplecnt_t length,
 	                  Temporal::samplepos_t first_sample,
 	                  Temporal::samplepos_t last_sample);
 	virtual ~MidiTrackPattern ();
 
-	void setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	void setup (const RegionSeq& regions);
 
 	MidiTrackPattern& operator= (const MidiTrackPattern& other);
 
@@ -55,8 +55,8 @@ public:
 	void set_enabled (const Evoral::Parameter& param, bool enabled);
 	bool is_enabled (const Evoral::Parameter& param) const;
 
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
-	const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
+	AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
+	const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 
 	// Insert the automation control (s) corresponding to param (and connect it
 	// to the grid for changes)
@@ -139,7 +139,7 @@ public:
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
-	MidiRegionPattern* find_midi_region_pattern (boost::shared_ptr<ARDOUR::MidiRegion> midi_region);
+	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
 
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
@@ -150,7 +150,7 @@ public:
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
+	MidiTrackPtr midi_track;
 	std::vector<RegionView*> rvs; // to get access to device names
 	std::vector<MidiRegionPattern> mrps;
 

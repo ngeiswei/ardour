@@ -56,7 +56,7 @@ public:
 	void setup_region_views_per_track ();
 	void setup_regions_per_track ();
 	void setup_track_patterns ();
-	void add_track_pattern (boost::shared_ptr<ARDOUR::Track>, const std::vector<boost::shared_ptr<ARDOUR::Region> >&);
+	void add_track_pattern (TrackPtr, const RegionSeq&);
 	void setup_row_offset ();
 
 	void update ();
@@ -90,8 +90,8 @@ public:
 	size_t off_notes_count (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
 	size_t on_notes_count (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
 	bool is_note_displayable (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
-	NoteTypePtr off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
-	NoteTypePtr on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
+	NotePtr off_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
+	NotePtr on_note (uint32_t rowi, size_t mti, size_t mri, size_t cgi) const;
 
 	bool is_auto_displayable (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
@@ -99,8 +99,8 @@ public:
 	size_t get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
-	NoteTypePtr find_prev_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
-	NoteTypePtr find_next_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NotePtr find_prev_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NotePtr find_next_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
 	// Return the Beats of the note off as far as it can go (i.e. the next on
 	// note or the end of the region.)
@@ -123,10 +123,10 @@ public:
 	void insert (size_t mti, const Evoral::Parameter& param);
 
 	// Return the midi model at mti and mri
-	boost::shared_ptr<ARDOUR::MidiModel> midi_model (size_t mti, size_t mri);
+	MidiModelPtr midi_model (size_t mti, size_t mri);
 
 	// Return the midi region at mti and mri
-	boost::shared_ptr<ARDOUR::MidiRegion> midi_region (size_t mti, size_t mri);
+	MidiRegionPtr midi_region (size_t mti, size_t mri);
 	
 	// Return the note pattern at mti and mri
 	NotePattern& note_pattern (size_t mti, size_t mri);
@@ -137,8 +137,8 @@ public:
 	// Apply given command at mti
 	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param);
-	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (int mti, int mri, const Evoral::Parameter& param) const;
+	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
+	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 	
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
@@ -158,17 +158,17 @@ public:
 	void set_automation_delay (int delay, size_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param);
 
 	// Return the track pattern assicuated to track, or 0 if it doesn't exist
-	TrackPattern* find_track_pattern (boost::shared_ptr<ARDOUR::Track> track);
+	TrackPattern* find_track_pattern (TrackPtr track);
 
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	// Mapping track to region views
-	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<RegionView*>, ARDOUR::Stripable::Sorter> TrackRegionViewsMap;
+	typedef std::map<TrackPtr, std::vector<RegionView*>, ARDOUR::Stripable::Sorter> TrackRegionViewsMap;
 	TrackRegionViewsMap region_views_per_track;
 	
 	// Mapping track to regions
-	typedef std::map<boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region> >, ARDOUR::Stripable::Sorter> TrackRegionsMap;
+	typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per track

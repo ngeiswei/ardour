@@ -34,7 +34,7 @@ namespace Tracker {
 
 // AutomationControl as opposed to AutomationList is used to easily retrieve
 // the associated Parameter of each AutomationList.
-typedef std::map<boost::shared_ptr<ARDOUR::AutomationControl>, std::string> AutomationControlStringMap;
+typedef std::map<AutomationControlPtr, std::string> AutomationControlStringMap;
 
 /**
  * Data structure holding the automation list pattern.
@@ -42,7 +42,7 @@ typedef std::map<boost::shared_ptr<ARDOUR::AutomationControl>, std::string> Auto
 class AutomationPattern : public BasePattern {
 public:
 	AutomationPattern (TrackerEditor& te,
-	                  boost::shared_ptr<ARDOUR::Region> region);
+	                  RegionPtr region);
 	AutomationPattern (TrackerEditor& te,
 	                  Temporal::samplepos_t position,
 	                  Temporal::samplepos_t start,
@@ -56,9 +56,9 @@ public:
 
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator= (const AutomationPattern& other);
-	boost::shared_ptr<ARDOUR::AutomationControl> clone_actrl (boost::shared_ptr<ARDOUR::AutomationControl> actrl) const;
-	std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > clone_param_actrl (const std::pair<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> >& param_name) const;
-	boost::shared_ptr<ARDOUR::AutomationList> clone_alist (boost::shared_ptr<ARDOUR::AutomationList> alist) const;
+	AutomationControlPtr clone_actrl (AutomationControlPtr actrl) const;
+	ParamAutomationControlPair clone_param_actrl (const ParamAutomationControlPair& param_name) const;
+	AutomationListPtr clone_alist (AutomationListPtr alist) const;
 
 	void rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<size_t>& rd) const;
 
@@ -73,7 +73,7 @@ public:
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
-	void insert (boost::shared_ptr<ARDOUR::AutomationControl> actrl, const std::string& name);
+	void insert (AutomationControlPtr actrl, const std::string& name);
 	virtual void insert (const Evoral::Parameter& param) = 0;
 
 	// Return whether the automation associated to param is empty.
@@ -81,8 +81,8 @@ public:
 
 	// Return automation control associated to the given parameter. If absent,
 	// return 0.
-	boost::shared_ptr<ARDOUR::AutomationControl> get_actrl (const Evoral::Parameter& param);
-	const boost::shared_ptr<ARDOUR::AutomationControl> get_actrl (const Evoral::Parameter& param) const;
+	AutomationControlPtr get_actrl (const Evoral::Parameter& param);
+	const AutomationControlPtr get_actrl (const Evoral::Parameter& param) const;
 
 	// Return the number of values within the same row. If undefined return 0.
 	size_t get_automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const;
@@ -91,8 +91,8 @@ public:
 
 	// Return automation list associated to the given parameter. If absent
 	// return 0.
-	boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param);
-	const boost::shared_ptr<ARDOUR::AutomationList> get_alist (const Evoral::Parameter& param) const;
+	AutomationListPtr get_alist (const Evoral::Parameter& param);
+	const AutomationListPtr get_alist (const Evoral::Parameter& param) const;
 	
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
@@ -159,18 +159,17 @@ public:
 	ParamToRowToAutomationListIt param_to_row_to_ali;
 
 	// Map parameters to actrl
-	typedef std::map<Evoral::Parameter, boost::shared_ptr<ARDOUR::AutomationControl> > ParamToAutomationControl;
-	ParamToAutomationControl param_to_actrl;
+	ParamAutomationControlMap param_to_actrl;
 
 	// Map parameters to name
-	typedef std::map<Evoral::Parameter, std::string> ParamToName;
-	ParamToName param_to_name;
+	typedef std::map<Evoral::Parameter, std::string> ParamNameMap;
+	ParamNameMap param_to_name;
 
 	// Map parameters to whether the automation is enabled. This is kept track
 	// of here in case it can affect updating its content, to save calculations
 	// or measure its phenomenal difference.
-	typedef std::map<Evoral::Parameter, bool> ParamToEnabled;
-	mutable ParamToEnabled param_to_enabled; // disabled by default
+	typedef std::map<Evoral::Parameter, bool> ParamEnabledMap;
+	mutable ParamEnabledMap param_to_enabled; // disabled by default
 };
 
 } // ~namespace tracker

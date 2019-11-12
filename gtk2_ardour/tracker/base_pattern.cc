@@ -34,7 +34,7 @@ using namespace Tracker;
 /////////////////
 
 BasePattern::BasePattern (TrackerEditor& te,
-                          boost::shared_ptr<ARDOUR::Region> region)
+                          RegionPtr region)
 	: tracker_editor (te)
 	, position (region->position ())
 	, start (region->start ())
@@ -99,6 +99,8 @@ BasePattern::operator= (const BasePattern& other)
 	end_row_beats = other.end_row_beats;
 
 	nrows = other.nrows;
+
+	enabled = other.enabled;
 
 	_ticks_per_row = other._ticks_per_row;
 
