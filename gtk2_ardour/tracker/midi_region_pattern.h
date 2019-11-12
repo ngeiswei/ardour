@@ -34,8 +34,8 @@ namespace Tracker {
 class MidiRegionPattern : public BasePattern {
 public:
 	MidiRegionPattern (TrackerEditor& te,
-	                   boost::shared_ptr<ARDOUR::MidiTrack> midi_track,
-	                   boost::shared_ptr<ARDOUR::MidiRegion> region);
+	                   MidiTrackPtr midi_track,
+	                   MidiRegionPtr region);
 	virtual ~MidiRegionPattern ();
 
 	MidiRegionPattern& operator= (const MidiRegionPattern& other);
@@ -70,8 +70,8 @@ public:
 
 	NotePattern np;
 	RegionAutomationPattern rap;
-	boost::shared_ptr<ARDOUR::MidiModel> midi_model;
-	boost::shared_ptr<ARDOUR::MidiRegion> midi_region;
+	MidiModelPtr midi_model;
+	MidiRegionPtr midi_region;
 };
 
 } // ~namespace tracker

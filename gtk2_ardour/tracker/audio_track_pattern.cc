@@ -24,8 +24,8 @@
 using namespace Tracker;
 
 AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
-                                      boost::shared_ptr<ARDOUR::Track> trk,
-                                      const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions,
+                                      TrackPtr trk,
+                                      const RegionSeq& regions,
                                       Temporal::samplepos_t position,
                                       Temporal::samplecnt_t length,
                                       Temporal::samplepos_t first_sample,

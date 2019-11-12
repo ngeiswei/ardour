@@ -26,6 +26,7 @@
 
 #include "automation_pattern.h"
 #include "track_pattern_phenomenal_diff.h"
+#include "tracker_utils.h"
 
 namespace Tracker {
 
@@ -41,17 +42,17 @@ class AudioTrackPattern;
 class TrackPattern : public AutomationPattern {
 public:
 	TrackPattern (TrackerEditor& te,
-	              boost::shared_ptr<ARDOUR::Track> track,
-	              const std::vector<boost::shared_ptr<ARDOUR::Region> >& regions);
+	              TrackPtr track,
+	              const RegionSeq& regions);
 	TrackPattern (TrackerEditor& te,
-	              boost::shared_ptr<ARDOUR::Track> track,
+	              TrackPtr track,
 	              Temporal::samplepos_t pos,
 	              Temporal::samplecnt_t len,
 	              Temporal::samplepos_t fst,
 	              Temporal::samplepos_t lst);
 	virtual ~TrackPattern ();
 
-	virtual void setup (const std::vector<boost::shared_ptr<ARDOUR::Region> >&);
+	virtual void setup (const RegionSeq&);
 
 	TrackPattern& operator= (const TrackPattern& other);
 
@@ -59,8 +60,8 @@ public:
 	// PhenomenalDiff object at every call
 	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
 
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track ();
-	boost::shared_ptr<ARDOUR::AudioTrack> audio_track ();
+	MidiTrackPtr midi_track ();
+	AudioTrackPtr audio_track ();
 
 	// Self cast classes
 	bool is_midi_track_pattern () const;
@@ -80,8 +81,8 @@ public:
 	virtual int to_rrri (uint32_t rowi, size_t mri) const;
 	virtual int to_rrri (uint32_t rowi) const;
 	virtual int to_mri (uint32_t rowi) const;
-	virtual boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param);
-	virtual const boost::shared_ptr<ARDOUR::AutomationList> get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
+	virtual AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
+	virtual const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 	virtual std::pair<double, bool> get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
 	virtual void set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay);
 	virtual void delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
@@ -90,7 +91,7 @@ public:
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
-	boost::shared_ptr<ARDOUR::Track> track;
+	TrackPtr track;
 };
 
 } // ~namespace Tracker

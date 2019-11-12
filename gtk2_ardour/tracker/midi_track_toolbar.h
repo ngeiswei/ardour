@@ -111,7 +111,7 @@ public:
 
 	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
-	boost::shared_ptr<ARDOUR::MidiTrack> midi_track;
+	MidiTrackPtr midi_track;
 	MidiTrackPattern& midi_track_pattern;
 
 	ArdourWidgets::ArdourButton  visible_note_button;
