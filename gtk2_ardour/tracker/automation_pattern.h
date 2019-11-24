@@ -42,13 +42,13 @@ typedef std::map<AutomationControlPtr, std::string> AutomationControlStringMap;
 class AutomationPattern : public BasePattern {
 public:
 	AutomationPattern (TrackerEditor& te,
-	                  RegionPtr region);
+	                   RegionPtr region);
 	AutomationPattern (TrackerEditor& te,
-	                  Temporal::samplepos_t position,
-	                  Temporal::samplepos_t start,
-	                  Temporal::samplecnt_t length,
-	                  Temporal::samplepos_t first_sample,
-	                  Temporal::samplepos_t last_sample);
+	                   Temporal::samplepos_t position,
+	                   Temporal::samplepos_t start,
+	                   Temporal::samplecnt_t length,
+	                   Temporal::samplepos_t first_sample,
+	                   Temporal::samplepos_t last_sample);
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
 	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationListIt;
