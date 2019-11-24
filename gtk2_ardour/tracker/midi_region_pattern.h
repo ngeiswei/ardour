@@ -70,6 +70,7 @@ public:
 
 	NotePattern np;
 	RegionAutomationPattern rap;
+	MidiTrackPtr midi_track;
 	MidiModelPtr midi_model;
 	MidiRegionPtr midi_region;
 };

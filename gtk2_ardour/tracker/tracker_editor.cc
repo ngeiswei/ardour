@@ -139,8 +139,8 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 
 	// Changing midi content re-render the grid
 	to_model (midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
-	                                                gui_context ());
+	                                                 boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                                                 gui_context ());
 
 	// Changing the region time zone re-render the grid
 	midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
