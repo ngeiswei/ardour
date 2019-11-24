@@ -31,6 +31,7 @@ MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
 	: BasePattern (te, region)
 	, np (te, region)
 	, rap (te, mt, region)
+	, midi_track (mt)
 	, midi_model (region->midi_source (0)->model ())
 	, midi_region (region)
 {
@@ -137,7 +138,12 @@ MidiRegionPattern::update ()
 bool
 MidiRegionPattern::is_region_visible () const
 {
-	return 0 < _session->playlists ()->region_use_count (midi_region);
+	// VVT: Sometimes region_use_count is updated after the notification is
+	// received to update the pattern. This may happen when deleting, then
+	// undoing. However on the pianoroll everything is updated normally. It
+	// looks like the TimeAxisView is the code responsible to display that sort
+	// of things, maybe look at it.
+	return 0 < midi_track->playlist ()->region_use_count (midi_region);
 }
 
 void
