@@ -1,4 +1,6 @@
+- [ ] Fix freeze when copying regions
 - [ ] Fix cloned/linked regions
+- [ ] Fix deleting then undoing regions (see VVT in code)
 - [ ] Create wscript under tracker folder
 - [ ] Try to improve color usage, how to label them, what can be reused
 - [ ] Create PR
