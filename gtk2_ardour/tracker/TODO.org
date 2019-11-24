@@ -18,7 +18,7 @@
 - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
 - [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
-- [ ] Support midi input
+- [ ] Support midi input (maybe see MidiTimeAxisView::start_step_editing)
 - [ ] Only have Octave, Ch, Vel in main toolbar is there is a midi track, maybe
 - [ ] Play note velocity at which it is gonna be recorded (use already
   existing)
