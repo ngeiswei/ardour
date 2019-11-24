@@ -594,14 +594,14 @@ uint32_t
 SessionPlaylists::region_use_count (boost::shared_ptr<Region> region) const
 {
 	Glib::Threads::Mutex::Lock lm (lock);
-        uint32_t cnt = 0;
+	uint32_t cnt = 0;
 
 	for (List::const_iterator i = playlists.begin(); i != playlists.end(); ++i) {
-                cnt += (*i)->region_use_count (region);
+		cnt += (*i)->region_use_count (region);
 	}
 
 	for (List::const_iterator i = unused_playlists.begin(); i != unused_playlists.end(); ++i) {
-                cnt += (*i)->region_use_count (region);
+		cnt += (*i)->region_use_count (region);
 	}
 
 	return cnt;
