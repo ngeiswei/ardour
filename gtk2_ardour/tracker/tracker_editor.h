@@ -79,6 +79,7 @@ public:
 
 	void resize_width ();
 
+	void connect_track (TrackPtr track);
 	void connect_midi_region (MidiRegionPtr midi_region);
 	void connect_automation (AutomationControlPtr actrl);
 	
@@ -97,6 +98,7 @@ public:
 	Gtk::VBox                    vbox;
 
 	/** connection used to connect to model's ContentsChanged signal */
+	// TODO: what does it mean?
 	PBD::ScopedConnectionList content_connections;
 
 private:
