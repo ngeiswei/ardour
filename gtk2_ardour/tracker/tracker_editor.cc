@@ -131,6 +131,14 @@ TrackerEditor::to_model (MidiRegionPtr midi_region)
 }
 
 void
+TrackerEditor::connect_track (TrackPtr track)
+{
+	track->playlist ()->ContentsChanged.connect (content_connections, invalidator (*this),
+	                                             boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                                             gui_context ());
+}
+
+void
 TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 {
 	// TODO: optimize, maybe could call a more direct method than
