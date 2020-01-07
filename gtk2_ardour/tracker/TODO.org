@@ -1,4 +1,4 @@
-- [ ] Fix freeze when copying regions
+- [ ] Fix update when moving regions
 - [ ] Fix cloned/linked regions
 - [ ] Fix deleting then undoing regions (see VVT in code)
 - [ ] Create wscript under tracker folder
