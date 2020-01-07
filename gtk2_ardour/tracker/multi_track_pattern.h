@@ -42,7 +42,9 @@ class TrackerEditor;
 class MultiTrackPattern : public BasePattern
 {
 public:
-	explicit MultiTrackPattern (TrackerEditor& te);
+	// Create patterns for selected regions. If connect is true then connect
+	// them to various signals to trigger grid redisplay.
+	MultiTrackPattern (TrackerEditor& te, bool connect);
 	~MultiTrackPattern ();
 
 	// Phenomenal overload of operator= (), only need to copy what is necessary
@@ -50,7 +52,7 @@ public:
 	MultiTrackPattern& operator= (const MultiTrackPattern& other);
 
 	MultiTrackPatternPhenomenalDiff phenomenal_diff (const MultiTrackPattern& prev) const;
-	
+
 	void setup ();
 	void setup_positions ();
 	void setup_region_views_per_track ();
@@ -180,6 +182,9 @@ public:
 	std::vector<uint32_t>        row_offset;
 	std::vector<uint32_t>        tracks_nrows;
 	uint32_t                     global_nrows;
+
+private:
+	bool _connect;
 };
 
 } // ~namespace Tracker

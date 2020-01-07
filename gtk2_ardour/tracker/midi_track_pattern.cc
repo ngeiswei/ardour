@@ -36,8 +36,9 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     Temporal::samplepos_t position,
                                     Temporal::samplecnt_t length,
                                     Temporal::samplepos_t first_sample,
-                                    Temporal::samplepos_t last_sample)
-	: TrackAutomationPattern (te, trk, position, length, first_sample, last_sample)
+                                    Temporal::samplepos_t last_sample,
+                                    bool connect)
+	: TrackAutomationPattern (te, trk, position, length, first_sample, last_sample, connect)
 	, midi_track (boost::static_pointer_cast<ARDOUR::MidiTrack> (trk))
 	, rvs (region_views)
 	, row_offset (regions.size (), 0)
@@ -64,7 +65,7 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 		if (mrp) {
 			mrp->enabled = true;
 		} else {
-			mrps.push_back (MidiRegionPattern (tracker_editor, midi_track, midi_region));
+			mrps.push_back (MidiRegionPattern (tracker_editor, midi_track, midi_region, _connect));
 		}
 	}
 

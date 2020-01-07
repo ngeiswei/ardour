@@ -35,7 +35,8 @@ class MidiRegionPattern : public BasePattern {
 public:
 	MidiRegionPattern (TrackerEditor& te,
 	                   MidiTrackPtr midi_track,
-	                   MidiRegionPtr region);
+	                   MidiRegionPtr region,
+	                   bool connect);
 	virtual ~MidiRegionPattern ();
 
 	MidiRegionPattern& operator= (const MidiRegionPattern& other);
