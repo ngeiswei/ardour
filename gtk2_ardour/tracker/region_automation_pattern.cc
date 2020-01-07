@@ -35,8 +35,9 @@ using namespace Tracker;
 
 RegionAutomationPattern::RegionAutomationPattern (TrackerEditor& te,
                                                   MidiTrackPtr mt,
-                                                  MidiRegionPtr region)
-	: AutomationPattern (te, region)
+                                                  MidiRegionPtr region,
+                                                  bool connect)
+	: AutomationPattern (te, region, connect)
 	, midi_track (mt)
 	, midi_model (region->midi_source (0)->model ())
 {
