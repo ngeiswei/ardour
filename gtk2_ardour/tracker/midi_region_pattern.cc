@@ -27,15 +27,17 @@ using namespace Tracker;
 
 MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
                                       MidiTrackPtr mt,
-                                      MidiRegionPtr region)
+                                      MidiRegionPtr region,
+                                      bool connect)
 	: BasePattern (te, region)
 	, np (te, region)
-	, rap (te, mt, region)
+	, rap (te, mt, region, connect)
 	, midi_track (mt)
 	, midi_model (region->midi_source (0)->model ())
 	, midi_region (region)
 {
-	tracker_editor.connect_midi_region (midi_region);
+	if (connect)
+		tracker_editor.connect_midi_region (midi_region);
 }
 
 MidiRegionPattern::~MidiRegionPattern ()
@@ -84,9 +86,10 @@ MidiRegionPattern::set_rows_per_beat (uint16_t rpb)
 void
 MidiRegionPattern::update_enabled ()
 {
-	enabled = is_region_visible ();
-	np.enabled = is_region_visible ();
-	rap.enabled = is_region_visible ();
+	bool irv = is_region_visible ();
+	enabled = irv;
+	np.enabled = irv;
+	rap.enabled = irv;
 }
 
 void

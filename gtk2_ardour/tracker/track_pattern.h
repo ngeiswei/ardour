@@ -43,13 +43,15 @@ class TrackPattern : public AutomationPattern {
 public:
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
-	              const RegionSeq& regions);
+	              const RegionSeq& regions,
+	              bool connect);
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
 	              Temporal::samplepos_t pos,
 	              Temporal::samplecnt_t len,
 	              Temporal::samplepos_t fst,
-	              Temporal::samplepos_t lst);
+	              Temporal::samplepos_t lst,
+	              bool connect);
 	virtual ~TrackPattern ();
 
 	virtual void setup (const RegionSeq&);

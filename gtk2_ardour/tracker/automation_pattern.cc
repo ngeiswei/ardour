@@ -32,8 +32,10 @@ using namespace Tracker;
 ///////////////////////
 
 AutomationPattern::AutomationPattern (TrackerEditor& te,
-                                      RegionPtr region)
+                                      RegionPtr region,
+                                      bool connect)
 	: BasePattern (te, region)
+	, _connect (connect)
 {
 }
 
@@ -42,8 +44,10 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
                                       Temporal::samplepos_t sta,
                                       Temporal::samplecnt_t len,
                                       Temporal::samplepos_t fir,
-                                      Temporal::samplepos_t las)
+                                      Temporal::samplepos_t las,
+                                      bool connect)
 	: BasePattern (te, pos, sta, len, fir, las)
+	, _connect(connect)
 {
 }
 
@@ -233,11 +237,10 @@ AutomationPattern::update_automations ()
 void
 AutomationPattern::insert (AutomationControlPtr actrl, const std::string& name)
 {
-	// NEXT TODO: try to understand why some controls are inserted twice
 	Evoral::Parameter param = actrl->parameter ();
 	std::pair<ParamAutomationControlMap::iterator, bool> actrl_result = param_to_actrl.insert (std::make_pair (param, actrl));
 	param_to_name.insert (std::make_pair (param, name));
-	if (actrl_result.second) {
+	if (actrl_result.second && _connect) {
 		tracker_editor.connect_automation (actrl);
 	}
 }

@@ -26,7 +26,7 @@
 
 using namespace Tracker;
 
-MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
+MultiTrackPattern::MultiTrackPattern (TrackerEditor& te, bool connect)
 	: BasePattern (te,
 	               TrackerUtils::get_position (te.region_selection),
 	               0,
@@ -36,6 +36,7 @@ MultiTrackPattern::MultiTrackPattern (TrackerEditor& te)
 	, earliest_mti (0)
 	, earliest_tp (0)
 	, global_nrows (0)
+	, _connect (connect)
 {
 }
 
@@ -165,13 +166,13 @@ MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 	MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
 		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
-		                                              position, length, first_sample, last_sample);
+		                                              position, length, first_sample, last_sample, _connect);
 		tps.push_back (mtp);
 	}
 	AudioTrackPtr audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 	if (audio_track) {
 		AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
-		                                                position, length, first_sample, last_sample);
+		                                                position, length, first_sample, last_sample, _connect);
 		tps.push_back (atp);
 	}
 }

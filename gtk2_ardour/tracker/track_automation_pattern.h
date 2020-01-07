@@ -31,14 +31,16 @@ namespace Tracker {
 class TrackAutomationPattern : public TrackPattern {
 public:
 	TrackAutomationPattern (TrackerEditor& te,
-	                       TrackPtr track,
-	                       const RegionSeq& regions);
+	                        TrackPtr track,
+	                        const RegionSeq& regions,
+	                        bool connect);
 	TrackAutomationPattern (TrackerEditor& te,
-	                       TrackPtr track,
-	                       Temporal::samplepos_t position,
-	                       Temporal::samplecnt_t length,
-	                       Temporal::samplepos_t first_sample,
-	                       Temporal::samplepos_t last_sample);
+	                        TrackPtr track,
+	                        Temporal::samplepos_t position,
+	                        Temporal::samplecnt_t length,
+	                        Temporal::samplepos_t first_sample,
+	                        Temporal::samplepos_t last_sample,
+	                        bool connect);
 
 	// Fill _automation_controls
 	void setup_automation_controls ();
