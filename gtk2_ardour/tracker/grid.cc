@@ -83,8 +83,8 @@ const string Grid::undefined_str = "***";
 
 Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
-	, pattern (te)
-	, prev_pattern (te)
+	, pattern (te, true /** connect **/)
+	, prev_pattern (te, false)
 	, current_beats (0)
 	, current_path (1)
 	, current_rowi (0)
@@ -969,15 +969,19 @@ Grid::redisplay_grid ()
 void
 Grid::redisplay_grid_direct_call ()
 {
+	// std::cout << "Grid::redisplay_grid_direct_call [begin]" << std::endl;
 	redisplay_grid ();
+	// std::cout << "Grid::redisplay_grid_direct_call [end]" << std::endl;
 }
 
 void
 Grid::redisplay_grid_connect_call ()
 {
+	// std::cout << "Grid::redisplay_grid_connect_call [begin]" << std::endl;
 	if (redisplay_grid_connect_call_enabled) {
 		redisplay_grid ();
 	}
+	// std::cout << "Grid::redisplay_grid_connect_call [end]" << std::endl;
 }
 
 void

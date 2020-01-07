@@ -41,7 +41,8 @@ public:
 	                  Temporal::samplepos_t position,
 	                  Temporal::samplecnt_t length,
 	                  Temporal::samplepos_t first_sample,
-	                  Temporal::samplepos_t last_sample);
+	                  Temporal::samplepos_t last_sample,
+	                  bool connect);
 	virtual ~MidiTrackPattern ();
 
 	void setup (const RegionSeq& regions);
