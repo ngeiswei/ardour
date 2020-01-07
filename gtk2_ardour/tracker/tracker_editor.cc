@@ -142,8 +142,7 @@ void
 TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 {
 	// TODO: optimize, maybe could call a more direct method than
-	// redisplay_grid_connect_call. Weird, it seems that any operation on a
-	// region triggers redisplaying all other regions.
+	// redisplay_grid_connect_call.
 
 	// Changing midi content re-render the grid
 	to_model (midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
@@ -151,9 +150,9 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 	                                                 gui_context ());
 
 	// Changing the region time zone re-render the grid
-	midi_region->RegionPropertyChanged.connect (content_connections, invalidator (*this),
-	                                            boost::bind (&Grid::redisplay_grid_connect_call, &grid),
-	                                            gui_context ());
+	midi_region->PropertyChanged.connect (content_connections, invalidator (*this),
+	                                      boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                                      gui_context ());
 }
 
 void

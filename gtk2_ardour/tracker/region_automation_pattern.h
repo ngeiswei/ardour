@@ -35,7 +35,8 @@ class RegionAutomationPattern : public AutomationPattern {
 public:
 	RegionAutomationPattern (TrackerEditor& te,
 	                         MidiTrackPtr midi_track,
-	                         MidiRegionPtr region);
+	                         MidiRegionPtr region,
+	                         bool connect);
 
 	RegionAutomationPattern& operator= (const RegionAutomationPattern& other);
 

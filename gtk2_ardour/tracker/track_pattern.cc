@@ -28,16 +28,19 @@ using namespace Tracker;
 
 TrackPattern::TrackPattern (TrackerEditor& te,
                             TrackPtr trk,
-                            const RegionSeq& regions)
+                            const RegionSeq& regions,
+                            bool connect)
 	: AutomationPattern (te,
 	                     TrackerUtils::get_position (regions),
 	                     0,
 	                     TrackerUtils::get_length (regions),
 	                     TrackerUtils::get_first_sample (regions),
-	                     TrackerUtils::get_last_sample (regions))
+	                     TrackerUtils::get_last_sample (regions),
+	                     connect)
 	, track (trk)
 {
-	tracker_editor.connect_track (track);
+	if (connect)
+		tracker_editor.connect_track (track);
 }
 
 TrackPattern::TrackPattern (TrackerEditor& te,
@@ -45,11 +48,13 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             Temporal::samplepos_t pos,
                             Temporal::samplecnt_t len,
                             Temporal::samplepos_t fst,
-                            Temporal::samplepos_t lst)
-	: AutomationPattern (te, pos, 0, len, fst, lst)
+                            Temporal::samplepos_t lst,
+                            bool connect)
+	: AutomationPattern (te, pos, 0, len, fst, lst, connect)
 	, track (trk)
 {
-	tracker_editor.connect_track (track);
+	if (connect)
+		tracker_editor.connect_track (track);
 }
 
 TrackPattern::~TrackPattern ()
