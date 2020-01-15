@@ -55,7 +55,7 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 {
 	// Disable all existing regions
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		mrps[mri].enabled = false;
+		mrps[mri].selected = false;
 	}
 
 	// Add new regions or re-enable existing ones
@@ -63,7 +63,7 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 		MidiRegionPtr midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[i]);
 		MidiRegionPattern* mrp = find_midi_region_pattern (midi_region);
 		if (mrp) {
-			mrp->enabled = true;
+			mrp->selected = true;
 		} else {
 			mrps.push_back (MidiRegionPattern (tracker_editor, midi_track, midi_region, _connect));
 		}
