@@ -162,7 +162,7 @@ public:
 	Temporal::Beats position_beats;
 	Temporal::Beats global_end_beats;
 
-	// Start and end beats relative from the source.
+	// Start and end beats relative to the source.
 	Temporal::Beats start_beats;
 	Temporal::Beats end_beats;
 
