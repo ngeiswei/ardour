@@ -90,7 +90,9 @@ MultiTrackPattern::phenomenal_diff (const MultiTrackPattern& prev) const
 
 	diff.full = prev.enabled != enabled
 		|| prev.global_nrows != global_nrows
-		|| prev.tps.size () != tps.size ();
+		|| prev.tps.size () != tps.size ()
+		|| prev.position_beats != position_beats
+		|| prev.global_end_beats != global_end_beats;
 
 	if (diff.full) {
 		return diff;
