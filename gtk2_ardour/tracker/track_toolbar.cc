@@ -274,15 +274,12 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 
 	items.clear ();
 
-	std::set<Evoral::Parameter> has_visible_automation;
-	// AutomationTimeAxisView::what_has_visible_automation (processor, has_visible_automation);
-
-	for (std::set<Evoral::Parameter>::const_iterator i = automatable.begin (); i != automatable.end (); ++i) {
+	for (std::set<Evoral::Parameter>::const_iterator p = automatable.begin (); p != automatable.end (); ++p) {
 
 		ProcessorAutomationNode* pauno = 0;
 		CheckMenuItem* mitem;
 
-		std::string name = processor->describe_parameter (*i);
+		std::string name = processor->describe_parameter (*p);
 
 		if (name == X_("hidden")) {
 			continue;
@@ -291,21 +288,19 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		items.push_back (CheckMenuElem (name));
 		mitem = dynamic_cast<CheckMenuItem*> (&items.back ());
 
-		_subplugin_menu_map[*i] = mitem;
+		_subplugin_menu_map[*p] = mitem;
 
-		if (TrackerUtils::is_in (*i, has_visible_automation)) {
-			mitem->set_active (true);
-		}
-
-		if ((pauno = find_processor_automation_node (processor, *i)) == 0) {
+		if ((pauno = find_processor_automation_node (processor, *p)) == 0) {
 			/* new item */
-			pauno = new ProcessorAutomationNode (*i, mitem);
+			pauno = new ProcessorAutomationNode (*p, mitem);
 			rai->columns.push_back (pauno);
 		} else {
 			pauno->menu_item = mitem;
 		}
 
 		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), rai, pauno));
+		bool visible = grid.is_automation_visible (track_index, *p);
+		mitem->set_active (visible);
 	}
 
 	if (items.size () == 0) {
