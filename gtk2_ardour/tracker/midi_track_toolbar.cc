@@ -650,7 +650,7 @@ MidiTrackToolbar::show_existing_midi_automations ()
 			continue;
 		}
 
-		grid.visible_automation_columns.insert (column);
+		grid.set_automation_column_visible (track_index, *p, column, true);
 	}
 }
 
