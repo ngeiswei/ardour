@@ -1,4 +1,3 @@
-- [ ] Fix automation display
 - [ ] Create wscript under tracker folder
 - [ ] Try to improve color usage, how to label them, what can be reused
 - [ ] Create PR
