@@ -872,6 +872,8 @@ Grid::redisplay_global_columns ()
 void
 Grid::redisplay_grid ()
 {
+	// std::cout << "Grid::redisplay_grid ()" << std::endl;
+
 	if (editing_editable) {
 		return;
 	}
