@@ -19,7 +19,7 @@
 #include <cmath>
 #include <map>
 
-#include "evoral/Note.hpp"
+#include "evoral/Note.h"
 #include "evoral/midi_util.h"
 
 #include "ardour/beats_samples_converter.h"

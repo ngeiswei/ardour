@@ -21,7 +21,7 @@
 
 #include <set>
 
-#include "evoral/ControlList.hpp"
+#include "evoral/ControlList.h"
 
 #include "ardour/automation_control.h"
 #include "ardour/automation_list.h"
