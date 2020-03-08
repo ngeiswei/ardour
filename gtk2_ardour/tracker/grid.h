@@ -25,6 +25,8 @@
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeview.h>
 
+#include "ardour/midi_ring_buffer.h"
+
 #include "main_toolbar.h"
 #include "midi_region_pattern.h"
 #include "multi_track_pattern.h"
@@ -423,6 +425,13 @@ private:
 
 	bool move_edit_cursor_key_press (GdkEventKey* ev);
 
+public:                         // VVT: why is it public?
+	bool step_editing_check_midi_event ();
+	void push_midi_input_to_step_editing_ring_buffer (samplecnt_t);
+	ARDOUR::MidiRingBuffer<samplepos_t> _step_editing_ring_buffer;
+	ARDOUR::MidiRingBuffer<samplepos_t>* _step_editing_ring_buffer_ptr;
+
+private:
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch);
 	bool step_editing_set_off_note ();
