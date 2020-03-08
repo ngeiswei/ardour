@@ -55,6 +55,8 @@
 #include "ardour/parameter_descriptor.h"
 #include "ardour/session.h"
 #include "ardour/tempo.h"
+#include "ardour/port_set.h"
+#include "ardour/port.h"
 
 #include "ardour_ui.h"
 #include "axis_view.h"
@@ -106,6 +108,8 @@ Grid::Grid (TrackerEditor& te)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
+	, _step_editing_ring_buffer(64) // TODO: fix, not sure how though.
+	, _step_editing_ring_buffer_ptr(0)
 	, time_column (0)
 {
 }
@@ -3534,6 +3538,96 @@ Grid::pitch_key (GdkEventKey* ev)
 	default:
 		return -1;
 	}
+}
+
+bool
+Grid::step_editing_check_midi_event ()
+{
+	// VVT: I think I need to create a Route for my tracker interface, and then
+	// somehow have Session::no_roll update its no_roll method, which would call
+	// a method that would call the following method.
+	push_midi_input_to_step_editing_ring_buffer (128);
+
+	static int i = 0;
+	// std::cout << "Grid::step_editing_check_midi_event () i = " << i++ << std::endl;
+
+	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (*_step_editing_ring_buffer_ptr);
+	uint8_t* buf;
+	uint32_t bufsize = 32;       // Only 32???
+
+	buf = new uint8_t[bufsize];
+
+	while (incoming.read_space()) {
+		samplepos_t time;
+		Evoral::EventType type;
+		uint32_t size;
+
+		if (!incoming.read_prefix (&time, &type, &size)) {
+			break;
+		}
+
+		if (size > bufsize) {
+			delete [] buf;
+			bufsize = size;
+			buf = new uint8_t[bufsize];
+		}
+
+		if (!incoming.read_contents (size, buf)) {
+			break;
+		}
+
+		if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_ON && size == 3) {
+			std::cout << "Grid::step_editing_check_midi_event () "
+			          << "buf[0] = " << (int)(buf[0])
+			          << ", buf[0] & 0xf = " << (int)(buf[0] & 0xf)
+			          << ", buf[1] = " << (int)buf[1]
+			          << ", buf[2] = " << (int)buf[2] << std::endl;
+			step_editing_set_on_note (buf[1]); // TODO: support ch and vel
+			// step_add_note (buf[0] & 0xf, buf[1], buf[2], Temporal::Beats());
+		}
+	}
+	delete [] buf;
+
+	return true; // do it again, till we stop
+}
+
+void
+Grid::push_midi_input_to_step_editing_ring_buffer (samplecnt_t nframes)
+{
+	// VVT: inspired from MidiTrack::push_midi_input_to_step_edit_ringbuffer,
+	// find out how is this called.
+	// std::cout << "Grid::push_midi_input_to_step_editing_ring_buffer (nframes=" << nframes << ")" << std::endl;
+	// VVT: Loop over available inputs
+	if (!pattern.tps[0]->is_midi_track_pattern ()) {
+		return;
+	}
+
+	MidiTrackPtr mt = pattern.tps[0]->midi_track ();
+	// ARDOUR::PortSet& ports (mt->input()->ports());
+
+	// For now just copy mt's step edit ring buffer
+	_step_editing_ring_buffer_ptr = &mt->step_edit_ring_buffer ();
+
+	// for (PortSet::iterator p = ports.begin(DataType::MIDI); p != ports.end(DataType::MIDI); ++p) {
+
+	// 	Buffer& b (p->get_buffer (nframes));
+	// 	const MidiBuffer* const mb = dynamic_cast<MidiBuffer*>(&b);
+	// 	assert (mb);
+
+	// 	for (MidiBuffer::const_iterator e = mb->begin(); e != mb->end(); ++e) {
+
+	// 		const Evoral::Event<samplepos_t> ev(*e, false);
+
+	// 		/* note on, since for step edit, note length is determined
+	// 		   elsewhere
+	// 		*/
+
+	// 		if (ev.is_note_on()) {
+	// 			/* we don't care about the time for this purpose */
+	// 			_step_editing_ring_buffer.write (0, ev.event_type(), ev.size(), ev.buffer());
+	// 		}
+	// 	}
+	// }
 }
 
 bool

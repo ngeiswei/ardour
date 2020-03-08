@@ -82,6 +82,11 @@ public:
 	void connect_track (TrackPtr track);
 	void connect_midi_region (MidiRegionPtr midi_region);
 	void connect_automation (AutomationControlPtr actrl);
+
+	void connect_midi_event ();
+	void disconnect_midi_event ();
+
+	sigc::connection midi_event_connection;
 	
 	ARDOUR::Session* session;
 
