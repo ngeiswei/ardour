@@ -27,7 +27,7 @@
 
 #include "gtkmm2ext/bindings.h"
 
-#include "evoral/types.hpp"
+#include "evoral/types.h"
 
 #include "ardour/automation_list.h"
 #include "ardour/session_handle.h"

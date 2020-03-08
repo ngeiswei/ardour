@@ -39,7 +39,7 @@
 
 #include "widgets/tooltips.h"
 
-#include "evoral/Note.hpp"
+#include "evoral/Note.h"
 #include "evoral/midi_util.h"
 
 #include "ardour/amp.h"

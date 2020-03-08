@@ -21,7 +21,7 @@
 
 #include <map>
 
-#include "evoral/Parameter.hpp"
+#include "evoral/Parameter.h"
 
 #include "base_pattern_phenomenal_diff.h"
 #include "rows_phenomenal_diff.h"

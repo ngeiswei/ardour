@@ -24,8 +24,8 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "evoral/Note.hpp"
-#include "evoral/Parameter.hpp"
+#include "evoral/Note.h"
+#include "evoral/Parameter.h"
 
 #include "ardour/midi_track.h"
 #include "ardour/audio_track.h"
