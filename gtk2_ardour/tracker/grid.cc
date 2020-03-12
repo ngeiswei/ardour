@@ -824,13 +824,11 @@ Grid::read_colors ()
 	beat_background_color = UIConfiguration::instance ().color_str ("tracker editor: beat background");
 	bar_background_color = UIConfiguration::instance ().color_str ("tracker editor: bar background");
 	background_color = UIConfiguration::instance ().color_str ("tracker editor: background");
-	blank_foreground_color = UIConfiguration::instance ().color_str ("tracker editor: blank foreground");
 	active_foreground_color = UIConfiguration::instance ().color_str ("tracker editor: active foreground");
 	passive_foreground_color = UIConfiguration::instance ().color_str ("tracker editor: passive foreground");
 	cursor_color = UIConfiguration::instance ().color_str ("tracker editor: cursor");
-	cursor_step_edit_color = UIConfiguration::instance ().color_str ("tracker editor: step edit cursor");
 	current_row_color = UIConfiguration::instance ().color_str ("tracker editor: current row");
-	current_step_edit_row_color = UIConfiguration::instance ().color_str ("tracker editor: current step edit row");
+	current_edit_row_color = UIConfiguration::instance ().color_str ("tracker editor: current edit row");
 }
 
 void
@@ -1149,14 +1147,14 @@ Grid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
 void
 Grid::redisplay_current_row_background ()
 {
-	string color = tracker_editor.main_toolbar.step_edit ? current_step_edit_row_color : current_row_color;
+	string color = tracker_editor.main_toolbar.step_edit ? current_edit_row_color : current_row_color;
 	redisplay_row_background_color (current_row, current_rowi, color);
 }
 
 void
 Grid::redisplay_current_note_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	string color = tracker_editor.main_toolbar.step_edit ? cursor_step_edit_color : cursor_color;
+	string color = cursor_color;
 
 	switch (current_note_type) {
 	case TrackerColumn::NOTE:
@@ -1186,10 +1184,10 @@ Grid::redisplay_blank_note_foreground (TreeModel::Row& row, size_t mti, size_t c
 	row[columns.delay[mti][cgi]] = mk_blank (DELAY_DIGITS);
 
 	// Grey out infoless cells
-	row[columns._note_foreground_color[mti][cgi]] = blank_foreground_color;
-	row[columns._channel_foreground_color[mti][cgi]] = blank_foreground_color;
-	row[columns._velocity_foreground_color[mti][cgi]] = blank_foreground_color;
-	row[columns._delay_foreground_color[mti][cgi]] = blank_foreground_color;
+	row[columns._note_foreground_color[mti][cgi]] = passive_foreground_color;
+	row[columns._channel_foreground_color[mti][cgi]] = passive_foreground_color;
+	row[columns._velocity_foreground_color[mti][cgi]] = passive_foreground_color;
+	row[columns._delay_foreground_color[mti][cgi]] = passive_foreground_color;
 }
 
 void
@@ -1242,7 +1240,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, uint32_t rowi, size_t mti,
 void
 Grid::redisplay_current_auto_cursor (TreeModel::Row& row, size_t mti, size_t cgi)
 {
-	std::string color = tracker_editor.main_toolbar.step_edit ? cursor_step_edit_color : cursor_color;
+	std::string color = cursor_color;
 
 	switch (current_auto_type) {
 	case TrackerColumn::AUTOMATION:
@@ -1274,7 +1272,7 @@ Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t c
 	row[columns.automation_delay[mti][cgi]] = mk_blank (DELAY_DIGITS);
 
 	// Fill default foreground color
-	row[columns._automation_delay_foreground_color[mti][cgi]] = blank_foreground_color;
+	row[columns._automation_delay_foreground_color[mti][cgi]] = passive_foreground_color;
 }
 
 void
