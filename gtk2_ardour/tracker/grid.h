@@ -571,13 +571,11 @@ private:
 	std::string beat_background_color;
 	std::string bar_background_color;
 	std::string background_color;
-	std::string blank_foreground_color;
 	std::string active_foreground_color;
 	std::string passive_foreground_color;
 	std::string cursor_color;
-	std::string cursor_step_edit_color;
 	std::string current_row_color;
-	std::string current_step_edit_row_color;
+	std::string current_edit_row_color;
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
