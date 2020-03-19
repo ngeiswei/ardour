@@ -171,12 +171,15 @@ TrackerEditor::connect_automation (AutomationControlPtr actrl)
 void
 TrackerEditor::connect_midi_event ()
 {
-	midi_event_connection = Glib::signal_timeout().connect (sigc::mem_fun (grid, &Grid::step_editing_check_midi_event), 200);
+    // VVT: make sure set_step_editing is updated when the cursor moves
+	grid.current_mtp->midi_track ()->set_step_editing (true);
+	midi_event_connection = Glib::signal_timeout().connect (sigc::mem_fun (grid, &Grid::step_editing_check_midi_event), 20);
 }
 
 void
 TrackerEditor::disconnect_midi_event ()
 {
+	grid.current_mtp->midi_track ()->set_step_editing (false);
 	midi_event_connection.disconnect ();
 }
 
