@@ -1,9 +1,9 @@
+- [ ] Make virtual keyboard keys not hardcoded (use MIDI Virtual Keyboard mapping)
 - [ ] Create wscript under tracker folder
 - [ ] Try to improve color usage, how to label them, what can be reused
 - [ ] Create PR
 - [ ] Add copy/move, etc, notes + popup menu
 - [ ] Save octave value per each track and maybe more
-- [ ] Make virtual keyboard keys not hardcoded
 - [ ] Deal with *** in a "proper" manner (allow free modification)
 - [ ] Support arbitrary number of tracks (put all properties in tracker_column)
 - [ ] Fix alignment with track toolbar
