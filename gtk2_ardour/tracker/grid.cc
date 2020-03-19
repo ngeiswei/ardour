@@ -108,8 +108,6 @@ Grid::Grid (TrackerEditor& te)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
-	, _step_editing_ring_buffer(64) // TODO: fix, not sure how though.
-	, _step_editing_ring_buffer_ptr(0)
 	, time_column (0)
 {
 }
@@ -3340,50 +3338,11 @@ Grid::is_note_type (const Gtk::TreeViewColumn* col) const
 		&& get_auto_type (col) == TrackerColumn::AUTOMATION_SEPARATOR;
 }
 
-void
-Grid::horizontal_move_edit_cursor (int steps, bool tab)
-{
-	int colnum = edit_col;
-	TreeModel::Path path = edit_path;
-	wrap_around_horizontal_move (colnum, edit_path, steps, tab);
-	TreeViewColumn* col = get_column (colnum);
-	set_cursor (path, *col, true);
-}
-
 bool
-Grid::move_edit_cursor_key_press (GdkEventKey* ev)
+Grid::select_current_track() const
 {
-	bool ret = false;
-
-	switch (ev->keyval) {
-
-	case GDK_Up:
-	case GDK_uparrow:
-		vertical_move_edit_cursor (-1);
-		ret = true;
-		break;
-	case GDK_Down:
-	case GDK_downarrow:
-		vertical_move_edit_cursor (1);
-		ret = true;
-		break;
-	case GDK_Left:
-	case GDK_leftarrow:
-		horizontal_move_edit_cursor (-1);
-		ret = true;
-		break;
-	case GDK_Right:
-	case GDK_rightarrow:
-		horizontal_move_edit_cursor (1);
-		ret = true;
-		break;
-	case GDK_Tab:
-		horizontal_move_edit_cursor (1, true);
-		ret = true;
-		break;
-	}
-
-	return ret;
+	TimeAxisView* tav = tracker_editor.public_editor.time_axis_view_from_stripable (current_mtp->track);
+	tracker_editor.public_editor.get_selection ().set (tav);    
 }
 
 int
@@ -3541,15 +3500,9 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
-	// VVT: I think I need to create a Route for my tracker interface, and then
-	// somehow have Session::no_roll update its no_roll method, which would call
-	// a method that would call the following method.
-	push_midi_input_to_step_editing_ring_buffer (128);
+    // VVT: call MidiTrack::set_step_editing to follow cursor move
 
-	static int i = 0;
-	// std::cout << "Grid::step_editing_check_midi_event () i = " << i++ << std::endl;
-
-	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (*_step_editing_ring_buffer_ptr);
+	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
 	uint32_t bufsize = 32;       // Only 32???
 
@@ -3581,51 +3534,11 @@ Grid::step_editing_check_midi_event ()
 			          << ", buf[1] = " << (int)buf[1]
 			          << ", buf[2] = " << (int)buf[2] << std::endl;
 			step_editing_set_on_note (buf[1]); // TODO: support ch and vel
-			// step_add_note (buf[0] & 0xf, buf[1], buf[2], Temporal::Beats());
 		}
 	}
 	delete [] buf;
 
 	return true; // do it again, till we stop
-}
-
-void
-Grid::push_midi_input_to_step_editing_ring_buffer (samplecnt_t nframes)
-{
-	// VVT: inspired from MidiTrack::push_midi_input_to_step_edit_ringbuffer,
-	// find out how is this called.
-	// std::cout << "Grid::push_midi_input_to_step_editing_ring_buffer (nframes=" << nframes << ")" << std::endl;
-	// VVT: Loop over available inputs
-	if (!pattern.tps[0]->is_midi_track_pattern ()) {
-		return;
-	}
-
-	MidiTrackPtr mt = pattern.tps[0]->midi_track ();
-	// ARDOUR::PortSet& ports (mt->input()->ports());
-
-	// For now just copy mt's step edit ring buffer
-	_step_editing_ring_buffer_ptr = &mt->step_edit_ring_buffer ();
-
-	// for (PortSet::iterator p = ports.begin(DataType::MIDI); p != ports.end(DataType::MIDI); ++p) {
-
-	// 	Buffer& b (p->get_buffer (nframes));
-	// 	const MidiBuffer* const mb = dynamic_cast<MidiBuffer*>(&b);
-	// 	assert (mb);
-
-	// 	for (MidiBuffer::const_iterator e = mb->begin(); e != mb->end(); ++e) {
-
-	// 		const Evoral::Event<samplepos_t> ev(*e, false);
-
-	// 		/* note on, since for step edit, note length is determined
-	// 		   elsewhere
-	// 		*/
-
-	// 		if (ev.is_note_on()) {
-	// 			/* we don't care about the time for this purpose */
-	// 			_step_editing_ring_buffer.write (0, ev.event_type(), ev.size(), ev.buffer());
-	// 		}
-	// 	}
-	// }
 }
 
 bool
@@ -4340,11 +4253,16 @@ Grid::vertical_move_current_cursor_default_steps (bool wrap, bool jump, bool set
 void
 Grid::horizontal_move_current_cursor (int steps, bool tab)
 {
+	int mti = current_mti;
 	int colnum = current_col;
 	TreeModel::Path path = current_path;
 	wrap_around_horizontal_move (colnum, current_path, steps, tab);
 	TreeViewColumn* col = get_column (colnum);
 	set_current_cursor (path, col);
+	// If the track has changed, select it from the public editor
+	if (mti != current_mti) {
+		select_current_track();
+	}
 }
 
 bool
@@ -4673,6 +4591,7 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		int cell_x, cell_y;
 		get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y);
 
+      int mti = current_mti;
 		if (ev->type == GDK_2BUTTON_PRESS) {
 			set_cursor (path, *col, true);
 		} else if (ev->type == GDK_BUTTON_PRESS) {
@@ -4680,6 +4599,9 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		}
 
 		grab_focus ();
+		if (mti != current_mti) {
+			select_current_track();
+		}
 	}
 
 	return true;

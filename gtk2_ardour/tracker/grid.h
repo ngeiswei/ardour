@@ -25,8 +25,6 @@
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeview.h>
 
-#include "ardour/midi_ring_buffer.h"
-
 #include "main_toolbar.h"
 #include "midi_region_pattern.h"
 #include "multi_track_pattern.h"
@@ -419,17 +417,13 @@ private:
 	TrackerColumn::automation_type get_auto_type (const Gtk::TreeViewColumn* col) const;
 	bool is_note_type (const Gtk::TreeViewColumn* col) const;
 
-	// Move the editing cursor steps columns rightwards, or leftwards if steps
-	// is negative.
-	void horizontal_move_edit_cursor (int steps, bool tab=false);
+	/**
+    * Select the current track on the public editor
+    */
+	bool select_current_track () const;
 
-	bool move_edit_cursor_key_press (GdkEventKey* ev);
-
-public:                         // VVT: why is it public?
+public:
 	bool step_editing_check_midi_event ();
-	void push_midi_input_to_step_editing_ring_buffer (samplecnt_t);
-	ARDOUR::MidiRingBuffer<samplepos_t> _step_editing_ring_buffer;
-	ARDOUR::MidiRingBuffer<samplepos_t>* _step_editing_ring_buffer_ptr;
 
 private:
 	bool step_editing_note_key_press (GdkEventKey*);

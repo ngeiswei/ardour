@@ -787,7 +787,8 @@ MidiTrack::set_step_editing (bool yn)
 
 	if (yn != _step_editing) {
 		_step_editing = yn;
-		StepEditStatusChange (yn);
+      // VVT: maybe add a flag to disable it
+		// StepEditStatusChange (yn);
 	}
 }
 

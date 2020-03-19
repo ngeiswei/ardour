@@ -597,6 +597,8 @@ TimeAxisView::controls_ebox_button_release (GdkEventButton* ev)
 void
 TimeAxisView::selection_click (GdkEventButton* ev)
 {
+    std::cout << "TimeAxisView::selection_click" << std::endl;
+
 	Selection::Operation op = ArdourKeyboard::selection_type (ev->state);
 	_editor.set_selected_track (*this, op, false);
 }
@@ -798,7 +800,9 @@ TimeAxisView::can_edit_name () const
 void
 TimeAxisView::conditionally_add_to_selection ()
 {
-	if (!selectable()) {
+    std::cout << "TimeAxisView::conditionally_add_to_selection" << std::endl;
+
+    if (!selectable()) {
 		return;
 	}
 
