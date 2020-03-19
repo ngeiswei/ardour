@@ -725,6 +725,7 @@ Session::midi_track_presentation_info_changed (PropertyChange const& what_change
 void
 Session::rewire_selected_midi (boost::shared_ptr<MidiTrack> new_midi_target)
 {
+    // VVT: understand relationship with track selection
 	if (!new_midi_target) {
 		return;
 	}
@@ -775,6 +776,7 @@ Session::rewire_selected_midi (boost::shared_ptr<MidiTrack> new_midi_target)
 void
 Session::rewire_midi_selection_ports ()
 {
+    // VVT: understand relationship with track selection
 	if (!Config->get_midi_input_follows_selection()) {
 		return;
 	}

@@ -207,6 +207,7 @@ Editor::select_all_visible_lanes ()
 void
 Editor::set_selected_track_as_side_effect (Selection::Operation op)
 {
+    std::cout << "Editor::set_selected_track_as_side_effect" << std::endl;
 	if (!clicked_axisview) {
 		return;
 	}
@@ -220,6 +221,7 @@ Editor::set_selected_track_as_side_effect (Selection::Operation op)
 
 	switch (op) {
 	case Selection::Toggle:
+       std::cout << "Selection::Toggle" << std::endl;
 		if (selection->selected (clicked_axisview)) {
 			if (group && group->is_active() && group->enabled_property(ARDOUR::Properties::group_select.property_id)) {
 				for (TrackViewList::iterator i = track_views.begin(); i != track_views.end (); ++i) {
@@ -256,6 +258,7 @@ Editor::set_selected_track_as_side_effect (Selection::Operation op)
 		break;
 
 	case Selection::Set:
+       std::cout << "Selection::Set" << std::endl;
 		selection->clear();
 		if (group && group->is_active() && group->enabled_property(ARDOUR::Properties::group_select.property_id)) {
 			for (TrackViewList::iterator i  = track_views.begin(); i != track_views.end (); ++i) {
@@ -269,6 +272,7 @@ Editor::set_selected_track_as_side_effect (Selection::Operation op)
 		break;
 
 	case Selection::Extend:
+       std::cout << "Selection::Extend" << std::endl;
 		selection->clear();
 		break;
 	}
@@ -277,10 +281,12 @@ Editor::set_selected_track_as_side_effect (Selection::Operation op)
 void
 Editor::set_selected_track (TimeAxisView& view, Selection::Operation op, bool no_remove)
 {
+    std::cout << "Editor::set_selected_track" << std::endl;
 	begin_reversible_selection_op (X_("Set Selected Track"));
 
 	switch (op) {
 	case Selection::Toggle:
+    std::cout << "Selection::Toggle" << std::endl;
 		if (selection->selected (&view)) {
 			if (!no_remove) {
 				selection->remove (&view);
@@ -291,14 +297,17 @@ Editor::set_selected_track (TimeAxisView& view, Selection::Operation op, bool no
 		break;
 
 	case Selection::Add:
+    std::cout << "Selection::Add" << std::endl;
 		selection->add (&view);
 		break;
 
 	case Selection::Set:
+    std::cout << "Selection::Set" << std::endl;
 		selection->set (&view);
 		break;
 
 	case Selection::Extend:
+    std::cout << "Selection::Extend" << std::endl;
 		extend_selection_to_track (view);
 		break;
 	}
@@ -309,6 +318,8 @@ Editor::set_selected_track (TimeAxisView& view, Selection::Operation op, bool no
 void
 Editor::set_selected_track_from_click (bool press, Selection::Operation op, bool no_remove)
 {
+    std::cout << "Editor::set_selected_track_from_click" << std::endl;
+
 	if (!clicked_routeview) {
 		return;
 	}
