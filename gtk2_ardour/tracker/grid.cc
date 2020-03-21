@@ -92,6 +92,7 @@ Grid::Grid (TrackerEditor& te)
 	, current_rowi (0)
 	, current_col (0)
 	, current_mti (0)
+	, previous_mtp (0)
 	, current_mtp (0)
 	, current_mri (0)
 	, current_cgi (0)
@@ -2138,6 +2139,11 @@ Grid::note_edited (const string& path, const string& text)
 void
 Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 {
+	// VVT: likely add version that takes channel and vel in arg
+
+	// VVT: also add button about overwriting existing chan, vel and
+	// delay of existing notes.
+
 	// Abort if the new pitch is invalid
 	if (127 < pitch) {
 		return;
@@ -2146,9 +2152,9 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 	NotePtr on_note = get_on_note (rowi, mti, cgi);
 	NotePtr off_note = get_off_note (rowi, mti, cgi);
 
-	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
 	uint8_t vel = tracker_editor.main_toolbar.velocity_spinner.get_value_as_int ();
+	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
 	MidiModel::NoteDiffCommand* cmd = 0;
 
@@ -2517,6 +2523,10 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	// Unset underline over previous cursor
 	unset_underline_current_step_edit_cell ();
 
+	// Remember the current mti to update the current track and the
+	// step editor
+	previous_mtp = current_mtp;
+
 	// Update current row
 	current_path = path;
 	current_rowi = get_row_index (path);
@@ -2543,6 +2553,13 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 
 	// Readjust scroller
 	scroll_to_row (path);
+
+	// Update selected track and step editor
+	if (previous_mtp != current_mtp) {
+		select_current_track();
+		unset_step_editing_previous_track ();
+		set_step_editing_current_track ();
+	}
 
 	// Update playhead accordingly
 	if (set_playhead) {
@@ -3338,11 +3355,35 @@ Grid::is_note_type (const Gtk::TreeViewColumn* col) const
 		&& get_auto_type (col) == TrackerColumn::AUTOMATION_SEPARATOR;
 }
 
-bool
-Grid::select_current_track() const
+void
+Grid::select_current_track ()
 {
 	TimeAxisView* tav = tracker_editor.public_editor.time_axis_view_from_stripable (current_mtp->track);
 	tracker_editor.public_editor.get_selection ().set (tav);    
+}
+
+void
+Grid::set_step_editing_current_track ()
+{
+	if (tracker_editor.main_toolbar.step_edit && current_mtp->is_midi_track_pattern ()) {
+		current_mtp->midi_track ()->set_step_editing (true, false);
+	}
+}
+
+void
+Grid::unset_step_editing_current_track ()
+{
+	if (current_mtp->is_midi_track_pattern ()) {
+		current_mtp->midi_track ()->set_step_editing (false, false);
+	}
+}
+
+void
+Grid::unset_step_editing_previous_track ()
+{
+	if (previous_mtp && previous_mtp->is_midi_track_pattern ()) {
+		previous_mtp->midi_track ()->set_step_editing (false, false);
+	}
 }
 
 int
@@ -3500,8 +3541,6 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
-    // VVT: call MidiTrack::set_step_editing to follow cursor move
-
 	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
 	uint32_t bufsize = 32;       // Only 32???
@@ -3533,7 +3572,7 @@ Grid::step_editing_check_midi_event ()
 			          << ", buf[0] & 0xf = " << (int)(buf[0] & 0xf)
 			          << ", buf[1] = " << (int)buf[1]
 			          << ", buf[2] = " << (int)buf[2] << std::endl;
-			step_editing_set_on_note (buf[1]); // TODO: support ch and vel
+			step_editing_set_on_note (buf[1], false); // VVT: support ch and vel
 		}
 	}
 	delete [] buf;
@@ -3688,11 +3727,12 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 }
 
 bool
-Grid::step_editing_set_on_note (uint8_t pitch)
+Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
 	set_on_note (pitch, current_rowi, current_mti, current_mri, current_cgi);
 	vertical_move_current_cursor_default_steps ();
-	play_note (current_mti, pitch);
+	if (play)
+		play_note (current_mti, pitch);
 	return true;
 }
 
@@ -4253,16 +4293,11 @@ Grid::vertical_move_current_cursor_default_steps (bool wrap, bool jump, bool set
 void
 Grid::horizontal_move_current_cursor (int steps, bool tab)
 {
-	int mti = current_mti;
 	int colnum = current_col;
 	TreeModel::Path path = current_path;
 	wrap_around_horizontal_move (colnum, current_path, steps, tab);
 	TreeViewColumn* col = get_column (colnum);
 	set_current_cursor (path, col);
-	// If the track has changed, select it from the public editor
-	if (mti != current_mti) {
-		select_current_track();
-	}
 }
 
 bool
@@ -4591,17 +4626,14 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		int cell_x, cell_y;
 		get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y);
 
-      int mti = current_mti;
 		if (ev->type == GDK_2BUTTON_PRESS) {
+			// Enter editing cell
 			set_cursor (path, *col, true);
 		} else if (ev->type == GDK_BUTTON_PRESS) {
 			set_current_cursor (path, col, true);
 		}
 
 		grab_focus ();
-		if (mti != current_mti) {
-			select_current_track();
-		}
 	}
 
 	return true;
