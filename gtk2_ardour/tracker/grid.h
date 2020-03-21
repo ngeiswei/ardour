@@ -271,6 +271,7 @@ public:
 	Gtk::TreeModel::Row          current_row;
 	int                          current_col;
 	int                          current_mti; // multi track index
+	TrackPattern*                previous_mtp;
 	TrackPattern*                current_mtp;
 	int                          current_mri; // midi region index
 	int                          current_cgi; // column group index
@@ -418,16 +419,28 @@ private:
 	bool is_note_type (const Gtk::TreeViewColumn* col) const;
 
 	/**
-    * Select the current track on the public editor
-    */
-	bool select_current_track () const;
+	 * Select the current track on the public editor
+	 */
+	void select_current_track ();
 
 public:
+	/**
+	 * Call MidiTrack::set_step_editing on the current (or previous)
+	 * track, if it is a midi track.
+	 */
+	void set_step_editing_current_track ();
+	void unset_step_editing_current_track ();
+	void unset_step_editing_previous_track ();
+
+	/**
+	 * Call many times per second to read the midi ring buffer of the
+	 * midi track step editor.
+	 */
 	bool step_editing_check_midi_event ();
 
 private:
 	bool step_editing_note_key_press (GdkEventKey*);
-	bool step_editing_set_on_note (uint8_t pitch);
+	bool step_editing_set_on_note (uint8_t pitch, bool play=true);
 	bool step_editing_set_off_note ();
 	bool step_editing_delete_note ();
 
