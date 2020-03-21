@@ -710,7 +710,7 @@ MidiTrack::MidiControl::actually_set_value (double val, PBD::Controllable::Group
 }
 
 void
-MidiTrack::set_step_editing (bool yn)
+MidiTrack::set_step_editing (bool yn, bool status_change)
 {
 	if (_session.record_status() != Session::Disabled) {
 		return;
@@ -718,8 +718,9 @@ MidiTrack::set_step_editing (bool yn)
 
 	if (yn != _step_editing) {
 		_step_editing = yn;
-      // VVT: maybe add a flag to disable it
-		// StepEditStatusChange (yn);
+		if (status_change) {
+			StepEditStatusChange (yn);
+		}
 	}
 }
 
