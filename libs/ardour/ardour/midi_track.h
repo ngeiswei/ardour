@@ -97,7 +97,7 @@ public:
 	std::string describe_parameter (Evoral::Parameter param);
 
 	bool step_editing() const { return _step_editing; }
-	void set_step_editing (bool yn); // VVT: have the grid set it!!!
+	void set_step_editing (bool yn, bool status_change=true);
 	MidiRingBuffer<samplepos_t>& step_edit_ring_buffer() { return _step_edit_ring_buffer; }
 
 	PBD::Signal1<void,bool> StepEditStatusChange;
