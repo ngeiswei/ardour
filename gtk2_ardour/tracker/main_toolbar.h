@@ -36,7 +36,7 @@ namespace Tracker {
 
 class TrackerEditor;
 
-class MainToolbar : public Gtk::HBox
+class MainToolbar : public Gtk::VBox
 {
 public:
 	explicit MainToolbar (TrackerEditor& te);
@@ -65,6 +65,16 @@ public:
 	bool step_edit_press (GdkEventButton* ev);
 
 	/**
+	 * Triggered upon overwrite default button press event.
+	 */
+	bool overwrite_default_press (GdkEventButton* ev);
+
+	/**
+	 * Triggered upon overwrite old button press event.
+	 */
+	bool overwrite_existing_press (GdkEventButton* ev);
+
+	/**
 	 * Trigger when position_spinner value is changed.
 	 */
 	void change_position ();
@@ -76,12 +86,20 @@ public:
 	static const int min_position = -5;
 	static const int max_position = 5;
 
+	// Horizontal and vertical spacing
+	int spacing;
+
 	ArdourWidgets::ArdourDropdown beats_per_row_selector;
 	std::vector<std::string>     beats_per_row_strings;
 	uint8_t                      rows_per_beat;
-	Gtk::VSeparator              step_edit_separator;
 	ArdourWidgets::ArdourButton  step_edit_button;
 	bool                         step_edit;
+	Gtk::VSeparator              overwrite_default_separator;
+	ArdourWidgets::ArdourButton  overwrite_default_button;
+	bool                         overwrite_default;
+	Gtk::VSeparator              overwrite_existing_separator;
+	ArdourWidgets::ArdourButton  overwrite_existing_button;
+	bool                         overwrite_existing;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;

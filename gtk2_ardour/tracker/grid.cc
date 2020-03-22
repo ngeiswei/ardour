@@ -2136,24 +2136,28 @@ Grid::note_edited (const string& path, const string& text)
 	clear_editables ();
 }
 
-void
+std::pair<uint8_t, uint8_t>
 Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 {
-	// VVT: likely add version that takes channel and vel in arg
+	uint8_t channel = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
+	uint8_t velocity = tracker_editor.main_toolbar.velocity_spinner.get_value_as_int ();
+	return set_on_note (pitch, channel, velocity, rowi, mti, mri, cgi);
+}
 
-	// VVT: also add button about overwriting existing chan, vel and
-	// delay of existing notes.
+std::pair<uint8_t, uint8_t>
+Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int rowi, int mti, int mri, int cgi)
+{
+	uint8_t new_ch = ch;
+	uint8_t new_vel = vel;
 
 	// Abort if the new pitch is invalid
 	if (127 < pitch) {
-		return;
+		return std::make_pair(0, 0);
 	}
 
 	NotePtr on_note = get_on_note (rowi, mti, cgi);
 	NotePtr off_note = get_off_note (rowi, mti, cgi);
 
-	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
-	uint8_t vel = tracker_editor.main_toolbar.velocity_spinner.get_value_as_int ();
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
 	MidiModel::NoteDiffCommand* cmd = 0;
@@ -2163,14 +2167,23 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		char const * opname = _("change note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
+		if (tracker_editor.main_toolbar.overwrite_existing) {
+			cmd->change (on_note, MidiModel::NoteDiffCommand::Channel, ch);
+			cmd->change (on_note, MidiModel::NoteDiffCommand::Velocity, vel);
+			// VVT: take care of delay
+		} else {
+			new_ch = on_note->channel ();
+			new_vel = on_note->velocity ();
+		}
 	} else if (off_note) {
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time ();
+			// VVT: take care of delay
 		Temporal::Beats end = pattern.next_off (rowi, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
-		NotePtr new_note (new NoteType (chan, start, length, pitch, vel));
+		NotePtr new_note (new NoteType (ch, start, length, pitch, vel));
 		char const * opname = _("add note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 		cmd->add (new_note);
@@ -2209,7 +2222,7 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 		if (prev_note && here < prev_end && prev_end < end)
 			end = prev_end;
 		Temporal::Beats length = end - here;
-		NotePtr new_note (new NoteType (chan, here, length, pitch, vel));
+		NotePtr new_note (new NoteType (ch, here, length, pitch, vel));
 		cmd->add (new_note);
 		// Pre-emptively add the note in np so that it knows in which track it is
 		// supposed to be.
@@ -2220,6 +2233,8 @@ Grid::set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi)
 	if (cmd) {
 		apply_command (mti, mri, cmd);
 	}
+
+	return std::make_pair(new_ch, new_vel);
 }
 
 void
@@ -2490,23 +2505,35 @@ Grid::set_note_delay (int delay, int rowi, int mti, int mri, int cgi)
 
 void Grid::play_note (int mti, uint8_t pitch)
 {
-	uint8_t event[3];
-	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
+	uint8_t ch = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
 	uint8_t vel = tracker_editor.main_toolbar.velocity_spinner.get_value_as_int ();
-	event[0] = (MIDI_CMD_NOTE_ON | chan);
+	play_note (mti, pitch, ch, vel);
+}
+
+void Grid::play_note (int mti, uint8_t pitch, uint8_t ch, uint8_t vel)
+{
+	uint8_t event[3];
+	event[0] = (MIDI_CMD_NOTE_ON | ch);
 	event[1] = pitch;
 	event[2] = vel;
 	pattern.tps[mti]->midi_track ()->write_immediate_event (3, event);
+
+	pressed_keys_pitch_to_channel[pitch] = ch;
 }
 
 void Grid::release_note (int mti, uint8_t pitch)
 {
 	uint8_t event[3];
-	uint8_t chan = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
-	event[0] = (MIDI_CMD_NOTE_OFF | chan);
+	std::map<uint8_t, uint8_t>::iterator it = pressed_keys_pitch_to_channel.find(pitch);
+	bool is_present = it != pressed_keys_pitch_to_channel.end();
+	uint8_t ch = is_present ? it->second : (tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1);
+	event[0] = (MIDI_CMD_NOTE_OFF | ch);
 	event[1] = pitch;
 	event[2] = 0;
 	pattern.tps[mti]->midi_track ()->write_immediate_event (3, event);
+
+	if (is_present)
+		pressed_keys_pitch_to_channel.erase (it);
 }
 
 void
@@ -3567,12 +3594,34 @@ Grid::step_editing_check_midi_event ()
 		}
 
 		if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_ON && size == 3) {
-			std::cout << "Grid::step_editing_check_midi_event () "
-			          << "buf[0] = " << (int)(buf[0])
-			          << ", buf[0] & 0xf = " << (int)(buf[0] & 0xf)
-			          << ", buf[1] = " << (int)buf[1]
-			          << ", buf[2] = " << (int)buf[2] << std::endl;
-			step_editing_set_on_note (buf[1], false); // VVT: support ch and vel
+			uint8_t pitch = buf[1];
+			uint8_t ch = buf[0] & 0xf;
+			uint8_t vel = buf[2];
+			switch (current_note_type) {
+			case TrackerColumn::NOTE:
+				if (tracker_editor.main_toolbar.overwrite_default) {
+					step_editing_set_on_note (pitch, ch, vel, false);
+				} else {
+					step_editing_set_on_note (pitch, false);
+				}
+				break;
+			case TrackerColumn::CHANNEL:
+				if (tracker_editor.main_toolbar.overwrite_default
+				    && tracker_editor.main_toolbar.overwrite_existing) {
+					step_editing_set_note_channel (ch);
+				}
+				break;
+			case TrackerColumn::VELOCITY:
+				if (tracker_editor.main_toolbar.overwrite_default
+				    && tracker_editor.main_toolbar.overwrite_existing) {
+					step_editing_set_note_velocity (vel);
+				}
+				break;
+			case TrackerColumn::DELAY:
+				break;
+			default:
+				cerr << "Grid::step_editing_check_midi_event: Implementation Error!" << endl;
+			}
 		}
 	}
 	delete [] buf;
@@ -3729,10 +3778,20 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
-	set_on_note (pitch, current_rowi, current_mti, current_mri, current_cgi);
+	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, current_rowi, current_mti, current_mri, current_cgi);
 	vertical_move_current_cursor_default_steps ();
 	if (play)
-		play_note (current_mti, pitch);
+		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
+	return true;
+}
+
+bool
+Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
+{
+	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, ch, vel, current_rowi, current_mti, current_mri, current_cgi);
+	vertical_move_current_cursor_default_steps ();
+	if (play)
+		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
 }
 
@@ -3780,7 +3839,7 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_asterisk:
 	case GDK_9:
 	case GDK_parenleft:
-		ret = step_editing_set_note_channel (digit_key_press (ev));
+		ret = step_editing_set_note_channel_digit (digit_key_press (ev));
 		break;
 
 	// Cursor movements
@@ -3814,13 +3873,24 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 }
 
 bool
-Grid::step_editing_set_note_channel (int digit)
+Grid::step_editing_set_note_channel_digit (int digit)
 {
 	NotePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		int ch = note->channel ();
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos);
 		set_note_channel (current_mti, current_mri, note, new_ch - 1);
+	}
+	vertical_move_current_cursor_default_steps ();
+	return true;
+}
+
+bool
+Grid::step_editing_set_note_channel (uint8_t ch)
+{
+	NotePtr note = get_on_note (current_rowi, current_mti, current_cgi);
+	if (note) {
+		set_note_channel (current_mti, current_mri, note, ch);
 	}
 	vertical_move_current_cursor_default_steps ();
 	return true;
@@ -3854,7 +3924,7 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_asterisk:
 	case GDK_9:
 	case GDK_parenleft:
-		ret = step_editing_set_note_velocity (digit_key_press (ev));
+		ret = step_editing_set_note_velocity_digit (digit_key_press (ev));
 		break;
 
 	// Cursor movements
@@ -3888,13 +3958,24 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 }
 
 bool
-Grid::step_editing_set_note_velocity (int digit)
+Grid::step_editing_set_note_velocity_digit (int digit)
 {
 	NotePtr note = get_on_note (current_rowi, current_mti, current_cgi);
 	if (note) {
 		int vel = note->velocity ();
 		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos);
 		set_note_velocity (current_mti, current_mri, note, new_vel);
+	}
+	vertical_move_current_cursor_default_steps ();
+	return true;
+}
+
+bool
+Grid::step_editing_set_note_velocity (uint8_t vel)
+{
+	NotePtr note = get_on_note (current_rowi, current_mti, current_cgi);
+	if (note) {
+		set_note_velocity (current_mti, current_mri, note, vel);
 	}
 	vertical_move_current_cursor_default_steps ();
 	return true;
