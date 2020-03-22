@@ -1,9 +1,10 @@
-- [ ] Make virtual keyboard keys not hardcoded (use MIDI Virtual Keyboard mapping)
+- [ ] Make virtual keyboard use MIDI Virtual Keyboard mapping
+- [ ] Have the playhead move only stop notes coming from the tracks, not the
+  notes coming from midi input
 - [ ] Create wscript under tracker folder
-- [ ] Try to improve color usage, how to label them, what can be reused
 - [ ] Create PR
 - [ ] Add copy/move, etc, notes + popup menu
-- [ ] Save octave value per each track and maybe more
+- [ ] Maybe save octave value per each track, possibly more
 - [ ] Deal with *** in a "proper" manner (allow free modification)
 - [ ] Support arbitrary number of tracks (put all properties in tracker_column)
 - [ ] Fix alignment with track toolbar
@@ -18,9 +19,7 @@
 - [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
 - [ ] Support midi input (maybe see MidiTimeAxisView::start_step_editing)
-- [ ] Only have Octave, Ch, Vel in main toolbar is there is a midi track, maybe
-- [ ] Play note velocity at which it is gonna be recorded (use already
-  existing)
+- [ ] Maybe only have Octave, Ch, Vel in main toolbar is there is a midi track
 - [ ] Use signals whenever possible (instead of for instance calling
   Grid::redisplay_grid) to not block. This can make ardour crash when jack
   buffer size is too short.

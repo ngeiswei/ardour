@@ -58,17 +58,20 @@ static const gchar *_beats_per_row_strings[] = {
 MainToolbar::MainToolbar (TrackerEditor& te)
 	: tracker_editor (te)
 	, bindings (0)
+	, spacing (4)
 	, beats_per_row_strings (I18N (_beats_per_row_strings))
 	, rows_per_beat (0)
 	, step_edit (false)
+	, overwrite_default (true)
+	, overwrite_existing (false)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
-	, channel_label (S_("Channel|Ch"))
+	, channel_label (S_("Channel"))
 	, channel_adjustment (1, 1, 16, 1, 4)
 	, channel_spinner (channel_adjustment)
-	, velocity_label (S_("Velocity|Vel"))
-	, velocity_adjustment (64, 0, 127, 1, 4)
+	, velocity_label (S_("Velocity"))
+	, velocity_adjustment (100, 0, 127, 1, 4)
 	, velocity_spinner (velocity_adjustment)
 	, delay_label (_("Delay"))
 	, delay_adjustment (0, 0, 0, 1, 4)
@@ -98,76 +101,108 @@ MainToolbar::setup ()
 void
 MainToolbar::setup_layout ()
 {
-	set_spacing (2);
+	set_spacing (spacing);
 
-	// Add beats per row selection
-	beats_per_row_selector.show ();
-	pack_start (beats_per_row_selector, false, false);
+	// Top row
+	Gtk::HBox* tr = new Gtk::HBox (); // TODO: take care of memory leak
+	tr->set_spacing(spacing);
 
 	// Step edit button
-	step_edit_separator.show ();
-	pack_start (step_edit_separator, false, false);
 	step_edit_button.set_name ("step edit button");
 	step_edit_button.set_text (S_("Step Edit"));
 	step_edit_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::step_edit_press), false);
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	step_edit_button.show ();
-	pack_start (step_edit_button, false, false);
+	tr->pack_start (step_edit_button, false, false);
 
 	// Steps spinner
 	steps_separator.show ();
-	pack_start (steps_separator, false, false);
+	tr->pack_start (steps_separator, false, false);
 	steps_label.show ();
-	pack_start (steps_label, false, false);
+	tr->pack_start (steps_label, false, false);
 	steps_spinner.set_activates_default ();
 	steps_spinner.show ();
-	pack_start (steps_spinner, false, false);
+	tr->pack_start (steps_spinner, false, false);
 
 	// Octave spinner
 	octave_separator.show ();
-	pack_start (octave_separator, false, false);
+	tr->pack_start (octave_separator, false, false);
 	octave_label.show ();
-	pack_start (octave_label, false, false);
+	tr->pack_start (octave_label, false, false);
 	octave_spinner.set_activates_default ();
 	octave_spinner.show ();
-	pack_start (octave_spinner, false, false);
+	tr->pack_start (octave_spinner, false, false);
 
 	// Channel spinner
 	channel_separator.show ();
-	pack_start (channel_separator, false, false);
+	tr->pack_start (channel_separator, false, false);
 	channel_label.show ();
-	pack_start (channel_label, false, false);
+	tr->pack_start (channel_label, false, false);
 	channel_spinner.set_activates_default ();
 	channel_spinner.show ();
-	pack_start (channel_spinner, false, false);
+	tr->pack_start (channel_spinner, false, false);
 
 	// Velocity spinner
 	velocity_separator.show ();
-	pack_start (velocity_separator, false, false);
+	tr->pack_start (velocity_separator, false, false);
 	velocity_label.show ();
-	pack_start (velocity_label, false, false);
+	tr->pack_start (velocity_label, false, false);
 	velocity_spinner.set_activates_default ();
 	velocity_spinner.show ();
-	pack_start (velocity_spinner, false, false);
+	tr->pack_start (velocity_spinner, false, false);
 
 	// Delay spinner
 	delay_separator.show ();
-	pack_start (delay_separator, false, false);
+	tr->pack_start (delay_separator, false, false);
 	delay_label.show ();
-	pack_start (delay_label, false, false);
+	tr->pack_start (delay_label, false, false);
 	delay_spinner.set_activates_default ();
 	delay_spinner.show ();
-	pack_start (delay_spinner, false, false);
+	tr->pack_start (delay_spinner, false, false);
 
 	// Position spinner
 	position_separator.show ();
-	pack_start (position_separator, false, false);
+	tr->pack_start (position_separator, false, false);
 	position_label.show ();
-	pack_start (position_label, false, false);
+	tr->pack_start (position_label, false, false);
 	position_spinner.signal_value_changed ().connect (sigc::mem_fun (*this, &MainToolbar::change_position), false);
 	position_spinner.set_activates_default ();
 	position_spinner.show ();
-	pack_start (position_spinner, false, false);
+	tr->pack_start (position_spinner, false, false);
+
+	tr->show ();
+	pack_start (*tr, false, false);
+
+	// Bottom row
+	Gtk::HBox* br = new Gtk::HBox ();
+	br->set_spacing(spacing);
+
+	// Add beats per row selection
+	beats_per_row_selector.show ();
+	br->pack_start (beats_per_row_selector, false, false);
+
+	// Overwrite default button
+	overwrite_default_separator.show ();
+	br->pack_start (overwrite_default_separator, false, false);
+	overwrite_default_button.set_name ("overwrite default button");
+	overwrite_default_button.set_text (S_("Overwrite Default"));
+	overwrite_default_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_default_press), false);
+	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	overwrite_default_button.show ();
+	br->pack_start (overwrite_default_button, false, false);
+
+	// Overwrite old button
+	overwrite_existing_separator.show ();
+	br->pack_start (overwrite_existing_separator, false, false);
+	overwrite_existing_button.set_name ("overwrite existing button");
+	overwrite_existing_button.set_text (S_("Overwrite Existing"));
+	overwrite_existing_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_existing_press), false);
+	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	overwrite_existing_button.show ();
+	br->pack_start (overwrite_existing_button, false, false);
+
+	br->show ();
+	pack_start (*br, false, false);
 
 	show ();
 }
@@ -177,11 +212,13 @@ MainToolbar::setup_tooltips ()
 {
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
 	step_edit_button.set_tooltip_text (_("Toggle step editing"));
+	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
+	overwrite_existing_button.set_tooltip_text (_("If enabled new events overwrite existing channel, velocity and delay"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
 	delay_spinner.set_tooltip_text (_("Default delay"));
-	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^ (position-1)"));
+	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)"));
 	steps_spinner.set_tooltip_text (_("Step size"));
 }
 
@@ -417,6 +454,34 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 		tracker_editor.disconnect_midi_event ();
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
 	}
+
+	return false;
+}
+
+bool
+MainToolbar::overwrite_default_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	overwrite_default = !overwrite_default;
+	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	return false;
+}
+
+bool
+MainToolbar::overwrite_existing_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	overwrite_existing = !overwrite_existing;
+	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
 }

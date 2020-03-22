@@ -763,7 +763,6 @@ Session::disconnect_port_for_rewire (std::string const& port) const
 void
 Session::rewire_selected_midi (std::shared_ptr<MidiTrack> new_midi_target)
 {
-    // VVT: understand relationship with track selection
 	if (!new_midi_target) {
 		return;
 	}
@@ -806,7 +805,6 @@ Session::rewire_selected_midi (std::shared_ptr<MidiTrack> new_midi_target)
 void
 Session::rewire_midi_selection_ports ()
 {
-    // VVT: understand relationship with track selection
 	if (!Config->get_midi_input_follows_selection()) {
 		return;
 	}
