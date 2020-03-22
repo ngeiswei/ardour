@@ -1475,8 +1475,6 @@ Selection::remove (const TrackViewList& t)
 void
 Selection::set (TimeAxisView* track)
 {
-    // VVT: select track when changing track col
-    std::cout << "Selection::set (track=" << track << ")" << std::endl;
 	TrackViewList tvl;
 	tvl.push_back (track);
 	set (tvl);
