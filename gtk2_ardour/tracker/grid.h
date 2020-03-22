@@ -384,6 +384,7 @@ private:
 
 	// Play note
 	void play_note (int mti, uint8_t pitch);
+	void play_note (int mti, uint8_t pitch, uint8_t ch, uint8_t vel);
 	void release_note (int mti, uint8_t pitch);
 
 	// Set current cursor
@@ -441,13 +442,16 @@ public:
 private:
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch, bool play=true);
+	bool step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play=true);
 	bool step_editing_set_off_note ();
 	bool step_editing_delete_note ();
 
 	bool step_editing_note_channel_key_press (GdkEventKey*);
-	bool step_editing_set_note_channel (int digit);
+	bool step_editing_set_note_channel_digit (int digit);
+	bool step_editing_set_note_channel (uint8_t ch);
 	bool step_editing_note_velocity_key_press (GdkEventKey*);
-	bool step_editing_set_note_velocity (int digit);
+	bool step_editing_set_note_velocity_digit (int digit);
+	bool step_editing_set_note_velocity (uint8_t vel);
 	bool step_editing_note_delay_key_press (GdkEventKey*);
 	bool step_editing_set_note_delay (int digit);
 	bool step_editing_delete_note_delay ();
@@ -485,9 +489,15 @@ private:
 	// Midi note callbacks
 	uint8_t parse_pitch (const std::string& text) const;
 	void note_edited (const std::string& path, const std::string& text);
-	void set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi);
+
+	// Set a new on note (resp. off note, or none) on the grid. The
+	// return pair of set_on_note is the channel and velocity of the
+	// new note. It is returned to be passed to play_note.
+	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi);
+	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int rowi, int mti, int mri, int cgi);
 	void set_off_note (int rowi, int mti, int mri, int cgi);
 	void delete_note (int rowi, int mti, int mri, int cgi);
+
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel (int mti, int mri, NotePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
@@ -594,6 +604,11 @@ private:
 	//
 	// TODO: maybe make sure that it is thread safe.
 	std::stack<int> skip_follow_playhead;
+
+	// Mapping from pitch to channel of the current pressed keys, so
+	// that release_note knows what is the channel of the note to
+	// release.
+	std::map<uint8_t, uint8_t> pressed_keys_pitch_to_channel;
 };
 
 } // ~namespace tracker
