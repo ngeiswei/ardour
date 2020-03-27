@@ -75,6 +75,11 @@ public:
 	bool overwrite_existing_press (GdkEventButton* ev);
 
 	/**
+	 * Triggered upon sync playhead button press event.
+	 */
+	bool sync_playhead_press (GdkEventButton* ev);
+
+	/**
 	 * Trigger when position_spinner value is changed.
 	 */
 	void change_position ();
@@ -100,6 +105,9 @@ public:
 	Gtk::VSeparator              overwrite_existing_separator;
 	ArdourWidgets::ArdourButton  overwrite_existing_button;
 	bool                         overwrite_existing;
+	Gtk::VSeparator              sync_playhead_separator;
+	ArdourWidgets::ArdourButton  sync_playhead_button;
+	bool                         sync_playhead;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;

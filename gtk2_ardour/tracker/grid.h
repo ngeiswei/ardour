@@ -103,6 +103,11 @@ public:
 		Gtk::TreeModelColumn<std::string> track_separator[MAX_NUMBER_OF_TRACKS];
 	};
 
+	// For playhead synchronization
+	sigc::connection clock_connection;
+	void connect_clock ();
+	void disconnect_clock ();
+
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
 	size_t select_available_automation_column (size_t mti /* midi track index */);
@@ -261,21 +266,21 @@ public:
 	// same row, then this string is printed.
 	static const std::string undefined_str;
 
-	GridModelColumns             columns;
+	GridModelColumns columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 
 	// Coordonates associated to current cursor
-	Temporal::Beats              current_beats;
-	Gtk::TreeModel::Path         current_path;
-	int                          current_rowi;
-	Gtk::TreeModel::Row          current_row;
-	int                          current_col;
-	int                          current_mti; // multi track index
-	TrackPattern*                previous_mtp;
-	TrackPattern*                current_mtp;
-	int                          current_mri; // midi region index
-	int                          current_cgi; // column group index
-	int                          current_pos; // toolbar position, once adjusted
+	Temporal::Beats current_beats;
+	Gtk::TreeModel::Path current_path;
+	int current_rowi;
+	Gtk::TreeModel::Row current_row;
+	int current_col;
+	int current_mti; // multi track index
+	TrackPattern* previous_mtp;
+	TrackPattern* current_mtp;
+	int current_mri; // midi region index
+	int current_cgi; // column group index
+	int current_pos; // toolbar position, once adjusted
 
 	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
 	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
