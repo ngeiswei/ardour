@@ -3713,7 +3713,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	// Off note
 	case GDK_equal:
 	case GDK_plus:
-	case GDK_Caps_Lock:
+	case GDK_Caps_Lock:			  // VVT: is it really a good idea?
 		ret = step_editing_set_off_note ();
 		break;
 
