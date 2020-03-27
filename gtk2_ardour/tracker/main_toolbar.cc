@@ -64,6 +64,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, step_edit (false)
 	, overwrite_default (true)
 	, overwrite_existing (false)
+	, sync_playhead (true)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -201,6 +202,16 @@ MainToolbar::setup_layout ()
 	overwrite_existing_button.show ();
 	br->pack_start (overwrite_existing_button, false, false);
 
+	// Sync playhead
+	sync_playhead_separator.show ();
+	br->pack_start (sync_playhead_separator, false, false);
+	sync_playhead_button.set_name ("sync playhead button");
+	sync_playhead_button.set_text (S_("Sync Playhead"));
+	sync_playhead_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::sync_playhead_press), false);
+	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	sync_playhead_button.show ();
+	br->pack_start (sync_playhead_button, false, false);
+
 	br->show ();
 	pack_start (*br, false, false);
 
@@ -213,7 +224,8 @@ MainToolbar::setup_tooltips ()
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
 	step_edit_button.set_tooltip_text (_("Toggle step editing"));
 	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
-	overwrite_existing_button.set_tooltip_text (_("If enabled new events overwrite existing channel, velocity and delay"));
+	overwrite_existing_button.set_tooltip_text (_("New events overwrite existing channel, velocity and delay"));
+	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
@@ -482,6 +494,26 @@ MainToolbar::overwrite_existing_press (GdkEventButton* ev)
 
 	overwrite_existing = !overwrite_existing;
 	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	return false;
+}
+
+bool
+MainToolbar::sync_playhead_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	sync_playhead = !sync_playhead;
+	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	if (sync_playhead) {
+		tracker_editor.grid.connect_clock ();
+	} else {
+		tracker_editor.grid.disconnect_clock ();
+	}
 
 	return false;
 }
