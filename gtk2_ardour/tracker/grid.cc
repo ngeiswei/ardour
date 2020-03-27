@@ -182,6 +182,20 @@ Grid::GridModelColumns::GridModelColumns ()
 	}
 }
 
+void
+Grid::connect_clock ()
+{
+	// Connect to clock to follow current row
+	clock_connection = ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_playhead));
+}
+
+void
+Grid::disconnect_clock ()
+{
+	// Disconnect from clock to unfollow current row
+	clock_connection.disconnect ();
+}
+
 size_t
 Grid::select_available_automation_column (size_t mti)
 {
@@ -2589,7 +2603,7 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	}
 
 	// Update playhead accordingly
-	if (set_playhead) {
+	if (set_playhead and tracker_editor.main_toolbar.sync_playhead) {
 		clock_pos = pattern.sample_at_row (current_rowi);
 		skip_follow_playhead.push (current_rowi);
 		tracker_editor.session->request_locate (clock_pos);
@@ -2869,8 +2883,7 @@ Grid::connect_events ()
 	signal_button_press_event ().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
 	// signal_scroll_event ().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
-	// Connect to clock to follow current row
-	ARDOUR_UI::Clock.connect (sigc::mem_fun (*this, &Grid::follow_playhead));
+	connect_clock ();
 }
 
 void
