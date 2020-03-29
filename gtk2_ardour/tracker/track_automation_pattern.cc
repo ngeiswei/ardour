@@ -80,7 +80,7 @@ void TrackAutomationPattern::setup_main_automation_controls ()
 	// Pan
 	set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
-		AutomationPattern::insert (track->pannable ()->automation_control (*p), track->panner ()->describe_parameter (*p));
+		AutomationPattern::insert (track->pannable ()->automation_control (*p), track->describe_parameter (*p));
 	}
 }
 
