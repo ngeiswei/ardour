@@ -10,6 +10,7 @@ class BeatsTest : public CppUnit::TestFixture
 	CPPUNIT_TEST(multiplyTest);
 	CPPUNIT_TEST(convertTest);
 	CPPUNIT_TEST(roundTest);
+	CPPUNIT_TEST(operator_eqTest);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -19,4 +20,5 @@ public:
 	void multiplyTest();
 	void convertTest();
 	void roundTest();
+	void operator_eqTest();
 };

@@ -146,6 +146,7 @@ def build(bld):
                 test/RangeTest.cc
                 test/NoteTest.cc
                 test/CurveTest.cc
+                test/BeatsTest.cc
                 test/testrunner.cc
         '''
         obj.includes     = ['.', './src']

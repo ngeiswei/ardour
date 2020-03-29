@@ -5,7 +5,6 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION(BeatsTest);
 
-using namespace Evoral;
 using namespace Temporal;
 
 static const double delta = 1.5 / (double)Beats::PPQN;
@@ -168,4 +167,11 @@ BeatsTest::convertTest()
 
 	CPPUNIT_ASSERT_EQUAL(int64_t(1.5 * Beats::PPQN), a.to_ticks());
 	CPPUNIT_ASSERT_EQUAL(int64_t(1.5 * 192), a.to_ticks(192));
+}
+
+void
+BeatsTest::operator_eqTest()
+{
+	for (int i = 1; i < 1000; i++)
+		CPPUNIT_ASSERT (Beats::ticks(i-1).operator!=(Beats::ticks(i)));
 }
