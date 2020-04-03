@@ -143,7 +143,7 @@ TrackerUtils::locate (const std::string& str, int position)
 uint8_t
 TrackerUtils::pitch (uint8_t semitones, int octave)
 {
-	return (uint8_t) (octave + 1) * 12 + semitones;
+	return (uint8_t) octave * 12 + semitones;
 }
 
 uint8_t
