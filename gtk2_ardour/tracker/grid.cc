@@ -111,6 +111,10 @@ Grid::Grid (TrackerEditor& te)
 	, redisplay_grid_connect_call_enabled (true)
 	, time_column (0)
 {
+	UIConfiguration::instance().ParameterChanged.connect (sigc::mem_fun (*this, &Grid::parameter_changed));
+	UIConfiguration::instance().ColorsChanged.connect (sigc::mem_fun (*this, &Grid::color_changed));
+	read_keyboard_layout ();
+	read_colors ();
 }
 
 Grid::~Grid ()
@@ -831,6 +835,13 @@ Grid::setup ()
 }
 
 void
+Grid::read_keyboard_layout ()
+{
+	KeyboardLayout::Layout layout = KeyboardLayout::get_layout (UIConfiguration::instance().get_vkeybd_layout ());
+	_keyboard_layout.set_keyboard_layout (layout);
+}
+
+void
 Grid::read_colors ()
 {
 	gtk_bases_color = UIConfiguration::instance ().color_str ("gtk_bases");
@@ -901,9 +912,6 @@ Grid::redisplay_grid ()
 	// TODO: support multi track multi region
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_lower (pattern.tps.front ()->delay_ticks_min ());
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_upper (pattern.tps.front ()->delay_ticks_max ());
-
-	// Load colors from config
-	read_colors ();
 
 	// Update pattern settings and content
 	pattern.update ();
@@ -1930,6 +1938,20 @@ bool
 Grid::is_int_param (const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param);
+}
+
+void
+Grid::parameter_changed (std::string const& p)
+{
+	if (p == "vkeybd-layout") {
+		read_keyboard_layout ();
+	}
+}
+
+void
+Grid::color_changed ()
+{
+	read_colors ();
 }
 
 /////////////////////
@@ -3469,113 +3491,13 @@ Grid::digit_key_press (GdkEventKey* ev)
 uint8_t
 Grid::pitch_key (GdkEventKey* ev)
 {
-	int octave = tracker_editor.main_toolbar.octave_spinner.get_value_as_int ();
-
-	switch (ev->keyval) {
-	case GDK_z:                 // C
-	case GDK_Z:
-		return TrackerUtils::pitch (0, octave);
-	case GDK_s:                 // C#
-	case GDK_S:
-		return TrackerUtils::pitch (1, octave);
-	case GDK_x:                 // D
-	case GDK_X:
-		return TrackerUtils::pitch (2, octave);
-	case GDK_d:                 // D#
-	case GDK_D:
-		return TrackerUtils::pitch (3, octave);
-	case GDK_c:                 // E
-	case GDK_C:
-		return TrackerUtils::pitch (4, octave);
-	case GDK_v:                 // F
-	case GDK_V:
-		return TrackerUtils::pitch (5, octave);
-	case GDK_g:                 // F#
-	case GDK_G:
-		return TrackerUtils::pitch (6, octave);
-	case GDK_b:                 // G
-	case GDK_B:
-		return TrackerUtils::pitch (7, octave);
-	case GDK_h:                 // G#
-	case GDK_H:
-		return TrackerUtils::pitch (8, octave);
-	case GDK_n:                 // A
-	case GDK_N:
-		return TrackerUtils::pitch (9, octave);
-	case GDK_j:                 // A#
-	case GDK_J:
-		return TrackerUtils::pitch (10, octave);
-	case GDK_m:                 // B
-	case GDK_M:
-		return TrackerUtils::pitch (11, octave);
-	case GDK_q:                 // C+1
-	case GDK_Q:
-	case GDK_comma:
-	case GDK_less:
-		return TrackerUtils::pitch (0, octave + 1);
-	case GDK_2:                 // C#+1
-	case GDK_at:
-	case GDK_l:
-	case GDK_L:
-		return TrackerUtils::pitch (1, octave + 1);
-	case GDK_w:                 // D+1
-	case GDK_W:
-	case GDK_period:
-	case GDK_greater:
-		return TrackerUtils::pitch (2, octave + 1);
-	case GDK_3:                 // D#+1
-	case GDK_numbersign:
-	case GDK_semicolon:
-	case GDK_colon:
-		return TrackerUtils::pitch (3, octave + 1);
-		break;
-	case GDK_e:                 // E+1
-	case GDK_E:
-	case GDK_slash:
-	case GDK_question:
-		return TrackerUtils::pitch (4, octave + 1);
-	case GDK_r:                 // F+1
-	case GDK_R:
-		return TrackerUtils::pitch (5, octave + 1);
-	case GDK_5:                 // F#+1
-	case GDK_percent:
-		return TrackerUtils::pitch (6, octave + 1);
-	case GDK_t:                 // G+1
-	case GDK_T:
-		return TrackerUtils::pitch (7, octave + 1);
-	case GDK_6:                 // G#+1
-	case GDK_caret:
-		return TrackerUtils::pitch (8, octave + 1);
-	case GDK_y:                 // A+1
-	case GDK_Y:
-		return TrackerUtils::pitch (9, octave + 1);
-	case GDK_7:                 // A#+1
-	case GDK_ampersand:
-		return TrackerUtils::pitch (10, octave + 1);
-	case GDK_u:                 // B+1
-	case GDK_U:
-		return TrackerUtils::pitch (11, octave + 1);
-	case GDK_i:                 // C+2
-	case GDK_I:
-		return TrackerUtils::pitch (0, octave + 2);
-	case GDK_9:                 // C#+2
-	case GDK_parenleft:
-		return TrackerUtils::pitch (1, octave + 2);
-	case GDK_o:                 // D+2
-	case GDK_O:
-		return TrackerUtils::pitch (2, octave + 2);
-	case GDK_0:                 // D#+2
-	case GDK_parenright:
-		return TrackerUtils::pitch (3, octave + 2);
-	case GDK_p:                 // E+2
-	case GDK_P:
-		return TrackerUtils::pitch (4, octave + 2);
-	case GDK_bracketleft:       // F+2
-	case GDK_braceleft:
-		return TrackerUtils::pitch (5, octave + 2);
-	default:
+	char const* key = KeyboardLayout::get_keycode (ev);
+	int relative_pitch = _keyboard_layout.key_binding (key);
+	if (relative_pitch < 0 || 127 < relative_pitch)
 		return -1;
-	}
+	int octave = tracker_editor.main_toolbar.octave_spinner.get_value_as_int ();
+	uint8_t absolute_pitch = TrackerUtils::pitch ((uint8_t)relative_pitch, octave);
+	return 127 < absolute_pitch ? -1 : absolute_pitch;
 }
 
 bool
@@ -3649,80 +3571,6 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 
 	switch (ev->keyval) {
 
-	// On notes
-	case GDK_z:                 // C
-	case GDK_Z:
-	case GDK_s:                 // C#
-	case GDK_S:
-	case GDK_x:                 // D
-	case GDK_X:
-	case GDK_d:                 // D#
-	case GDK_D:
-	case GDK_c:                 // E
-	case GDK_C:
-	case GDK_v:                 // F
-	case GDK_V:
-	case GDK_g:                 // F#
-	case GDK_G:
-	case GDK_b:                 // G
-	case GDK_B:
-	case GDK_h:                 // G#
-	case GDK_H:
-	case GDK_n:                 // A
-	case GDK_N:
-	case GDK_j:                 // A#
-	case GDK_J:
-	case GDK_m:                 // B
-	case GDK_M:
-	case GDK_q:                 // C+1
-	case GDK_Q:
-	case GDK_comma:
-	case GDK_less:
-	case GDK_2:                 // C#+1
-	case GDK_at:
-	case GDK_l:
-	case GDK_L:
-	case GDK_w:                 // D+1
-	case GDK_W:
-	case GDK_period:
-	case GDK_greater:
-	case GDK_3:                 // D#+1
-	case GDK_numbersign:
-	case GDK_semicolon:
-	case GDK_colon:
-	case GDK_e:                 // E+1
-	case GDK_E:
-	case GDK_slash:
-	case GDK_question:
-	case GDK_r:                 // F+1
-	case GDK_R:
-	case GDK_5:                 // F#+1
-	case GDK_percent:
-	case GDK_t:                 // G+1
-	case GDK_T:
-	case GDK_6:                 // G#+1
-	case GDK_caret:
-	case GDK_y:                 // A+1
-	case GDK_Y:
-	case GDK_7:                 // A#+1
-	case GDK_ampersand:
-	case GDK_u:                 // B+1
-	case GDK_U:
-	case GDK_i:                 // C+2
-	case GDK_I:
-	case GDK_9:                 // C#+2
-	case GDK_parenleft:
-	case GDK_o:                 // D+2
-	case GDK_O:
-	case GDK_0:                 // D#+2
-	case GDK_parenright:
-	case GDK_p:                 // E+2
-	case GDK_P:
-	case GDK_bracketleft:       // F+2
-	case GDK_braceleft:
-		ret = step_editing_set_on_note (pitch_key (ev));
-		break;
-
 	// Off note
 	case GDK_equal:
 	case GDK_plus:
@@ -3753,36 +3601,19 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
-	// Other key not passed to the default entry handler
-	case GDK_a:
-	case GDK_A:
-	case GDK_f:
-	case GDK_F:
-	case GDK_k:
-	case GDK_K:
-	case GDK_apostrophe:
-	case GDK_quotedbl:
-	case GDK_1:
-	case GDK_exclam:
-	case GDK_4:
-	case GDK_dollar:
-	case GDK_8:
-	case GDK_asterisk:
-	case GDK_minus:
-	case GDK_underscore:
-	case GDK_bracketright:
-	case GDK_braceright:
-		ret = true;
-		break;
-
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *get_column (current_col), true);
 		ret = true;
 		break;
 
-	default:
+	default: {
+		// On notes
+		uint8_t ptc = pitch_key (ev);
+		if (ptc < 128)
+			ret = step_editing_set_on_note (ptc);
 		break;
+	}
 	}
 
 	return ret;
@@ -4456,84 +4287,8 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	bool ret = false;
 	
 	switch (ev->keyval) {
-	// On notes
-	case GDK_z:                 // C
-	case GDK_Z:
-	case GDK_s:                 // C#
-	case GDK_S:
-	case GDK_x:                 // D
-	case GDK_X:
-	case GDK_d:                 // D#
-	case GDK_D:
-	case GDK_c:                 // E
-	case GDK_C:
-	case GDK_v:                 // F
-	case GDK_V:
-	case GDK_g:                 // F#
-	case GDK_G:
-	case GDK_b:                 // G
-	case GDK_B:
-	case GDK_h:                 // G#
-	case GDK_H:
-	case GDK_n:                 // A
-	case GDK_N:
-	case GDK_j:                 // A#
-	case GDK_J:
-	case GDK_m:                 // B
-	case GDK_M:
-	case GDK_q:                 // C+1
-	case GDK_Q:
-	case GDK_comma:
-	case GDK_less:
-	case GDK_2:                 // C#+1
-	case GDK_at:
-	case GDK_l:
-	case GDK_L:
-	case GDK_w:                 // D+1
-	case GDK_W:
-	case GDK_period:
-	case GDK_greater:
-	case GDK_3:                 // D#+1
-	case GDK_numbersign:
-	case GDK_semicolon:
-	case GDK_colon:
-	case GDK_e:                 // E+1
-	case GDK_E:
-	case GDK_slash:
-	case GDK_question:
-	case GDK_r:                 // F+1
-	case GDK_R:
-	case GDK_5:                 // F#+1
-	case GDK_percent:
-	case GDK_t:                 // G+1
-	case GDK_T:
-	case GDK_6:                 // G#+1
-	case GDK_caret:
-	case GDK_y:                 // A+1
-	case GDK_Y:
-	case GDK_7:                 // A#+1
-	case GDK_ampersand:
-	case GDK_u:                 // B+1
-	case GDK_U:
-	case GDK_i:                 // C+2
-	case GDK_I:
-	case GDK_9:                 // C#+2
-	case GDK_parenleft:
-	case GDK_o:                 // D+2
-	case GDK_O:
-	case GDK_0:                 // D#+2
-	case GDK_parenright:
-	case GDK_p:                 // E+2
-	case GDK_P:
-	case GDK_bracketleft:       // F+2
-	case GDK_braceleft:
-		if (last_keyval != ev->keyval) {
-			play_note (current_mti, pitch_key (ev));
-		}
-		ret = true;
-		break;
 
-	// Current cursor movements
+	// Cursor movements
 	case GDK_Up:
 	case GDK_uparrow:
 	case GDK_Down:
@@ -4556,8 +4311,17 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		ret = true;
 		break;
 
-	default:
+	default: {
+		// On notes
+		uint8_t ptc = pitch_key (ev);
+		if (ptc < 128) {
+			if (last_keyval != ev->keyval) {
+				play_note (current_mti, ptc);
+			}
+			ret = true;
+		}
 		break;
+	}
 	}
 
 	return ret;
@@ -4571,86 +4335,13 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 		return false;
 	}
 
-	bool ret = false;
-
-	switch (ev->keyval) {
-	// On notes
-	case GDK_z:                 // C
-	case GDK_Z:
-	case GDK_s:                 // C#
-	case GDK_S:
-	case GDK_x:                 // D
-	case GDK_X:
-	case GDK_d:                 // D#
-	case GDK_D:
-	case GDK_c:                 // E
-	case GDK_C:
-	case GDK_v:                 // F
-	case GDK_V:
-	case GDK_g:                 // F#
-	case GDK_G:
-	case GDK_b:                 // G
-	case GDK_B:
-	case GDK_h:                 // G#
-	case GDK_H:
-	case GDK_n:                 // A
-	case GDK_N:
-	case GDK_j:                 // A#
-	case GDK_J:
-	case GDK_m:                 // B
-	case GDK_M:
-	case GDK_q:                 // C+1
-	case GDK_Q:
-	case GDK_comma:
-	case GDK_less:
-	case GDK_2:                 // C#+1
-	case GDK_at:
-	case GDK_l:
-	case GDK_L:
-	case GDK_w:                 // D+1
-	case GDK_W:
-	case GDK_period:
-	case GDK_greater:
-	case GDK_3:                 // D#+1
-	case GDK_numbersign:
-	case GDK_semicolon:
-	case GDK_colon:
-	case GDK_e:                 // E+1
-	case GDK_E:
-	case GDK_slash:
-	case GDK_question:
-	case GDK_r:                 // F+1
-	case GDK_R:
-	case GDK_5:                 // F#+1
-	case GDK_percent:
-	case GDK_t:                 // G+1
-	case GDK_T:
-	case GDK_6:                 // G#+1
-	case GDK_caret:
-	case GDK_y:                 // A+1
-	case GDK_Y:
-	case GDK_7:                 // A#+1
-	case GDK_ampersand:
-	case GDK_u:                 // B+1
-	case GDK_U:
-	case GDK_i:                 // C+2
-	case GDK_I:
-	case GDK_9:                 // C#+2
-	case GDK_parenleft:
-	case GDK_o:                 // D+2
-	case GDK_O:
-	case GDK_0:                 // D#+2
-	case GDK_parenright:
-	case GDK_p:                 // E+2
-	case GDK_P:
-	case GDK_bracketleft:       // F+2
-	case GDK_braceleft:
-		release_note (current_mti, pitch_key (ev));
-		ret = true;
-		break;
+	uint8_t ptc = pitch_key (ev);
+	if (ptc < 128) {
+		release_note (current_mti, ptc);
+		return true;
 	}
 
-	return ret;
+	return false;
 }
 
 bool

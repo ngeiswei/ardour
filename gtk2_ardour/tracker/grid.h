@@ -25,6 +25,8 @@
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeview.h>
 
+#include "../keyboardlayout.h"
+
 #include "main_toolbar.h"
 #include "midi_region_pattern.h"
 #include "multi_track_pattern.h"
@@ -169,7 +171,8 @@ public:
 	int first_defined_col ();
 
 	void setup ();
-	void read_colors ();         // Read colors from config
+	void read_keyboard_layout ();     // Read keyboard layout from config
+	void read_colors ();              // Read colors from config
 	void redisplay_global_columns (); // time, color, font
 	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 
@@ -243,6 +246,10 @@ public:
 	std::pair<std::string, Pango::AttrList> underlined_value (const std::string& val_str) const;
 
 	bool is_int_param (const Evoral::Parameter& param) const;
+
+	// Call on user preference change
+	void parameter_changed (const std::string& p);
+	void color_changed ();
 
 	TrackerEditor& tracker_editor;
 
@@ -614,6 +621,9 @@ private:
 	// that release_note knows what is the channel of the note to
 	// release.
 	std::map<uint8_t, uint8_t> pressed_keys_pitch_to_channel;
+
+	// Mapping PC keyboard key to note pitch
+	KeyboardLayout _keyboard_layout;
 };
 
 } // ~namespace tracker
