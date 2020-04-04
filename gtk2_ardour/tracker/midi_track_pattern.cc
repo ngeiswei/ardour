@@ -453,9 +453,7 @@ MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 boost::shared_ptr<MIDI::Name::MasterDeviceNames>
 MidiTrackPattern::get_device_names ()
 {
-	MidiRegionView* mrv = dynamic_cast<MidiRegionView*> (rvs.front ());
-	MidiTimeAxisView* mtav = mrv->midi_view ();
-	return mtav->get_device_names ();
+	return midi_track->instrument_info ().master_device_names ();
 }
 
 double
