@@ -1,3 +1,5 @@
+- [ ] Take care of space bar pressing
+- [ ] Final off note management fixes
 - [ ] Add button to jump to next note
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
   notes coming from midi input
