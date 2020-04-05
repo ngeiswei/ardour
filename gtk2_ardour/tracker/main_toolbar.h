@@ -80,6 +80,11 @@ public:
 	bool sync_playhead_press (GdkEventButton* ev);
 
 	/**
+	 * Triigered upon jump to next button press event.
+	 */
+	bool jump_press (GdkEventButton* ev);
+
+	/**
 	 * Trigger when position_spinner value is changed.
 	 */
 	void change_position ();
@@ -108,6 +113,9 @@ public:
 	Gtk::VSeparator              sync_playhead_separator;
 	ArdourWidgets::ArdourButton  sync_playhead_button;
 	bool                         sync_playhead;
+	Gtk::VSeparator              jump_separator;
+	ArdourWidgets::ArdourButton  jump_button;
+	bool                         jump;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
