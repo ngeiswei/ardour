@@ -65,6 +65,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, overwrite_default (true)
 	, overwrite_existing (false)
 	, sync_playhead (true)
+	, jump (false)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -212,6 +213,16 @@ MainToolbar::setup_layout ()
 	sync_playhead_button.show ();
 	br->pack_start (sync_playhead_button, false, false);
 
+	// Jump to next
+	jump_separator.show ();
+	br->pack_start (jump_separator, false, false);
+	jump_button.set_name ("jump button");
+	jump_button.set_text (S_("Jump"));
+	jump_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::jump_press), false);
+	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	jump_button.show ();
+	br->pack_start (jump_button, false, false);
+
 	br->show ();
 	pack_start (*br, false, false);
 
@@ -226,11 +237,12 @@ MainToolbar::setup_tooltips ()
 	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
 	overwrite_existing_button.set_tooltip_text (_("New events overwrite existing channel, velocity and delay"));
 	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
+	jump_button.set_tooltip_text (_("Jump to the next event of the same type, on/off note, channel, velocity, delay or automation, while moving the cursor or step editing."));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
 	delay_spinner.set_tooltip_text (_("Default delay"));
-	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)"));
+	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)."));
 	steps_spinner.set_tooltip_text (_("Step size"));
 }
 
@@ -514,6 +526,20 @@ MainToolbar::sync_playhead_press (GdkEventButton* ev)
 	} else {
 		tracker_editor.grid.disconnect_clock ();
 	}
+
+	return false;
+}
+
+bool
+MainToolbar::jump_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	jump = !jump;
+	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
 }
