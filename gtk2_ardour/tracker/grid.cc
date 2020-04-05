@@ -4228,6 +4228,8 @@ Grid::horizontal_move_current_cursor (int steps, bool tab)
 bool
 Grid::move_current_cursor_key_press (GdkEventKey* ev)
 {
+	// VVT: support jump to next
+
 	bool ret = false;
 
 	switch (ev->keyval) {
@@ -4308,6 +4310,12 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *get_column (current_col), true);
+		ret = true;
+		break;
+
+	// TODO: pass space to Ardour's Editor
+	case GDK_space:
+		std::cout << "TODO: pass space to Ardour's Editor" << std::endl;
 		ret = true;
 		break;
 
