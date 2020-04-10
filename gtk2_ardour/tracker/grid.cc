@@ -2601,6 +2601,7 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 
 	// Update current mti, mtp, cgi and types
 	current_mti = get_mti (col);
+	// VVT: here!
 	current_mtp = pattern.tps[current_mti];
 	current_mri = pattern.to_mri (current_rowi, current_mti);
 	current_cgi = get_cgi (col);
@@ -3427,8 +3428,19 @@ Grid::select_current_track ()
 void
 Grid::set_step_editing_current_track ()
 {
+	std::cout << "Grid::set_step_editing_current_track" << std::endl;
+	std::cout << "tracker_editor.main_toolbar.step_edit = "
+				 << tracker_editor.main_toolbar.step_edit << std::endl;
+	std::cout << "current_mtp = " << current_mtp << std::endl;
+	std::cout << "current_mtp->is_midi_track_pattern () = "
+				 << current_mtp->is_midi_track_pattern () << std::endl;
+	// VVT: current_mtp is null, find out why.
+	//
+	// Solution: call set_current_cursor at the start
 	if (tracker_editor.main_toolbar.step_edit && current_mtp->is_midi_track_pattern ()) {
+		std::cout << "Grid::set_step_editing_current_track set step editing" << std::endl;
 		current_mtp->midi_track ()->set_step_editing (true, false);
+		std::cout << "Grid::set_step_editing_current_track Done!" << std::endl;
 	}
 }
 
