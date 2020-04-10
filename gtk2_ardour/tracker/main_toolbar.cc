@@ -461,6 +461,7 @@ MainToolbar::set_beats_per_row_to (GridType st)
 bool
 MainToolbar::step_edit_press (GdkEventButton* ev)
 {
+	std::cout << "MainToolbar::step_edit_press" << std::endl;
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
 		return true;
@@ -472,13 +473,16 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 	// TODO: possibly replace by signal
 	tracker_editor.grid.redisplay_grid_direct_call ();
 	if (step_edit) {
+		std::cout << "MainToolbar::step_edit_press connect midi event" << std::endl;
 		tracker_editor.connect_midi_event ();
+		std::cout << "MainToolbar::step_edit_press set underline" << std::endl;
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
 	} else {
 		tracker_editor.disconnect_midi_event ();
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
 	}
 
+	std::cout << "MainToolbar::step_edit_press return false" << std::endl;
 	return false;
 }
 
