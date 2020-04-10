@@ -171,7 +171,9 @@ TrackerEditor::connect_automation (AutomationControlPtr actrl)
 void
 TrackerEditor::connect_midi_event ()
 {
+	std::cout << "TrackerEditor::connect_midi_event grid set step editing current track" << std::endl;
 	grid.set_step_editing_current_track ();
+	std::cout << "TrackerEditor::connect_midi_event connect" << std::endl;
 	midi_event_connection = Glib::signal_timeout().connect (sigc::mem_fun (grid, &Grid::step_editing_check_midi_event), 20);
 }
 
