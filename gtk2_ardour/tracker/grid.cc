@@ -837,8 +837,8 @@ Grid::setup ()
 void
 Grid::read_keyboard_layout ()
 {
-	PianoKeyBindings::Layout layout = PianoKeyBindings::get_layout (UIConfiguration::instance().get_vkeybd_layout ());
-	_keyboard_layout.set_keyboard_layout (layout);
+	PianoKeyBindings::Layout layout = PianoKeyBindings::layout (UIConfiguration::instance().get_vkeybd_layout ());
+	_keyboard_layout.set_layout (layout);
 }
 
 void
