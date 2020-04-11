@@ -25,7 +25,7 @@
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeview.h>
 
-#include "../keyboardlayout.h"
+#include "../piano_key_bindings.h"
 
 #include "main_toolbar.h"
 #include "midi_region_pattern.h"
@@ -623,7 +623,7 @@ private:
 	std::map<uint8_t, uint8_t> pressed_keys_pitch_to_channel;
 
 	// Mapping PC keyboard key to note pitch
-	KeyboardLayout _keyboard_layout;
+	PianoKeyBindings _keyboard_layout;
 };
 
 } // ~namespace tracker

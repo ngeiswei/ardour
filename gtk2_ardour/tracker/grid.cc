@@ -837,7 +837,7 @@ Grid::setup ()
 void
 Grid::read_keyboard_layout ()
 {
-	KeyboardLayout::Layout layout = KeyboardLayout::get_layout (UIConfiguration::instance().get_vkeybd_layout ());
+	PianoKeyBindings::Layout layout = PianoKeyBindings::get_layout (UIConfiguration::instance().get_vkeybd_layout ());
 	_keyboard_layout.set_keyboard_layout (layout);
 }
 
@@ -3503,7 +3503,7 @@ Grid::digit_key_press (GdkEventKey* ev)
 uint8_t
 Grid::pitch_key (GdkEventKey* ev)
 {
-	char const* key = KeyboardLayout::get_keycode (ev);
+	char const* key = PianoKeyBindings::get_keycode (ev);
 	int relative_pitch = _keyboard_layout.key_binding (key);
 	if (relative_pitch < 0 || 127 < relative_pitch)
 		return -1;
