@@ -831,6 +831,8 @@ Grid::setup ()
 	connect_events ();
 	setup_tree_view ();
 
+	// VVT: call set_current_cursor with the right parameters
+
 	show ();
 }
 
@@ -3586,7 +3588,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	// Off note
 	case GDK_equal:
 	case GDK_plus:
-	case GDK_Caps_Lock:			  // VVT: is it really a good idea?
+	case GDK_Caps_Lock:
 		ret = step_editing_set_off_note ();
 		break;
 
