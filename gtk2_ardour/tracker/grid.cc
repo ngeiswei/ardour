@@ -2902,13 +2902,12 @@ Grid::connect_events ()
 	signal_key_release_event ().connect (sigc::mem_fun (*this, &Grid::key_release), false);
 
 	// Connect to mouse button events
-	//
-	// Disabled for now because it doesn't work as expected
-	//
 	signal_button_press_event ().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
+	// Scroll event is disabled for now because it doesn't work properly
 	// signal_scroll_event ().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
-	connect_clock ();
+	if (tracker_editor.main_toolbar.sync_playhead)
+		connect_clock ();
 }
 
 void
