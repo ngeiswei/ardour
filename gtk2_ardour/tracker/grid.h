@@ -167,8 +167,9 @@ public:
 	int right_separator_colnum (size_t mti) const;
 	void redisplay_visible_right_separator (size_t mti) const;
 
-	// Return the column of the first defined cell
-	int first_defined_col ();
+	// Return the column of the first defined and editable cell of the current
+	// row
+	Gtk::TreeViewColumn* first_defined_col ();
 
 	void setup ();
 	void read_keyboard_layout ();     // Read keyboard layout from config
@@ -186,41 +187,44 @@ public:
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
 	void redisplay_undefined_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi); // Display undefined note at row, mti and cgi
-	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, size_t rowi, size_t mti);
+	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int row_idx, size_t mti);
 	void redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	// VT: probably delete when no longer useful
-	void redisplay_automations (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri);
+	void redisplay_automations (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri);
 	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_note_foreground (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi);
+	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi);
 	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_automation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
-	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
+	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
+	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_row_background (Gtk::TreeModel::Row& row, uint32_t rowi);
-	void redisplay_row_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, const std::string& color);
-	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color);
-	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const std::string& color);
-	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, uint32_t rowi, size_t mti, const AutomationPattern& ap, const std::string& color);	
+	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
+	void redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color);
+	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, size_t mti, const std::string& color);
+	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int row_idx, size_t mti, const std::string& color);
+	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, size_t mti, const AutomationPattern& ap, const std::string& color);
+	void redisplay_current_row ();
+	void redisplay_pattern ();
 	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
 	void redisplay_inter_midi_regions (size_t mti);
 	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
 	void redisplay_track_automations (size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
 	void redisplay_track_automation_param (size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_track_automation_param_row (size_t mti, size_t cgi, size_t rowi, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
+	void redisplay_track_automation_param_row (size_t mti, size_t cgi, size_t row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
 	void redisplay_region_notes (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
 	void redisplay_region_automations (size_t mti, size_t mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* np_diff = 0);
 	void redisplay_region_automation_param (size_t mti, size_t mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_region_automation_param_row (size_t mti, size_t mri, size_t cgi, size_t rowi, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
+	void redisplay_region_automation_param_row (size_t mti, size_t mri, size_t cgi, size_t row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
 	void redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_note (size_t mti, size_t mri, size_t cgi, size_t rowi, const NotePattern& np);
+	void redisplay_note (size_t mti, size_t mri, size_t cgi, size_t row_idx, const NotePattern& np);
+	void remove_unused_rows ();
 	void unset_underline_current_step_edit_cell ();
 	void unset_underline_current_step_edit_note_cell ();
 	void unset_underline_current_step_edit_auto_cell ();
@@ -251,6 +255,8 @@ public:
 	void parameter_changed (const std::string& p);
 	void color_changed ();
 
+	void scroll_to_current_row ();
+
 	TrackerEditor& tracker_editor;
 
 	// Map column index to automation parameter and vice versa
@@ -279,9 +285,10 @@ public:
 	// Coordonates associated to current cursor
 	Temporal::Beats current_beats;
 	Gtk::TreeModel::Path current_path;
-	int current_rowi;
+	int current_row_idx;
 	Gtk::TreeModel::Row current_row;
-	int current_col;
+	int current_col_idx;
+	Gtk::TreeViewColumn* current_col;
 	int current_mti; // multi track index
 	TrackPattern* previous_mtp;
 	TrackPattern* current_mtp;
@@ -298,7 +305,7 @@ public:
 	// Coordonates associated to edited note and value (this is *not* related to
 	// step edit).
 	Gtk::TreeModel::Path         edit_path;
-	int                          edit_rowi;
+	int                          edit_row_idx;
 	int                          edit_col;
 	int                          edit_mti;
 	TrackPattern*                edit_mtp;
@@ -314,6 +321,9 @@ public:
 	// redisplay_grid_connect_call immediately return when such lock is taken.
 	bool                         redisplay_grid_connect_call_enabled;
 
+	// Compile time parameters
+	static const bool vertical_wrap = false;
+
 private:
 	void init_columns ();
 	void init_model ();
@@ -321,6 +331,7 @@ private:
 	void setup_tree_view ();
 	void setup_time_column ();
 	void setup_data_columns ();
+	void setup_init_cursor ();
 	void setup_left_separator_column (size_t mti);
 	void setup_region_name_column (size_t mti);
 	void setup_note_column (size_t mti, size_t cgi);
@@ -380,19 +391,25 @@ private:
 	bool mouse_button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
-	// Return the row index of a tree model path
-	uint32_t get_row_index (const std::string& path) const;
-	uint32_t get_row_index (const Gtk::TreeModel::Path& path) const;
+	// Return the row index of a tree model path and vice versa
+	int to_row_index (const std::string& path_str) const;
+	int to_row_index (const Gtk::TreeModel::Path& path) const;
+	Gtk::TreeModel::Path to_path (const std::string& path_str) const;
+	Gtk::TreeModel::Path to_path (int row_idx) const;
 
-	uint32_t get_row_offset (size_t mti, size_t mri) const;
-	uint32_t get_row_size (size_t mti, size_t mri) const;
+	// VVT: replace all fucking integer types by int, all over the code!
+	int get_row_offset (size_t mti, size_t mri) const;
+	int get_row_size (size_t mti, size_t mri) const;
 
 	// Return the row corresponding to a given row index
-	Gtk::TreeModel::Row get_row (uint32_t row_idx) const;
+	Gtk::TreeModel::Row to_row (int row_idx) const;
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.
 	// Warning: can't be const because of a get_columns ()
-	int get_col_index (const Gtk::TreeViewColumn* col);
+	int to_col_index (const Gtk::TreeViewColumn* col);
+
+	Gtk::TreeViewColumn* to_col (int col_idx);
+	const Gtk::TreeViewColumn* to_col (int col_idx) const;
 
 	// Play note
 	void play_note (int mti, uint8_t pitch);
@@ -400,7 +417,25 @@ private:
 	void release_note (int mti, uint8_t pitch);
 
 	// Set current cursor
+	void set_current_cursor (int row_idx, Gtk::TreeViewColumn* col, bool set_playhead=false);
 	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col, bool set_playhead=false);
+
+	// Set current cursor undefined, let the current row defined however
+	void set_current_cursor_undefined ();
+
+	// Return true iff the current cursor is defined
+	bool is_current_cursor_defined ();
+
+	// Set current row
+	void set_current_row (int row_idx, bool set_playhead=false);
+	void set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead=false);
+
+	// Set current row undefined
+	void set_current_row_undefined ();
+
+	// Return true iff the current row is defined. An undefined row may
+	// only happen if there is nothing whatsoever to render.
+	bool is_current_row_defined ();
 
 	// Set current position (from main toolbar position spinner)
 	void set_current_pos (int min_pos, int max_pos);
@@ -416,12 +451,12 @@ private:
 	// Check whether a given column is editable
 	bool is_editable (Gtk::TreeViewColumn* col) const;
 
-	// Check if the cell is defined at all
-	// Warning: can't be const because of get_col_index
+	// Check if the cell is defined and editable
+	// Warning: can't be const because of to_col_index
 	bool is_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
-	bool is_region_defined (uint32_t rowi, int mti) const;
-	bool is_automation_defined (uint32_t rowi, int mti, int cgi) const;
+	bool is_region_defined (int row_idx, int mti) const;
+	bool is_automation_defined (int row_idx, int mti, int cgi) const;
 
 	// Return mti corresponding col, or -1 if invalid
 	int get_mti (const Gtk::TreeViewColumn* col) const;
@@ -478,12 +513,12 @@ private:
 	// Get note from path, mti and cgi
 	NotePtr get_on_note (const std::string& path, int mti, int cgi);
 	NotePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi);
-	NotePtr get_on_note (int rowi, int mti, int cgi);
+	NotePtr get_on_note (int row_idx, int mti, int cgi);
 	NotePtr get_off_note (const std::string& path, int mti, int cgi);
 	NotePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
-	NotePtr get_off_note (int rowi, int mti, int cgi);
+	NotePtr get_off_note (int row_idx, int mti, int cgi);
 	// Get on or off note from path, mti and cgi
-	NotePtr get_note (int rowi, int mti, int cgi);
+	NotePtr get_note (int row_idx, int mti, int cgi);
 	NotePtr get_note (const std::string& path, int mti, int cgi);
 	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 
@@ -505,17 +540,17 @@ private:
 	// Set a new on note (resp. off note, or none) on the grid. The
 	// return pair of set_on_note is the channel and velocity of the
 	// new note. It is returned to be passed to play_note.
-	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, int rowi, int mti, int mri, int cgi);
-	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int rowi, int mti, int mri, int cgi);
-	void set_off_note (int rowi, int mti, int mri, int cgi);
-	void delete_note (int rowi, int mti, int mri, int cgi);
+	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, int row_idx, int mti, int mri, int cgi);
+	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti, int mri, int cgi);
+	void set_off_note (int row_idx, int mti, int mri, int cgi);
+	void delete_note (int row_idx, int mti, int mri, int cgi);
 
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel (int mti, int mri, NotePtr note, int ch);
 	void note_velocity_edited (const std::string& path, const std::string& text);
 	void set_note_velocity (int mti, int mri, NotePtr note, int vel);
 	void note_delay_edited (const std::string& path, const std::string& text);
-	void set_note_delay (int delay, int rowi, int mti, int mri, int cgi);
+	void set_note_delay (int delay, int row_idx, int mti, int mri, int cgi);
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
@@ -530,22 +565,22 @@ private:
 	void automation_edited (const std::string& path, const std::string& text);
 	// Return automation value at given coordinates. The flag is true iff such
 	// value exists.
-	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, int cgi) const;
-	bool has_automation_value (int rowi, int mti, int mri, int cgi) const;
+	std::pair<double, bool> get_automation_value (int row_idx, int mti, int mri, int cgi) const;
+	bool has_automation_value (int row_idx, int mti, int mri, int cgi) const;
 	// In case no such value exists, then return its interpolation (or default)
-	double get_automation_interpolation_value (int rowi, int mti, int mri, int cgi) const;
-	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
-	void set_automation_value (double val, int rowi, int mti, int mri, int automation_cgi);
-	void delete_automation_value (int rowi, int mti, int mri, int automation_cgi);
+	double get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const;
+	double get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
+	void set_automation_value (double val, int row_idx, int mti, int mri, int automation_cgi);
+	void delete_automation_value (int row_idx, int mti, int mri, int automation_cgi);
 	void automation_delay_edited (const std::string& path, const std::string& text);
-	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, int cgi) const; // return (0, false) if undefined
-	bool has_automation_delay (int rowi, int mti, int mri, int cgi) const; // Whether automation is defined (regardless of whether it is null)
-	void set_automation_delay (int delay, int rowi, int mti, int mri, int automation_cgi);
-	void delete_automation_delay (int rowi, int mti, int mri, int cgi);
+	std::pair<int, bool> get_automation_delay (int row_idx, int mti, int mri, int cgi) const; // return (0, false) if undefined
+	bool has_automation_delay (int row_idx, int mti, int mri, int cgi) const; // Whether automation is defined (regardless of whether it is null)
+	void set_automation_delay (int delay, int row_idx, int mti, int mri, int automation_cgi);
+	void delete_automation_delay (int row_idx, int mti, int mri, int cgi);
 
 	// Return lower and upper bounds of the given parameter
-	double lower (int rowi, int mti, const Evoral::Parameter& param) const;
-	double upper (int rowi, int mti, const Evoral::Parameter& param) const;
+	double lower (int row_idx, int mti, const Evoral::Parameter& param) const;
+	double upper (int row_idx, int mti, const Evoral::Parameter& param) const;
 
 public:
 	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
