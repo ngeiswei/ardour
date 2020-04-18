@@ -41,6 +41,8 @@ typedef std::map<AutomationControlPtr, std::string> AutomationControlStringMap;
  */
 class AutomationPattern : public BasePattern {
 public:
+	// VVT: fix warning, maybe need to replace TrackerEditor ref by pointer, ouch
+	// AutomationPattern (const AutomationPattern&);
 	AutomationPattern (TrackerEditor& te,
 	                   RegionPtr region,
 	                   bool connect);

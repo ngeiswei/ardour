@@ -33,6 +33,13 @@ using namespace Tracker;
 // BasePattern //
 /////////////////
 
+// VVT: fix warning
+// BasePattern::BasePattern (const BasePattern&)
+// 	: tracker_editor(*((TrackerEditor*)0))
+// {
+// 	std::cout << "BasePattern::BasePattern (const BasePattern&), is that normal?" << std::endl;
+// }
+
 BasePattern::BasePattern (TrackerEditor& te,
                           RegionPtr region)
 	: tracker_editor (te)
@@ -47,6 +54,10 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 	, _conv (_session->tempo_map (), 0)
+{
+}
+
+BasePattern::~BasePattern ()
 {
 }
 
