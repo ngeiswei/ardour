@@ -23,7 +23,13 @@
 using namespace Tracker;
 
 BasePatternPhenomenalDiff::BasePatternPhenomenalDiff ()
-	: full (false) {}
+	: full (false)
+{
+}
+
+BasePatternPhenomenalDiff::~BasePatternPhenomenalDiff ()
+{
+}
 
 bool
 BasePatternPhenomenalDiff::empty () const
