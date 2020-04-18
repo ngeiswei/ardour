@@ -33,6 +33,8 @@ namespace Tracker {
  */
 class RegionAutomationPattern : public AutomationPattern {
 public:
+	// VVT: fix warning
+	// RegionAutomationPattern (const RegionAutomationPattern& rap);
 	RegionAutomationPattern (TrackerEditor& te,
 	                         MidiTrackPtr midi_track,
 	                         MidiRegionPtr region,

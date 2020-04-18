@@ -31,6 +31,13 @@ using namespace Tracker;
 // AutomationPattern //
 ///////////////////////
 
+// VVT: fix warning
+// AutomationPattern::AutomationPattern (const AutomationPattern& ap)
+// 	: BasePattern(ap)
+// {
+// 	std::cout << "AutomationPattern::AutomationPattern (const AutomationPattern&), is that normal?" << std::endl;
+// }
+
 AutomationPattern::AutomationPattern (TrackerEditor& te,
                                       RegionPtr region,
                                       bool connect)

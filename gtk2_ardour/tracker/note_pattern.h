@@ -44,6 +44,8 @@ namespace Tracker {
  */
 class NotePattern : public BasePattern {
 public:
+	// VVT: fix warning
+	// NotePattern (const NotePattern&);
 	NotePattern (TrackerEditor& te,
 	             MidiRegionPtr region);
 
