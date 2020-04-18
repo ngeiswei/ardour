@@ -35,6 +35,7 @@ namespace Tracker {
 class BasePatternPhenomenalDiff {
 public:
 	BasePatternPhenomenalDiff ();
+	virtual ~BasePatternPhenomenalDiff ();
 
 	virtual bool empty () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
