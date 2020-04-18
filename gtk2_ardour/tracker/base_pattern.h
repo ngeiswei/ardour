@@ -48,6 +48,8 @@ class TrackerEditor;
 
 class BasePattern {
 public:
+	// VVT: fix warning
+	// BasePattern (const BasePattern&);
 	BasePattern (TrackerEditor& te,
 	             RegionPtr region);
 	BasePattern (TrackerEditor& te,
@@ -56,6 +58,7 @@ public:
 	             Temporal::samplecnt_t length,
 	             Temporal::samplepos_t first_sample,
 	             Temporal::samplepos_t last_sample);
+	virtual ~BasePattern ();
 
 	// A negative row index (i.e. max value) is considered invalid
 	static const uint32_t INVALID_ROW = -1;
