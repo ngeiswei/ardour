@@ -3338,7 +3338,7 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 			}
 		}
 		// Move
-		if (is_defined (path, col)) {
+		if (!col || is_defined (path, col)) {
 			last_def_path = path;
 			++steps;
 		} else if (!jump) {
@@ -3362,7 +3362,7 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 			}
 		}
 		// Move
-		if (is_defined (path, col)) {
+		if (!col || is_defined (path, col)) {
 			last_def_path = path;
 			--steps;
 		} else if (!jump) {
@@ -3610,6 +3610,8 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
+	// VVT: take care of current_mtp == nullptr case
+
 	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
 	uint32_t bufsize = 32;       // Only 32???
@@ -3674,7 +3676,6 @@ Grid::step_editing_check_midi_event ()
 bool
 Grid::step_editing_note_key_press (GdkEventKey* ev)
 {
-	// VVT: find out what happens if the cursor is undefined
 	bool ret = false;
 
 	switch (ev->keyval) {
@@ -4324,6 +4325,14 @@ Grid::vertical_move_current_cursor_default_steps (bool wrap, bool jump, bool set
 }
 
 void
+Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playhead)
+{
+	TreeModel::Path path = current_path;
+	wrap_around_vertical_move (path, 0, steps, wrap, jump);
+	set_current_row (path, set_playhead);
+}
+
+void
 Grid::horizontal_move_current_cursor (int steps, bool tab)
 {
 	int colnum = current_col_idx;
@@ -4340,52 +4349,89 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 
 	bool ret = false;
 
-	switch (ev->keyval) {
-
-	case GDK_Up:
-	case GDK_uparrow:
-		vertical_move_current_cursor (-1, vertical_wrap);
-		ret = true;
-		break;
-	case GDK_Down:
-	case GDK_downarrow:
-		vertical_move_current_cursor (1, vertical_wrap);
-		ret = true;
-		break;
-	case GDK_Left:
-	case GDK_leftarrow:
-		horizontal_move_current_cursor (-1);
-		ret = true;
-		break;
-	case GDK_Right:
-	case GDK_rightarrow:
-		horizontal_move_current_cursor (1);
-		ret = true;
-		break;
-	case GDK_Tab:
-	{
-		// TODO: unfortunately Shift-Tab makes the focus go away
-		bool is_shift = ev->state & GDK_SHIFT_MASK;
-		horizontal_move_current_cursor (is_shift ? -1 : 1, true);
-		ret = true;
-		break;
-	}
-	case GDK_Page_Up:
-		vertical_move_current_cursor (-16, false);
-		ret = true;
-		break;
-	case GDK_Page_Down:
-		vertical_move_current_cursor (16, false);
-		ret = true;
-		break;
-	case GDK_Home:
-		vertical_move_current_cursor (-(int)pattern.global_nrows, false);
-		ret = true;
-		break;
-	case GDK_End:
-		vertical_move_current_cursor (pattern.global_nrows, false);
-		ret = true;
-		break;
+	if (is_current_cursor_defined ()) {
+		switch (ev->keyval) {
+		case GDK_Up:
+		case GDK_uparrow:
+			vertical_move_current_cursor (-1, vertical_wrap);
+			ret = true;
+			break;
+		case GDK_Down:
+		case GDK_downarrow:
+			vertical_move_current_cursor (1, vertical_wrap);
+			ret = true;
+			break;
+		case GDK_Left:
+		case GDK_leftarrow:
+			horizontal_move_current_cursor (-1);
+			ret = true;
+			break;
+		case GDK_Right:
+		case GDK_rightarrow:
+			horizontal_move_current_cursor (1);
+			ret = true;
+			break;
+		case GDK_Tab:
+		{
+			// TODO: unfortunately Shift-Tab makes the focus go away
+			bool is_shift = ev->state & GDK_SHIFT_MASK;
+			horizontal_move_current_cursor (is_shift ? -1 : 1, true);
+			ret = true;
+			break;
+		}
+		case GDK_Page_Up:
+			vertical_move_current_cursor (-16, false);
+			ret = true;
+			break;
+		case GDK_Page_Down:
+			vertical_move_current_cursor (16, false);
+			ret = true;
+			break;
+		case GDK_Home:
+			vertical_move_current_cursor (-(int)pattern.global_nrows, false);
+			ret = true;
+			break;
+		case GDK_End:
+			vertical_move_current_cursor (pattern.global_nrows, false);
+			ret = true;
+			break;
+		}
+	} else {                     // No current cursor
+		switch (ev->keyval) {
+		case GDK_Up:
+		case GDK_uparrow:
+			vertical_move_current_row (-1, vertical_wrap);
+			ret = true;
+			break;
+		case GDK_Down:
+		case GDK_downarrow:
+			vertical_move_current_row (1, vertical_wrap);
+			ret = true;
+			break;
+		case GDK_Left:
+		case GDK_leftarrow:
+		case GDK_Right:
+		case GDK_rightarrow:
+		case GDK_Tab:
+			ret = true;
+			break;
+		case GDK_Page_Up:
+			vertical_move_current_row (-16, false);
+			ret = true;
+			break;
+		case GDK_Page_Down:
+			vertical_move_current_row (16, false);
+			ret = true;
+			break;
+		case GDK_Home:
+			vertical_move_current_row (-(int)pattern.global_nrows, false);
+			ret = true;
+			break;
+		case GDK_End:
+			vertical_move_current_row (pattern.global_nrows, false);
+			ret = true;
+			break;
+		}
 	}
 
 	return ret;
@@ -4446,11 +4492,17 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 bool
 Grid::non_editing_key_release (GdkEventKey* ev)
 {
-	// Make sure the current mti is a midi track
-	if (!pattern.tps[current_mti]->is_midi_track_pattern ()) {
+	// Make sure there is a current track
+	if (!current_mtp) {
 		return false;
 	}
 
+	// Make sure it is a midi track
+	if (!current_mtp->is_midi_track_pattern ()) {
+		return false;
+	}
+
+	// Release a possible on note
 	uint8_t ptc = pitch_key (ev);
 	if (ptc < 128) {
 		release_note (current_mti, ptc);
