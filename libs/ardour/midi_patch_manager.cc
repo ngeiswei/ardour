@@ -61,7 +61,6 @@ MidiPatchManager::~MidiPatchManager ()
 void
 MidiPatchManager::add_search_path (const Searchpath& search_path)
 {
-	// VVT: study
 	for (Searchpath::const_iterator i = search_path.begin(); i != search_path.end(); ++i) {
 
 		if (_search_path.contains(*i)) {
