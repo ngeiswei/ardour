@@ -437,10 +437,12 @@ MidiTimeAxisView::setup_midnam_patches ()
 	std::string model = gui_property (X_("midnam-model-name"));
 	if (model.empty() && _route->instrument_info().have_custom_plugin_info ()) {
 		/* use plugin's MIDNAM */
-		model_changed ("");
+		// VVT: is it the fix?
+		model_changed ("Generic");
 	} else if (model.empty() || ! MIDI::Name::MidiPatchManager::instance ().master_device_by_model (model)) {
 		/* invalid model, switch to use default */
-		model_changed ("");
+		// VVT: is it the fix?
+		model_changed ("Generic");
 	} else {
 		model_changed (model);
 	}
@@ -499,6 +501,7 @@ MidiTimeAxisView::model_changed (const std::string& m)
 	}
 
 	/* set backend state */
+	std::cout << "MidiTimeAxisView::model_changed" << std::endl;
 	_route->instrument_info().set_external_instrument (model, mode);
 
 	/* query effective model/mode -- may be plugin provided */
@@ -539,10 +542,12 @@ MidiTimeAxisView::model_changed (const std::string& m)
 void
 MidiTimeAxisView::custom_device_mode_changed(const std::string& mode)
 {
+	// VVT: what is gui_property ?
 	const std::string model = gui_property (X_("midnam-model-name"));
 	set_gui_property (X_("midnam-custom-device-mode"), mode);
 	_midnam_custom_device_mode_selector.set_text (mode);
 	/* inform the backend, route owned instrument info */
+	std::cout << "MidiTimeAxisView::custom_device_mode_changed" << std::endl;
 	_route->instrument_info().set_external_instrument (model, mode);
 }
 

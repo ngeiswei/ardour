@@ -49,6 +49,7 @@ InstrumentInfo::~InstrumentInfo ()
 void
 InstrumentInfo::set_external_instrument (const string& model, const string& mode)
 {
+	std::cout << "InstrumentInfo::set_external_instrument (model=" << model << ", mode=" << mode << ")" << std::endl;
 	invalidate_cached_plugin_model ();
 	if (_external_instrument_model == model && _external_instrument_mode == mode) {
 		//std::cerr << "InstrumentInfo::set_external_instrument '" << model << "' '" << mode << "' -- no change\n";
@@ -63,6 +64,7 @@ InstrumentInfo::set_external_instrument (const string& model, const string& mode
 void
 InstrumentInfo::set_internal_instrument (boost::shared_ptr<Processor> p)
 {
+	std::cout << "InstrumentInfo::set_internal_instrument (p=" << p << ")" << std::endl;
 	invalidate_cached_plugin_model ();
 	if (p == internal_instrument.lock ()) {
 		//std::cerr << "InstrumentInfo::set_internal_instrument -- NO CHANGE\n";
