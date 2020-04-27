@@ -924,6 +924,7 @@ MidiTimeAxisView::build_controller_menu ()
 
 	if (controller_menu) {
 		/* it exists and has not been invalidated by a channel mode change */
+		// VVT: really?
 		return;
 	}
 
@@ -935,8 +936,10 @@ MidiTimeAxisView::build_controller_menu ()
 	 * combination covering the currently selected channels for this track
 	 */
 
+	// VVT: Port some simplifications to midi_track_toolbar.cc
 	size_t total_ctrls = _route->instrument_info().master_controller_count ();
 	if (total_ctrls > 0) {
+		std::cout << "Controllers names available in midnam file, generate fancy menu" << std::endl;
 		/* Controllers names available in midnam file, generate fancy menu */
 		using namespace MIDI::Name;
 
@@ -1008,6 +1011,8 @@ MidiTimeAxisView::build_controller_menu ()
 			}
 		}
 	} else {
+		// VVT: why no controllers by default?
+		std::cout << "No controllers names, generate generic numeric menu" << std::endl;
 		/* No controllers names, generate generic numeric menu */
 
 		const uint16_t selected_channels = midi_track()->get_playback_channel_mask();

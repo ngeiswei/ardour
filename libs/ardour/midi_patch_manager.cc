@@ -193,6 +193,7 @@ MidiPatchManager::document_by_model(std::string model_name) const
 bool
 MidiPatchManager::add_midi_name_document (boost::shared_ptr<MIDINameDocument> document)
 {
+	std::cout << "MidiPatchManager::add_midi_name_document (document=" << document->file_path () << ")" << std::endl;
 	bool added = false;
 	for (MIDINameDocument::MasterDeviceNamesList::const_iterator device =
 		     document->master_device_names_by_model().begin();
@@ -207,6 +208,8 @@ MidiPatchManager::add_midi_name_document (boost::shared_ptr<MIDINameDocument> do
 
 		_documents[device->first] = document;
 		_master_devices_by_model[device->first] = device->second;
+		std::cout << "MidiPatchManager::add_midi_name_document device->first = " << device->first
+		          << ", device->second->manufacturer () = " << device->second->manufacturer () << std::endl;
 
 		_all_models.insert(device->first);
 		const std::string& manufacturer = device->second->manufacturer();

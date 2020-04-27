@@ -215,8 +215,15 @@ InstrumentInfo::control_name_list (uint8_t channel)
 size_t
 InstrumentInfo::master_controller_count () const
 {
+	std::cout << "InstrumentInfo::master_controller_count ()" << std::endl;
+	// VVT: find out why the model is empty for Generic
+	std::cout << "model () = " << model () << std::endl;
+	// VVT: find out why the mode is not updated when it is changed
+	std::cout << "mode () = " << mode () << std::endl;
 	boost::shared_ptr<MasterDeviceNames> const& dev_names (MidiPatchManager::instance ().master_device_by_model (model ()));
 	if (!dev_names) {
+		std::cout << "InstrumentInfo::master_controller_count () !dev_names" << std::endl;
+		// VVT: why no dev_names ?
 		return 0;
 	}
 	MasterDeviceNames::ControlNameLists const& ctllist (dev_names->controls());
