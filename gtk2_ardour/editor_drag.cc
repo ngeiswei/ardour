@@ -865,6 +865,8 @@ struct DraggingViewSorter {
 void
 RegionMotionDrag::motion (GdkEvent* event, bool first_move)
 {
+	std::cout << "RegionMotionDrag::motion (event=" << event << ",first_move=" << first_move << ")" << std::endl;
+
 	double delta_layer = 0;
 	int delta_time_axis_view = 0;
 	int current_pointer_time_axis_view = -1;
@@ -1477,6 +1479,7 @@ RegionMoveDrag::finished (GdkEvent* ev, bool movement_occurred)
 RouteTimeAxisView*
 RegionMoveDrag::create_destination_time_axis (boost::shared_ptr<Region> region, TimeAxisView* original)
 {
+	std::cout << "RegionMoveDrag::create_destination_time_axis" << std::endl;
 	if (!ARDOUR_UI_UTILS::engine_is_running ()) {
 		return NULL;
 	}
@@ -1982,6 +1985,7 @@ RegionMoveDrag::aborted (bool movement_occurred)
 void
 RegionMotionDrag::aborted (bool)
 {
+	std::cout << "RegionMotionDrag::aborted" << std::endl;
 	for (vector<TimeAxisView*>::iterator i = _time_axis_views.begin(); i != _time_axis_views.end(); ++i) {
 
 		StreamView* sview = (*i)->view();
