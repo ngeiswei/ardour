@@ -247,6 +247,8 @@ MidiPort::cycle_split ()
 void
 MidiPort::resolve_notes (void* port_buffer, MidiBuffer::TimeType when)
 {
+	// NEXT
+	std::cout << "MidiPort::resolve_notes (port_buffer=" << port_buffer << ", when=" << when << ")" << std::endl;
 	for (uint8_t channel = 0; channel <= 0xF; channel++) {
 
 		uint8_t ev[3] = { ((uint8_t) (MIDI_CMD_CONTROL | channel)), MIDI_CTL_SUSTAIN, 0 };
