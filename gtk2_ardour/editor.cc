@@ -5285,6 +5285,7 @@ Editor::idle_resize ()
 
 		for (TrackViewList::iterator i = selection->tracks.begin(); i != selection->tracks.end(); ++i) {
 			if (*i != _pending_resize_view) {
+				// VVT: the shit?
 				(*i)->idle_resize ((*i)->current_height() + _pending_resize_amount);
 			}
 		}
