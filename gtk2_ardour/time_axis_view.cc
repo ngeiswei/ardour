@@ -457,7 +457,10 @@ TimeAxisView::controls_ebox_motion (GdkEventMotion* ev)
 		_editor.maybe_autoscroll (false, true, true);
 
 		/* now schedule the actual TAV resize */
+		// VVT: the shit?
+		std::cout << "TimeAxisView[" << this << "]::controls_ebox_motion(ev=" << ev << ")" << std::endl;
 		int32_t const delta = (int32_t) floor (ev->y_root - _resize_drag_start);
+		std::cout << "ev->y_root = " << ev->y_root << ", _resize_drag_start = " << _resize_drag_start << ", delta = " << delta << std::endl;
 		_editor.add_to_idle_resize (this, delta);
 		_resize_drag_start = ev->y_root;
 		_did_resize = true;
@@ -595,25 +598,6 @@ TimeAxisView::set_height_enum (Height h, bool apply_to_selection)
 void
 TimeAxisView::set_height (uint32_t h, TrackHeightMode m)
 {
-	// VVT: look into
-	// VVT: print stack trace, see https://www.boost.org/doc/libs/1_73_0/doc/html/stacktrace.html
-
-//  0# TimeAxisView::set_height(unsigned int, TimeAxisView::TrackHeightMode) in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-//  1# RouteTimeAxisView::set_height(unsigned int, TimeAxisView::TrackHeightMode) in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-//  2# MidiTimeAxisView::set_height(unsigned int, TimeAxisView::TrackHeightMode) in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-//  3# TimeAxisView::idle_resize(int) in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-//  4# Editor::idle_resize() in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-//  5# Editor::_idle_resize(void*) in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-//  6# g_main_context_dispatch in /usr/lib/libglib-2.0.so.0
-//  7# 0x00007FAD7A7EC531 in /usr/lib/libglib-2.0.so.0
-//  8# g_main_loop_run in /usr/lib/libglib-2.0.so.0
-//  9# gtk_main in /usr/lib/libgtk-x11-2.0.so.0
-// 10# Gtkmm2ext::UI::run(Receiver&) in ./gtk2_ardour/../build/libs/gtkmm2ext/libgtkmm2ext.so.0
-// 11# main in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-// 12# __libc_start_main in /usr/lib/libc.so.6
-// 13# _start in ./gtk2_ardour/../build/gtk2_ardour/ardour-6.0.rc1.200
-
-	std::cout << boost::stacktrace::stacktrace() << std::endl;
 	std::cout << "TimeAxisView[" << this << "]::set_height (h=" << h << ")" << std::endl;
 	uint32_t lanes = 0;
 	if (m == TotalHeight) {

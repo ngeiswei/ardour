@@ -5235,6 +5235,7 @@ Editor::_idle_resize (gpointer arg)
 void
 Editor::add_to_idle_resize (TimeAxisView* view, int32_t h)
 {
+	std::cout << "Editor::add_to_idle_resize(view=" << view << ",h=" << h << ")" << std::endl;
 	if (resize_idle_id < 0) {
 		/* https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#G-PRIORITY-HIGH-IDLE:CAPS
 		 * GTK+ uses G_PRIORITY_HIGH_IDLE + 10 for resizing operations, and G_PRIORITY_HIGH_IDLE + 20 for redrawing operations.
@@ -5250,6 +5251,7 @@ Editor::add_to_idle_resize (TimeAxisView* view, int32_t h)
 	int32_t min_resulting = INT32_MAX;
 
 	_pending_resize_amount += h;
+	std::cout << "_pending_resize_amount = " << _pending_resize_amount << std::endl;
 	_pending_resize_view = view;
 
 	min_resulting = min (min_resulting, int32_t (_pending_resize_view->current_height()) + _pending_resize_amount);
@@ -5268,12 +5270,14 @@ Editor::add_to_idle_resize (TimeAxisView* view, int32_t h)
 	if (uint32_t (min_resulting) < TimeAxisView::preset_height (HeightSmall)) {
 		_pending_resize_amount += TimeAxisView::preset_height (HeightSmall) - min_resulting;
 	}
+	std::cout << "_pending_resize_amount [after clamp] = " << _pending_resize_amount << std::endl;
 }
 
 /** Handle pending resizing of tracks */
 bool
 Editor::idle_resize ()
 {
+	std::cout << "Editor::idle_resize" << std::endl;
 	_pending_resize_view->idle_resize (_pending_resize_view->current_height() + _pending_resize_amount);
 
 	if (dynamic_cast<AutomationTimeAxisView*> (_pending_resize_view) == 0 &&
