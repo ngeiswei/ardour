@@ -33,13 +33,6 @@ using namespace Tracker;
 // BasePattern //
 /////////////////
 
-// VVT: fix warning
-// BasePattern::BasePattern (const BasePattern&)
-// 	: tracker_editor(*((TrackerEditor*)0))
-// {
-// 	std::cout << "BasePattern::BasePattern (const BasePattern&), is that normal?" << std::endl;
-// }
-
 BasePattern::BasePattern (TrackerEditor& te,
                           RegionPtr region)
 	: tracker_editor (te)
