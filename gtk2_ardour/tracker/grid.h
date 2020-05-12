@@ -404,7 +404,7 @@ private:
 	Gtk::TreeModel::Path to_path (const std::string& path_str) const;
 	Gtk::TreeModel::Path to_path (int row_idx) const;
 
-	// VVT: replace all fucking integer types by int, all over the code!
+	// TODO: replace all fucking integer types by int, all over the code!
 	int get_row_offset (size_t mti, size_t mri) const;
 	int get_row_size (size_t mti, size_t mri) const;
 

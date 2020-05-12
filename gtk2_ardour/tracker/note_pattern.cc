@@ -38,13 +38,6 @@ using namespace Tracker;
 // NotePattern //
 /////////////////
 
-// VVT: fix warning
-// NotePattern::NotePattern (const NotePattern& np)
-// 	: BasePattern(np)
-// {
-// 	std::cout << "NotePattern::NotePattern (const NotePattern&), is that normal?" << std::endl;
-// }
-
 NotePattern::NotePattern (TrackerEditor& te,
                           MidiRegionPtr region)
 	: BasePattern (te, region)
