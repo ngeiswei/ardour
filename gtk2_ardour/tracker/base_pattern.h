@@ -48,8 +48,6 @@ class TrackerEditor;
 
 class BasePattern {
 public:
-	// VVT: fix warning
-	// BasePattern (const BasePattern&);
 	BasePattern (TrackerEditor& te,
 	             RegionPtr region);
 	BasePattern (TrackerEditor& te,
