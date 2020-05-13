@@ -328,7 +328,7 @@ NotePattern::dec_ntracks ()
 }
 
 NotePtr
-NotePattern::find_prev (uint32_t row, int cgi) const
+NotePattern::find_prev_on (uint32_t row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_reverse_iterator rit =
@@ -338,7 +338,7 @@ NotePattern::find_prev (uint32_t row, int cgi) const
 }
 
 NotePtr
-NotePattern::find_next (uint32_t row, int cgi) const
+NotePattern::find_next_on (uint32_t row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound (row);
@@ -346,10 +346,38 @@ NotePattern::find_next (uint32_t row, int cgi) const
 	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NotePtr ();
 }
 
+NotePtr
+NotePattern::find_prev_off (uint32_t row, int cgi) const
+{
+	// TODO: implementation could simplified with a template of something
+	const RowToNotes& r2n = off_notes[cgi];
+	RowToNotes::const_reverse_iterator rit =
+		std::reverse_iterator<RowToNotes::const_iterator> (r2n.lower_bound (row));
+	while (rit != r2n.rend () && rit->first == row) { ++rit; };
+	return rit != r2n.rend () ? lattest (r2n.equal_range (rit->first)) : NotePtr ();
+}
+
+NotePtr
+NotePattern::find_next_off (uint32_t row, int cgi) const
+{
+	const RowToNotes& r2n = off_notes[cgi];
+	RowToNotes::const_iterator it = r2n.upper_bound (row);
+	while (it != r2n.end () && it->first == row) { ++it; };
+	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NotePtr ();
+}
+
+Temporal::Beats
+NotePattern::next_on (uint32_t row, int cgi) const
+{
+	NotePtr next_note = find_next_on (row, cgi);
+	return next_note ? next_note->time () : end_beats;
+}
+
 Temporal::Beats
 NotePattern::next_off (uint32_t row, int cgi) const
 {
-	NotePtr next_note = find_next (row, cgi);
+	NotePtr next_note = find_next_off (row, cgi);
+	Temporal::Beats result = next_note ? next_note->end_time () : end_beats;
 	return next_note ? next_note->time () : end_beats;
 }
 

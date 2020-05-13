@@ -101,12 +101,13 @@ public:
 	size_t get_automation_list_count (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, size_t mri, const Evoral::Parameter& param) const;
 
-	NotePtr find_prev_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
-	NotePtr find_next_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NotePtr find_prev_on_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	NotePtr find_next_on_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
-	// Return the Beats of the note off as far as it can go (i.e. the next on
-	// note or the end of the region.)
-	Temporal::Beats next_off (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	// Return the Beats of the next note on (resp. off) or the end of the region
+	// if none
+	Temporal::Beats next_on_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
+	Temporal::Beats next_off_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const;
 
 	// Return the row index relative to the start of pattern at mti.
 	int to_rri (uint32_t rowi, size_t mti) const;
