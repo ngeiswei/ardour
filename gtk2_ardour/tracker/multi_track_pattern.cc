@@ -381,19 +381,25 @@ MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, size
 }
 
 NotePtr
-MultiTrackPattern::find_prev_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
+MultiTrackPattern::find_prev_on_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
 {
-	return tps[mti]->midi_track_pattern ()->mrps[mri].np.find_prev (to_rrri (rowi, mti, mri), cgi);
+	return tps[mti]->midi_track_pattern ()->mrps[mri].np.find_prev_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 NotePtr
-MultiTrackPattern::find_next_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
+MultiTrackPattern::find_next_on_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
 {
-	return tps[mti]->midi_track_pattern ()->mrps[mri].np.find_next (to_rrri (rowi, mti, mri), cgi);
+	return tps[mti]->midi_track_pattern ()->mrps[mri].np.find_next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
-MultiTrackPattern::next_off (uint32_t rowi, size_t mti, size_t mri, int cgi) const
+MultiTrackPattern::next_on_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
+{
+	return tps[mti]->midi_track_pattern ()->mrps[mri].np.next_on (to_rrri (rowi, mti, mri), cgi);
+}
+
+Temporal::Beats
+MultiTrackPattern::next_off_note (uint32_t rowi, size_t mti, size_t mri, int cgi) const
 {
 	return tps[mti]->midi_track_pattern ()->mrps[mri].np.next_off (to_rrri (rowi, mti, mri), cgi);
 }

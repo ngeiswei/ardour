@@ -80,14 +80,19 @@ public:
 	void inc_ntracks ();
 	void dec_ntracks ();
 
-	// Find the previous (resp. next) note of a given row on a given track
+	// Find the previous (resp. next) on note of a given row on a given track
 	// index.
-	// TODO: maybe we want to use uint16_t instead of int
-	NotePtr find_prev (uint32_t row, int cgi) const;
-	NotePtr find_next (uint32_t row, int cgi) const;
+	NotePtr find_prev_on (uint32_t row, int cgi) const;
+	NotePtr find_next_on (uint32_t row, int cgi) const;
 
-	// Return the Beats of the note off as far as it can go (i.e. the next on
-	// note or the end of the region.)
+	// Find the previous (resp. next) off note of a given row on a given track
+	// index.
+	NotePtr find_prev_off (uint32_t row, int cgi) const;
+	NotePtr find_next_off (uint32_t row, int cgi) const;
+
+	// Return the Beats of the next note on (resp. off) or the end of the region
+	// if none
+	Temporal::Beats next_on (uint32_t row, int cgi) const;
 	Temporal::Beats next_off (uint32_t row, int cgi) const;
 
 	// Return true if the notes are displayable at this resolution. Basically
