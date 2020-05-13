@@ -2237,8 +2237,8 @@ Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti,
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time ();
-			// VVT: take care of delay
-		Temporal::Beats end = pattern.next_off (row_idx, mti, mri, cgi);
+		// VVT: take care of delay
+		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
 		NotePtr new_note (new NoteType (ch, start, length, pitch, vel));
@@ -2252,7 +2252,7 @@ Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti,
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
 		Temporal::Beats here = pattern.region_relative_beats (row_idx, mti, mri, delay);
-		NotePtr prev_note = pattern.find_prev_note (row_idx, mti, mri, cgi);
+		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2273,7 +2273,7 @@ Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti,
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = pattern.next_off (row_idx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
 		// If new note occur between the on note and off note of the previous
 		// note, then use the off note of the previous note as off note of the
 		// new note.
@@ -2314,7 +2314,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 		// If there is no off note, update the length of the preceding node
 		// to match the new off note (smart off note).
 		if (!off_note) {
-			NotePtr prev_note = pattern.find_prev_note (row_idx, mti, mri, cgi);
+			NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
 			if (prev_note) {
 				Temporal::Beats length = on_note->time () - prev_note->time ();
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
@@ -2324,7 +2324,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 		// Create a new off note in an empty cell
 		// Fetch useful information for most cases
 		Temporal::Beats here = pattern.region_relative_beats (row_idx, mti, mri, delay);
-		NotePtr prev_note = pattern.find_prev_note (row_idx, mti, mri, cgi);
+		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
 		Temporal::Beats prev_start;
 		Temporal::Beats prev_end;
 		if (prev_note) {
@@ -2365,11 +2365,11 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 		// If there is an off note, update the length of the preceding note
 		// to match the next note or the end of the region.
 		if (off_note) {
-			NotePtr prev_note = pattern.find_prev_note (row_idx, mti, mri, cgi);
+			NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
 			if (prev_note) {
 				// Calculate the length of the previous note
 				Temporal::Beats start = prev_note->time ();
-				Temporal::Beats end = pattern.next_off (row_idx, mti, mri, cgi);
+				Temporal::Beats end = pattern.next_off_note (row_idx, mti, mri, cgi);
 				Temporal::Beats length = end - start;
 				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 			}
@@ -2378,7 +2378,7 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 		// Update the length of the corresponding on note so the off note
 		// matches the next note or the end of the region.
 		Temporal::Beats start = off_note->time ();
-		Temporal::Beats end = pattern.next_off (row_idx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		char const * opname = _("resize note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
@@ -4573,7 +4573,6 @@ Grid::key_release (GdkEventKey* ev)
 bool
 Grid::mouse_button_event (GdkEventButton* ev)
 {
-	std::cout << "Grid::mouse_button_event ev = " << ev << std::endl;
 	if (ev->button == 1) {
 		TreeModel::Path path;
 		TreeViewColumn* col;
