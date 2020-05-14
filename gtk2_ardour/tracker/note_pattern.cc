@@ -377,8 +377,7 @@ Temporal::Beats
 NotePattern::next_off (uint32_t row, int cgi) const
 {
 	NotePtr next_note = find_next_off (row, cgi);
-	Temporal::Beats result = next_note ? next_note->end_time () : end_beats;
-	return next_note ? next_note->time () : end_beats;
+	return next_note ? next_note->end_time () : end_beats;
 }
 
 bool
