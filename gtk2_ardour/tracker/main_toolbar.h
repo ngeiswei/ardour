@@ -80,9 +80,14 @@ public:
 	bool sync_playhead_press (GdkEventButton* ev);
 
 	/**
-	 * Triigered upon jump to next button press event.
+	 * Triggered upon jump to next button press event.
 	 */
 	bool jump_press (GdkEventButton* ev);
+
+	/**
+	 * Triggered upon wrap button press event.
+	 */
+	bool wrap_press (GdkEventButton* ev);
 
 	/**
 	 * Trigger when position_spinner value is changed.
@@ -116,6 +121,9 @@ public:
 	Gtk::VSeparator              jump_separator;
 	ArdourWidgets::ArdourButton  jump_button;
 	bool                         jump;
+	Gtk::VSeparator              wrap_separator;
+	ArdourWidgets::ArdourButton  wrap_button;
+	bool                         wrap;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
