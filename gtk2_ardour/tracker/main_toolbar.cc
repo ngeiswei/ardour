@@ -66,6 +66,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, overwrite_existing (false)
 	, sync_playhead (true)
 	, jump (false)
+	, wrap (false)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -83,7 +84,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, position_spinner (position_adjustment)
 	, steps_label (_("Steps"))
 	  // TODO set the boundaries to not be above the number of rows
-	, steps_adjustment (1, -255, 255, 1, 4)
+	, steps_adjustment (1, 0, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
 {
 }
@@ -223,6 +224,16 @@ MainToolbar::setup_layout ()
 	jump_button.show ();
 	br->pack_start (jump_button, false, false);
 
+	// Wrap vertical move
+	wrap_separator.show ();
+	br->pack_start (wrap_separator, false, false);
+	wrap_button.set_name ("wrap button");
+	wrap_button.set_text (S_("Wrap"));
+	wrap_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::wrap_press), false);
+	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	wrap_button.show ();
+	br->pack_start (wrap_button, false, false);
+
 	br->show ();
 	pack_start (*br, false, false);
 
@@ -238,6 +249,7 @@ MainToolbar::setup_tooltips ()
 	overwrite_existing_button.set_tooltip_text (_("New events overwrite existing channel, velocity and delay"));
 	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
 	jump_button.set_tooltip_text (_("Jump to the next event of the same type, on/off note, channel, velocity, delay or automation, while moving the cursor or step editing."));
+	wrap_button.set_tooltip_text (_("Wrap vertical move"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
@@ -539,6 +551,20 @@ MainToolbar::jump_press (GdkEventButton* ev)
 
 	jump = !jump;
 	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	return false;
+}
+
+bool
+MainToolbar::wrap_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	wrap = !wrap;
+	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
 }
