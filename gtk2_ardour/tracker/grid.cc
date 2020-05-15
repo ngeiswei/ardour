@@ -2610,36 +2610,10 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 		return;
 	}
 
+	// Set current row and col, including selecting track, drawing row and
+	// cursor
 	set_current_row (path, set_playhead);
-
-	// Remember the current mtp to update the current track and the
-	// step editor
-	previous_mtp = current_mtp;
-
-	// Update current col
-	current_col = col;
-	current_col_idx = to_col_index (col);
-
-	// Update current mti, mtp, cgi and types
-	current_mti = get_mti (col);
-	current_mtp = pattern.tps[current_mti];
-	current_mri = pattern.to_mri (current_row_idx, current_mti);
-	current_cgi = get_cgi (col);
-	current_note_type = get_note_type (col);
-	current_auto_type = get_auto_type (col);
-
-	// Now display current row cursor background colors
-	redisplay_current_cursor ();
-
-	// Set underline
-	set_underline_current_step_edit_cell ();
-
-	// Update selected track and step editor
-	if (previous_mtp != current_mtp) {
-		select_current_track();
-		unset_step_editing_previous_track ();
-		set_step_editing_current_track ();
-	}
+	set_current_col (col);
 
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
@@ -2669,9 +2643,15 @@ Grid::set_current_cursor_undefined ()
 }
 
 bool
-Grid::is_current_cursor_defined ()
+Grid::is_current_col_defined () const
 {
 	return current_col != 0;
+}
+
+bool
+Grid::is_current_cursor_defined ()
+{
+	return is_current_col_defined () and is_defined (current_path, current_col);
 }
 
 void
@@ -2697,7 +2677,7 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 	current_beats = pattern.beats_at_row (current_row_idx);
 	current_row = to_row (current_row_idx);
 
-	// Now display current row background color
+	// Display current row background color
 	redisplay_current_row_background ();
 
 	// Readjust scroller
@@ -2715,6 +2695,40 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 	tracker_editor.grid_header->align ();
 }
 
+void
+Grid::set_current_col (TreeViewColumn* col)
+{
+	// Remember the current mtp to update the current track and the
+	// step editor
+	previous_mtp = current_mtp;
+
+	// Update current col
+	current_col = col;
+	current_col_idx = to_col_index (col);
+
+	// Update current mti, mtp, cgi and types
+	current_mti = get_mti (col);
+	current_mtp = pattern.tps[current_mti];
+	current_mri = pattern.to_mri (current_row_idx, current_mti);
+	current_cgi = get_cgi (col);
+	current_note_type = get_note_type (col);
+	current_auto_type = get_auto_type (col);
+
+	// Update selected track and step editor
+	if (previous_mtp != current_mtp) {
+		select_current_track();
+		unset_step_editing_previous_track ();
+		set_step_editing_current_track ();
+	}
+
+	// Now display current row cursor background colors
+	redisplay_current_cursor ();
+
+	// Set underline
+	set_underline_current_step_edit_cell ();
+}
+
+// NEXT: unused???
 void
 Grid::set_current_row_undefined ()
 {
@@ -3082,11 +3096,25 @@ Grid::setup_data_columns ()
 void
 Grid::setup_init_cursor ()
 {
+	setup_init_row ();
+	setup_init_col ();
 	// Set the first row as the current one, because, according to my own
 	// experience, that is what the user expects.
 	// set_current_row ();
 	// VVT: do a search using Grid::is_defined to find a first defined
 	// cell, then call Grid::set_current_cursor with it.
+}
+
+void
+Grid::setup_init_row ()
+{
+	// VVT
+}
+
+void
+Grid::setup_init_col ()
+{
+	// VVT
 }
 
 void
@@ -4432,6 +4460,8 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 			ret = true;
 			break;
 		}
+		if (is_defined (current_path, current_col))
+			set_current_col (current_col);
 	}
 
 	return ret;
@@ -4580,13 +4610,15 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y);
 
 		if (ev->type == GDK_2BUTTON_PRESS) {
-			// Enter editing cell
-			set_cursor (path, *col, true);
+			if (is_defined (path, col)) {
+				// Enter editing cell
+				set_cursor (path, *col, true);
+			}
 		} else if (ev->type == GDK_BUTTON_PRESS) {
 			if (is_defined (path, col)) {
 				set_current_cursor (path, col, true);
 			} else {
-				if (is_current_cursor_defined ()) {
+				if (is_defined (path, current_col)) {
 					set_current_cursor (path, current_col, true);
 				} else {
 					set_current_row (path, true);
