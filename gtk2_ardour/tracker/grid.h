@@ -332,6 +332,8 @@ private:
 	void setup_time_column ();
 	void setup_data_columns ();
 	void setup_init_cursor ();
+	void setup_init_row ();
+	void setup_init_col ();
 	void setup_left_separator_column (size_t mti);
 	void setup_region_name_column (size_t mti);
 	void setup_note_column (size_t mti, size_t cgi);
@@ -430,12 +432,20 @@ private:
 	// Set current cursor undefined, let the current row defined however
 	void set_current_cursor_undefined ();
 
-	// Return true iff the current cursor is defined
+	// Return true iff the current column is defined
+	bool is_current_col_defined () const;
+
+	// Return true iff the current cursor is defined.
+	// WARNING: cannot be const of is_defined,
 	bool is_current_cursor_defined ();
 
-	// Set current row
+	// Set current row, including drawing row background
 	void set_current_row (int row_idx, bool set_playhead=false);
 	void set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead=false);
+
+	// Set current col, including selecting track and drawing cursor background
+	// and underlining automation
+	void set_current_col (Gtk::TreeViewColumn* col);
 
 	// Set current row undefined
 	void set_current_row_undefined ();
@@ -455,7 +465,8 @@ private:
 	// negative. Called while editing.
 	void vertical_move_edit_cursor (int steps);
 
-	// Check whether a given column is editable
+	// Check whether a given column is editable. Note, due to technical reasons
+	// outside of our control col cannot be const.
 	bool is_editable (Gtk::TreeViewColumn* col) const;
 
 	// Check if the cell is defined and editable
