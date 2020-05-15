@@ -3760,7 +3760,7 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
@@ -3770,7 +3770,7 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, ch, vel, current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
@@ -3780,7 +3780,7 @@ bool
 Grid::step_editing_set_off_note ()
 {
 	set_off_note (current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -3788,7 +3788,7 @@ bool
 Grid::step_editing_delete_note ()
 {
 	delete_note (current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -3862,7 +3862,7 @@ Grid::step_editing_set_note_channel_digit (int digit)
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos);
 		set_note_channel (current_mti, current_mri, note, new_ch - 1);
 	}
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -3873,7 +3873,7 @@ Grid::step_editing_set_note_channel (uint8_t ch)
 	if (note) {
 		set_note_channel (current_mti, current_mri, note, ch);
 	}
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -3947,7 +3947,7 @@ Grid::step_editing_set_note_velocity_digit (int digit)
 		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos);
 		set_note_velocity (current_mti, current_mri, note, new_vel);
 	}
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -3958,7 +3958,7 @@ Grid::step_editing_set_note_velocity (uint8_t vel)
 	if (note) {
 		set_note_velocity (current_mti, current_mri, note, vel);
 	}
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -4058,7 +4058,7 @@ Grid::step_editing_set_note_delay (int digit)
 	}
 
 	// Move the cursor
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -4069,7 +4069,7 @@ Grid::step_editing_delete_note_delay ()
 	if (note) {
 		set_note_delay (0, current_row_idx, current_mti, current_mri, current_cgi);
 	}
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 	return true;
 }
 
@@ -4174,7 +4174,7 @@ Grid::step_editing_set_automation_value (int digit)
 	set_automation_value (nval, current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 
 	// Redisplay model with the new value
 	// TODO: optimize
@@ -4196,7 +4196,7 @@ Grid::step_editing_delete_automation ()
 	delete_automation_value (current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 
 	// Redisplay model with the new value
 	// TODO: optimize
@@ -4306,7 +4306,7 @@ Grid::step_editing_set_automation_delay (int digit)
 	}
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 
 	// TODO: this highly inefficient, optimize
 	redisplay_grid_direct_call ();
@@ -4326,7 +4326,7 @@ Grid::step_editing_delete_automation_delay ()
 	delete_automation_delay (current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps ();
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
 
 	// TODO: this highly inefficient, optimize
 	redisplay_grid_direct_call ();
@@ -4381,12 +4381,12 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 		switch (ev->keyval) {
 		case GDK_Up:
 		case GDK_uparrow:
-			vertical_move_current_cursor (-1, vertical_wrap);
+			vertical_move_current_cursor (-1, tracker_editor.main_toolbar.wrap);
 			ret = true;
 			break;
 		case GDK_Down:
 		case GDK_downarrow:
-			vertical_move_current_cursor (1, vertical_wrap);
+			vertical_move_current_cursor (1, tracker_editor.main_toolbar.wrap);
 			ret = true;
 			break;
 		case GDK_Left:
@@ -4428,12 +4428,12 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 		switch (ev->keyval) {
 		case GDK_Up:
 		case GDK_uparrow:
-			vertical_move_current_row (-1, vertical_wrap);
+			vertical_move_current_row (-1, tracker_editor.main_toolbar.wrap);
 			ret = true;
 			break;
 		case GDK_Down:
 		case GDK_downarrow:
-			vertical_move_current_row (1, vertical_wrap);
+			vertical_move_current_row (1, tracker_editor.main_toolbar.wrap);
 			ret = true;
 			break;
 		case GDK_Left:

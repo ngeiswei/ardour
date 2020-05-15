@@ -321,9 +321,6 @@ public:
 	// redisplay_grid_connect_call immediately return when such lock is taken.
 	bool                         redisplay_grid_connect_call_enabled;
 
-	// Compile time parameters
-	static const bool vertical_wrap = false;
-
 private:
 	void init_columns ();
 	void init_model ();
