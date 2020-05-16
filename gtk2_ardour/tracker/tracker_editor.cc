@@ -118,6 +118,9 @@ void TrackerEditor::setup (RegionSelection& rs)
 
 	show ();
 
+	if (_first)
+		grid.setup_init_cursor ();
+
 	// To align header and grid
 	grid.redisplay_grid_direct_call ();
 

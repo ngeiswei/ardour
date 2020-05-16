@@ -328,9 +328,11 @@ private:
 	void setup_tree_view ();
 	void setup_time_column ();
 	void setup_data_columns ();
+public:
 	void setup_init_cursor ();
 	void setup_init_row ();
 	void setup_init_col ();
+private:
 	void setup_left_separator_column (size_t mti);
 	void setup_region_name_column (size_t mti);
 	void setup_note_column (size_t mti, size_t cgi);
