@@ -831,7 +831,6 @@ Grid::setup ()
 	setup_data_columns ();
 	connect_events ();
 	setup_tree_view ();
-	setup_init_cursor ();
 
 	show ();
 }
@@ -3098,23 +3097,23 @@ Grid::setup_init_cursor ()
 {
 	setup_init_row ();
 	setup_init_col ();
-	// Set the first row as the current one, because, according to my own
-	// experience, that is what the user expects.
-	// set_current_row ();
-	// VVT: do a search using Grid::is_defined to find a first defined
-	// cell, then call Grid::set_current_cursor with it.
 }
 
 void
 Grid::setup_init_row ()
 {
-	// VVT
+	// Set initial row as first row as that is what the user likely expects
+	set_current_row (0, true);
 }
 
 void
 Grid::setup_init_col ()
 {
-	// VVT
+	TreeViewColumn* col = first_defined_col ();
+	if (col)
+		set_current_col (col);
+	else
+		std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug.";
 }
 
 void
