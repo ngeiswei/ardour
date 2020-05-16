@@ -806,7 +806,7 @@ Grid::first_defined_col ()
 	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns ();
 
 	for (int i = 0; i < (int)cols.size (); i++) {
-		if (cols[i]->get_visible () && is_editable (cols[i]) && is_defined (current_path, cols[i])) {
+		if (cols[i]->get_visible () && is_editable (cols[i]) && is_cell_defined (current_path, cols[i])) {
 			return cols[i];
 		}
 	}
@@ -2605,7 +2605,7 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	// VVT: maybe make sure not to recall if current already set
 
 	// Make sure the cell is defined
-	if (!is_defined (path, col)) {
+	if (!is_cell_defined (path, col)) {
 		return;
 	}
 
@@ -2650,7 +2650,7 @@ Grid::is_current_col_defined () const
 bool
 Grid::is_current_cursor_defined ()
 {
-	return is_current_col_defined () and is_defined (current_path, current_col);
+	return is_current_col_defined () and is_cell_defined (current_path, current_col);
 }
 
 void
@@ -2977,7 +2977,11 @@ Grid::follow_playhead (samplepos_t pos)
 		if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
 			int row_idx = pattern.row_at_sample (pos);
 			if (row_idx != current_row_idx) {
-				vertical_move_current_cursor (row_idx - current_row_idx, false, false, false);
+				if (is_cell_defined (row_idx, current_col)) {
+					set_current_cursor (row_idx, current_col, false);
+				} else {
+					set_current_row (row_idx, false);
+				}
 			}
 		}
 		clock_pos = pos;
@@ -3365,7 +3369,7 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 			}
 		}
 		// Move
-		if (!col || is_defined (path, col)) {
+		if (!col || is_cell_defined (path, col)) {
 			last_def_path = path;
 			++steps;
 		} else if (!jump) {
@@ -3389,7 +3393,7 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 			}
 		}
 		// Move
-		if (!col || is_defined (path, col)) {
+		if (!col || is_cell_defined (path, col)) {
 			last_def_path = path;
 			--steps;
 		} else if (!jump) {
@@ -3421,7 +3425,7 @@ Grid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path
 			colnum = n_col - 1;
 		}
 		col = to_col (colnum);
-		if (col->get_visible () && is_editable (col) && is_defined (path, col)) {
+		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
 			if (tab) {
 				size_t col_mti = get_mti (col);
 				if (pre_mti != col_mti) {
@@ -3445,7 +3449,7 @@ Grid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path
 			colnum = 1;         // colnum 0 is time
 		}
 		col = to_col (colnum);
-		if (col->get_visible () && is_editable (col) && is_defined (path, col)) {
+		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
 			if (tab) {
 				size_t col_mti = get_mti (col);
 				if (pre_mti != col_mti) {
@@ -3471,7 +3475,13 @@ Grid::is_editable (TreeViewColumn* col) const
 }
 
 bool
-Grid::is_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
+Grid::is_cell_defined (int row_idx, const TreeViewColumn* col)
+{
+	return is_cell_defined (to_path (row_idx), col);
+}
+
+bool
+Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 {
 	int row_idx = to_row_index (path);
 	int mti = get_mti (col);
@@ -4459,7 +4469,7 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 			ret = true;
 			break;
 		}
-		if (is_defined (current_path, current_col))
+		if (is_cell_defined (current_path, current_col))
 			set_current_col (current_col);
 	}
 
@@ -4609,15 +4619,15 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y);
 
 		if (ev->type == GDK_2BUTTON_PRESS) {
-			if (is_defined (path, col)) {
+			if (is_cell_defined (path, col)) {
 				// Enter editing cell
 				set_cursor (path, *col, true);
 			}
 		} else if (ev->type == GDK_BUTTON_PRESS) {
-			if (is_defined (path, col)) {
+			if (is_cell_defined (path, col)) {
 				set_current_cursor (path, col, true);
 			} else {
-				if (is_defined (path, current_col)) {
+				if (is_cell_defined (path, current_col)) {
 					set_current_cursor (path, current_col, true);
 				} else {
 					set_current_row (path, true);
