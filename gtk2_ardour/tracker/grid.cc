@@ -3143,8 +3143,8 @@ Grid::setup_region_name_column (size_t mti)
 	region_name_columns[mti] = new TreeViewColumn (label, columns.region_name[mti]);
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
 
-	// Link to font attributes
-	region_name_columns[mti]->add_attribute (cellrenderer_region_name->property_family (), columns._family);
+	// // Link to font attributes
+	// region_name_columns[mti]->add_attribute (cellrenderer_region_name->property_family (), columns._family);
 
 	append_column (*region_name_columns[mti]);
 
@@ -3159,7 +3159,7 @@ Grid::setup_note_column (size_t mti, size_t cgi)
 	CellRendererText* note_cellrenderer = dynamic_cast<CellRendererText*> (note_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// // Link to font attributes
-	// viewcolumn_note->add_attribute (cellrenderer_note->property_family (), columns._family);
+	// note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_family (), columns._family);
 
 	// Link to color attributes
 	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_cell_background (), columns._note_background_color[mti][cgi]);
