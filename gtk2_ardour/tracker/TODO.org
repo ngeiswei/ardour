@@ -1,3 +1,4 @@
+- [ ] Access to ardour via PublicEditor whenever possible
 - [ ] Fix bug in funk-1 (set 6 rows/beat, end of HiHat region is badly
   rendered)
 - [ ] Add button to jump to next note
