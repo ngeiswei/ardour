@@ -18,7 +18,7 @@ WARNING!!! **Alpha** software, may **crash Ardour** and **loose your work**.
 
 ## Build
 
-TODO
+Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
