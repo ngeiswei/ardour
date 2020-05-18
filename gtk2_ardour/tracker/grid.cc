@@ -111,6 +111,7 @@ Grid::Grid (TrackerEditor& te)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
 	, time_column (0)
+	, cellfont ("Monospace")
 {
 	UIConfiguration::instance().ParameterChanged.connect (sigc::mem_fun (*this, &Grid::parameter_changed));
 	UIConfiguration::instance().ColorsChanged.connect (sigc::mem_fun (*this, &Grid::color_changed));
@@ -165,6 +166,7 @@ Grid::GridModelColumns::GridModelColumns ()
 			add (_velocity_background_color[mti][cgi]);
 			add (_velocity_foreground_color[mti][cgi]);
 			add (_velocity_attributes[mti][cgi]);
+			add (_velocity_alignment[mti][cgi]);
 			add (delay[mti][cgi]);
 			add (_delay_background_color[mti][cgi]);
 			add (_delay_foreground_color[mti][cgi]);
@@ -889,8 +891,8 @@ Grid::redisplay_global_columns ()
 		string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
 		row[columns._background_color] = row_background_color;
 
-		// Set font family to Monospace (for region name for now)
-		row[columns._family] = "Monospace";
+		// Set font family
+		row[columns._family] = cellfont;
 
 		row[columns._time_background_color] = row_background_color;
 	}
@@ -1194,6 +1196,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, s
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
 			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity ());
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
 			int64_t delay = pattern.region_relative_delay_ticks (note->time (), row_idx, mti, mri);
 			if (delay != 0) {
@@ -3143,8 +3146,10 @@ Grid::setup_region_name_column (size_t mti)
 	region_name_columns[mti] = new TreeViewColumn (label, columns.region_name[mti]);
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
 
-	// // Link to font attributes
-	// region_name_columns[mti]->add_attribute (cellrenderer_region_name->property_family (), columns._family);
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		region_name_columns[mti]->add_attribute (cellrenderer_region_name->property_family (), columns._family);
+	}
 
 	append_column (*region_name_columns[mti]);
 
@@ -3158,8 +3163,10 @@ Grid::setup_note_column (size_t mti, size_t cgi)
 	note_columns[mti][cgi] = new NoteColumn (columns.note_name[mti][cgi], mti, cgi);
 	CellRendererText* note_cellrenderer = dynamic_cast<CellRendererText*> (note_columns[mti][cgi]->get_first_cell_renderer ());
 
-	// // Link to font attributes
-	// note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_family (), columns._family);
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_family (), columns._family);
+	}
 
 	// Link to color attributes
 	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_cell_background (), columns._note_background_color[mti][cgi]);
@@ -3179,6 +3186,11 @@ Grid::setup_note_channel_column (size_t mti, size_t cgi)
 {
 	channel_columns[mti][cgi] = new ChannelColumn (columns.channel[mti][cgi], mti, cgi);
 	CellRendererText* channel_cellrenderer = dynamic_cast<CellRendererText*> (channel_columns[mti][cgi]->get_first_cell_renderer ());
+
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_family (), columns._family);
+	}
 
 	// Link to color attribute
 	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_cell_background (), columns._channel_background_color[mti][cgi]);
@@ -3202,12 +3214,22 @@ Grid::setup_note_velocity_column (size_t mti, size_t cgi)
 	velocity_columns[mti][cgi] = new VelocityColumn (columns.velocity[mti][cgi], mti, cgi);
 	CellRendererText* velocity_cellrenderer = dynamic_cast<CellRendererText*> (velocity_columns[mti][cgi]->get_first_cell_renderer ());
 
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_family (), columns._family);
+	}
+
 	// Link to color attribute
 	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_cell_background (), columns._velocity_background_color[mti][cgi]);
 	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_foreground (), columns._velocity_foreground_color[mti][cgi]);
 
-	// Link attributes
+	// Link to attributes
 	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_attributes (), columns._velocity_attributes[mti][cgi]);
+
+	// Link to alignment
+	// TODO: support aligment
+	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_alignment (), columns._velocity_alignment[mti][cgi]);
+	// velocity_cellrenderer->property_alignment () = Pango::Alignment::ALIGN_RIGHT;
 
 	// Link to editing methods
 	velocity_cellrenderer->signal_editing_started ().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_velocity_started), mti, cgi));
@@ -3223,6 +3245,11 @@ Grid::setup_note_delay_column (size_t mti, size_t cgi)
 {
 	delay_columns[mti][cgi] = new DelayColumn (columns.delay[mti][cgi], mti, cgi);
 	CellRendererText* delay_cellrenderer = dynamic_cast<CellRendererText*> (delay_columns[mti][cgi]->get_first_cell_renderer ());
+
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_family (), columns._family);
+	}
 
 	// Link to color attribute
 	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_cell_background (), columns._delay_background_color[mti][cgi]);
@@ -3258,6 +3285,11 @@ Grid::setup_automation_column (size_t mti, size_t cgi)
 	automation_columns[mti][cgi] = new AutomationColumn (columns.automation[mti][cgi], mti, cgi);
 	CellRendererText* automation_cellrenderer = dynamic_cast<CellRendererText*> (automation_columns[mti][cgi]->get_first_cell_renderer ());
 
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_family (), columns._family);
+	}
+
 	// Link to color attributes
 	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_cell_background (), columns._automation_background_color[mti][cgi]);
 	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_foreground (), columns._automation_foreground_color[mti][cgi]);
@@ -3283,6 +3315,11 @@ Grid::setup_automation_delay_column (size_t mti, size_t cgi)
 {
 	automation_delay_columns[mti][cgi] = new AutomationDelayColumn (columns.automation_delay[mti][cgi], mti, cgi);
 	CellRendererText* automation_delay_cellrenderer = dynamic_cast<CellRendererText*> (automation_delay_columns[mti][cgi]->get_first_cell_renderer ());
+
+	// Link to font attributes
+	if (!cellfont.empty()) {
+		automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_family (), columns._family);
+	}
 
 	// Link to color attributes
 	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_cell_background (), columns._automation_delay_background_color[mti][cgi]);
