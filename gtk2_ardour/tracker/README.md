@@ -1,3 +1,28 @@
+# Tracker Editor
+
+## Overview
+
+The Tracker editor is a [music tracker](https://en.wikipedia.org/wiki/Music_tracker)
+integrated into Ardour. It allows to visualize and edit midi notes, controls and
+plugin automations with a tracker style interface.
+
+## Videos
+
+- [Presentation at Sonoj-2019](https://media.ccc.de/v/sonoj2019-1909-tracker-pianoroll) 
+- [Small introduction](https://lbry.tv/@ngeiswei:d/Tracker-inside-Ardour:9)
+- [Demo song](https://lbry.tv/@ngeiswei:d/Tracker-in-Ardour.-Song-demo,-blend-of-audio-and-midi-tracks:e)
+
+## Status
+
+WARNING!!! **Alpha** software, may **crash Ardour** and **loose your work**.
+
+## Build
+
+TODO
+
+## TODO
+
+- [ ] Fix automation of different processors
 - [ ] Access to ardour via PublicEditor whenever possible
 - [ ] Fix bug in funk-1 (set 6 rows/beat, end of HiHat region is badly
   rendered)
