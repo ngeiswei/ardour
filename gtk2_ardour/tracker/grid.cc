@@ -265,6 +265,7 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 void
 Grid::add_processor_automation_column (size_t mti, ProcessorPtr processor, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::add_processor_automation_column (processor=" << processor << ",param=" << get_name (mti, param) << ")" << std::endl;
 	ProcessorAutomationNode* pauno;
 
 	if ((pauno = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, param)) == 0) {
