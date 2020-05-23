@@ -22,13 +22,15 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
+- [ ] Support hexadecimal
+- [ ] Support varying floating point precision
 - [ ] Fix automation of different processors
 - [ ] Access to ardour via PublicEditor whenever possible
 - [ ] Fix bug in funk-1 (set 6 rows/beat, end of HiHat region is badly
-  rendered)
+      rendered)
 - [ ] Add button to jump to next note
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
-  notes coming from midi input
+      notes coming from midi input
 - [ ] Final off note management fixes
 - [ ] Fix all compile warnings
 - [ ] Create wscript under tracker folder
@@ -37,22 +39,23 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] What to do when playing and step editing is on?
 - [ ] Add copy/move, interpolate, etc + popup menu
 - [ ] Maybe save octave value per each track, possibly more
-- [ ] Deal with *** in a "proper" manner (allow free modification)
+- [ ] Deal with `***` in a "proper" manner (allow free modification)
 - [ ] Support arbitrary number of tracks (put all properties in tracker_column)
 - [ ] Fix alignment with track toolbar
 - [ ] Fix grid focus. When click on a button, bring focus immediately back to
-  the grid.
+      the grid.
 - [ ] Fix window focus (the tracker editor window should have focus right away)
-- [ ] Support Gtk::Expander to grid header (see cpuload_expander)
+- [ ] Support toggling visibility of regions and tracks
+- [ ] Add access from top menu Windows->Tracker Editor
+- [ ] Support toggling width of column (compress names like mixer strip) and
+      have tip display the entire name
 - [ ] Try to replace as many gtk widgets by cairo widgets
 - [ ] Support shift-tab to move from right to left
 - [ ] Add shortcut for parameters, steps, etc
 - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
 - [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
-- [ ] Support midi input (maybe see MidiTimeAxisView::start_step_editing)
 - [ ] Maybe only have Octave, Ch, Vel in main toolbar is there is a midi track
 - [ ] Use signals whenever possible (instead of for instance calling
-  Grid::redisplay_grid) to not block. This can make ardour crash when jack
-  buffer size is too short.
-- [ ] Fix updating grib when note or automations are updated in the editor
+      Grid::redisplay_grid) to not block. This can make ardour crash when jack
+      buffer size is too short.

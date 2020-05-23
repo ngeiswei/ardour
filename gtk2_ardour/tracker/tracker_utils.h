@@ -137,6 +137,7 @@ public:
 	/**
 	 * Convert number to string without scientific notation.
 	 */
+	// NEXT incorporate precision
 	template<typename Num>
 	static std::string num_to_string (Num n, int base=10)
 	{
