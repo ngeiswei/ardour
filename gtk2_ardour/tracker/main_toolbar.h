@@ -90,6 +90,16 @@ public:
 	bool wrap_press (GdkEventButton* ev);
 
 	/**
+	 * Triggered upon hex button press event.
+	 */
+	bool hex_press (GdkEventButton* ev);
+
+	/**
+	 * Trigger when precision_spinner value is changed.
+	 */
+	void change_precision ();
+	
+	/**
 	 * Trigger when position_spinner value is changed.
 	 */
 	void change_position ();
@@ -98,8 +108,13 @@ public:
 
 	Gtkmm2ext::Bindings* bindings;
 
-	static const int min_position = -5;
-	static const int max_position = 5;
+	static const int dflt_precision = 2;
+	static const int min_precision = 1;
+	static const int max_precision = 12;
+
+	static const int dflt_position = 0;
+	static const int min_position = -12;
+	static const int max_position = 12;
 
 	// Horizontal and vertical spacing
 	int spacing;
@@ -124,6 +139,9 @@ public:
 	Gtk::VSeparator              wrap_separator;
 	ArdourWidgets::ArdourButton  wrap_button;
 	bool                         wrap;
+	Gtk::VSeparator              hex_separator;
+	ArdourWidgets::ArdourButton  hex_button;
+	bool                         hex;
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
@@ -140,6 +158,10 @@ public:
 	Gtk::Label                   delay_label;
 	Gtk::Adjustment              delay_adjustment;
 	Gtk::SpinButton              delay_spinner;
+	Gtk::VSeparator              precision_separator;
+	Gtk::Label                   precision_label;
+	Gtk::Adjustment              precision_adjustment;
+	Gtk::SpinButton              precision_spinner;
 	Gtk::VSeparator              position_separator;
 	Gtk::Label                   position_label;
 	Gtk::Adjustment              position_adjustment;

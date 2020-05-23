@@ -190,8 +190,6 @@ public:
 	void redisplay_undefined_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi); // Display undefined note at row, mti and cgi
 	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int row_idx, size_t mti);
 	void redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	// VT: probably delete when no longer useful
-	void redisplay_automations (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri);
 	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
