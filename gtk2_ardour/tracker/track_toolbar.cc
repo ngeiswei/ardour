@@ -40,6 +40,42 @@ using namespace Gtkmm2ext;
 using namespace ARDOUR;
 using namespace Tracker;
 
+ProcessorAutomationNode::ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem)
+	: param (p), menu_item (mitem), column (0)
+{
+}
+
+std::string
+ProcessorAutomationNode::to_string (const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << indent << "param = " << param << std::endl
+	   << indent << "menu_item = " << menu_item << std::endl
+	   << indent << "column = " << column << std::endl;
+	return ss.str ();
+}
+
+ProcessorAutomationInfo::ProcessorAutomationInfo (ProcessorPtr i)
+	: processor (i), menu (0)
+{
+}
+
+std::string
+ProcessorAutomationInfo::to_string(const std::string& indent) const
+{
+	std::stringstream ss;
+	std::string indent2 = indent + "  ";
+	ss << indent << "processor = " << processor << std::endl
+	   << indent << "menu = " << menu << std::endl
+	   << indent << "columns:" << std::endl
+	   << indent2 << "size = " << columns.size();
+	std::string indent3 = indent2 + "  ";
+	for (size_t i = 0; i < columns.size(); i++)
+		ss << std::endl << indent2 << "processor automation node[" << i << "]:"
+		   << std::endl << columns[i]->to_string(indent3);
+	return ss.str ();
+}
+
 TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti)
 	: tracker_editor (te)
 	, track (tp->track)
@@ -319,6 +355,9 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 void
 TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, ProcessorAutomationNode* pauno)
 {
+	std::cout << "TrackToolbar::processor_menu_item_toggled (rai=" << rai << ", pauno=" << pauno << ")" << std::endl;
+	std::cout << "*rai:" << std::endl << rai->to_string() << std::endl;
+	std::cout << "*pauno:" << std::endl << pauno->to_string() << std::endl;
 	const bool showit = pauno->menu_item->get_active ();
 
 	if (pauno->column == 0) {
@@ -460,6 +499,7 @@ TrackToolbar::hide_main_automations ()
 void
 TrackToolbar::show_all_processor_automations ()
 {
+	std::cout << "TrackToolbar::show_all_processor_automations ()" << std::endl;
 	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
 	     i != processor_automation.end (); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
@@ -483,6 +523,8 @@ TrackToolbar::show_all_processor_automations ()
 void
 TrackToolbar::show_existing_processor_automations ()
 {
+	std::cout << "TrackToolbar::show_existing_processor_automations ()" << std::endl;
+	// VVT: understand the weirdness
 	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
 	     i != processor_automation.end (); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
