@@ -39,10 +39,12 @@ class MidiTrackToolbar;
 class AudioTrackToolbar;
 
 struct ProcessorAutomationNode {
-	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem)
-		: param (p), menu_item (mitem), column (0) {}
-	// TODO: do you really need this?
+	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem);
+	// TODO: do we really need this?
 	~ProcessorAutomationNode ();
+
+	// For debugging
+	std::string to_string (const std::string& indent="") const;
 
 	Evoral::Parameter                         param;
 	Gtk::CheckMenuItem*                       menu_item;
@@ -51,10 +53,12 @@ struct ProcessorAutomationNode {
 };
 
 struct ProcessorAutomationInfo {
-	explicit ProcessorAutomationInfo (ProcessorPtr i)
-		: processor (i), menu (0) {}
-	// TODO: do you really need this?
+	explicit ProcessorAutomationInfo (ProcessorPtr i);
+	// TODO: do we really need this?
 	~ProcessorAutomationInfo ();
+
+	// VVT: for debugging
+	std::string to_string (const std::string& indent="") const;
 
 	ProcessorPtr  processor;
 	Gtk::Menu*                            menu;
