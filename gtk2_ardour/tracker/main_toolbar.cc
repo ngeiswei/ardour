@@ -67,6 +67,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, sync_playhead (false)
 	, jump (false)
 	, wrap (false)
+	, hex (false)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -79,8 +80,11 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, delay_label (_("Delay"))
 	, delay_adjustment (0, 0, 0, 1, 4)
 	, delay_spinner (delay_adjustment)
+	, precision_label (_("Precision"))
+	, precision_adjustment (dflt_precision, min_precision, max_precision, 1, 2)
+	, precision_spinner (precision_adjustment)
 	, position_label (_("Position"))
-	, position_adjustment (0, min_position, max_position, 1, 2)
+	, position_adjustment (dflt_position, min_position, max_position, 1, 2)
 	, position_spinner (position_adjustment)
 	, steps_label (_("Steps"))
 	  // TODO set the boundaries to not be above the number of rows
@@ -163,6 +167,16 @@ MainToolbar::setup_layout ()
 	delay_spinner.show ();
 	tr->pack_start (delay_spinner, false, false);
 
+	// Precision spinner
+	precision_separator.show ();
+	tr->pack_start (precision_separator, false, false);
+	precision_label.show ();
+	tr->pack_start (precision_label, false, false);
+	precision_spinner.signal_value_changed ().connect (sigc::mem_fun (*this, &MainToolbar::change_precision), false);
+	precision_spinner.set_activates_default ();
+	precision_spinner.show ();
+	tr->pack_start (precision_spinner, false, false);
+
 	// Position spinner
 	position_separator.show ();
 	tr->pack_start (position_separator, false, false);
@@ -234,6 +248,16 @@ MainToolbar::setup_layout ()
 	wrap_button.show ();
 	br->pack_start (wrap_button, false, false);
 
+	// Wrap vertical move
+	hex_separator.show ();
+	br->pack_start (hex_separator, false, false);
+	hex_button.set_name ("hex button");
+	hex_button.set_text (S_("Hex"));
+	hex_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::hex_press), false);
+	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	hex_button.show ();
+	br->pack_start (hex_button, false, false);
+
 	br->show ();
 	pack_start (*br, false, false);
 
@@ -246,14 +270,16 @@ MainToolbar::setup_tooltips ()
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
 	step_edit_button.set_tooltip_text (_("Toggle step editing"));
 	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
-	overwrite_existing_button.set_tooltip_text (_("New events overwrite existing channel, velocity and delay"));
+	overwrite_existing_button.set_tooltip_text (_("Input events overwrite existing channel, velocity and delay"));
 	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
-	jump_button.set_tooltip_text (_("Jump to the next event of the same type, on/off note, channel, velocity, delay or automation, while moving the cursor or step editing."));
+	jump_button.set_tooltip_text (_("Jump to the next event on the same row or column while moving the cursor or step editing. If no such event exist, then fallback to regulare movement."));
 	wrap_button.set_tooltip_text (_("Wrap vertical move"));
+	hex_button.set_tooltip_text (_("Input/output numbers in hexadecimal"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
 	delay_spinner.set_tooltip_text (_("Default delay"));
+	precision_spinner.set_tooltip_text (_("Maximum number of digits to display after the point of floating point numbers"));
 	position_spinner.set_tooltip_text (_("Position from the numerical separator changed when step editing automation. Place value = base^(position-1)."));
 	steps_spinner.set_tooltip_text (_("Step size"));
 }
@@ -481,7 +507,7 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 	step_edit = !step_edit;
 	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
-	// TODO: possibly replace by signal
+	// TODO: send signal to TrackerEditor
 	tracker_editor.grid.redisplay_grid_direct_call ();
 	if (step_edit) {
 		tracker_editor.connect_midi_event ();
@@ -567,6 +593,30 @@ MainToolbar::wrap_press (GdkEventButton* ev)
 	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
+}
+
+bool
+MainToolbar::hex_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	hex = !hex;
+	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	// TODO: send signal to TrackerEditor
+	tracker_editor.grid.redisplay_grid_direct_call ();
+
+	return false;
+}
+
+void
+MainToolbar::change_precision ()
+{
+	// TODO: send signal to TrackerEditor
+	tracker_editor.grid.redisplay_grid_direct_call ();
 }
 
 void
