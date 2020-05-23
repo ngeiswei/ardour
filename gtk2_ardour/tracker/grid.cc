@@ -1075,37 +1075,6 @@ Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size
 	row[columns._automation_delay_background_color[mti][cgi]] = gtk_bases_color;
 }
 
-// VT: remove when no longer useful
-void
-Grid::redisplay_automations (TreeModel::Row& row, int row_idx, size_t mti, size_t mri)
-{
-	// Render automation pattern
-	for (int cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-
-		// Display undefined
-		if (!is_automation_defined (row_idx, mti, cgi)) {
-			redisplay_undefined_automation (row, mti, cgi);
-			continue;
-		}
-
-		// Display defined
-		Evoral::Parameter param = get_param (mti, cgi);
-		size_t auto_count = pattern.get_automation_list_count (row_idx, mti, mri, param);
-
-		// Fill background colors
-		redisplay_auto_background (row, mti, cgi);
-
-		// Fill default blank foreground text and color
-		redisplay_blank_auto_foreground (row, mti, cgi);
-
-		if (auto_count > 0) {
-			redisplay_automation (row, row_idx, mti, mri, cgi, param);
-		} else {
-			redisplay_auto_interpolation (row, row_idx, mti, mri, cgi, param);
-		}
-	}
-}
-
 void
 Grid::redisplay_note_background (TreeModel::Row& row, size_t mti, size_t cgi)
 {
