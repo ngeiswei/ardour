@@ -524,7 +524,7 @@ void
 TrackToolbar::show_existing_processor_automations ()
 {
 	std::cout << "TrackToolbar::show_existing_processor_automations ()" << std::endl;
-	// VVT: understand the weirdness
+	// VVT: understand the weirdness (other processor automation)
 	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
 	     i != processor_automation.end (); ++i) {
 		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {

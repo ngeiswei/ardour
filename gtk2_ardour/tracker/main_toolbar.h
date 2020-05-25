@@ -142,6 +142,7 @@ public:
 	Gtk::VSeparator              hex_separator;
 	ArdourWidgets::ArdourButton  hex_button;
 	bool                         hex;
+	int                          base; // 16 if hex else 10
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
@@ -162,10 +163,12 @@ public:
 	Gtk::Label                   precision_label;
 	Gtk::Adjustment              precision_adjustment;
 	Gtk::SpinButton              precision_spinner;
+	int                          precision;
 	Gtk::VSeparator              position_separator;
 	Gtk::Label                   position_label;
 	Gtk::Adjustment              position_adjustment;
 	Gtk::SpinButton              position_spinner;
+	int                          position;
 	Gtk::VSeparator              steps_separator;
 	Gtk::Label                   steps_label;
 	Gtk::Adjustment              steps_adjustment;

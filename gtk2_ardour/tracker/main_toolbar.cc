@@ -68,6 +68,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, jump (false)
 	, wrap (false)
 	, hex (false)
+	, base (10)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -83,9 +84,11 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, precision_label (_("Precision"))
 	, precision_adjustment (dflt_precision, min_precision, max_precision, 1, 2)
 	, precision_spinner (precision_adjustment)
+	, precision (dflt_precision)
 	, position_label (_("Position"))
 	, position_adjustment (dflt_position, min_position, max_position, 1, 2)
 	, position_spinner (position_adjustment)
+	, position (dflt_position)
 	, steps_label (_("Steps"))
 	  // TODO set the boundaries to not be above the number of rows
 	, steps_adjustment (1, 0, 255, 1, 4)
@@ -604,6 +607,7 @@ MainToolbar::hex_press (GdkEventButton* ev)
 	}
 
 	hex = !hex;
+	base = hex ? 16 : 10;
 	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// TODO: send signal to TrackerEditor
@@ -615,6 +619,7 @@ MainToolbar::hex_press (GdkEventButton* ev)
 void
 MainToolbar::change_precision ()
 {
+	precision = precision_spinner.get_value_as_int ();
 	// TODO: send signal to TrackerEditor
 	tracker_editor.grid.redisplay_grid_direct_call ();
 }
@@ -622,6 +627,7 @@ MainToolbar::change_precision ()
 void
 MainToolbar::change_position ()
 {
+	position = position_spinner.get_value_as_int ();
 	// TODO: possibly replace by signal
 	if (step_edit) {
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
