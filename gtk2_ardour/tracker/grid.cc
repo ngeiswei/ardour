@@ -1152,7 +1152,9 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, s
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
 			int64_t delay = pattern.region_relative_delay_ticks (note->end_time (), row_idx, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
+				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay,
+				                                                            tracker_editor.main_toolbar.base,
+				                                                            tracker_editor.main_toolbar.precision);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 		}
@@ -1162,15 +1164,21 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, s
 		if (note) {
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note ());
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.channel[mti][cgi]] = TrackerUtils::num_to_string (note->channel () + 1);
+			row[columns.channel[mti][cgi]] = TrackerUtils::num_to_string (note->channel () + 1,
+			                                                              tracker_editor.main_toolbar.base,
+			                                                              tracker_editor.main_toolbar.precision);
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity ());
+			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity (),
+			                                                               tracker_editor.main_toolbar.base,
+			                                                               tracker_editor.main_toolbar.precision);
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 			row[columns._velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
 			int64_t delay = pattern.region_relative_delay_ticks (note->time (), row_idx, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
+				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay,
+				                                                            tracker_editor.main_toolbar.base,
+				                                                            tracker_editor.main_toolbar.precision);
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
 			}
 		}
@@ -1225,13 +1233,17 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, size_t mti, size_t
 	if (pattern.is_auto_displayable (row_idx, mti, mri, param)) {
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (row_idx, mti, mri, param);
 		double aval = ctl_event->value;
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval);
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval,
+		                                                                 tracker_editor.main_toolbar.base,
+		                                                                 tracker_editor.main_toolbar.precision);
 		double awhen = ctl_event->when;
 		int64_t delay = TrackerUtils::is_region_automation (param) ?
 			pattern.region_relative_delay_ticks (Temporal::Beats (awhen), row_idx, mti, mri)
 			: pattern.delay_ticks ((samplepos_t)awhen, row_idx, mti);
 		if (delay != 0) {
-			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay);
+			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay,
+			                                                                       tracker_editor.main_toolbar.base,
+			                                                                       tracker_editor.main_toolbar.precision);
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
 		}
 	} else {
@@ -1245,9 +1257,13 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, size_t mti
 {
 	double inter_auto_val = get_automation_interpolation_value (row_idx, mti, mri, param);
 	if (is_int_param (param)) {
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (std::round (inter_auto_val));
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (std::round (inter_auto_val),
+		                                                                 tracker_editor.main_toolbar.base,
+		                                                                 tracker_editor.main_toolbar.precision);
 	} else {
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_auto_val);
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_auto_val,
+		                                                                 tracker_editor.main_toolbar.base,
+		                                                                 tracker_editor.main_toolbar.precision);
 	}
 	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
 }
@@ -1886,7 +1902,9 @@ Grid::underlined_value (int val) const
 std::pair<std::string, Pango::AttrList>
 Grid::underlined_value (float val) const
 {
-	return underlined_value (TrackerUtils::num_to_string (val));
+	return underlined_value (TrackerUtils::num_to_string (val,
+	                                                      tracker_editor.main_toolbar.base,
+	                                                      tracker_editor.main_toolbar.precision));
 }
 
 std::pair<std::string, Pango::AttrList>
@@ -2700,7 +2718,7 @@ Grid::set_current_col (TreeViewColumn* col)
 	set_underline_current_step_edit_cell ();
 }
 
-// NEXT: unused???
+// VVT NEXT: unused???
 void
 Grid::set_current_row_undefined ()
 {
@@ -2723,7 +2741,7 @@ Grid::is_current_row_defined ()
 void
 Grid::set_current_pos (int min_pos, int max_pos)
 {
-	int position = tracker_editor.main_toolbar.position_spinner.get_value_as_int ();
+	int position = tracker_editor.main_toolbar.position;
 	current_pos = TrackerUtils::clamp (position, min_pos, max_pos);
 }
 
@@ -3654,7 +3672,7 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
-	// VVT: take care of current_mtp == nullptr case
+	// VVT: make sure some current cursor is defined
 
 	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
@@ -3875,7 +3893,9 @@ Grid::step_editing_set_note_channel_digit (int digit)
 	NotePtr note = get_on_note (current_row_idx, current_mti, current_cgi);
 	if (note) {
 		int ch = note->channel ();
-		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos);
+		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos,
+		                                         tracker_editor.main_toolbar.base,
+		                                         tracker_editor.main_toolbar.precision);
 		set_note_channel (current_mti, current_mri, note, new_ch - 1);
 	}
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
@@ -3960,7 +3980,9 @@ Grid::step_editing_set_note_velocity_digit (int digit)
 	NotePtr note = get_on_note (current_row_idx, current_mti, current_cgi);
 	if (note) {
 		int vel = note->velocity ();
-		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos);
+		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos,
+		                                          tracker_editor.main_toolbar.base,
+		                                          tracker_editor.main_toolbar.precision);
 		set_note_velocity (current_mti, current_mri, note, new_vel);
 	}
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
@@ -4069,7 +4091,9 @@ Grid::step_editing_set_note_delay (int digit)
 			: pattern.region_relative_delay_ticks (off_note->end_time (), current_row_idx, current_mti, current_mri);
 
 		// Update delay
-		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos);
+		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos,
+		                                                    tracker_editor.main_toolbar.base,
+		                                                    tracker_editor.main_toolbar.precision);
 		set_note_delay (new_delay, current_row_idx, current_mti, current_mri, current_cgi);
 	}
 
@@ -4182,7 +4206,9 @@ Grid::step_editing_set_automation_value (int digit)
 		oval = std::round (oval);
 	}
 
-	double nval = TrackerUtils::change_digit_or_sign (oval, digit, current_pos);
+	double nval = TrackerUtils::change_digit_or_sign (oval, digit, current_pos,
+	                                                  tracker_editor.main_toolbar.base,
+	                                                  tracker_editor.main_toolbar.precision);
 
 	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
 	// return when such lock is taken.
@@ -4317,7 +4343,9 @@ Grid::step_editing_set_automation_delay (int digit)
 
 	// Set new value
 	if (val_def.second) {
-		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos);
+		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos,
+		                                                    tracker_editor.main_toolbar.base,
+		                                                    tracker_editor.main_toolbar.precision);
 		set_automation_delay (new_delay, current_row_idx, current_mti, current_mri, current_cgi);
 	}
 

@@ -137,12 +137,11 @@ public:
 	/**
 	 * Convert number to string without scientific notation.
 	 */
-	// NEXT incorporate precision
 	template<typename Num>
-	static std::string num_to_string (Num n, int base=10)
+	static std::string num_to_string (Num n, int base=10, int precision=5)
 	{
 		std::stringstream ss;
-		ss << std::fixed << std::setprecision (5) << n;
+		ss << std::fixed << std::setprecision (precision) << n;
 		return rm_point_zeros (ss.str ());
 	}
 
@@ -216,10 +215,10 @@ public:
 	 * return a negative val, if base <= digit then return a positive val.
 	 */
 	template <typename Num>
-	static Num change_digit_or_sign (Num val, int digit, int position, int base=10)
+	static Num change_digit_or_sign (Num val, int digit, int position, int base=10, int precision=5)
 	{
 		if (0 <= digit && digit < base) {
-			return change_digit (val, digit, position);
+			return change_digit (val, digit, position, precision);
 		}
 
 		if ((digit < 0 && 0 < val) || (base <= digit && val < 0)) {
@@ -241,9 +240,9 @@ public:
 	 * change_digit (val=100, digit=5, position=3) = 5100
 	 */
 	template <typename Num>
-	static Num change_digit (Num val, int digit, int position, int base=10)
+	static Num change_digit (Num val, int digit, int position, int base=10, int precision=5)
 	{
-		std::string val_str = change_digit (num_to_string (val, base), digit, position, base);
+		std::string val_str = change_digit (num_to_string (val, base, precision), digit, position, base);
 		return string_to_num<Num> (val_str, base);
 	}
 	static std::string change_digit (const std::string& val_str, int digit, int position, int base=10)

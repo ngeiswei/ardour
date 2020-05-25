@@ -54,10 +54,7 @@ struct ProcessorAutomationNode {
 
 struct ProcessorAutomationInfo {
 	explicit ProcessorAutomationInfo (ProcessorPtr i);
-	// TODO: do we really need this?
-	~ProcessorAutomationInfo ();
 
-	// VVT: for debugging
 	std::string to_string (const std::string& indent="") const;
 
 	ProcessorPtr  processor;
