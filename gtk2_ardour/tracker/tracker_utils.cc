@@ -67,7 +67,7 @@ TrackerUtils::char_to_digit (char c, int base)
 {
 	std::string s;
 	s.push_back (c);
-	return string_to_num<int> (std::string (0, c));
+	return string_to_num<int> (std::string (0, c), base);
 }
 
 size_t
@@ -91,11 +91,46 @@ TrackerUtils::position_range (const std::string& str)
 	return std::pair<int, int> (l, u);
 }
 
+bool
+TrackerUtils::is_negative (const std::string& str)
+{
+	if (str.empty ())
+		return false;
+	return str[0] == '-';
+}
+
+bool
+TrackerUtils::has_hex_prefix (const std::string& str)
+{
+	if (is_negative (str)) {
+		if (str.size () < 3) {
+			return false;
+		}
+		return (str[1] == '0') && ((str[2] == 'x') || (str[2] == 'X'));
+	} else {
+		if (str.size () < 2) {
+			return false;
+		}
+		return (str[0] == '0') && ((str[1] == 'x') || (str[1] == 'X'));
+	}	
+}
+
+std::string
+TrackerUtils::append_hex_prefix(const std::string& str)
+{
+	if (has_hex_prefix (str)) {
+		return str;
+	}
+	std::string new_str = str;
+	new_str.insert(is_negative (str) ? 1 : 0, "0x");
+	return new_str;
+}
+
 std::string
 TrackerUtils::pad (const std::string& str, int position)
 {
-	bool is_neg = str[0] == '-';
-	std::string ng_str = is_neg ? str.substr (1) : str;
+	bool is_neg = is_negative(str);
+	std::string ng_str =  is_neg ? str.substr (1) : str;
 	return std::string (is_neg ? "-" : "") + non_negative_pad (ng_str, position);
 }
 
@@ -115,15 +150,15 @@ TrackerUtils::non_negative_pad (const std::string& str, int position)
 }
 
 std::string
-TrackerUtils::int_unpad (const std::string& str)
+TrackerUtils::int_unpad (const std::string& str, int base)
 {
-	return num_to_string (std::atoi (str.c_str ()));
+	return num_to_string (string_to_num<int> (str, base), base);
 }
 
 std::string
-TrackerUtils::float_unpad (const std::string& str)
+TrackerUtils::float_unpad (const std::string& str, int base, int precision)
 {
-	return num_to_string (std::atof (str.c_str ()));
+	return num_to_string (string_to_num<float> (str, base), base, precision);
 }
 
 size_t
@@ -366,4 +401,15 @@ bool
 TrackerUtils::is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce)
 {
 	return lce.when == rce.when && lce.value == rce.value;
+}
+
+std::ostream&
+TrackerUtils::hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt)
+{
+	o << std::setfill ('0') << std::right << std::uppercase << std::hex
+	  << std::setw (3) << bbt.bars << "|"
+	  << std::setw (1) << bbt.beats << "|"
+	  << std::setw (3) << bbt.ticks;
+
+	return o;
 }
