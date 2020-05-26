@@ -57,7 +57,8 @@ namespace Tracker {
 
 // Number digits required to represent delay. 5 char because delay requires 4
 // digit + 1 char for - sign.
-#define DELAY_DIGITS 5
+#define HEX_DELAY_DIGITS 4
+#define DEC_DELAY_DIGITS 5
 
 class TrackerEditor;
 
@@ -168,6 +169,10 @@ public:
 	int right_separator_colnum (size_t mti) const;
 	void redisplay_visible_right_separator (size_t mti) const;
 
+	int base () const;
+	bool is_hex () const;
+	int precision () const;
+	
 	// Return the column of the first defined and editable cell of the current
 	// row
 	Gtk::TreeViewColumn* first_defined_col ();
@@ -617,6 +622,15 @@ private:
 	 * Check whether a string is blank such as "----"
 	 */
 	static bool is_blank (const std::string& str);
+
+	/**
+	 * Create blank strings for note, channel, velocity, delay and automation
+	 */
+	std::string mk_note_blank () const;
+	std::string mk_ch_blank () const;
+	std::string mk_vel_blank () const;
+	std::string mk_delay_blank () const;
+	std::string mk_auto_blank () const;
 
 	const std::string cellfont;
 
