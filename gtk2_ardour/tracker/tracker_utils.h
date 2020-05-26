@@ -21,6 +21,8 @@
 
 #include <set>
 #include <cmath>
+#include <cstdlib>
+#include <string>
 
 #include <boost/lexical_cast.hpp>
 
@@ -141,14 +143,31 @@ public:
 	static std::string num_to_string (Num n, int base=10, int precision=5)
 	{
 		std::stringstream ss;
-		ss << std::fixed << std::setprecision (precision) << n;
+		if (base == 16) {
+			// VVT NEXT support floating point hex
+			ss << std::uppercase << std::hex << std::fixed << std::setprecision (precision);
+			if (n < 0) {
+				ss << "-" << -1*n;
+			} else {
+				ss << n;
+			}
+		} else {
+			ss << std::fixed << std::setprecision (precision) << n;
+		}
 		return rm_point_zeros (ss.str ());
 	}
 
 	template<typename Num>
 	static Num string_to_num (const std::string& str, int base=10)
 	{
-		return boost::lexical_cast<Num> (str);
+		if (base == 16) {
+			// VVT NEXT: support floating point hex (see strtod or strtof, study
+			// their code and rip it off). Consider using --cxx11 while
+			// configuring waf.
+			return (Num)std::stod (append_hex_prefix (str));
+		} else {
+			return boost::lexical_cast<Num> (str);
+		}
 	}
 
 	static char digit_to_char (int digit, int base=10);
@@ -173,6 +192,43 @@ public:
 	static std::pair<int, int> position_range (const std::string& str);
 
 	/**
+	 * Return true iff the string encodes a number of type Num in the given
+	 * base.
+	 */
+	template <typename Num>
+	static bool is_number (const std::string& str, int base=10)
+	{
+		// VVT NEXT
+		return true;
+	}
+
+	/**
+	 * Return true iff the number encoded in str is negative. That is if it
+	 * starts with '-'.
+	 */
+	static bool is_negative (const std::string& str);
+
+	/**
+	 * Return true if the number has an hexadecimal prefix. For instance
+	 *
+	 * "A" -> false
+	 * "-A" -> false
+	 * "0xA" -> true
+	 * "-0xA" -> true
+	 */
+	static bool has_hex_prefix (const std::string& str);
+	
+	/**
+	 * Append hex prefix to a hexadecimal number if missing. For instance
+	 *
+	 * "A" -> "0xA"
+	 * "-A" -> "-0xA"
+	 * "0xA" -> "0xA"
+	 * "-0xA" -> "-0xA"
+	 */
+	static std::string append_hex_prefix(const std::string& str);
+
+	/**
 	 * Given the string corresponding to a number and a position in the
 	 * numerical system, pad the string so that it contains extra zeros so that
 	 * the string covers the position. For instance
@@ -193,8 +249,8 @@ public:
 	 * Performs the inverse operation of pad, that is remove the unnecessary
 	 * leading (and perhaps trailing as well) zeros.
 	 */
-	static std::string int_unpad (const std::string& str);
-	static std::string float_unpad (const std::string& str);
+	static std::string int_unpad (const std::string& str, int base=10);
+	static std::string float_unpad (const std::string& str, int base=10, int precision=5);
 
 	/**
 	 * Given the string corresponding to a number and a position in the
@@ -218,7 +274,7 @@ public:
 	static Num change_digit_or_sign (Num val, int digit, int position, int base=10, int precision=5)
 	{
 		if (0 <= digit && digit < base) {
-			return change_digit (val, digit, position, precision);
+			return change_digit (val, digit, position, base, precision);
 		}
 
 		if ((digit < 0 && 0 < val) || (base <= digit && val < 0)) {
@@ -249,7 +305,7 @@ public:
 	{
 		std::string padded_val_str = pad (val_str, position);
 		size_t str_pos = locate (padded_val_str, position);
-		padded_val_str[str_pos] = digit_to_char (digit);
+		padded_val_str[str_pos] = digit_to_char (digit, base);
 		return padded_val_str;
 	}
 
@@ -310,6 +366,9 @@ public:
 
 	// Compare if two control events have the same attributes
 	static bool is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);
+
+	// Like print_padded in bbt_time.h but for hexadecimal
+	static std::ostream&	hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt);
 };
 
 } // ~namespace tracker
