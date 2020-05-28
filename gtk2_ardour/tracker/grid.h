@@ -475,7 +475,6 @@ private:
 	// Check if the cell is defined and editable
 	// Warning: can't be const because of to_col_index
 	bool is_cell_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
-	// VVT: implement
 	bool is_cell_defined (int row_idx, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (int row_idx, int mti) const;
