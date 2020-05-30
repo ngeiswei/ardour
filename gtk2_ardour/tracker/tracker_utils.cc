@@ -56,6 +56,53 @@ TrackerUtils::is_region_automation (const Evoral::Parameter& param)
 	return ARDOUR::parameter_is_midi ((ARDOUR::AutomationType)param.type ());
 }
 
+std::string
+TrackerUtils::rm_point_zeros (const std::string& str)
+{
+	std::string::size_type point_pos = str.rfind ('.');
+	if (point_pos == std::string::npos) {
+		return str;
+	}
+	std::string::size_type zero_pos = str.size ();
+	while (point_pos < zero_pos) {
+		if (str[zero_pos - 1] == '0') {
+			zero_pos--;
+		} else {
+			break;
+		}
+	}
+	return str.substr (0, point_pos + 1 == zero_pos ? point_pos : zero_pos);
+}
+
+std::string
+TrackerUtils::num_to_string (int n, int base, int precision)
+{
+	std::stringstream ss;
+	if (base == 16) {
+		ss << std::uppercase << std::hex;
+	}
+	if (n < 0) {
+		ss << "-";
+	}
+	ss << std::abs(n);
+	return ss.str();
+}
+
+std::string
+TrackerUtils::num_to_string (double n, int base, int precision)
+{
+	std::stringstream ss;
+	if (base == 10) {
+		ss << std::fixed << std::setprecision (precision) << n;
+	} else {
+		int numerator = std::round(n * std::pow(base, precision));
+		std::string numerator_str = num_to_string (numerator, base);
+		int pos = (int)numerator_str.size () - precision;
+		ss << insert_point (numerator_str, pos);
+	}
+	return rm_point_zeros (ss.str ());
+}
+
 char
 TrackerUtils::digit_to_char (int digit, int base)
 {
@@ -159,6 +206,19 @@ std::string
 TrackerUtils::float_unpad (const std::string& str, int base, int precision)
 {
 	return num_to_string (string_to_num<float> (str, base), base, precision);
+}
+
+std::string
+TrackerUtils::insert_point (const std::string& str, int position)
+{
+	std::string res = str;
+	if (position <= 0) {
+		res.insert(0, std::abs(position), '0');
+		res.insert(0, "0.");
+	} else if (position < (int)str.size()) {
+		res.insert(position, ".");
+	}
+	return res;
 }
 
 size_t

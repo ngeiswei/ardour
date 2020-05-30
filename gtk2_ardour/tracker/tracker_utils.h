@@ -119,44 +119,19 @@ public:
 	 *
 	 * "1"
 	 */
-	static std::string rm_point_zeros (const std::string& str)
-	{
-		std::string::size_type point_pos = str.rfind ('.');
-		if (point_pos == std::string::npos) {
-			return str;
-		}
-		std::string::size_type zero_pos = str.size ();
-		while (point_pos < zero_pos) {
-			if (str[zero_pos - 1] == '0') {
-				zero_pos--;
-			} else {
-				break;
-			}
-		}
-		return str.substr (0, point_pos + 1 == zero_pos ? point_pos : zero_pos);
-	}
+	static std::string rm_point_zeros (const std::string& str);
 
 	/**
 	 * Convert number to string without scientific notation.
+	 *
+	 * TODO: for int, precision is not necessary.
 	 */
-	template<typename Num>
-	static std::string num_to_string (Num n, int base=10, int precision=5)
-	{
-		std::stringstream ss;
-		if (base == 16) {
-			// VVT NEXT support floating point hex
-			ss << std::uppercase << std::hex << std::fixed << std::setprecision (precision);
-			if (n < 0) {
-				ss << "-" << -1*n;
-			} else {
-				ss << n;
-			}
-		} else {
-			ss << std::fixed << std::setprecision (precision) << n;
-		}
-		return rm_point_zeros (ss.str ());
-	}
+	static std::string num_to_string (int n, int base=10, int precision=2);
+	static std::string num_to_string (double n, int base=10, int precision=2);
 
+	/**
+	 * Convert tring to number.
+	 */
 	template<typename Num>
 	static Num string_to_num (const std::string& str, int base=10)
 	{
@@ -192,8 +167,7 @@ public:
 	static std::pair<int, int> position_range (const std::string& str);
 
 	/**
-	 * Return true iff the string encodes a number of type Num in the given
-	 * base.
+	 * Return true iff the string encodes a number in the given base.
 	 */
 	template <typename Num>
 	static bool is_number (const std::string& str, int base=10)
@@ -250,7 +224,20 @@ public:
 	 * leading (and perhaps trailing as well) zeros.
 	 */
 	static std::string int_unpad (const std::string& str, int base=10);
-	static std::string float_unpad (const std::string& str, int base=10, int precision=5);
+	static std::string float_unpad (const std::string& str, int base=10, int precision=2);
+
+	/**
+	 * Given a string corresponding to an integer, insert a point '.' before the
+	 * given position, padding with zeros when necessary. If position is the
+	 * size of the string or more, then do nothing. For instance
+	 *
+	 * insert_point ("123", -1) = 0.0123
+	 * insert_point ("123", 0) = 0.123
+	 * insert_point ("123", 1) = 1.23
+	 * insert_point ("123", 2) = 12.3
+	 * insert_point ("123", 3) = 123
+	 */
+	static std::string insert_point (const std::string& str, int position);
 
 	/**
 	 * Given the string corresponding to a number and a position in the
@@ -271,7 +258,7 @@ public:
 	 * return a negative val, if base <= digit then return a positive val.
 	 */
 	template <typename Num>
-	static Num change_digit_or_sign (Num val, int digit, int position, int base=10, int precision=5)
+	static Num change_digit_or_sign (Num val, int digit, int position, int base=10, int precision=2)
 	{
 		if (0 <= digit && digit < base) {
 			return change_digit (val, digit, position, base, precision);
@@ -296,7 +283,7 @@ public:
 	 * change_digit (val=100, digit=5, position=3) = 5100
 	 */
 	template <typename Num>
-	static Num change_digit (Num val, int digit, int position, int base=10, int precision=5)
+	static Num change_digit (Num val, int digit, int position, int base=10, int precision=2)
 	{
 		std::string val_str = change_digit (num_to_string (val, base, precision), digit, position, base);
 		return string_to_num<Num> (val_str, base);
