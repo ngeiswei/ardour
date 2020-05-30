@@ -14,7 +14,7 @@ plugin automations with a tracker style interface.
 
 ## Status
 
-WARNING!!! **Alpha** software, may **crash Ardour** and **loose your work**.
+WARNING!!! **Alpha** software, may **crash and loose your work**.
 
 ## Build
 
