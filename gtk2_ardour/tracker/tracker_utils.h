@@ -136,9 +136,8 @@ public:
 	static Num string_to_num (const std::string& str, int base=10)
 	{
 		if (base == 16) {
-			// VVT NEXT: support floating point hex (see strtod or strtof, study
-			// their code and rip it off). Consider using --cxx11 while
-			// configuring waf.
+			// Warning: this code might require C++11 (use --cxx11 while
+			// configuring waf if necessary).
 			return (Num)std::stod (append_hex_prefix (str));
 		} else {
 			return boost::lexical_cast<Num> (str);
@@ -172,7 +171,7 @@ public:
 	template <typename Num>
 	static bool is_number (const std::string& str, int base=10)
 	{
-		// VVT NEXT
+		// VVT NEXT: not used anywhere so far though...
 		return true;
 	}
 
