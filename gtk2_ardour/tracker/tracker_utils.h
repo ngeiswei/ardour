@@ -171,7 +171,7 @@ public:
 	template <typename Num>
 	static bool is_number (const std::string& str, int base=10)
 	{
-		// VVT NEXT: not used anywhere so far though...
+		// NEXT: not used anywhere so far though...
 		return true;
 	}
 
