@@ -88,7 +88,7 @@ Grid::Grid (TrackerEditor& te)
 	, pattern (te, true /* connect */)
 	, prev_pattern (te, false /* not connect */)
 	, current_beats (0)
-	, current_path (1)			  // VVT: why 1?
+	, current_path (1)			  // NEXT: why 1?
 	, current_row_idx (-1)
 	, current_col_idx (0)
 	, current_col (0)
@@ -2222,7 +2222,7 @@ Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti,
 		if (tracker_editor.main_toolbar.overwrite_existing) {
 			cmd->change (on_note, MidiModel::NoteDiffCommand::Channel, ch);
 			cmd->change (on_note, MidiModel::NoteDiffCommand::Velocity, vel);
-			// VVT: take care of delay
+			// NEXT: take care of delay
 		} else {
 			new_ch = on_note->channel ();
 			new_vel = on_note->velocity ();
@@ -2231,7 +2231,7 @@ Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti,
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time ();
-		// VVT: take care of delay
+		// NEXT: take care of delay
 		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
@@ -2597,7 +2597,7 @@ Grid::set_current_cursor (int row_idx, TreeViewColumn* col, bool set_playhead)
 void
 Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool set_playhead)
 {
-	// VVT: maybe make sure not to recall if current already set
+	// NEXT: maybe make sure not to recall if current already set
 
 	// Make sure the cell is defined
 	if (!is_cell_defined (path, col)) {
@@ -2657,7 +2657,7 @@ Grid::set_current_row (int row_idx, bool set_playhead)
 void
 Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 {
-	// VVT: maybe make sure not to recall if current already set
+	// NEXT: maybe make sure not to recall if current already set
 
 	// Reset background color over the previous row
 	redisplay_row_background (current_row, current_row_idx);
@@ -2802,7 +2802,7 @@ Grid::automation_edited (const string& path, const string& text)
 		return;
 	}
 
-	// Can't edit *** (VVT NEXT: maybe should!!!)
+	// Can't edit *** (NEXT: maybe should!!!)
 	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
 	if (!pattern.is_auto_displayable (edit_row_idx, edit_mti, edit_mri, param)) {
 		clear_editables ();
@@ -2889,14 +2889,14 @@ Grid::automation_delay_edited (const string& path, const string& text)
 		return;
 	}
 
-	// Can't edit *** (VVT NEXT: maybe edit instead)
+	// Can't edit *** (NEXT: maybe edit instead)
 	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
 	if (!pattern.is_auto_displayable (edit_row_idx, edit_mti, edit_mri, param)) {
 		clear_editables ();
 		return;
 	}
 
-	// Check if within acceptable boundaries (VVT NEXT: maybe clamp instead)
+	// Check if within acceptable boundaries (NEXT: maybe clamp instead)
 	int delay = TrackerUtils::string_to_num<int> (text, base ());
 	if (delay < edit_mtp->delay_ticks_min () || edit_mtp->delay_ticks_max () < delay) {
 		clear_editables ();
@@ -3726,7 +3726,7 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
-	// VVT: make sure some current cursor is defined
+	// NEXT: make sure some current cursor is defined
 
 	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
@@ -4521,7 +4521,7 @@ Grid::horizontal_move_current_cursor (int steps, bool tab)
 bool
 Grid::move_current_cursor_key_press (GdkEventKey* ev)
 {
-	// VVT: support jump to next
+	// NEXT: support jump to next
 
 	bool ret = false;
 
