@@ -363,11 +363,11 @@ private:
 	// If col is a null pointer, then it is ignored, meaning all cells are
 	// considered defined. This is used when moving a row with an undefined
 	// current cursor.
-	void wrap_around_vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s, bool wrap=true, bool jump=true);
+	void vertical_move (Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col, int s, bool wrap=true, bool jump=false);
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns
-	void wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int s, bool tab);
+	void horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int s, bool tab, bool jump=false);
 
 	int digit_key_press (GdkEventKey* ev);
 	uint8_t pitch_key (GdkEventKey* ev);
@@ -464,10 +464,6 @@ private:
 	// Editing Actions //
 	/////////////////////
 
-	// Move the cursor steps rows downwards, or upwards if steps is
-	// negative. Called while editing.
-	void vertical_move_edit_cursor (int steps);
-
 	// Check whether a given column is editable. Note, due to technical reasons
 	// outside of our control col cannot be const.
 	bool is_editable (Gtk::TreeViewColumn* col) const;
@@ -479,6 +475,11 @@ private:
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (int row_idx, int mti) const;
 	bool is_automation_defined (int row_idx, int mti, int cgi) const;
+
+	// Check if the cell is blank, that is it is defined and editable but
+	// contains no datum.
+	bool is_cell_blank (int row_idx, const Gtk::TreeViewColumn* col);
+	bool is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 
 	// Return mti corresponding col, or -1 if invalid
 	int get_mti (const Gtk::TreeViewColumn* col) const;
