@@ -1172,7 +1172,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, s
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			int64_t delay = pattern.region_relative_delay_ticks (note->end_time (), row_idx, mti, mri);
+			int delay = pattern.region_relative_delay_ticks (note->end_time (), row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1190,7 +1190,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, s
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 			row[columns._velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
-			int64_t delay = pattern.region_relative_delay_ticks (note->time (), row_idx, mti, mri);
+			int delay = pattern.region_relative_delay_ticks (note->time (), row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1249,7 +1249,7 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, size_t mti, size_t
 		double aval = ctl_event->value;
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval, base (), precision ());
 		double awhen = ctl_event->when;
-		int64_t delay = TrackerUtils::is_region_automation (param) ?
+		int delay = TrackerUtils::is_region_automation (param) ?
 			pattern.region_relative_delay_ticks (Temporal::Beats (awhen), row_idx, mti, mri)
 			: pattern.delay_ticks ((samplepos_t)awhen, row_idx, mti);
 		if (delay != 0) {
