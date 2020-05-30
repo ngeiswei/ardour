@@ -2722,7 +2722,7 @@ Grid::set_current_col (TreeViewColumn* col)
 	set_underline_current_step_edit_cell ();
 }
 
-// VVT NEXT: unused???
+// TODO: this is unused, maybe remove
 void
 Grid::set_current_row_undefined ()
 {
