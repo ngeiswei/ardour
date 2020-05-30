@@ -3403,24 +3403,18 @@ Grid::setup_track_separator_column (size_t mti)
 	append_column (*track_separator_columns[mti]);
 }
 
+// NEXT: support jump
 void
-Grid::vertical_move_edit_cursor (int steps)
-{
-	TreeModel::Path path = edit_path;
-	TreeViewColumn* col = to_col (edit_col);
-	wrap_around_vertical_move (path, col, steps);
-	set_cursor (path, *col, true);
-}
-
-void
-Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap, bool jump)
+Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap, bool jump)
 {
 	TreeModel::Path init_path = path;
 	TreeModel::Path last_def_path = path;
+	int init_steps = steps;
 
 	// Move up
-	while (steps < 0) {
+	while (jump || steps < 0) {
 		--path[0];
+
 		// Wrap
 		if (path[0] < 0) {
 			if (wrap) {
@@ -3429,13 +3423,16 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 				break;
 			}
 		}
+
 		// Move
 		if (!col || is_cell_defined (path, col)) {
 			last_def_path = path;
-			++steps;
-		} else if (!jump) {
-			++steps;
+			if (jump && !is_cell_blank (path, col)) {
+				break;
+			}
+			steps++;
 		}
+
 		// Avoid infinit loops
 		if (path == init_path) {
 			break;
@@ -3443,8 +3440,9 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 	}
 
 	// Move down
-	while (0 < steps) {
+	while (jump || 0 < steps) {
 		++path[0];
+
 		// Wrap
 		if ((int)pattern.global_nrows <= path[0]) {
 			if (wrap) {
@@ -3453,24 +3451,35 @@ Grid::wrap_around_vertical_move (TreeModel::Path& path, const TreeViewColumn* co
 				break;
 			}
 		}
+
 		// Move
 		if (!col || is_cell_defined (path, col)) {
 			last_def_path = path;
-			--steps;
-		} else if (!jump) {
-			--steps;
+			if (jump && !is_cell_blank (path, col)) {
+				break;
+			}
+			steps--;
 		}
+
 		// Avoid infinit loops
 		if (path == init_path) {
 			break;
 		}
 	}
 
+	// Set final path
 	path = last_def_path;
+
+	// If jump has failed rerun once more without jump
+	if (jump && (path == init_path || is_cell_blank (path, col))) {
+		path = init_path;
+		return vertical_move (path, col, init_steps, wrap, false);
+	}
 }
 
+// NEXT: support jump
 void
-Grid::wrap_around_horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab)
+Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab, bool jump)
 {
 	// Keep track of the init column type to support tab and detect infinit loops
 	TreeViewColumn* init_col = to_col (colnum);
@@ -3585,6 +3594,19 @@ Grid::is_automation_defined (int row_idx, int mti, int cgi) const
 	}
 
 	return pattern.is_automation_defined (row_idx, mti, param);
+}
+
+bool
+Grid::is_cell_blank (int row_idx, const Gtk::TreeViewColumn* col)
+{
+	return is_cell_blank (to_path (row_idx), col);
+}
+
+bool
+Grid::is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col)
+{
+	// NEXT: implement
+	return true;
 }
 
 int
@@ -3848,7 +3870,7 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
@@ -3858,7 +3880,7 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, ch, vel, current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
@@ -3868,7 +3890,7 @@ bool
 Grid::step_editing_set_off_note ()
 {
 	set_off_note (current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -3876,7 +3898,7 @@ bool
 Grid::step_editing_delete_note ()
 {
 	delete_note (current_row_idx, current_mti, current_mri, current_cgi);
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -3962,7 +3984,7 @@ Grid::step_editing_set_note_channel_digit (int digit)
 		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos, base (), precision ());
 		set_note_channel (current_mti, current_mri, note, new_ch - 1);
 	}
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -3973,7 +3995,7 @@ Grid::step_editing_set_note_channel (uint8_t ch)
 	if (note) {
 		set_note_channel (current_mti, current_mri, note, ch);
 	}
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -4059,7 +4081,7 @@ Grid::step_editing_set_note_velocity_digit (int digit)
 		int new_vel = TrackerUtils::change_digit (vel, digit, current_pos, base (), precision ());
 		set_note_velocity (current_mti, current_mri, note, new_vel);
 	}
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -4070,7 +4092,7 @@ Grid::step_editing_set_note_velocity (uint8_t vel)
 	if (note) {
 		set_note_velocity (current_mti, current_mri, note, vel);
 	}
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -4182,7 +4204,7 @@ Grid::step_editing_set_note_delay (int digit)
 	}
 
 	// Move the cursor
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -4193,7 +4215,7 @@ Grid::step_editing_delete_note_delay ()
 	if (note) {
 		set_note_delay (0, current_row_idx, current_mti, current_mri, current_cgi);
 	}
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
 }
 
@@ -4310,7 +4332,7 @@ Grid::step_editing_set_automation_value (int digit)
 	set_automation_value (nval, current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 
 	// Redisplay model with the new value
 	// TODO: optimize
@@ -4332,7 +4354,7 @@ Grid::step_editing_delete_automation ()
 	delete_automation_value (current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 
 	// Redisplay model with the new value
 	// TODO: optimize
@@ -4454,7 +4476,7 @@ Grid::step_editing_set_automation_delay (int digit)
 	}
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 
 	// TODO: this highly inefficient, optimize
 	redisplay_grid_direct_call ();
@@ -4474,7 +4496,7 @@ Grid::step_editing_delete_automation_delay ()
 	delete_automation_delay (current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Move cursor
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap);
+	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 
 	// TODO: this highly inefficient, optimize
 	redisplay_grid_direct_call ();
@@ -4489,7 +4511,7 @@ Grid::vertical_move_current_cursor (int steps, bool wrap, bool jump, bool set_pl
 {
 	TreeModel::Path path = current_path;
 	TreeViewColumn* col = to_col (current_col_idx);
-	wrap_around_vertical_move (path, col, steps, wrap, jump);
+	vertical_move (path, col, steps, wrap, jump);
 	set_current_cursor (path, col, set_playhead);
 }
 
@@ -4504,7 +4526,7 @@ void
 Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playhead)
 {
 	TreeModel::Path path = current_path;
-	wrap_around_vertical_move (path, 0, steps, wrap, jump);
+	vertical_move (path, 0, steps, wrap, jump);
 	set_current_row (path, set_playhead);
 }
 
@@ -4513,7 +4535,7 @@ Grid::horizontal_move_current_cursor (int steps, bool tab)
 {
 	int colnum = current_col_idx;
 	TreeModel::Path path = current_path;
-	wrap_around_horizontal_move (colnum, current_path, steps, tab);
+	horizontal_move (colnum, current_path, steps, tab);
 	TreeViewColumn* col = to_col (colnum);
 	set_current_cursor (path, col);
 }
@@ -4521,20 +4543,18 @@ Grid::horizontal_move_current_cursor (int steps, bool tab)
 bool
 Grid::move_current_cursor_key_press (GdkEventKey* ev)
 {
-	// NEXT: support jump to next
-
 	bool ret = false;
 
 	if (is_current_cursor_defined ()) {
 		switch (ev->keyval) {
 		case GDK_Up:
 		case GDK_uparrow:
-			vertical_move_current_cursor (-1, tracker_editor.main_toolbar.wrap);
+			vertical_move_current_cursor (-1, tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 			ret = true;
 			break;
 		case GDK_Down:
 		case GDK_downarrow:
-			vertical_move_current_cursor (1, tracker_editor.main_toolbar.wrap);
+			vertical_move_current_cursor (1, tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 			ret = true;
 			break;
 		case GDK_Left:
