@@ -64,6 +64,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, step_edit (false)
 	, overwrite_default (true)
 	, overwrite_existing (false)
+	, overwrite_star (false)
 	, sync_playhead (false)
 	, jump (false)
 	, wrap (false)
@@ -211,7 +212,7 @@ MainToolbar::setup_layout ()
 	overwrite_default_button.show ();
 	br->pack_start (overwrite_default_button, false, false);
 
-	// Overwrite old button
+	// Overwrite existing button
 	overwrite_existing_separator.show ();
 	br->pack_start (overwrite_existing_separator, false, false);
 	overwrite_existing_button.set_name ("overwrite existing button");
@@ -220,6 +221,16 @@ MainToolbar::setup_layout ()
 	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_existing_button.show ();
 	br->pack_start (overwrite_existing_button, false, false);
+
+	// Overwrite star button
+	overwrite_star_separator.show ();
+	br->pack_start (overwrite_star_separator, false, false);
+	overwrite_star_button.set_name ("overwrite star button");
+	overwrite_star_button.set_text (S_("Overwrite *"));
+	overwrite_star_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_star_press), false);
+	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	overwrite_star_button.show ();
+	br->pack_start (overwrite_star_button, false, false);
 
 	// Sync playhead
 	sync_playhead_separator.show ();
@@ -274,6 +285,7 @@ MainToolbar::setup_tooltips ()
 	step_edit_button.set_tooltip_text (_("Toggle step editing"));
 	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
 	overwrite_existing_button.set_tooltip_text (_("Input events overwrite existing channel, velocity and delay"));
+	overwrite_star_button.set_tooltip_text (_("Cell containing more than one event, i.e. displayed as ***, can be overwriten. Otherwise, they are read only, and only zooming in, till there is at most one event per cell, make them writable."));
 	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
 	jump_button.set_tooltip_text (_("Jump to the next event on the same row or column while moving the cursor or step editing. If no such event exist, then fallback to regulare movement."));
 	wrap_button.set_tooltip_text (_("Wrap vertical move"));
@@ -546,6 +558,20 @@ MainToolbar::overwrite_existing_press (GdkEventButton* ev)
 
 	overwrite_existing = !overwrite_existing;
 	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	return false;
+}
+
+bool
+MainToolbar::overwrite_star_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	overwrite_star = !overwrite_star;
+	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	return false;
 }
