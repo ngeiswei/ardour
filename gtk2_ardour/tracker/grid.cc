@@ -2078,6 +2078,12 @@ Grid::get_note (const TreeModel::Path& path, int mti, int cgi)
 	return get_off_note (path, mti, cgi);
 }
 
+bool
+Grid::has_note (const TreeModel::Path& path, int mti, int cgi)
+{
+	return get_note (path, mti, cgi) != 0;
+}
+
 void
 Grid::editing_note_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
@@ -3403,16 +3409,15 @@ Grid::setup_track_separator_column (size_t mti)
 	append_column (*track_separator_columns[mti]);
 }
 
-// NEXT: support jump
 void
 Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap, bool jump)
 {
 	TreeModel::Path init_path = path;
 	TreeModel::Path last_def_path = path;
 	int init_steps = steps;
-
+	
 	// Move up
-	while (jump || steps < 0) {
+	while ((jump && init_steps < 0) || steps < 0) {
 		--path[0];
 
 		// Wrap
@@ -3428,6 +3433,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 		if (!col || is_cell_defined (path, col)) {
 			last_def_path = path;
 			if (jump && !is_cell_blank (path, col)) {
+				steps = 0;
 				break;
 			}
 			steps++;
@@ -3440,7 +3446,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 	}
 
 	// Move down
-	while (jump || 0 < steps) {
+	while ((jump && 0 < init_steps) || 0 < steps) {
 		++path[0];
 
 		// Wrap
@@ -3456,6 +3462,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 		if (!col || is_cell_defined (path, col)) {
 			last_def_path = path;
 			if (jump && !is_cell_blank (path, col)) {
+				steps = 0;
 				break;
 			}
 			steps--;
@@ -3605,8 +3612,19 @@ Grid::is_cell_blank (int row_idx, const Gtk::TreeViewColumn* col)
 bool
 Grid::is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col)
 {
-	// NEXT: implement
-	return true;
+	if (!is_cell_defined (path, col))
+		return false;
+
+	int mti = get_mti (col);
+	int cgi = get_cgi (col);
+	if (0 <= mti && 0 <= cgi) {
+		if (is_note_type (col)) {
+			return !has_note (path, mti, cgi);
+		} else {
+			int mri = get_mri (path, col);
+			return !has_automation_value (to_row_index (path), mti, mri, cgi);
+		}
+	}
 }
 
 int
@@ -3616,11 +3634,22 @@ Grid::get_mti (const TreeViewColumn* col) const
 	return tc ? tc->midi_track_idx : -1;
 }
 
-size_t
+int
 Grid::get_cgi (const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
+	if (!tc)
+		return -1;
 	return tc->col_group_idx;
+}
+
+int
+Grid::get_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const
+{
+	int mti = get_mti (col);
+	if (0 <= mti)
+		return pattern.to_mri (to_row_index (path), mti);
+	return -1;
 }
 
 TrackerColumn::midi_note_type

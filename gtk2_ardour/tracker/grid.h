@@ -417,7 +417,6 @@ private:
 	Gtk::TreeModel::Row to_row (int row_idx) const;
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.
-	// Warning: can't be const because of a get_columns ()
 	int to_col_index (const Gtk::TreeViewColumn* col);
 
 	Gtk::TreeViewColumn* to_col (int col_idx);
@@ -470,23 +469,33 @@ private:
 
 	// Check if the cell is defined and editable
 	// Warning: can't be const because of to_col_index
-	bool is_cell_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_cell_defined (int row_idx, const Gtk::TreeViewColumn* col);
+	bool is_cell_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
 	bool is_region_defined (int row_idx, int mti) const;
 	bool is_automation_defined (int row_idx, int mti, int cgi) const;
 
 	// Check if the cell is blank, that is it is defined and editable but
-	// contains no datum.
+	// contains no datum. Warning: cannot be const due to has_note.
 	bool is_cell_blank (int row_idx, const Gtk::TreeViewColumn* col);
 	bool is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 
 	// Return mti corresponding col, or -1 if invalid
 	int get_mti (const Gtk::TreeViewColumn* col) const;
 
-	size_t get_cgi (const Gtk::TreeViewColumn* col) const;
+	// Return cgi (either note or automation) corresponding to col, or -1 if invalid
+	int get_cgi (const Gtk::TreeViewColumn* col) const;
+
+	// Return mri corresponding to the cell at the given path and col, or -1 if
+	// invalid. Note: method cannot be cosnt due to the use of to_row_index.
+	int get_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
+
+	// Return respectively note or auto type of the given col
 	TrackerColumn::midi_note_type get_note_type (const Gtk::TreeViewColumn* col) const;
 	TrackerColumn::automation_type get_auto_type (const Gtk::TreeViewColumn* col) const;
+
+	// Return true iff the given corresponds to a note name, channel, velocity
+	// or delay.
 	bool is_note_type (const Gtk::TreeViewColumn* col) const;
 
 	/**
@@ -540,10 +549,15 @@ private:
 	NotePtr get_off_note (const std::string& path, int mti, int cgi);
 	NotePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 	NotePtr get_off_note (int row_idx, int mti, int cgi);
+
 	// Get on or off note from path, mti and cgi
 	NotePtr get_note (int row_idx, int mti, int cgi);
 	NotePtr get_note (const std::string& path, int mti, int cgi);
 	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+
+	// Return true iff there is a on or off note at this coordonate
+	// Warning: cannot be const due to get_note.
+	bool has_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
