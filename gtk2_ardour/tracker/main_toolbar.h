@@ -70,9 +70,14 @@ public:
 	bool overwrite_default_press (GdkEventButton* ev);
 
 	/**
-	 * Triggered upon overwrite old button press event.
+	 * Triggered upon overwrite existing button press event.
 	 */
 	bool overwrite_existing_press (GdkEventButton* ev);
+
+	/**
+	 * Triggered upon overwrite star button press event.
+	 */
+	bool overwrite_star_press (GdkEventButton* ev);
 
 	/**
 	 * Triggered upon sync playhead button press event.
@@ -130,6 +135,9 @@ public:
 	Gtk::VSeparator              overwrite_existing_separator;
 	ArdourWidgets::ArdourButton  overwrite_existing_button;
 	bool                         overwrite_existing;
+	Gtk::VSeparator              overwrite_star_separator;
+	ArdourWidgets::ArdourButton  overwrite_star_button;
+	bool                         overwrite_star;
 	Gtk::VSeparator              sync_playhead_separator;
 	ArdourWidgets::ArdourButton  sync_playhead_button;
 	bool                         sync_playhead;
