@@ -22,13 +22,10 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
-- [ ] Support hexadecimal
-- [ ] Support varying floating point precision
+- [ ] Support jump to next event
 - [ ] Fix automation of different processors
 - [ ] Access to ardour via PublicEditor whenever possible
-- [ ] Fix bug in funk-1 (set 6 rows/beat, end of HiHat region is badly
-      rendered)
-- [ ] Add button to jump to next note
+- [ ] Deal with `***` in a proper manner (maybe add "Overwrite *" button)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] Final off note management fixes
@@ -39,7 +36,6 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] What to do when playing and step editing is on?
 - [ ] Add copy/move, interpolate, etc + popup menu
 - [ ] Maybe save octave value per each track, possibly more
-- [ ] Deal with `***` in a "proper" manner (allow free modification)
 - [ ] Support arbitrary number of tracks (put all properties in tracker_column)
 - [ ] Fix alignment with track toolbar
 - [ ] Fix grid focus. When click on a button, bring focus immediately back to
@@ -55,6 +51,8 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
 - [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
+- [ ] Drawn horizontal seperator to show the begin and end or a region (maybe
+      insert slim row, cause it seems one cannot alter the grid line colors).
 - [ ] Maybe only have Octave, Ch, Vel in main toolbar is there is a midi track
 - [ ] Use signals whenever possible (instead of for instance calling
       Grid::redisplay_grid) to not block. This can make ardour crash when jack
