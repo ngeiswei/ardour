@@ -14,7 +14,7 @@ plugin automations with a tracker style interface.
 
 ## Status
 
-WARNING!!! **Alpha** software, may **crash and loose your work**.
+WARNING!!! **Alpha** software, it may **crash** and you may **loose your work**.
 
 ## Build
 
@@ -22,10 +22,9 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
-- [ ] Support jump to next event
 - [ ] Fix automation of different processors
 - [ ] Access to ardour via PublicEditor whenever possible
-- [ ] Deal with `***` in a proper manner (maybe add "Overwrite *" button)
+- [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] Final off note management fixes
