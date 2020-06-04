@@ -381,13 +381,13 @@ private:
 	//
 	// If jump is true, then do no count steps over undefined cells. If jump is
 	// false, then count the steps, and only move if the final cell is defined.
-	void vertical_move_current_cursor (int steps, bool wrap=true, bool jump=true, bool set_playhead=true);
+	void vertical_move_current_cursor (int steps, bool wrap=true, bool jump=false, bool set_playhead=true);
 
 	// Like vertical_move_current_cursor using steps set in the main toolbar
-	void vertical_move_current_cursor_default_steps (bool wrap=true, bool jump=true, bool set_playhead=true);
+	void vertical_move_current_cursor_default_steps (bool wrap=true, bool jump=false, bool set_playhead=true);
 
 	// Move the row downwards or upwards. Used for when the cursor is undefined
-	void vertical_move_current_row (int steps, bool wrap=true, bool jump=true, bool set_playhead=true);
+	void vertical_move_current_row (int steps, bool wrap=true, bool jump=false, bool set_playhead=true);
 
 	// Move the current cursor steps columns rightwards, or leftwards if steps
 	// is negative.
