@@ -22,6 +22,9 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
+- [ ] Support toggling width of column (compress names like mixer strip) and
+      have tip display the entire name (see Carla for shortening names, as well
+      as Ardour of course).
 - [ ] Fix automation of different processors
 - [ ] Access to ardour via PublicEditor whenever possible
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
@@ -42,8 +45,6 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Fix window focus (the tracker editor window should have focus right away)
 - [ ] Support toggling visibility of regions and tracks
 - [ ] Add access from top menu Windows->Tracker Editor
-- [ ] Support toggling width of column (compress names like mixer strip) and
-      have tip display the entire name
 - [ ] Try to replace as many gtk widgets by cairo widgets
 - [ ] Support shift-tab to move from right to left
 - [ ] Add shortcut for parameters, steps, etc
