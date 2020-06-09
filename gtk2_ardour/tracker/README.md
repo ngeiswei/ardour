@@ -22,9 +22,10 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
-- [ ] Support toggling width of column (compress names like mixer strip) and
-      have tip display the entire name (see Carla for shortening names, as well
-      as Ardour of course).
+- [ ] Support toggling width of column (compress names like mixer strip, see
+      PBD::short_version, or see Carla) and have tip display the entire
+      name. Also add tooltips to each cell, showing the parameter name, the hex
+      and dec values with arbitrary precision.
 - [ ] Fix automation of different processors
 - [ ] Access to ardour via PublicEditor whenever possible
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
