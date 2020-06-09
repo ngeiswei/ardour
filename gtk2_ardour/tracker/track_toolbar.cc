@@ -118,7 +118,7 @@ TrackToolbar::setup_label ()
 	// Add label
 	std::string label = track->name ();
 	label += ":\t";
-	Gtk::Label* mtt_label = new Gtk::Label (label.c_str ());
+	Gtk::Label* mtt_label = Gtk::manage (new Gtk::Label (label.c_str ()));
 	mtt_label->show ();
 	pack_start (*mtt_label, false, false);
 }
@@ -304,7 +304,7 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 	   when we cleared the subplugin menu.
 	*/
 
-	rai->menu = manage (new Menu);
+	rai->menu = Gtk::manage (new Menu);
 	MenuList& items = rai->menu->items ();
 	rai->menu->set_name ("ArdourContextMenu");
 
