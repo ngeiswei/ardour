@@ -115,7 +115,7 @@ public:
 
 	static const int dflt_precision = 2;
 	static const int min_precision = 1;
-	static const int max_precision = 8;
+	static const int max_precision = 6;
 
 	static const int dflt_position = 0;
 	static const int min_position = -max_precision;
