@@ -316,6 +316,8 @@ MidiTrackToolbar::build_controller_menu ()
 	   so let's rebuild it */
 	delete controller_menu;
 
+	// NEXT: compare with lastest ardour changes to update if necessary
+
 	controller_menu = new Menu; // explicitly managed by us
 	Menu_Helpers::MenuList& items (controller_menu->items ());
 
@@ -361,7 +363,7 @@ MidiTrackToolbar::build_controller_menu ()
 					/* Skip bank select controllers since they're handled specially */
 					if (n_items == 0) {
 						/* Create a new submenu */
-						ctl_menu = manage (new Menu);
+						ctl_menu = Gtk::manage (new Menu);
 					}
 
 					Menu_Helpers::MenuList& ctl_items (ctl_menu->items ());
@@ -388,7 +390,7 @@ MidiTrackToolbar::build_controller_menu ()
 	} else {
 		/* No controllers names, generate generic numeric menu */
 		for (int i = 0; i < 127; i += 16) {
-			Menu*     ctl_menu = manage (new Menu);
+			Menu*     ctl_menu = Gtk::manage (new Menu);
 			Menu_Helpers::MenuList& ctl_items (ctl_menu->items ());
 
 			for (int ctl = i; ctl < i+16; ++ctl) {
@@ -441,7 +443,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		/* multiple channels - create a submenu, with 1 item per channel */
 
-		Menu* chn_menu = manage (new Menu);
+		Menu* chn_menu = Gtk::manage (new Menu);
 		Menu_Helpers::MenuList& chn_items (chn_menu->items ());
 		Evoral::Parameter param_without_channel (auto_type, 0, cmd);
 
@@ -548,7 +550,7 @@ MidiTrackToolbar::add_multi_channel_controller_item (Menu_Helpers::MenuList& ctl
 
 	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 
-	Menu* chn_menu = manage (new Menu);
+	Menu* chn_menu = Gtk::manage (new Menu);
 	Menu_Helpers::MenuList& chn_items (chn_menu->items ());
 
 	/* add a couple of items to hide/show this controller on all channels */
