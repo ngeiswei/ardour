@@ -112,6 +112,9 @@ public:
 	void connect_clock ();
 	void disconnect_clock ();
 
+	// Set column header title and tooltip
+	void set_col_title (Gtk::TreeViewColumn* col, const std::string& title, const std::string& tooltip);
+
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
 	size_t select_available_automation_column (size_t mti /* midi track index */);
@@ -242,7 +245,7 @@ public:
 	int get_right_separator_width (size_t mti) const;
 	int get_track_separator_width () const;
 
-	std::string get_name (size_t mti, const Evoral::Parameter& param) const;
+	std::string get_name (size_t mti, const Evoral::Parameter& param, bool shorten=true) const;
 
 	void set_enabled (size_t mti, const Evoral::Parameter& param, bool enabled);
 	bool is_enabled (size_t mti, const Evoral::Parameter& param) const;
