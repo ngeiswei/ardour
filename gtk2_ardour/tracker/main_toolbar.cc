@@ -115,7 +115,7 @@ MainToolbar::setup_layout ()
 	set_spacing (spacing);
 
 	// Top row
-	Gtk::HBox* tr = new Gtk::HBox (); // TODO: take care of memory leak
+	Gtk::HBox* tr = Gtk::manage (new Gtk::HBox ());
 	tr->set_spacing(spacing);
 
 	// Step edit button
@@ -195,7 +195,7 @@ MainToolbar::setup_layout ()
 	pack_start (*tr, false, false);
 
 	// Bottom row
-	Gtk::HBox* br = new Gtk::HBox ();
+	Gtk::HBox* br = Gtk::manage (new Gtk::HBox ());
 	br->set_spacing(spacing);
 
 	// Add beats per row selection
