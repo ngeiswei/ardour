@@ -26,6 +26,7 @@
 #include "pbd/file_utils.h"
 #include "pbd/i18n.h"
 #include "pbd/memento_command.h"
+#include "pbd/convert.h"
 
 #include <pangomm/attributes.h>
 
@@ -203,6 +204,15 @@ Grid::disconnect_clock ()
 	clock_connection.disconnect ();
 }
 
+void
+Grid::set_col_title (Gtk::TreeViewColumn* col, const std::string& title, const std::string& tooltip)
+{
+	Gtk::Label* l = new Label (title); // NEXT: manage
+	ArdourWidgets::set_tooltip (*l, tooltip);
+	col->set_widget (*l);
+	l->show ();
+}
+
 size_t
 Grid::select_available_automation_column (size_t mti)
 {
@@ -230,8 +240,10 @@ Grid::add_main_automation_column (size_t mti, const Evoral::Parameter& param)
 	// Associate that column to the parameter
 	col2params[mti].insert (IndexParamBimap::value_type (column, param)); // TODO: better put this knowledge in an inherited column
 
-	// Set the column title
-	to_col (column)->set_title (get_name (mti, param));
+	// Set the column title and tooltip
+	std::string long_name = get_name (mti, param, false);
+	std::string short_name = get_name (mti, param, true);
+	set_col_title (to_col (column), short_name, long_name);
 
 	return column;
 }
@@ -252,8 +264,10 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 	// Associate that column to the parameter
 	col2params[mti].insert (IndexParamBimap::value_type (column, param));
 
-	// Set the column title
-	to_col (column)->set_title (get_name (mti, param));
+	// Set the column title and tooltip
+	std::string long_name = get_name (mti, param, false);
+	std::string short_name = get_name (mti, param, true);
+	set_col_title (to_col (column), short_name, long_name);
 
 	return column;
 }
@@ -291,8 +305,10 @@ Grid::add_processor_automation_column (size_t mti, ProcessorPtr processor, const
 	// Associate that column to the parameter
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, param));
 
-	// Set the column title
-	to_col (pauno->column)->set_title (get_name (mti, param));
+	// Set the column title and tooltip
+	std::string long_name = get_name (mti, param, false);
+	std::string short_name = get_name (mti, param, true);
+	set_col_title (to_col (pauno->column), short_name, long_name);
 }
 
 void
@@ -1871,9 +1887,11 @@ Grid::get_track_separator_width () const
 }
 
 std::string
-Grid::get_name (size_t mti, const Evoral::Parameter& param) const
+Grid::get_name (size_t mti, const Evoral::Parameter& param, bool shorten) const
 {
-	return pattern.tps[mti]->get_name (param);
+	std::string long_name = pattern.tps[mti]->get_name (param);
+	size_t tl = 7;               // target length
+	return shorten ? PBD::short_version(long_name, tl) : long_name;
 }
 
 void
