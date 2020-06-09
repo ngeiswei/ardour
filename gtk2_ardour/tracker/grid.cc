@@ -207,7 +207,7 @@ Grid::disconnect_clock ()
 void
 Grid::set_col_title (Gtk::TreeViewColumn* col, const std::string& title, const std::string& tooltip)
 {
-	Gtk::Label* l = new Label (title); // NEXT: manage
+	Gtk::Label* l = Gtk::manage (new Label (title));
 	ArdourWidgets::set_tooltip (*l, tooltip);
 	col->set_widget (*l);
 	l->show ();
@@ -3094,7 +3094,7 @@ Grid::setup_time_column ()
 		return;
 	}
 
-	time_column = new TreeViewColumn (_("Time"), columns.time);
+	time_column = Gtk::manage (new TreeViewColumn (_("Time"), columns.time));
 	CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
 	// Link to color attributes
@@ -3174,7 +3174,7 @@ Grid::setup_init_col ()
 void
 Grid::setup_left_separator_column (size_t mti)
 {
-	left_separator_columns[mti] = new TreeViewColumn ("", columns.left_separator[mti]);
+	left_separator_columns[mti] = Gtk::manage (new TreeViewColumn ("", columns.left_separator[mti]));
 	CellRenderer* left_separator_cellrenderer = left_separator_columns[mti]->get_first_cell_renderer ();
 
 	// Link to color attributes
@@ -3191,7 +3191,7 @@ void
 Grid::setup_region_name_column (size_t mti)
 {
 	string label ("");
-	region_name_columns[mti] = new TreeViewColumn (label, columns.region_name[mti]);
+	region_name_columns[mti] = Gtk::manage (new TreeViewColumn (label, columns.region_name[mti]));
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3208,7 +3208,7 @@ void
 Grid::setup_note_column (size_t mti, size_t cgi)
 {
 	// TODO: maybe put the information of the mti, cgi, midi_note_type or automation_type in the TreeViewColumn
-	note_columns[mti][cgi] = new NoteColumn (columns.note_name[mti][cgi], mti, cgi);
+	note_columns[mti][cgi] = Gtk::manage (new NoteColumn (columns.note_name[mti][cgi], mti, cgi));
 	CellRendererText* note_cellrenderer = dynamic_cast<CellRendererText*> (note_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3232,7 +3232,7 @@ Grid::setup_note_column (size_t mti, size_t cgi)
 void
 Grid::setup_note_channel_column (size_t mti, size_t cgi)
 {
-	channel_columns[mti][cgi] = new ChannelColumn (columns.channel[mti][cgi], mti, cgi);
+	channel_columns[mti][cgi] = Gtk::manage (new ChannelColumn (columns.channel[mti][cgi], mti, cgi));
 	CellRendererText* channel_cellrenderer = dynamic_cast<CellRendererText*> (channel_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3259,7 +3259,7 @@ Grid::setup_note_channel_column (size_t mti, size_t cgi)
 void
 Grid::setup_note_velocity_column (size_t mti, size_t cgi)
 {
-	velocity_columns[mti][cgi] = new VelocityColumn (columns.velocity[mti][cgi], mti, cgi);
+	velocity_columns[mti][cgi] = Gtk::manage (new VelocityColumn (columns.velocity[mti][cgi], mti, cgi));
 	CellRendererText* velocity_cellrenderer = dynamic_cast<CellRendererText*> (velocity_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3291,7 +3291,7 @@ Grid::setup_note_velocity_column (size_t mti, size_t cgi)
 void
 Grid::setup_note_delay_column (size_t mti, size_t cgi)
 {
-	delay_columns[mti][cgi] = new DelayColumn (columns.delay[mti][cgi], mti, cgi);
+	delay_columns[mti][cgi] = Gtk::manage (new DelayColumn (columns.delay[mti][cgi], mti, cgi));
 	CellRendererText* delay_cellrenderer = dynamic_cast<CellRendererText*> (delay_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3318,7 +3318,7 @@ Grid::setup_note_delay_column (size_t mti, size_t cgi)
 void
 Grid::setup_note_separator_column (size_t mti, size_t cgi)
 {
-	note_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
+	note_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._empty));
 
 	// Set width
 	note_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -3330,7 +3330,7 @@ Grid::setup_note_separator_column (size_t mti, size_t cgi)
 void
 Grid::setup_automation_column (size_t mti, size_t cgi)
 {
-	automation_columns[mti][cgi] = new AutomationColumn (columns.automation[mti][cgi], mti, cgi);
+	automation_columns[mti][cgi] = Gtk::manage (new AutomationColumn (columns.automation[mti][cgi], mti, cgi));
 	CellRendererText* automation_cellrenderer = dynamic_cast<CellRendererText*> (automation_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3361,7 +3361,7 @@ Grid::setup_automation_column (size_t mti, size_t cgi)
 void
 Grid::setup_automation_delay_column (size_t mti, size_t cgi)
 {
-	automation_delay_columns[mti][cgi] = new AutomationDelayColumn (columns.automation_delay[mti][cgi], mti, cgi);
+	automation_delay_columns[mti][cgi] = Gtk::manage (new AutomationDelayColumn (columns.automation_delay[mti][cgi], mti, cgi));
 	CellRendererText* automation_delay_cellrenderer = dynamic_cast<CellRendererText*> (automation_delay_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -3390,7 +3390,7 @@ Grid::setup_automation_delay_column (size_t mti, size_t cgi)
 void
 Grid::setup_automation_separator_column (size_t mti, size_t cgi)
 {
-	automation_separator_columns[mti][cgi] = new TreeViewColumn ("", columns._empty);
+	automation_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._empty));
 
 	// Set width
 	automation_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -3402,7 +3402,7 @@ Grid::setup_automation_separator_column (size_t mti, size_t cgi)
 void
 Grid::setup_right_separator_column (size_t mti)
 {
-	right_separator_columns[mti] = new TreeViewColumn ("", columns.right_separator[mti]);
+	right_separator_columns[mti] = Gtk::manage (new TreeViewColumn ("", columns.right_separator[mti]));
 	CellRenderer* right_separator_cellrenderer = right_separator_columns[mti]->get_first_cell_renderer ();
 
 	// Link to color attributes
@@ -3418,7 +3418,7 @@ Grid::setup_right_separator_column (size_t mti)
 void
 Grid::setup_track_separator_column (size_t mti)
 {
-	track_separator_columns[mti] = new TreeViewColumn ("", columns.track_separator[mti]);
+	track_separator_columns[mti] = Gtk::manage (new TreeViewColumn ("", columns.track_separator[mti]));
 
 	// Set width
 	track_separator_columns[mti]->set_min_width (TRACK_SEPARATOR_WIDTH);
