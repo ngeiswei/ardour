@@ -22,6 +22,7 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
+- [ ] Handle keypressed the right way (which includes passing on space to play/stop)
 - [ ] Add tooltips to each cell, showing the parameter or note name, hex and
       dec values (with arbitrary precision in adequate).
 - [ ] Fix automation of different processors

@@ -399,6 +399,7 @@ private:
 	bool move_current_cursor_key_press (GdkEventKey*);
 
 	bool non_editing_key_press (GdkEventKey*);
+	bool on_key_press_event (GdkEventKey*);
 	bool non_editing_key_release (GdkEventKey*);
 	
 	bool key_press (GdkEventKey*);
