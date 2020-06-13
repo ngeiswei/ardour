@@ -3643,6 +3643,7 @@ Grid::is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn
 			return !has_automation_value (to_row_index (path), mti, mri, cgi);
 		}
 	}
+	return false;
 }
 
 int
@@ -4712,10 +4713,76 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		ret = true;
 		break;
 
-	// TODO: pass space to Ardour's Editor
+	// NEXT: pass space to Ardour's Editor. Maybe the problem is that
+	// signal_row_activated() is triggered or shit. Another option, perhaps, is
+	// to overload Widget::on_key_press_event.
+		//
+		// See las feedback
+		//
+// <las> nilg: YourTreeview.signal_key_press_event().connect (sigc::bind
+//       (gsigc::slot (ARDOUR_UI::instance(), &ARDOUR_UI::key_event_handler),
+//       dynamic_cast<Gtk::Window*> (get_top_level()))  [23:05]
+// <las> nilg: something like. it will forward the event through ardour's entire
+//       key handling mechanism, firing up shortcuts etc. as appropriate  [23:06]
+// <nilg> Wow, thanks, I'm gonna need to some time to parse that line ;-)
+// <las> nilg: you should *not* attempt to handle shortcuts etc. directly from
+//       your code. they must be done by creating actions and a binding set
+// <las> "when a key press event happens, call
+//       ARDOUR_UI::instance()->key_event_handler() with the event and the top
+//       level window we're in  [23:07]
+// <las> nilg: the rest happens automagically
+
+
+
+// More comments from las
+// <las> nilg: Gtk::Widget::get_top_level() returns the Gtk::Widget* that is
+//       uppermost in the parent/child heirachy in which the widget has been
+//       placed  [23:16]
+// <las> nilg: it should always be a Gtk::Window, but GTK itself doesn't require
+//       this (you might not have placed it in a window yet)
+// <las> nilg: do NOT copy how plugins handle keypresses, that it totally wrong
+//                                                                         [23:17]
+// <las> nilg: as mentioned, you need to define a set of actions, then a binding
+//       set
+// <las> nilg: binding sets can be associated with a specific widget and will be
+//       "activated" in preference to similar bindings at the global scope
+// <las> nilg: we do this now for MIDI editing, for example
+// <las> nilg: the arrow keys have global shortcuts/bindings, but there is a
+//       binding set that takes effect when editing a MIDI region  [23:18]
+// <las> nilg: we do not want any more ad-hoc key event handling code, we want
+//       less
+// <las> nilg: see Editor::register_midi_actions()  [23:21]
+// <las> nilg: it's slightly complex because it passes a ptr-to-method to
+//       Editor::midi_action() whose job is to call the method for every selected
+//       MIDI region
+// <las> nilg: and then see the bottom of gtk2_ardour/ardour.keys.in  [23:22]
+//
+// <nilg> OK, thanks las. May I ask why plugins handle keypresses wrong?  [23:25]
+// <nilg> Also, does Virtual MIDI Keyboard handle keypresses right?  [23:26]
+// <las> nilg: plugins are not integrated with our key handling system and we
+//       have to go to special lengths to allow them to work
+// <las> nilg: yes, the vmkbd does handle them directly. it's not unacceptable,
+//       but it's undesirable
+// <nilg> I see...  [23:27]
+// <las> nilg: the overriding design ethic needs to be that everything a user can
+//       do can be done via any mechanism, which means defining an action for it,
+//       and thus allowing keyboard bindings, MIDI, OSC, JSON all to drive that
+//       action
+// <las> nilg: in addition, we want a unified mechanism for users to be able to
+//       change any and all keyboard shortcuts/bindings, not something
+//       per-window/dialog/widget
+// <las> nilg: the current codebase is NOT perfect in this respect but we want to
+//       make it better, not worse
+// <las> nilg: note that the step entry dialog *does* use bindings the "right
+//       way"  [23:29]
+
+      // Other hints:
+		// 1. Study Virtual MIDI keyboard (acceptable but undesirable)
+		// 2. Study plugins (although las says that it's completely wrong)
+
 	case GDK_space:
 		std::cout << "TODO: pass space to Ardour's Editor" << std::endl;
-		ret = true;
+		ret = false;
 		break;
 
 	default: {
@@ -4732,6 +4799,15 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	}
 
 	return ret;
+}
+
+bool
+Grid::on_key_press_event (GdkEventKey* event)
+{
+	std::cout << "Grid::on_key_press_event" << std::endl;
+	if (event->keyval == GDK_space)
+		std::cout << "Grid::Fucking space!" << std::endl;
+	return false;
 }
 
 bool
