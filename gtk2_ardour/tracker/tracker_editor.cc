@@ -257,6 +257,15 @@ TrackerEditor::setup_vbox ()
 	add (vbox);
 }
 
+bool
+TrackerEditor::on_key_press_event (GdkEventKey* event)
+{
+	std::cout << "TrackerEditor::on_key_press_event" << std::endl;
+	if (event->keyval == GDK_space)
+		std::cout << "TrackerEditor::Fucking space!" << std::endl;
+	return false;
+}
+	
 string
 window_name (RegionSelection& rs)
 {
