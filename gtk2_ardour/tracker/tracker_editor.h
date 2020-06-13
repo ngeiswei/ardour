@@ -115,6 +115,8 @@ private:
 	void setup_scroller ();
 	void setup_vbox ();
 
+	bool on_key_press_event (GdkEventKey* event);
+
 public:
 	// To not redo first time initialization when setup () is called again
 	bool _first;
