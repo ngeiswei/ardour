@@ -145,12 +145,11 @@ MultiTrackPattern::setup_regions_per_track ()
 void
 MultiTrackPattern::setup_track_patterns ()
 {
-	// Disable all existing tracks
-	for (size_t tpi = 0; tpi < tps.size (); tpi++) {
-		tps[tpi]->enabled = false;
-	}
+	// Disable and deselect all existing tracks
+	set_enabled (false);
+	set_selected (false);
 
-	// Add new track or re-enable existing ones
+	// Add new track or re-enable selected ones
 	for (TrackRegionsMap::const_iterator it = regions_per_track.begin (); it != regions_per_track.end (); ++it) {
 		TrackPtr track = it->first;
 		TrackPattern* tp = find_track_pattern (track);
@@ -160,6 +159,8 @@ MultiTrackPattern::setup_track_patterns ()
 			add_track_pattern (track, it->second);
 		}
 	}
+
+	enabled = !regions_per_track.empty();
 }
 
 void
@@ -515,6 +516,23 @@ MultiTrackPattern::find_track_pattern (TrackPtr track)
 		}
 	}
 	return 0;
+}
+
+void
+MultiTrackPattern::set_enabled (bool e)
+{
+	for (size_t mti = 0; mti < tps.size (); mti++) {
+		tps[mti]->set_enabled (e);
+	}
+	enabled = e;
+}
+
+void
+MultiTrackPattern::set_selected (bool s)
+{
+	for (size_t mti = 0; mti < tps.size (); mti++) {
+		tps[mti]->set_selected (s);
+	}
 }
 
 std::string

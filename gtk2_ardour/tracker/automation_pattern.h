@@ -145,8 +145,8 @@ public:
 	RowToAutomationListIt::const_iterator earliest (const RowToAutomationListItRange& rng) const;
 	RowToAutomationListIt::const_iterator lattest (const RowToAutomationListItRange& rng) const;
 
-	virtual void set_enabled (const Evoral::Parameter& param, bool enabled);
-	virtual bool is_enabled (const Evoral::Parameter& param) const;
+	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
+	virtual bool is_param_enabled (const Evoral::Parameter& param) const;
 
 	// Return the lower and upper value bounds of the given parameter
 	double lower (const Evoral::Parameter& param) const;
