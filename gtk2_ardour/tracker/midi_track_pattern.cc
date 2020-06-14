@@ -53,19 +53,18 @@ MidiTrackPattern::~MidiTrackPattern ()
 void
 MidiTrackPattern::setup (const RegionSeq& regions)
 {
-	// Disable all existing regions
-	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		mrps[mri].selected = false;
-	}
-
+	// All regions are assumed to be deselected at this point
+	
 	// Add new regions or re-enable existing ones
 	for (size_t i = 0; i < regions.size (); i++) {
 		MidiRegionPtr midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[i]);
 		MidiRegionPattern* mrp = find_midi_region_pattern (midi_region);
 		if (mrp) {
-			mrp->selected = true;
+			mrp->set_selected(true);
 		} else {
-			mrps.push_back (MidiRegionPattern (tracker_editor, midi_track, midi_region, _connect));
+			MidiRegionPattern new_mrp(tracker_editor, midi_track, midi_region, _connect);
+			new_mrp.set_selected(true);
+			mrps.push_back (new_mrp);
 		}
 	}
 
@@ -136,27 +135,27 @@ MidiTrackPattern::get_name (const Evoral::Parameter& param) const
 }
 
 void
-MidiTrackPattern::set_enabled (const Evoral::Parameter& param, bool enabled)
+MidiTrackPattern::set_param_enabled (const Evoral::Parameter& param, bool enabled)
 {
 	if (TrackerUtils::is_region_automation (param)) {
 		for (size_t mri = 0; mri < mrps.size (); mri++) {
-			mrps[mri].rap.set_enabled (param, enabled);
+			mrps[mri].rap.set_param_enabled (param, enabled);
 		}
 	}
 	else {
-		AutomationPattern::set_enabled (param, enabled);
+		AutomationPattern::set_param_enabled (param, enabled);
 	}
 }
 
 bool
-MidiTrackPattern::is_enabled (const Evoral::Parameter& param) const
+MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 {
 	if (TrackerUtils::is_region_automation (param)) {
 		// If param is enabled in the first region we can assume it is in all
 		// region
-		return mrps[0].rap.is_enabled (param);
+		return mrps[0].rap.is_param_enabled (param);
 	}
-	return AutomationPattern::is_enabled (param);
+	return AutomationPattern::is_param_enabled (param);
 }
 
 AutomationListPtr
@@ -470,6 +469,24 @@ MidiTrackPattern::upper (int rowi, const Evoral::Parameter& param) const
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[to_mri (rowi)].rap.upper (param)
 		: AutomationPattern::upper (param);
+}
+
+void
+MidiTrackPattern::set_enabled (bool e)
+{
+	for (size_t mri = 0; mri < mrps.size (); mri++) {
+		mrps[mri].set_enabled (e);
+	}
+	enabled = e;
+}
+
+void
+MidiTrackPattern::set_selected (bool s)
+{
+	// Select/deselect all regions
+	for (size_t mri = 0; mri < mrps.size (); mri++) {
+		mrps[mri].set_selected(s);
+	}
 }
 
 std::string

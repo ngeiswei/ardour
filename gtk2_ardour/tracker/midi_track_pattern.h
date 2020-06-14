@@ -53,8 +53,12 @@ public:
 
 	std::string get_name (const Evoral::Parameter& param) const;
 
-	void set_enabled (const Evoral::Parameter& param, bool enabled);
-	bool is_enabled (const Evoral::Parameter& param) const;
+	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
+	bool is_param_enabled (const Evoral::Parameter& param) const;
+
+	// Enable/disable all tracks
+	void enable ();
+	void disable ();
 
 	AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
@@ -146,6 +150,12 @@ public:
 
 	double lower (int rowi, const Evoral::Parameter& param) const;
 	double upper (int rowi, const Evoral::Parameter& param) const;
+
+	// Enable/disable midi track pattern and all its sub-patterns
+	void set_enabled (bool e);
+
+	// Select/deselect all region patterns
+	void set_selected (bool s);
 
 	// For representing pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
