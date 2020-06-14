@@ -144,6 +144,12 @@ public:
 	// rows. Specifially between 0 and nrow-1
 	virtual bool is_defined (int row_idx) const;
 
+	// Enable/disable pattern
+	virtual void set_enabled (bool e);
+
+	// Select/deselect pattern
+	virtual void set_selected (bool s);
+
 	// For representing pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
@@ -187,6 +193,9 @@ public:
 
 	// If pattern disabled, do not display or update it
 	bool enabled;
+
+	// Whether the pattern is selected for display
+	bool selected;
 
 protected:
 	uint32_t _ticks_per_row;		// number of ticks per rows

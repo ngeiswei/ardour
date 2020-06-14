@@ -35,7 +35,6 @@ MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
 	, midi_track (mt)
 	, midi_model (region->midi_source (0)->model ())
 	, midi_region (region)
-	, selected (true)
 {
 	if (connect)
 		tracker_editor.connect_midi_region (midi_region);
@@ -88,11 +87,7 @@ MidiRegionPattern::set_rows_per_beat (uint16_t rpb)
 void
 MidiRegionPattern::update_enabled ()
 {
-	// TODO: why is it called twice?
-	bool irv = selected && is_region_visible ();
-	enabled = irv;
-	np.enabled = irv;
-	rap.enabled = irv;
+	set_enabled (selected && is_region_visible ());
 }
 
 void
@@ -151,6 +146,14 @@ void
 MidiRegionPattern::insert (const Evoral::Parameter& param)
 {
 	rap.insert (param);
+}
+
+void
+MidiRegionPattern::set_enabled (bool e)
+{
+	enabled = e;
+	np.set_enabled(e);
+	rap.set_enabled(e);
 }
 
 std::string
