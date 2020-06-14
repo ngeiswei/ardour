@@ -380,7 +380,7 @@ Grid::set_automation_column_visible (size_t mti, const Evoral::Parameter& param,
 	} else {
 		visible_automation_columns.erase (column);
 	}
-	set_enabled (mti, param, showit);
+	set_param_enabled (mti, param, showit);
 }
 
 bool
@@ -1895,15 +1895,15 @@ Grid::get_name (size_t mti, const Evoral::Parameter& param, bool shorten) const
 }
 
 void
-Grid::set_enabled (size_t mti, const Evoral::Parameter& param, bool enabled)
+Grid::set_param_enabled (size_t mti, const Evoral::Parameter& param, bool enabled)
 {
-	pattern.tps[mti]->set_enabled (param, enabled);
+	pattern.tps[mti]->set_param_enabled (param, enabled);
 }
 
 bool
-Grid::is_enabled (size_t mti, const Evoral::Parameter& param) const
+Grid::is_param_enabled (size_t mti, const Evoral::Parameter& param) const
 {
-	return pattern.tps[mti]->is_enabled (param);
+	return pattern.tps[mti]->is_param_enabled (param);
 }
 
 Pango::AttrList
@@ -3168,7 +3168,7 @@ Grid::setup_init_col ()
 	if (col)
 		set_current_col (col);
 	else
-		std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug.";
+		std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug." << std::endl;
 }
 
 void
@@ -4732,8 +4732,6 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 //       level window we're in  [23:07]
 // <las> nilg: the rest happens automagically
 
-
-
 // More comments from las
 // <las> nilg: Gtk::Widget::get_top_level() returns the Gtk::Widget* that is
 //       uppermost in the parent/child heirachy in which the widget has been
@@ -4801,12 +4799,14 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	return ret;
 }
 
+// Experiments on key bindings (and allows to completely by-pass TreeView
+// default key-bindings)
 bool
 Grid::on_key_press_event (GdkEventKey* event)
 {
-	std::cout << "Grid::on_key_press_event" << std::endl;
-	if (event->keyval == GDK_space)
-		std::cout << "Grid::Fucking space!" << std::endl;
+	// std::cout << "Grid::on_key_press_event" << std::endl;
+	// if (event->keyval == GDK_space)
+	// 	std::cout << "Grid::space!" << std::endl;
 	return false;
 }
 

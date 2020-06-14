@@ -247,8 +247,8 @@ public:
 
 	std::string get_name (size_t mti, const Evoral::Parameter& param, bool shorten=true) const;
 
-	void set_enabled (size_t mti, const Evoral::Parameter& param, bool enabled);
-	bool is_enabled (size_t mti, const Evoral::Parameter& param) const;
+	void set_param_enabled (size_t mti, const Evoral::Parameter& param, bool enabled);
+	bool is_param_enabled (size_t mti, const Evoral::Parameter& param) const;
 
 	// Render a val with the position to be affected by step editing underlined
 	Pango::AttrList char_underline (int ul_idx) const;

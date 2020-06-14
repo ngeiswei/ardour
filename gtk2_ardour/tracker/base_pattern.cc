@@ -44,6 +44,7 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, rows_per_beat (0)
 	, nrows (0)
 	, enabled (true)
+	, selected (false)
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 	, _conv (_session->tempo_map (), 0)
@@ -255,6 +256,18 @@ bool
 BasePattern::is_defined (int row_idx) const
 {
 	return enabled && 0 <= row_idx && row_idx < (int)nrows;
+}
+
+void
+BasePattern::set_enabled (bool e)
+{
+	enabled = e;
+}
+
+void
+BasePattern::set_selected (bool s)
+{
+	selected = s;
 }
 
 uint32_t

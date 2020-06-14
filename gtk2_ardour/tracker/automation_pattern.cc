@@ -569,13 +569,13 @@ AutomationPattern::lattest (const RowToAutomationListItRange& rng) const
 }
 
 void
-AutomationPattern::set_enabled (const Evoral::Parameter& param, bool enabled)
+AutomationPattern::set_param_enabled (const Evoral::Parameter& param, bool enabled)
 {
 	param_to_enabled[param] = enabled;
 }
 
 bool
-AutomationPattern::is_enabled (const Evoral::Parameter& param) const
+AutomationPattern::is_param_enabled (const Evoral::Parameter& param) const
 {
 	return param_to_enabled[param];
 }
