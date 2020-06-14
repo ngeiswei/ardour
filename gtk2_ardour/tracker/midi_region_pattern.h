@@ -66,6 +66,9 @@ public:
 	// Insert the automation control corresponding to param
 	void insert (const Evoral::Parameter& param);
 
+	// Enable/disable pattern
+	void set_enabled (bool e);
+
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
@@ -74,7 +77,6 @@ public:
 	MidiTrackPtr midi_track;
 	MidiModelPtr midi_model;
 	MidiRegionPtr midi_region;
-	bool selected;
 };
 
 } // ~namespace tracker
