@@ -117,60 +117,60 @@ public:
 
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
-	size_t select_available_automation_column (size_t mti /* midi track index */);
-	size_t add_main_automation_column (size_t mti, const Evoral::Parameter& param);
-	size_t add_midi_automation_column (size_t mti, const Evoral::Parameter& param);
-	void add_processor_automation_column (size_t mti, ProcessorPtr processor,
+	size_t select_available_automation_column (int mti /* midi track index */);
+	size_t add_main_automation_column (int mti, const Evoral::Parameter& param);
+	size_t add_midi_automation_column (int mti, const Evoral::Parameter& param);
+	void add_processor_automation_column (int mti, ProcessorPtr processor,
 	                                      const Evoral::Parameter& what);
 
-	void change_all_channel_tracks_visibility (size_t mti, bool yn, const Evoral::Parameter& param);
-	void update_automation_column_visibility (size_t mti, const Evoral::Parameter& param);
+	void change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Parameter& param);
+	void update_automation_column_visibility (int mti, const Evoral::Parameter& param);
 
 	// Return if the automation column associated to this parameter is currently visible
-	bool is_automation_visible (size_t mti, const Evoral::Parameter& param) const;
+	bool is_automation_visible (int mti, const Evoral::Parameter& param) const;
 
-	void set_automation_column_visible (size_t mti, const Evoral::Parameter& param, size_t column, bool showit);
+	void set_automation_column_visible (int mti, const Evoral::Parameter& param, size_t column, bool showit);
 
 	// Return true iff there exists some automation in that mti that is visible
-	bool has_visible_automation (size_t mti) const;
+	bool has_visible_automation (int mti) const;
 
 	// Return true if the gain column is visible
-	bool is_gain_visible (size_t mti) const;
-	bool is_trim_visible (size_t mti) const;
-	bool is_mute_visible (size_t mti) const;
-	bool is_pan_visible (size_t mti) const;
-	void update_gain_column_visibility (size_t mti);
-	void update_trim_column_visibility (size_t mti);
-	void update_mute_column_visibility (size_t mti);
-	void update_pan_columns_visibility (size_t mti);
+	bool is_gain_visible (int mti) const;
+	bool is_trim_visible (int mti) const;
+	bool is_mute_visible (int mti) const;
+	bool is_pan_visible (int mti) const;
+	void update_gain_column_visibility (int mti);
+	void update_trim_column_visibility (int mti);
+	void update_mute_column_visibility (int mti);
+	void update_pan_columns_visibility (int mti);
 
 	////////////////////////
 	// Display Pattern    //
 	////////////////////////
 
 	void redisplay_visible_note ();
-	int mti_col_offset (size_t mti) const;
-	int left_separator_colnum (size_t mti) const;
-	void redisplay_visible_left_separator (size_t mti) const;
-	int region_name_colnum (size_t mti) const;
-	int note_colnum (size_t mti, size_t cgi /* column group index */) const;
+	int mti_col_offset (int mti) const;
+	int left_separator_colnum (int mti) const;
+	void redisplay_visible_left_separator (int mti) const;
+	int region_name_colnum (int mti) const;
+	int note_colnum (int mti, int cgi /* column group index */) const;
 	void redisplay_visible_channel ();
-	int note_channel_colnum (size_t mti, size_t cgi) const;
+	int note_channel_colnum (int mti, int cgi) const;
 	void redisplay_visible_velocity ();
-	int note_velocity_colnum (size_t mti, size_t cgi) const;
+	int note_velocity_colnum (int mti, int cgi) const;
 	void redisplay_visible_delay ();
-	int note_delay_colnum (size_t mti, size_t cgi) const;
+	int note_delay_colnum (int mti, int cgi) const;
 	void redisplay_visible_note_separator ();
-	int note_separator_colnum (size_t mti, size_t cgi) const;
+	int note_separator_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation ();
-	size_t automation_col_offset (size_t mti) const;
-	int automation_colnum (size_t mti, size_t cgi) const;
+	size_t automation_col_offset (int mti) const;
+	int automation_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation_delay ();
-	int automation_delay_colnum (size_t mti, size_t cgi) const;
+	int automation_delay_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation_separator ();
-	int automation_separator_colnum (size_t mti, size_t cgi) const;
-	int right_separator_colnum (size_t mti) const;
-	void redisplay_visible_right_separator (size_t mti) const;
+	int automation_separator_colnum (int mti, int cgi) const;
+	int right_separator_colnum (int mti) const;
+	void redisplay_visible_right_separator (int mti) const;
 
 	int base () const;
 	bool is_hex () const;
@@ -184,53 +184,53 @@ public:
 	void read_keyboard_layout ();     // Read keyboard layout from config
 	void read_colors ();              // Read colors from config
 	void redisplay_global_columns (); // time, color, font
-	void reset_off_on_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void reset_off_on_note (Gtk::TreeModel::Row& row, int mti, int cgi);
 
 	void redisplay_grid ();
 	void redisplay_grid_direct_call ();
 	void redisplay_grid_connect_call ();
 	void redisplay_left_right_separator_columns ();
-	void redisplay_left_right_separator_columns (size_t mti);
-	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, size_t mti);
-	void redisplay_track_separator (size_t mti);
-	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, size_t mti);
-	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, size_t mti); // Display undefined notes at row and mti
-	void redisplay_undefined_note (Gtk::TreeModel::Row& row, size_t mti, size_t cgi); // Display undefined note at row, mti and cgi
-	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int row_idx, size_t mti);
-	void redisplay_undefined_automation (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_note_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi);
-	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_left_right_separator_columns (int mti);
+	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, int mti);
+	void redisplay_track_separator (int mti);
+	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, int mti);
+	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, int mti); // Display undefined notes at row and mti
+	void redisplay_undefined_note (Gtk::TreeModel::Row& row, int mti, int cgi); // Display undefined note at row, mti and cgi
+	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int row_idx, int mti);
+	void redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_note_background (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_auto_background (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi);
+	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
-	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi, const Evoral::Parameter& param);
-	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi, const Evoral::Parameter& param);
-	void redisplay_cell_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
+	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
+	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
+	void redisplay_cell_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color);
-	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, size_t mti, const std::string& color);
-	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int row_idx, size_t mti, const std::string& color);
-	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, size_t mti, const AutomationPattern& ap, const std::string& color);
+	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color);
+	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color);
+	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const AutomationPattern& ap, const std::string& color);
 	void redisplay_current_row ();
 	void redisplay_pattern ();
-	void redisplay_track (size_t mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
-	void redisplay_inter_midi_regions (size_t mti);
-	void redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
-	void redisplay_track_automations (size_t mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
-	void redisplay_track_automation_param (size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_track_automation_param_row (size_t mti, size_t cgi, size_t row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
-	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
-	void redisplay_midi_region (size_t mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
-	void redisplay_region_notes (size_t mti, int mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
-	void redisplay_region_automations (size_t mti, int mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* np_diff = 0);
-	void redisplay_region_automation_param (size_t mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_region_automation_param_row (size_t mti, int mri, size_t cgi, size_t row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
-	void redisplay_note_column (size_t mti, int mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_note (size_t mti, int mri, size_t cgi, size_t row_idx, const NotePattern& np);
+	void redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
+	void redisplay_inter_midi_regions (int mti);
+	void redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
+	void redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
+	void redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
+	void redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
+	void redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
+	void redisplay_region_notes (int mti, int mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
+	void redisplay_region_automations (int mti, int mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* np_diff = 0);
+	void redisplay_region_automation_param (int mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
+	void redisplay_note_column (int mti, int mri, int cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_note (int mti, int mri, int cgi, int row_idx, const NotePattern& np);
 	void remove_unused_rows ();
 	void unset_underline_current_step_edit_cell ();
 	void unset_underline_current_step_edit_note_cell ();
@@ -241,14 +241,14 @@ public:
 
 	// To align grid header
 	int get_time_width () const;
-	int get_track_width (size_t mti) const;
-	int get_right_separator_width (size_t mti) const;
+	int get_track_width (int mti) const;
+	int get_right_separator_width (int mti) const;
 	int get_track_separator_width () const;
 
-	std::string get_name (size_t mti, const Evoral::Parameter& param, bool shorten=true) const;
+	std::string get_name (int mti, const Evoral::Parameter& param, bool shorten=true) const;
 
-	void set_param_enabled (size_t mti, const Evoral::Parameter& param, bool enabled);
-	bool is_param_enabled (size_t mti, const Evoral::Parameter& param) const;
+	void set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled);
+	bool is_param_enabled (int mti, const Evoral::Parameter& param) const;
 
 	// Render a val with the position to be affected by step editing underlined
 	Pango::AttrList char_underline (int ul_idx) const;
@@ -340,18 +340,18 @@ public:
 	void setup_init_row ();
 	void setup_init_col ();
 private:
-	void setup_left_separator_column (size_t mti);
-	void setup_region_name_column (size_t mti);
-	void setup_note_column (size_t mti, size_t cgi);
-	void setup_note_channel_column (size_t mti, size_t cgi);
-	void setup_note_velocity_column (size_t mti, size_t cgi);
-	void setup_note_delay_column (size_t mti, size_t cgi);
-	void setup_note_separator_column (size_t mti, size_t cgi);
-	void setup_automation_column (size_t mti, size_t cgi);
-	void setup_automation_delay_column (size_t mti, size_t cgi);
-	void setup_automation_separator_column (size_t mti, size_t cgi);
-	void setup_right_separator_column (size_t mti);
-	void setup_track_separator_column (size_t mti);
+	void setup_left_separator_column (int mti);
+	void setup_region_name_column (int mti);
+	void setup_note_column (int mti, int cgi);
+	void setup_note_channel_column (int mti, int cgi);
+	void setup_note_velocity_column (int mti, int cgi);
+	void setup_note_delay_column (int mti, int cgi);
+	void setup_note_separator_column (int mti, int cgi);
+	void setup_automation_column (int mti, int cgi);
+	void setup_automation_delay_column (int mti, int cgi);
+	void setup_automation_separator_column (int mti, int cgi);
+	void setup_right_separator_column (int mti);
+	void setup_track_separator_column (int mti);
 
 	/////////////////////
 	// Action Utils    //
@@ -414,8 +414,8 @@ private:
 	Gtk::TreeModel::Path to_path (int row_idx) const;
 
 	// TODO: replace all fucking integer types by int, all over the code!
-	int get_row_offset (size_t mti, int mri) const;
-	int get_row_size (size_t mti, int mri) const;
+	int get_row_offset (int mti, int mri) const;
+	int get_row_size (int mti, int mri) const;
 
 	// Return the row corresponding to a given row index
 	Gtk::TreeModel::Row to_row (int row_idx) const;
@@ -595,10 +595,10 @@ private:
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
-	Evoral::Parameter get_param (size_t mti, size_t auto_cgi) const;
+	Evoral::Parameter get_param (int mti, int cgi) const;
 
 	// Return cgi associated to param at mti. If undefined for param return -1.
-	int get_cgi (size_t mti, const Evoral::Parameter& param) const;
+	int get_cgi (int mti, const Evoral::Parameter& param) const;
 
 	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
 	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
@@ -627,7 +627,7 @@ public:
 	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
 
 private:
-	void apply_command (size_t mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 	void follow_playhead (samplepos_t);
 
 	/**

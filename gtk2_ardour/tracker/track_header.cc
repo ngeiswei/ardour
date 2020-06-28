@@ -24,7 +24,7 @@
 
 using namespace Tracker;
 
-TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti)
+TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, int mti)
 {
 	// Instantiate TrackToolbar
 	if (tp->is_midi_track_pattern ()) {
