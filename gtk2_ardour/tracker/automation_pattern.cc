@@ -399,9 +399,6 @@ AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::
 	// Clamp val to its range
 	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
 
-	// Save state for undo
-	XMLNode& before = alist->get_state ();
-
 	// Find control event at rowi, if any
 	Evoral::ControlEvent* ce = get_control_event (rowi, param);
 
@@ -410,20 +407,13 @@ AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::
 		Temporal::Beats row_relative_beats = region_relative_beats_at_row (rowi, delay);
 		uint32_t row_sample = sample_at_row (rowi, delay);
 		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double () : row_sample;
-		if (alist->editor_add (awhen, val, false)) { // NEXT: wrap in method
-			XMLNode& after = alist->get_state ();
-			tracker_editor.grid.register_automation_undo (alist, _("add automation event"), before, after);
-		}
+		add_automation_point (alist, awhen, val);
 		return;
 	}
 
 	// Change existing value
 	double awhen = ce->when;
-	// AutomationPattern::AutomationListIt it = get_alist_iterator (rowi, param);
-	// NEXT: wrap modify call, including undo history in a method
-	alist->modify (get_alist_iterator (rowi, param), awhen, val);
-	XMLNode& after = alist->get_state ();
-	tracker_editor.grid.register_automation_undo (alist, _("change automation event"), before, after);
+	modify_automation_point (alist, get_alist_iterator (rowi, param), awhen, val);
 }
 
 void
@@ -433,13 +423,7 @@ AutomationPattern::delete_automation_value (int rowi, const Evoral::Parameter& p
 	if (!alist) {
 		return;
 	}
-
-	// Save state for undo
-	XMLNode& before = alist->get_state ();
-
-	alist->erase (get_alist_iterator (rowi, param)); // NEXT: wrap in method
-	XMLNode& after = alist->get_state ();
-	tracker_editor.grid.register_automation_undo (alist, _("delete automation event"), before, after);
+	erase_automation_point (alist, get_alist_iterator (rowi, param));
 }
 
 std::pair<int, bool>
@@ -479,14 +463,41 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	}
 
 	// Change existing delay
-	XMLNode& before = alist->get_state ();
 	double awhen = TrackerUtils::is_region_automation (param) ?
 		(row_relative_beats < start_beats ? start_beats : row_relative_beats).to_double ()
 		: row_sample;
-	AutomationPattern::AutomationListIt auto_lst_it = get_alist_iterator (rowi, param);
-	alist->modify (auto_lst_it, awhen, ce->value); // NEXT: wrap in a method
+	modify_automation_point (alist, get_alist_iterator (rowi, param), awhen, ce->value);
+}
+
+void
+AutomationPattern::add_automation_point (AutomationListPtr alist, double when, double val)
+{
+	// Save state for undo
+	XMLNode& before = alist->get_state ();
+	if (alist->editor_add (when, val, false)) {
+		XMLNode& after = alist->get_state ();
+		tracker_editor.grid.register_automation_undo (alist, _("add automation event"), before, after);
+	}
+}
+
+void
+AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationPattern::AutomationListIt it, double when, double val)
+{
+	// Save state for undo
+	XMLNode& before = alist->get_state ();
+	alist->modify (it, when, val);
 	XMLNode& after = alist->get_state ();
-	tracker_editor.grid.register_automation_undo (alist, _("change automation event delay"), before, after);
+	tracker_editor.grid.register_automation_undo (alist, _("change automation event"), before, after);
+}
+
+void
+AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationPattern::AutomationListIt it)
+{
+	// Save state for undo
+	XMLNode& before = alist->get_state ();
+	alist->erase (it);
+	XMLNode& after = alist->get_state ();
+	tracker_editor.grid.register_automation_undo (alist, _("delete automation event"), before, after);
 }
 
 AutomationPattern::RowToAutomationListIt::const_iterator

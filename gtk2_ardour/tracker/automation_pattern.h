@@ -129,6 +129,11 @@ public:
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
 
+	// Add, modidy or erase automation point, and record undo history
+	void add_automation_point (AutomationListPtr alist, double when, double val);
+	void modify_automation_point (AutomationListPtr alist, AutomationListIt it, double when, double val);
+	void erase_automation_point (AutomationListPtr alist, AutomationListIt it);
+
 	// Return RowToAutomationListIt corresponding to the previous (resp. next)
 	// event. If there is no such previous or next event then return end ()
 	// iterator.
