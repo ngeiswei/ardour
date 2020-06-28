@@ -202,13 +202,13 @@ public:
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_auto_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi);
+	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi);
 	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
-	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
-	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param);
+	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi, const Evoral::Parameter& param);
+	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi, const Evoral::Parameter& param);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, size_t mti, size_t cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color);
@@ -224,13 +224,13 @@ public:
 	void redisplay_track_automation_param (size_t mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_track_automation_param_row (size_t mti, size_t cgi, size_t row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
 	void redisplay_audio_track (size_t mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
-	void redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
-	void redisplay_region_notes (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
-	void redisplay_region_automations (size_t mti, size_t mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* np_diff = 0);
-	void redisplay_region_automation_param (size_t mti, size_t mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_region_automation_param_row (size_t mti, size_t mri, size_t cgi, size_t row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
-	void redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_note (size_t mti, size_t mri, size_t cgi, size_t row_idx, const NotePattern& np);
+	void redisplay_midi_region (size_t mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
+	void redisplay_region_notes (size_t mti, int mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff = 0);
+	void redisplay_region_automations (size_t mti, int mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* np_diff = 0);
+	void redisplay_region_automation_param (size_t mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_region_automation_param_row (size_t mti, int mri, size_t cgi, size_t row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
+	void redisplay_note_column (size_t mti, int mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_note (size_t mti, int mri, size_t cgi, size_t row_idx, const NotePattern& np);
 	void remove_unused_rows ();
 	void unset_underline_current_step_edit_cell ();
 	void unset_underline_current_step_edit_note_cell ();
@@ -414,8 +414,8 @@ private:
 	Gtk::TreeModel::Path to_path (int row_idx) const;
 
 	// TODO: replace all fucking integer types by int, all over the code!
-	int get_row_offset (size_t mti, size_t mri) const;
-	int get_row_size (size_t mti, size_t mri) const;
+	int get_row_offset (size_t mti, int mri) const;
+	int get_row_size (size_t mti, int mri) const;
 
 	// Return the row corresponding to a given row index
 	Gtk::TreeModel::Row to_row (int row_idx) const;
@@ -627,7 +627,7 @@ public:
 	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
 
 private:
-	void apply_command (size_t mti, size_t mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+	void apply_command (size_t mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 	void follow_playhead (samplepos_t);
 
 	/**
