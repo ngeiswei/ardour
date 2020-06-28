@@ -38,7 +38,7 @@ using namespace Gtkmm2ext;
 using namespace ARDOUR;
 using namespace Tracker;
 
-MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp, size_t mti)
+MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp, int mti)
 	: TrackToolbar (te, &mtp, mti)
 	, midi_track (mtp.midi_track)
 	, midi_track_pattern (mtp)

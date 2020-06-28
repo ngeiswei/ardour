@@ -29,7 +29,7 @@ class AudioTrackToolbar : public TrackToolbar
 public:
 	AudioTrackToolbar (TrackerEditor& te,
 	                   AudioTrackPattern& atp,
-	                   size_t mti);
+	                   int mti);
 	~AudioTrackToolbar ();
 };
 
