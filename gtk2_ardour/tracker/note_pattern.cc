@@ -102,7 +102,7 @@ NotePattern::clone_note (NotePtr note) const
 }
 
 void
-NotePattern::rows_diff (size_t cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd)
+NotePattern::rows_diff (int cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd)
 {
 	// Compare left on notes with right on notes
 	for (RowToNotes::const_iterator it = lnp.on_notes[cgi].begin (); it != lnp.on_notes[cgi].end ();) {

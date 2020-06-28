@@ -76,7 +76,7 @@ ProcessorAutomationInfo::to_string(const std::string& indent) const
 	return ss.str ();
 }
 
-TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti)
+TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, int mti)
 	: tracker_editor (te)
 	, track (tp->track)
 	, track_pattern (tp)
