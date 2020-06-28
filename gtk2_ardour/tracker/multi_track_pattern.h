@@ -69,83 +69,83 @@ public:
 	void update_global_nrows ();  // row_offset, nrows, global_nrows
 
 	// Return true iff the row at mti belongs to a region
-	bool is_region_defined (uint32_t rowi, size_t mti) const;
+	bool is_region_defined (uint32_t rowi, int mti) const;
 
 	// Return true iff the row at mti is defined for param
 	// Warning: if param is undefined, then the behavior is unknown
-	bool is_automation_defined (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const;
+	bool is_automation_defined (uint32_t rowi, int mti, const Evoral::Parameter& param) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
-	Temporal::Beats region_relative_beats (uint32_t rowi, size_t mti, int mri, int32_t delay=0) const;
+	Temporal::Beats region_relative_beats (uint32_t rowi, int mti, int mri, int32_t delay=0) const;
 
 	// Like delay_ticks but the event_time is relative to the region position of a given mti
-	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti, int mri) const;
+	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mti, int mri) const;
 
 	// Return an event's delay in a certain row and mti in ticks
-	int64_t delay_ticks (samplepos_t when, uint32_t rowi, size_t mti) const;
+	int64_t delay_ticks (samplepos_t when, uint32_t rowi, int mti) const;
 	
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
-	uint32_t sample_at_row_at_mti (uint32_t rowi, size_t mti, int32_t delay=0) const;
+	uint32_t sample_at_row_at_mti (uint32_t rowi, int mti, int32_t delay=0) const;
 
-	size_t off_notes_count (uint32_t rowi, size_t mti, int mri, size_t cgi) const;
-	size_t on_notes_count (uint32_t rowi, size_t mti, int mri, size_t cgi) const;
-	bool is_note_displayable (uint32_t rowi, size_t mti, int mri, size_t cgi) const;
-	NotePtr off_note (uint32_t rowi, size_t mti, int mri, size_t cgi) const;
-	NotePtr on_note (uint32_t rowi, size_t mti, int mri, size_t cgi) const;
+	size_t off_notes_count (uint32_t rowi, int mti, int mri, int cgi) const;
+	size_t on_notes_count (uint32_t rowi, int mti, int mri, int cgi) const;
+	bool is_note_displayable (uint32_t rowi, int mti, int mri, int cgi) const;
+	NotePtr off_note (uint32_t rowi, int mti, int mri, int cgi) const;
+	NotePtr on_note (uint32_t rowi, int mti, int mri, int cgi) const;
 
-	bool is_auto_displayable (uint32_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const;
+	bool is_auto_displayable (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	size_t get_automation_list_count (uint32_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const;
-	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const;
+	size_t get_automation_list_count (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
-	NotePtr find_prev_on_note (uint32_t rowi, size_t mti, int mri, int cgi) const;
-	NotePtr find_next_on_note (uint32_t rowi, size_t mti, int mri, int cgi) const;
+	NotePtr find_prev_on_note (uint32_t rowi, int mti, int mri, int cgi) const;
+	NotePtr find_next_on_note (uint32_t rowi, int mti, int mri, int cgi) const;
 
 	// Return the Beats of the next note on (resp. off) or the end of the region
 	// if none
-	Temporal::Beats next_on_note (uint32_t rowi, size_t mti, int mri, int cgi) const;
-	Temporal::Beats next_off_note (uint32_t rowi, size_t mti, int mri, int cgi) const;
+	Temporal::Beats next_on_note (uint32_t rowi, int mti, int mri, int cgi) const;
+	Temporal::Beats next_off_note (uint32_t rowi, int mti, int mri, int cgi) const;
 
 	// Return the row index relative to the start of pattern at mti.
-	int to_rri (uint32_t rowi, size_t mti) const;
+	int to_rri (uint32_t rowi, int mti) const;
 
 	// Return the row index relative to the region pattern at mri of mti track
-	int to_rrri (uint32_t rowi, size_t mti, int mri) const;
-	int to_rrri (uint32_t rowi, size_t mti) const;
+	int to_rrri (uint32_t rowi, int mti, int mri) const;
+	int to_rrri (uint32_t rowi, int mti) const;
 
 	// Given the row index, calculate the corresponding midi region index. This
 	// can only work assuming that regions do not overlap in time. If no such
 	// mri is defined, then return -1.
-	int to_mri (uint32_t rowi, size_t mti) const;
+	int to_mri (uint32_t rowi, int mti) const;
 
 	// Insert the automation control (s) associated to param at mti (and connect
 	// it to the grid for changes)
-	void insert (size_t mti, const Evoral::Parameter& param);
+	void insert (int mti, const Evoral::Parameter& param);
 
 	// Return the midi model at mti and mri
-	MidiModelPtr midi_model (size_t mti, int mri);
+	MidiModelPtr midi_model (int mti, int mri);
 
 	// Return the midi region at mti and mri
-	MidiRegionPtr midi_region (size_t mti, int mri);
+	MidiRegionPtr midi_region (int mti, int mri);
 	
 	// Return the note pattern at mti and mri
-	NotePattern& note_pattern (size_t mti, int mri);
+	NotePattern& note_pattern (int mti, int mri);
 
 	// Return the midi region pattern at mti and mri
-	MidiRegionPattern& midi_region_pattern (size_t mti, int mri);
-	const MidiRegionPattern& midi_region_pattern (size_t mti, int mri) const;
+	MidiRegionPattern& midi_region_pattern (int mti, int mri);
+	const MidiRegionPattern& midi_region_pattern (int mti, int mri) const;
 
 	// Apply given command at mti
-	void apply_command (size_t mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
 	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 	
 	// Return a pair with the automation value and whether it is defined or not
-	std::pair<double, bool> get_automation_value (size_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const;
+	std::pair<double, bool> get_automation_value (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation value val at rowi, mti and mri for param
 	void set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay);
@@ -156,10 +156,10 @@ public:
 	// Get a pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const;
+	std::pair<int, bool> get_automation_delay (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, size_t rowi, size_t mti, int mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, size_t rowi, int mti, int mri, const Evoral::Parameter& param);
 
 	// Return the track pattern assicuated to track, or 0 if it doesn't exist
 	TrackPattern* find_track_pattern (TrackPtr track);
