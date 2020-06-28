@@ -111,8 +111,8 @@ Grid::Grid (TrackerEditor& te)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
-	, time_column (0)
 	, cellfont ("Monospace")
+	, time_column (0)
 {
 	UIConfiguration::instance().ParameterChanged.connect (sigc::mem_fun (*this, &Grid::parameter_changed));
 	UIConfiguration::instance().ColorsChanged.connect (sigc::mem_fun (*this, &Grid::color_changed));
@@ -279,7 +279,6 @@ Grid::add_midi_automation_column (size_t mti, const Evoral::Parameter& param)
 void
 Grid::add_processor_automation_column (size_t mti, ProcessorPtr processor, const Evoral::Parameter& param)
 {
-	std::cout << "Grid::add_processor_automation_column (processor=" << processor << ",param=" << get_name (mti, param) << ")" << std::endl;
 	ProcessorAutomationNode* pauno;
 
 	if ((pauno = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, param)) == 0) {
@@ -380,6 +379,8 @@ Grid::set_automation_column_visible (size_t mti, const Evoral::Parameter& param,
 	} else {
 		visible_automation_columns.erase (column);
 	}
+	// NEXT: take care of doing that in other situations. Like the situation
+	// when a new region is added
 	set_param_enabled (mti, param, showit);
 }
 
@@ -1035,7 +1036,7 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, size_t 
 		return;
 	}
 
-	size_t mri = 0;              // consider the first one, all parameters
+	int mri = 0;              // consider the first one, all parameters
 										  // should be the same in all other regions
 	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
 	AutomationPattern& ap = mrp.rap;
@@ -1180,7 +1181,7 @@ Grid::redisplay_auto_background (TreeModel::Row& row, size_t mti, size_t cgi)
 }
 
 void
-Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi)
+Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi)
 {
 	if (pattern.is_note_displayable (row_idx, mti, mri, cgi)) {
 		// Notes off
@@ -1258,7 +1259,7 @@ Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, size_t mti, size_t c
 }
 
 void
-Grid::redisplay_automation (TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
+Grid::redisplay_automation (TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi, const Evoral::Parameter& param)
 {
 	if (pattern.is_auto_displayable (row_idx, mti, mri, param)) {
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (row_idx, mti, mri, param);
@@ -1279,7 +1280,7 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, size_t mti, size_t
 }
 
 void
-Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, size_t mti, size_t mri, size_t cgi, const Evoral::Parameter& param)
+Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, size_t mti, int mri, size_t cgi, const Evoral::Parameter& param)
 {
 	double inter_auto_val = get_automation_interpolation_value (row_idx, mti, mri, param);
 	if (is_int_param (param)) {
@@ -1413,7 +1414,7 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 	if (mtp_diff == 0 || mtp_diff->full) {
 		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
-			redisplay_midi_region (mti, mri, mtp.mrps[mri]);
+			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
 		redisplay_track_automations (mti, mtp);
 	} else {
@@ -1421,7 +1422,7 @@ Grid::redisplay_midi_track (size_t mti, const MidiTrackPattern& mtp, const MidiT
 		redisplay_inter_midi_regions (mti);
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
 			size_t mri = it->first;
-			redisplay_midi_region (mti, mri, mtp.mrps[mri], &it->second);
+			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
 		}
 		redisplay_track_automations (mti, mtp, &mtp_diff->auto_diff);
 	}
@@ -1498,7 +1499,7 @@ Grid::redisplay_inter_midi_regions (size_t mti)
 }
 
 void
-Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
+Grid::redisplay_midi_region (size_t mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
 	if (!pattern.midi_region_pattern (mti, mri).enabled)
 		return;
@@ -1508,7 +1509,7 @@ Grid::redisplay_midi_region (size_t mti, size_t mri, const MidiRegionPattern& mr
 }
 
 void
-Grid::redisplay_region_notes (size_t mti, size_t mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff)
+Grid::redisplay_region_notes (size_t mti, int mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff)
 {
 	if (np_diff == 0 || np_diff->full) {
 		for (size_t cgi = 0; cgi < np.ntracks; cgi++) {
@@ -1523,14 +1524,22 @@ Grid::redisplay_region_notes (size_t mti, size_t mri, const NotePattern& np, con
 }
 
 void
-Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* rap_diff)
+Grid::redisplay_region_automations (size_t mti, int mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* rap_diff)
 {
 	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
-		for (AutomationPattern::ParamEnabledMap::const_iterator it = rap.param_to_enabled.begin (); it != rap.param_to_enabled.end (); ++it)
+		const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
+		for (MidiTrackPattern::ParameterSet::const_iterator it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
 		{
-			if (it->second) {
-				redisplay_region_automation_param (mti, mri, rap, it->first);
-			}
+			const Evoral::Parameter& param = *it;
+			// Make sure the param of that region, this may not be the case if
+			// it was just added to the tracker interface and another region
+			// was already displaying that parameter.
+			//
+			// TODO: An alternate way to deal with that would be to enable such
+			// region during TrackerEditor::setup, Grid::setup or
+			// MultiTrackPattern::setup.
+			pattern.midi_region_pattern (mti, mri).rap.set_param_enabled (param, true);
+			redisplay_region_automation_param (mti, mri, rap, param);
 		}
 	} else {
 		const AutomationPatternPhenomenalDiff& ap_diff = rap_diff->ap_diff;
@@ -1542,7 +1551,7 @@ Grid::redisplay_region_automations (size_t mti, size_t mri, const RegionAutomati
 }
 
 void
-Grid::redisplay_region_automation_param (size_t mti, size_t mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_region_automation_param (size_t mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
 	int cgi = get_cgi (mti, param);
 
@@ -1563,7 +1572,7 @@ Grid::redisplay_region_automation_param (size_t mti, size_t mri, const RegionAut
 }
 
 void
-Grid::redisplay_region_automation_param_row (size_t mti, size_t mri, size_t cgi, size_t row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param)
+Grid::redisplay_region_automation_param_row (size_t mti, int mri, size_t cgi, size_t row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
@@ -1583,7 +1592,7 @@ Grid::redisplay_region_automation_param_row (size_t mti, size_t mri, size_t cgi,
 }
 
 void
-Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_note_column (size_t mti, int mri, size_t cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff)
 {
 	size_t row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
@@ -1598,7 +1607,7 @@ Grid::redisplay_note_column (size_t mti, size_t mri, size_t cgi, const NotePatte
 }
 
 void
-Grid::redisplay_note (size_t mti, size_t mri, size_t cgi, size_t row_idx, const NotePattern& np)
+Grid::redisplay_note (size_t mti, int mri, size_t cgi, size_t row_idx, const NotePattern& np)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
@@ -1993,15 +2002,15 @@ Grid::to_path (int row_idx) const
 }
 
 int
-Grid::get_row_offset (size_t mti, size_t mri) const
+Grid::get_row_offset (size_t mti, int mri) const
 {
 	return pattern.row_offset[mti] + pattern.tps[mti]->midi_track_pattern ()->row_offset[mri];
 }
 
 int
-Grid::get_row_size (size_t mti, size_t mri) const
+Grid::get_row_size (size_t mti, int mri) const
 {
-	return pattern.tps[mti]->midi_track_pattern ()->mrps[mri].nrows;
+	return pattern.midi_region_pattern (mti, mri).nrows;
 }
 
 Gtk::TreeModel::Row
@@ -2528,7 +2537,7 @@ Grid::set_note_delay (int delay, int row_idx, int mti, int mri, int cgi)
 	MidiModel::NoteDiffCommand* cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 
 	// Get corresponding midi region pattern
-	MidiRegionPattern& mrp = pattern.tps[mti]->midi_track_pattern ()->mrps[mri];
+	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
 
 	// Check if within acceptable boundaries
 	if (delay < mrp.delay_ticks_min () || mrp.delay_ticks_max () < delay) {
@@ -2872,9 +2881,9 @@ Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const E
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
 		// Get corresponding beats and samples
-		Temporal::Beats row_relative_beats = pattern.region_relative_beats (row_idx, mti, mri);
-		int row_sample = pattern.sample_at_row_at_mti (row_idx, mti);
-		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double () : row_sample;
+		double awhen = TrackerUtils::is_region_automation (param) ?
+			pattern.region_relative_beats (row_idx, mti, mri).to_double ()
+			: pattern.sample_at_row_at_mti (row_idx, mti);
 		// Get interpolation
 		bool ok;
 		inter_auto_val = alist->rt_safe_eval (awhen, ok);
@@ -2984,7 +2993,7 @@ Grid::register_automation_undo (AutomationListPtr alist, const string& opname, X
 }
 
 void
-Grid::apply_command (size_t mti, size_t mri, MidiModel::NoteDiffCommand* cmd)
+Grid::apply_command (size_t mti, int mri, MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
 	pattern.apply_command (mti, mri, cmd);
@@ -3502,7 +3511,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 	}
 }
 
-// NEXT: support jump
+// TODO: support jump, maybe
 void
 Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab, bool jump)
 {
@@ -4384,7 +4393,7 @@ Grid::step_editing_set_automation_value (int digit)
 
 	// Redisplay model with the new value
 	// TODO: optimize
-	redisplay_grid_direct_call ();
+	redisplay_grid_direct_call (); // NEXT: this shouldn't be necessary
 	// TODO: Need to rerun because apparently redisplay_grid overwrite the
 	// underlined cell, once optimized avoid such redundancy as well.
 	set_underline_current_step_edit_cell ();
