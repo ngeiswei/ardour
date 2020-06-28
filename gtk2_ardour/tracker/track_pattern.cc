@@ -151,31 +151,31 @@ TrackPattern::audio_track_pattern ()
 }
 
 Temporal::Beats
-TrackPattern::region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const
+TrackPattern::region_relative_beats (uint32_t rowi, int mri, int32_t delay) const
 {
 	return Temporal::Beats ();
 }
 
 int64_t
-TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const
+TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const
 {
 	return 0;
 }
 
 bool
-TrackPattern::is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+TrackPattern::is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const
 {
 	return is_displayable (rowi, param);
 }
 
 size_t
-TrackPattern::get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+TrackPattern::get_automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const
 {
 	return param_to_row_to_ali.find (param)->second.count (rowi);
 }
 
 Evoral::ControlEvent*
-TrackPattern::get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const
+TrackPattern::get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const
 {
 	ParamToRowToAutomationListIt::const_iterator pit = param_to_row_to_ali.find (param);
 	if (pit == param_to_row_to_ali.end())
@@ -195,7 +195,7 @@ TrackPattern::is_region_defined (int rowi) const
 }
 
 int
-TrackPattern::to_rrri (uint32_t rowi, size_t mri) const
+TrackPattern::to_rrri (uint32_t rowi, int mri) const
 {
 	return (int)rowi;
 }
@@ -225,31 +225,31 @@ TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
 }
 
 std::pair<double, bool>
-TrackPattern::get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param)
+TrackPattern::get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param)
 {
 	return AutomationPattern::get_automation_value (rowi, param);
 }
 
 void
-TrackPattern::set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay)
+TrackPattern::set_automation_value (double val, size_t rowi, int mri, const Evoral::Parameter& param, int delay)
 {
 	AutomationPattern::set_automation_value (val, rowi, param, delay);
 }
 
 void
-TrackPattern::delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param)
+TrackPattern::delete_automation_value (size_t rowi, int mri, const Evoral::Parameter& param)
 {
 	AutomationPattern::delete_automation_value (rowi, param);
 }
 
 std::pair<int, bool>
-TrackPattern::get_automation_delay (size_t rowi, size_t mri, const Evoral::Parameter& param)
+TrackPattern::get_automation_delay (size_t rowi, int mri, const Evoral::Parameter& param)
 {
 	return AutomationPattern::get_automation_delay (rowi, param);
 }
 
 void
-TrackPattern::set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param)
+TrackPattern::set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param)
 {
 	AutomationPattern::set_automation_delay (delay, rowi, param);
 }
