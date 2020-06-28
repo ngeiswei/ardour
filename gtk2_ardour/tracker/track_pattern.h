@@ -74,22 +74,22 @@ public:
 	AudioTrackPattern* audio_track_pattern ();
 
 	// Default implementation is for tracks not supporting regions
-	virtual Temporal::Beats	region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const;
-	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const;
-	virtual bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
-	virtual size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
-	virtual Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+	virtual Temporal::Beats	region_relative_beats (uint32_t rowi, int mri, int32_t delay) const;
+	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const;
+	virtual bool is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	virtual size_t get_automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	virtual Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
-	virtual int to_rrri (uint32_t rowi, size_t mri) const;
+	virtual int to_rrri (uint32_t rowi, int mri) const;
 	virtual int to_rrri (uint32_t rowi) const;
 	virtual int to_mri (uint32_t rowi) const;
 	virtual AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	virtual const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
-	virtual std::pair<double, bool> get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
-	virtual void set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay);
-	virtual void delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
-	virtual std::pair<int, bool> get_automation_delay (size_t rowi, size_t mri, const Evoral::Parameter& param);
-	virtual void set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param);
+	virtual std::pair<double, bool> get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
+	virtual void set_automation_value (double val, size_t rowi, int mri, const Evoral::Parameter& param, int delay);
+	virtual void delete_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
+	virtual std::pair<int, bool> get_automation_delay (size_t rowi, int mri, const Evoral::Parameter& param);
+	virtual void set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param);
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 

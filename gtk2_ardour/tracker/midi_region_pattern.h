@@ -73,7 +73,10 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	NotePattern np;
-	RegionAutomationPattern rap;
+	RegionAutomationPattern rap; // TODO: another option would be to have
+										  // MidiRegionPattern inherits from
+										  // RegionAutomationPattern, but maybe it's an
+										  // evil one.
 	MidiTrackPtr midi_track;
 	MidiModelPtr midi_model;
 	MidiRegionPtr midi_region;
