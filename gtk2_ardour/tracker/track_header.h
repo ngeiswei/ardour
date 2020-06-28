@@ -31,7 +31,7 @@ class TrackerEditor;
 class TrackHeader : public Gtk::Frame
 {
 public:
-	TrackHeader (TrackerEditor& te, TrackPattern* tp, size_t mti);
+	TrackHeader (TrackerEditor& te, TrackPattern* tp, int mti);
 	~TrackHeader ();
 
 	int get_min_width () const;
