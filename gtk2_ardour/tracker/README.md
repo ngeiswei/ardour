@@ -22,10 +22,10 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
+- [ ] Fix freeze when MIDI automations is updated on the piano roll
 - [ ] Add tooltips to each cell, showing the parameter or note name, hex and
       dec values (with arbitrary precision in adequate).
 - [ ] Fix automation of different processors
-- [ ] Access to ardour via PublicEditor whenever possible
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
