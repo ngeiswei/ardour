@@ -22,7 +22,6 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
-- [ ] Handle keypressed the right way (which includes passing on space to play/stop)
 - [ ] Add tooltips to each cell, showing the parameter or note name, hex and
       dec values (with arbitrary precision in adequate).
 - [ ] Fix automation of different processors
@@ -34,7 +33,9 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Fix all compile warnings
 - [ ] Create wscript under tracker folder
 - [ ] Create PR
-- [ ] Take care of space bar pressing
+- [ ] Handle keypressed the right way (which includes passing on space to play/stop)
+- [ ] Convert direct call to action when possible, see
+      `gtk2_ardour/editor_actions.cc`, like `nudge-later`.
 - [ ] What to do when playing and step editing is on?
 - [ ] Add copy/move, interpolate, etc + popup menu
 - [ ] Maybe save octave value per each track, possibly more

@@ -92,7 +92,7 @@ public:
 	bool is_region_defined (int rowi) const;
 
 	// Return the row index relative to the start of pattern at region index mri
-	int to_rrri (uint32_t rowi, size_t mri) const;
+	int to_rrri (uint32_t rowi, int mri) const;
 	int to_rrri (uint32_t rowi) const;
 	
 	// Given the row index, calculate the corresponding midi region index. This
@@ -119,29 +119,29 @@ public:
 	bool is_empty (const Evoral::Parameter& param) const;
 
 	// Return a pair with the automation value and whether it is defined or not	
-	std::pair<double, bool> get_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
 
 	// Set the automation value val at rowi and mri for param
-	void set_automation_value (double val, size_t rowi, size_t mri, const Evoral::Parameter& param, int delay);
+	void set_automation_value (double val, size_t rowi, int mri, const Evoral::Parameter& param, int delay);
 
 	// Delete automation value at rowi and mri for param
-	void delete_automation_value (size_t rowi, size_t mri, const Evoral::Parameter& param);
+	void delete_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
 
 	// Return pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (size_t rowi, size_t mri, const Evoral::Parameter& param);
+	std::pair<int, bool> get_automation_delay (size_t rowi, int mri, const Evoral::Parameter& param);
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, size_t rowi, size_t mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param);
 
 	// Get the relative beats w.r.t. region position at rowi, and region mri
-	Temporal::Beats region_relative_beats (uint32_t rowi, size_t mri, int32_t delay) const;
+	Temporal::Beats region_relative_beats (uint32_t rowi, int mri, int32_t delay) const;
 
-	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mri) const;
-	bool is_auto_displayable (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
-	size_t get_automation_list_count (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
-	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, size_t mri, const Evoral::Parameter& param) const;
+	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const;
+	bool is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	size_t get_automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
@@ -163,7 +163,11 @@ public:
 
 	MidiTrackPtr midi_track;
 	std::vector<RegionView*> rvs; // to get access to device names
-	std::vector<MidiRegionPattern> mrps;
+	std::vector<MidiRegionPattern*> mrps;
+
+	// Keep track of enabled region automations
+	typedef std::set<Evoral::Parameter> ParameterSet;
+	ParameterSet enabled_region_params;
 
 	// Associate each mri to row_offset
 	std::vector<uint32_t> row_offset;
