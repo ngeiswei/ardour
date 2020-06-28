@@ -41,7 +41,7 @@ class MidiTrackToolbar : public TrackToolbar
 public:
 	MidiTrackToolbar (TrackerEditor& te,
 	                  MidiTrackPattern& mtp,
-	                  size_t mti);
+	                  int mti);
 	~MidiTrackToolbar ();
 
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;

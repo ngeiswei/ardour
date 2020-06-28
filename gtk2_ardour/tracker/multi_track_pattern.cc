@@ -269,64 +269,64 @@ MultiTrackPattern::update_global_nrows ()
 }
 
 bool
-MultiTrackPattern::is_region_defined (uint32_t rowi, size_t mti) const
+MultiTrackPattern::is_region_defined (uint32_t rowi, int mti) const
 {
 	return tps[mti]->is_region_defined (to_rri (rowi, mti));
 }
 
 bool
-MultiTrackPattern::is_automation_defined (uint32_t rowi, size_t mti, const Evoral::Parameter& param) const
+MultiTrackPattern::is_automation_defined (uint32_t rowi, int mti, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ? is_region_defined (rowi, mti) : tps[mti]->is_defined (to_rri (rowi, mti));
 }
 
 Temporal::Beats
-MultiTrackPattern::region_relative_beats (uint32_t rowi, size_t mti, int mri, int32_t delay) const
+MultiTrackPattern::region_relative_beats (uint32_t rowi, int mti, int mri, int32_t delay) const
 {
 	return tps[mti]->region_relative_beats (to_rri (rowi, mti), mri, delay);
 }
 
 int64_t
-MultiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, size_t mti, int mri) const
+MultiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mti, int mri) const
 {
 	return tps[mti]->region_relative_delay_ticks (event_time, to_rri (rowi, mti), mri);
 }
 
 int64_t
-MultiTrackPattern::delay_ticks (samplepos_t when, uint32_t rowi, size_t mti) const
+MultiTrackPattern::delay_ticks (samplepos_t when, uint32_t rowi, int mti) const
 {
 	return tps[mti]->delay_ticks_at_row (when, to_rri (rowi, mti));
 }
 
 uint32_t
-MultiTrackPattern::sample_at_row_at_mti (uint32_t rowi, size_t mti, int32_t delay) const
+MultiTrackPattern::sample_at_row_at_mti (uint32_t rowi, int mti, int32_t delay) const
 {
 	return tps[mti]->sample_at_row (to_rri (rowi, mti), delay);
 }
 
 size_t
-MultiTrackPattern::off_notes_count (uint32_t rowi, size_t mti, int mri, size_t cgi) const
+MultiTrackPattern::off_notes_count (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	return mtp->mrps[mri]->np.off_notes[cgi].count (to_rrri (rowi, mti, mri));
 }
 
 size_t
-MultiTrackPattern::on_notes_count (uint32_t rowi, size_t mti, int mri, size_t cgi) const
+MultiTrackPattern::on_notes_count (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	return mtp->mrps[mri]->np.on_notes[cgi].count (to_rrri (rowi, mti, mri));
 }
 
 bool
-MultiTrackPattern::is_note_displayable (uint32_t rowi, size_t mti, int mri, size_t cgi) const
+MultiTrackPattern::is_note_displayable (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	return mtp->mrps[mri]->np.is_displayable (to_rrri (rowi, mti, mri), cgi);
 }
 
 NotePtr
-MultiTrackPattern::off_note (uint32_t rowi, size_t mti, int mri, size_t cgi) const
+MultiTrackPattern::off_note (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	if (tps.size () <= mti)
 		return 0;
@@ -345,7 +345,7 @@ MultiTrackPattern::off_note (uint32_t rowi, size_t mti, int mri, size_t cgi) con
 }
 
 NotePtr
-MultiTrackPattern::on_note (uint32_t rowi, size_t mti, int mri, size_t cgi) const
+MultiTrackPattern::on_note (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	if (tps.size () <= mti)
 		return 0;
@@ -364,109 +364,109 @@ MultiTrackPattern::on_note (uint32_t rowi, size_t mti, int mri, size_t cgi) cons
 }
 
 bool
-MultiTrackPattern::is_auto_displayable (uint32_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::is_auto_displayable (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->is_auto_displayable (to_rri (rowi, mti), mri, param);
 }
 
 size_t
-MultiTrackPattern::get_automation_list_count (uint32_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::get_automation_list_count (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_list_count (to_rri (rowi, mti), mri, param);
 }
 
 Evoral::ControlEvent*
-MultiTrackPattern::get_automation_control_event (uint32_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::get_automation_control_event (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_control_event (to_rri (rowi, mti), mri, param);
 }
 
 NotePtr
-MultiTrackPattern::find_prev_on_note (uint32_t rowi, size_t mti, int mri, int cgi) const
+MultiTrackPattern::find_prev_on_note (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).np.find_prev_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 NotePtr
-MultiTrackPattern::find_next_on_note (uint32_t rowi, size_t mti, int mri, int cgi) const
+MultiTrackPattern::find_next_on_note (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).np.find_next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
-MultiTrackPattern::next_on_note (uint32_t rowi, size_t mti, int mri, int cgi) const
+MultiTrackPattern::next_on_note (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).np.next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
-MultiTrackPattern::next_off_note (uint32_t rowi, size_t mti, int mri, int cgi) const
+MultiTrackPattern::next_off_note (uint32_t rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).np.next_off (to_rrri (rowi, mti, mri), cgi);
 }
 
 int
-MultiTrackPattern::to_rri (uint32_t rowi, size_t mti) const
+MultiTrackPattern::to_rri (uint32_t rowi, int mti) const
 {
 	return (int)rowi - row_offset[mti];
 }
 
 int
-MultiTrackPattern::to_rrri (uint32_t rowi, size_t mti, int mri) const
+MultiTrackPattern::to_rrri (uint32_t rowi, int mti, int mri) const
 {
 	return (int)tps[mti]->to_rrri (to_rri (rowi, mti), mri);
 }
 
 int
-MultiTrackPattern::to_rrri (uint32_t rowi, size_t mti) const
+MultiTrackPattern::to_rrri (uint32_t rowi, int mti) const
 {
 	return (int)tps[mti]->to_rrri (to_rri (rowi, mti));
 }
 
 int
-MultiTrackPattern::to_mri (uint32_t rowi, size_t mti) const
+MultiTrackPattern::to_mri (uint32_t rowi, int mti) const
 {
 	return tps[mti]->to_mri (to_rri (rowi, mti));
 }
 
 void
-MultiTrackPattern::insert (size_t mti, const Evoral::Parameter& param)
+MultiTrackPattern::insert (int mti, const Evoral::Parameter& param)
 {
 	tps[mti]->insert (param);
 }
 
 MidiModelPtr
-MultiTrackPattern::midi_model (size_t mti, int mri)
+MultiTrackPattern::midi_model (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).midi_model;
 }
 
 MidiRegionPtr
-MultiTrackPattern::midi_region (size_t mti, int mri)
+MultiTrackPattern::midi_region (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).midi_region;
 }
 
 NotePattern&
-MultiTrackPattern::note_pattern (size_t mti, int mri)
+MultiTrackPattern::note_pattern (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).np;
 }
 
 MidiRegionPattern&
-MultiTrackPattern::midi_region_pattern (size_t mti, int mri)
+MultiTrackPattern::midi_region_pattern (int mti, int mri)
 {
 	return *tps[mti]->midi_track_pattern ()->mrps[mri];
 }
 
 const MidiRegionPattern&
-MultiTrackPattern::midi_region_pattern (size_t mti, int mri) const
+MultiTrackPattern::midi_region_pattern (int mti, int mri) const
 {
 	return *tps[mti]->midi_track_pattern ()->mrps[mri];
 }
 
 void
-MultiTrackPattern::apply_command (size_t mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
+MultiTrackPattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
 	midi_model (mti, mri)->apply_command (tracker_editor.session, cmd);
 }
@@ -484,7 +484,7 @@ MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param) 
 }
 
 std::pair<double, bool>
-MultiTrackPattern::get_automation_value (size_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::get_automation_value (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_value (to_rri (rowi, mti), mri, param);
 }
@@ -502,13 +502,13 @@ MultiTrackPattern::delete_automation_value (int rowi, int mti, int mri, const Ev
 }
 
 std::pair<int, bool>
-MultiTrackPattern::get_automation_delay (size_t rowi, size_t mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::get_automation_delay (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_delay (to_rri (rowi, mti), mri, param);
 }
 
 void
-MultiTrackPattern::set_automation_delay (int delay, size_t rowi, size_t mti, int mri, const Evoral::Parameter& param)
+MultiTrackPattern::set_automation_delay (int delay, size_t rowi, int mti, int mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri (rowi, mti), mri, param);
 }

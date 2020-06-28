@@ -22,7 +22,7 @@ using namespace Tracker;
 
 AudioTrackToolbar::AudioTrackToolbar (TrackerEditor& te,
                                       AudioTrackPattern& atp,
-                                      size_t mti)
+                                      int mti)
 	// : TrackToolbar (te, dynamic_cast<TrackPattern*> (&atp), mti)
 	: TrackToolbar (te, &atp, mti)
 {

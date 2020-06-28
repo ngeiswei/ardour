@@ -65,7 +65,7 @@ struct ProcessorAutomationInfo {
 class TrackToolbar : public Gtk::HBox
 {
 public:
-	TrackToolbar (TrackerEditor& te, TrackPattern* tp, size_t mti);
+	TrackToolbar (TrackerEditor& te, TrackPattern* tp, int mti);
 	~TrackToolbar ();
 
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;

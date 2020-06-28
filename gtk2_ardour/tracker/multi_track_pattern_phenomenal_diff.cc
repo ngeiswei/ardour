@@ -35,7 +35,7 @@ MultiTrackPatternPhenomenalDiff::to_string (const std::string& indent) const
 	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl;
 	ss << indent << "mti2tp_diff:";
 	for (Mti2TrackPatternDiff::const_iterator it = mti2tp_diff.begin (); it != mti2tp_diff.end (); ++it) {
-		size_t mti = it->first;
+		int mti = it->first;
 		TrackPatternPhenomenalDiff* tp_diff = it->second;
 		ss << std::endl << indent + "  " << "track_pattern_diff[" << mti << "]:" << std::endl;
 		ss << tp_diff->to_string (indent + "    ");
