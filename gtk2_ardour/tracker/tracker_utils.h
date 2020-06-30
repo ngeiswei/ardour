@@ -166,16 +166,6 @@ public:
 	static std::pair<int, int> position_range (const std::string& str);
 
 	/**
-	 * Return true iff the string encodes a number in the given base.
-	 */
-	template <typename Num>
-	static bool is_number (const std::string& str, int base=10)
-	{
-		// NEXT: not used anywhere so far though...
-		return true;
-	}
-
-	/**
 	 * Return true iff the number encoded in str is negative. That is if it
 	 * starts with '-'.
 	 */
