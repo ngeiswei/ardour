@@ -379,8 +379,6 @@ Grid::set_automation_column_visible (int mti, const Evoral::Parameter& param, si
 	} else {
 		visible_automation_columns.erase (column);
 	}
-	// NEXT: take care of doing that in other situations. Like the situation
-	// when a new region is added
 	set_param_enabled (mti, param, showit);
 }
 
@@ -2835,7 +2833,7 @@ Grid::automation_edited (const string& path, const string& text)
 		return;
 	}
 
-	// Can't edit *** (NEXT: maybe should!!!)
+	// Can't edit *** (NEXT: support Overwrite * button)
 	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
 	if (!pattern.is_auto_displayable (edit_row_idx, edit_mti, edit_mri, param)) {
 		clear_editables ();
@@ -2922,7 +2920,7 @@ Grid::automation_delay_edited (const string& path, const string& text)
 		return;
 	}
 
-	// Can't edit *** (NEXT: maybe edit instead)
+	// Can't edit *** (NEXT: support Overwrite * button)
 	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
 	if (!pattern.is_auto_displayable (edit_row_idx, edit_mti, edit_mri, param)) {
 		clear_editables ();
