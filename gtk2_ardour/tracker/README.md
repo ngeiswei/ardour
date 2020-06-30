@@ -22,15 +22,13 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
-- [ ] Fix freeze when MIDI automations is updated on the piano roll
 - [ ] Add tooltips to each cell, showing the parameter or note name, hex and
-      dec values (with arbitrary precision in adequate).
+      dec values with arbitrary precision.
 - [ ] Fix automation of different processors
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] Final off note management fixes
-- [ ] Fix all compile warnings
 - [ ] Create wscript under tracker folder
 - [ ] Create PR
 - [ ] Handle keypressed the right way (which includes passing on space to play/stop)

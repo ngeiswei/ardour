@@ -97,8 +97,10 @@ AutomationPattern::clone_alist (AutomationListPtr alist) const
 {
 	// TODO: optimize by only copying events within the time range in
 	// consideration
-	AutomationListPtr alist_cp (new ARDOUR::AutomationList (*alist));
-	return alist_cp;
+	// NEXT: Make freeze!!!!
+	// AutomationListPtr alist_cp (new ARDOUR::AutomationList (*alist));
+	// return alist_cp;
+	return alist;
 }
 
 void

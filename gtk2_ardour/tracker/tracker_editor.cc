@@ -136,8 +136,6 @@ TrackerEditor::to_model (MidiRegionPtr midi_region)
 void
 TrackerEditor::connect_track (TrackPtr track)
 {
-	// NEXT: freezes
-
 	track->playlist ()->ContentsChanged.connect (content_connections, invalidator (*this),
 	                                             boost::bind (&Grid::redisplay_grid_connect_call, &grid),
 	                                             gui_context ());
@@ -146,8 +144,6 @@ TrackerEditor::connect_track (TrackPtr track)
 void
 TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 {
-	// NEXT: freezes
-
 	// TODO: optimize, maybe could call a more direct method than
 	// redisplay_grid_connect_call.
 
@@ -165,8 +161,6 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 void
 TrackerEditor::connect_automation (AutomationControlPtr actrl)
 {
-	// NEXT: does no freeze
-
 	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
 	AutomationListPtr alist = actrl->alist ();
 	alist->StateChanged.connect (content_connections, invalidator (*this),
