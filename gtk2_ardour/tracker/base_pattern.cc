@@ -172,6 +172,14 @@ BasePattern::beats_at_row (uint32_t rowi, int32_t delay) const
 	return result;
 }
 
+Timecode::BBT_Time
+BasePattern::bbt_at_row (uint32_t rowi, int32_t delay) const
+{
+	Timecode::BBT_Time bbt;
+	_session->bbt_time (sample_at_row (rowi, delay), bbt);
+	return bbt;
+}
+
 Temporal::Beats
 BasePattern::region_relative_beats_at_row (uint32_t rowi, int32_t delay) const
 {

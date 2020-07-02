@@ -473,3 +473,15 @@ TrackerUtils::hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt)
 
 	return o;
 }
+
+std::string
+TrackerUtils::bbt_to_string (const Timecode::BBT_Time& bbt, int base)
+{
+	std::stringstream ss;
+	if (base == 16) {
+		TrackerUtils::hex_print_padded (ss, bbt);
+	} else {
+		print_padded (ss, bbt);
+	}
+	return ss.str ();
+}

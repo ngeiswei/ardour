@@ -27,6 +27,9 @@ namespace Tracker {
 class TrackerColumn : public Gtk::TreeViewColumn
 {
 public:
+
+	// NEXT: merge in the same enum, maybe
+
 	// Type of data the midi note column is holding. It also serve to calculate
 	// the column index as well.
 	enum midi_note_type {
@@ -50,10 +53,13 @@ public:
 	              int mti, int cgi,
 	              midi_note_type mnt, automation_type at);
 
-	int midi_track_idx; // midi track index
-	int col_group_idx; // either note or automation column group index
+	int mti; // midi track index
+	int cgi; // either note or automation column group index
 	const enum midi_note_type note_type; // NOTE_SEPARATOR means inactive
 	const enum automation_type auto_type; // AUTOMATION_SEPARATOR means inactive
+
+	bool is_note_type () const;
+	bool is_auto_type () const;
 };
 
 class NoteColumn : public TrackerColumn
