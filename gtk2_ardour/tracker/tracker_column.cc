@@ -26,13 +26,27 @@ using namespace Tracker;
 
 TrackerColumn::TrackerColumn (const Glib::ustring& title,
                               const TreeModelColumn<string>& column,
-                              int mti, int cgi,
+                              int mti_, int cgi_,
                               midi_note_type mnt, automation_type at)
 	: TreeViewColumn (title, column)
-	, midi_track_idx (mti)
-	, col_group_idx (cgi)
+	, mti (mti_)
+	, cgi (cgi_)
 	, note_type (mnt)
 	, auto_type (at) {}
+
+bool
+TrackerColumn::is_note_type () const
+{
+	return note_type != TrackerColumn::SEPARATOR
+		&& auto_type == TrackerColumn::AUTOMATION_SEPARATOR;
+}
+
+bool
+TrackerColumn::is_auto_type () const
+{
+	return auto_type != TrackerColumn::AUTOMATION_SEPARATOR
+		&& note_type == TrackerColumn::SEPARATOR;
+}
 
 NoteColumn::NoteColumn (const TreeModelColumn<string>& column, int mti, int cgi)
 	: TrackerColumn (_("Note"), column, mti, cgi, NOTE, AUTOMATION_SEPARATOR) {}
