@@ -355,6 +355,10 @@ public:
 
 	// Like print_padded in bbt_time.h but for hexadecimal
 	static std::ostream&	hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt);
+
+	// Render a BBT, padding if necessary taking into account whether it is
+	// rendered in decimal or hexadecimal.
+	static std::string bbt_to_string (const Timecode::BBT_Time& bbt, int base=10);
 };
 
 } // ~namespace tracker
