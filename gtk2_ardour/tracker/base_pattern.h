@@ -93,9 +93,11 @@ public:
 	// ticks
 	Temporal::samplepos_t sample_at_row (uint32_t rowi, int32_t delay=0) const;
 
-	// Return the beats at the corresponding row index and delay in relative
-	// ticks
+	// Return the beats at the given row index and delay in relative ticks
 	Temporal::Beats beats_at_row (uint32_t rowi, int32_t delay=0) const;
+
+	// Return BBT (bar beat tick) at the given row index and delay in relative ticks
+	Timecode::BBT_Time bbt_at_row (uint32_t rowi, int32_t delay=0) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
