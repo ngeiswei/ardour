@@ -31,6 +31,7 @@
 #include <pangomm/attributes.h>
 
 #include <gtkmm/cellrenderercombo.h>
+#include <gtkmm/tooltip.h>
 
 #include "gtkmm2ext/actions.h"
 #include "gtkmm2ext/gui_thread.h"
@@ -101,6 +102,7 @@ Grid::Grid (TrackerEditor& te)
 	, current_pos (0)
 	, current_note_type (TrackerColumn::NOTE)
 	, current_auto_type (TrackerColumn::AUTOMATION_SEPARATOR)
+	, current_is_note_type (true)
 	, clock_pos (0)
 	, edit_row_idx (-1)
 	, edit_col (-1)
@@ -133,7 +135,7 @@ Grid::~Grid ()
 			delete delay_columns[mti][cgi];
 			delete note_separator_columns[mti][cgi];
 		}
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {			
+		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 			delete automation_columns[mti][cgi];
 			delete automation_delay_columns[mti][cgi];
 			delete automation_separator_columns[mti][cgi];
@@ -866,6 +868,7 @@ Grid::setup ()
 	setup_time_column ();
 	setup_data_columns ();
 	connect_events ();
+	connect_tooltips ();
 	setup_tree_view ();
 
 	show ();
@@ -913,15 +916,8 @@ Grid::redisplay_global_columns ()
 		int row_sample = pattern.earliest_tp->sample_at_row (row_idx);
 
 		// Time
-		Timecode::BBT_Time row_bbt;
-		tracker_editor.session->bbt_time (row_sample, row_bbt);
-		stringstream ss;
-		if (is_hex ()) {
-			TrackerUtils::hex_print_padded (ss, row_bbt);
-		} else {
-			print_padded (ss, row_bbt);
-		}
-		row[columns.time] = ss.str ();
+		Timecode::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
+		row[columns.time] = TrackerUtils::bbt_to_string (row_bbt, base ());
 
 		// If the row is on a bar, beat or otherwise, the color differs
 		bool is_row_beat = row_beats == row_beats.round_up_to_beat ();
@@ -1238,7 +1234,7 @@ Grid::redisplay_current_auto_cursor (TreeModel::Row& row, int mti, int cgi)
 void
 Grid::redisplay_current_cursor ()
 {
-	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR) {
+	if (current_is_note_type) {
 		redisplay_current_note_cursor (current_row, current_mti, current_cgi);
 	} else {
 		redisplay_current_auto_cursor (current_row, current_mti, current_cgi);
@@ -1292,7 +1288,7 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, int mti, i
 void
 Grid::redisplay_cell_background (TreeModel::Row& row, int mti, int cgi)
 {
-	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR) {
+	if (current_is_note_type) {
 		redisplay_note_background (row, mti, cgi);
 	} else {
 		redisplay_auto_background (row, mti, cgi);
@@ -1638,7 +1634,7 @@ Grid::remove_unused_rows ()
 void
 Grid::unset_underline_current_step_edit_cell ()
 {
-	if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR) {
+	if (current_is_note_type) {
 		unset_underline_current_step_edit_note_cell ();
 	} else {
 		unset_underline_current_step_edit_auto_cell ();
@@ -1724,7 +1720,7 @@ void
 Grid::set_underline_current_step_edit_cell ()
 {
 	if (tracker_editor.main_toolbar.step_edit) {
-		if (current_auto_type == TrackerColumn::AUTOMATION_SEPARATOR) {
+		if (current_is_note_type) {
 			set_underline_current_step_edit_note_cell ();
 		} else {
 			set_underline_current_step_edit_auto_cell ();
@@ -2014,6 +2010,13 @@ Grid::get_row_size (int mti, int mri) const
 Gtk::TreeModel::Row
 Grid::to_row (int row_idx) const
 {
+	// TODO: can probably be optimized by using
+
+	// const Gtk::TreeIter iter(m_scopeModel->get_iter(path));
+	// if(!iter)
+	// 	return false;
+	// const auto row = *iter;
+
 	TreeModel::Children::const_iterator row_it = model->children ().begin ();
 	std::advance (row_it, (int)row_idx);
 	return *row_it;
@@ -2738,6 +2741,7 @@ Grid::set_current_col (TreeViewColumn* col)
 	current_cgi = get_cgi (col);
 	current_note_type = get_note_type (col);
 	current_auto_type = get_auto_type (col);
+	current_is_note_type = is_note_type (col);
 
 	// Update selected track and step editor
 	if (previous_mtp != current_mtp) {
@@ -3061,6 +3065,72 @@ Grid::is_blank (const std::string& str)
 }
 
 void
+Grid::connect_tooltips ()
+{
+	set_has_tooltip ();
+	signal_query_tooltip ().connect (sigc::mem_fun(*this, &Grid::set_tooltip), true);
+}
+
+bool
+Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip)
+{
+	Gtk::TreeModel::Path path;
+	TreeViewColumn* col;
+	int cellx, celly;
+	int binx, biny;
+
+	convert_widget_to_bin_window_coords(x, y, binx, biny);
+
+	if (!get_path_at_pos(binx, biny, path, col, cellx, celly))
+		return false;
+
+	int row_idx = to_row_index (path);
+
+	std::string tooltip_msg;
+	if (time_column == col) {
+		tooltip_msg = time_tooltip_msg (row_idx);
+	} else if (is_note_type (col)) {
+		tooltip_msg = note_tooltip_msg ();
+	} else if (is_auto_type (col)) {
+		tooltip_msg = auto_tooltip_msg ();
+	}
+
+	if (tooltip_msg.empty ())
+		return false;
+
+	tooltip->set_text (_(tooltip_msg.c_str ()));
+	set_tooltip_cell(tooltip, &path, col, 0);
+	return true;
+}
+
+std::string
+Grid::time_tooltip_msg (int row_idx) const
+{
+	Timecode::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
+	std::stringstream ss;
+	ss << "Decimal:" << std::endl
+	   << "  Row: " << TrackerUtils::num_to_string (row_idx, 10) << std::endl
+	   << "  BBT: " << TrackerUtils::bbt_to_string (row_bbt, 10) << std::endl
+	   << "Hexadecimal:" << std::endl
+	   << "  Row: " << TrackerUtils::num_to_string (row_idx, 16) << std::endl
+	   << "  BBT: " << TrackerUtils::bbt_to_string (row_bbt, 16);
+	return ss.str ();
+}
+
+std::string
+Grid::note_tooltip_msg () const
+{
+	// NEXT
+	return "Hello note!";
+}
+std::string
+Grid::auto_tooltip_msg () const
+{
+	// NEXT
+	return "Hello auto!";
+}
+
+void
 Grid::connect_events ()
 {
 	if (!tracker_editor._first) {
@@ -3102,7 +3172,7 @@ Grid::setup_time_column ()
 	}
 
 	time_column = Gtk::manage (new TreeViewColumn (_("Time"), columns.time));
-	CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
+	Gtk::CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
 	// Link to color attributes
 	time_column->add_attribute (time_cellrenderer->property_cell_background (), columns._time_background_color);
@@ -3228,6 +3298,7 @@ Grid::setup_note_column (int mti, int cgi)
 	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_foreground (), columns._note_foreground_color[mti][cgi]);
 
 	// Link to editing methods
+	// NEXT: refactor
 	note_cellrenderer->signal_editing_started ().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_started), mti, cgi));
 	note_cellrenderer->signal_editing_canceled ().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
 	note_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::note_edited));
@@ -3657,7 +3728,7 @@ int
 Grid::get_mti (const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
-	return tc ? tc->midi_track_idx : -1;
+	return tc ? tc->mti : -1;
 }
 
 int
@@ -3666,7 +3737,7 @@ Grid::get_cgi (const TreeViewColumn* col) const
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
 	if (!tc)
 		return -1;
-	return tc->col_group_idx;
+	return tc->cgi;
 }
 
 int
@@ -3695,8 +3766,15 @@ Grid::get_auto_type (const Gtk::TreeViewColumn* col) const
 bool
 Grid::is_note_type (const Gtk::TreeViewColumn* col) const
 {
-	return get_note_type (col) != TrackerColumn::SEPARATOR
-		&& get_auto_type (col) == TrackerColumn::AUTOMATION_SEPARATOR;
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
+	return tc && tc->is_note_type ();
+}
+
+bool
+Grid::is_auto_type (const Gtk::TreeViewColumn* col) const
+{
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
+	return tc && tc->is_auto_type ();
 }
 
 void

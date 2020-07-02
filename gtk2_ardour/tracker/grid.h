@@ -24,6 +24,7 @@
 #include <gdkmm/color.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeview.h>
+#include <gtkmm/tooltip.h>
 
 #include "../piano_key_bindings.h"
 
@@ -75,6 +76,7 @@ public:
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
 		Gtk::TreeModelColumn<std::string> _time_background_color;
+		// TODO: maybe use a row_idx column to rapidely retrieve the row_idx of a row
 		Gtk::TreeModelColumn<std::string> time;
 		Gtk::TreeModelColumn<std::string> _left_right_separator_background_color[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> left_separator[MAX_NUMBER_OF_TRACKS];
@@ -184,6 +186,8 @@ public:
 	void read_keyboard_layout ();     // Read keyboard layout from config
 	void read_colors ();              // Read colors from config
 	void redisplay_global_columns (); // time, color, font
+
+	// Note: Gtk::TreeModel::Row is TreeRow defined in treeiter.h in gtkmm.
 	void reset_off_on_note (Gtk::TreeModel::Row& row, int mti, int cgi);
 
 	void redisplay_grid ();
@@ -305,6 +309,7 @@ public:
 
 	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
 	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
+	bool current_is_note_type;
 
 	// Clock position
 	samplepos_t                  clock_pos;
@@ -331,6 +336,11 @@ public:
 private:
 	void init_columns ();
 	void init_model ();
+	void connect_tooltips ();
+	bool set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
+	std::string time_tooltip_msg (int row_idx) const;
+	std::string note_tooltip_msg (/* DEFINE ARGS */) const;
+	std::string auto_tooltip_msg (/* DEFINE ARGS */) const;
 	void connect_events ();
 	void setup_tree_view ();
 	void setup_time_column ();
@@ -498,9 +508,13 @@ private:
 	TrackerColumn::midi_note_type get_note_type (const Gtk::TreeViewColumn* col) const;
 	TrackerColumn::automation_type get_auto_type (const Gtk::TreeViewColumn* col) const;
 
-	// Return true iff the given corresponds to a note name, channel, velocity
-	// or delay.
+	// Return true iff the given col corresponds to a note name, channel,
+	// velocity or delay.
 	bool is_note_type (const Gtk::TreeViewColumn* col) const;
+
+	// Return true iff the given col corresponds to an automation, or automation
+	// delay.
+	bool is_auto_type (const Gtk::TreeViewColumn* col) const;
 
 	/**
 	 * Select the current track on the public editor
