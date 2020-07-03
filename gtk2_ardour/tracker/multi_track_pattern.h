@@ -98,7 +98,7 @@ public:
 	bool is_auto_displayable (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	size_t get_automation_list_count (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	size_t automation_list_count (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	NotePtr find_prev_on_note (uint32_t rowi, int mti, int mri, int cgi) const;

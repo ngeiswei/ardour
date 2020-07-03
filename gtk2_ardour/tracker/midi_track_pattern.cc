@@ -431,11 +431,11 @@ MidiTrackPattern::is_auto_displayable (uint32_t rowi, int mri, const Evoral::Par
 }
 
 size_t
-MidiTrackPattern::get_automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const
+MidiTrackPattern::automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri]->rap.get_automation_list_count (to_rrri (rowi, mri), param)
-		: AutomationPattern::get_automation_list_count (rowi, param);
+		mrps[mri]->rap.automation_list_count (to_rrri (rowi, mri), param)
+		: AutomationPattern::automation_list_count (rowi, param);
 }
 
 Evoral::ControlEvent*
