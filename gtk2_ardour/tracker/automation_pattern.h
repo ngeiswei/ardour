@@ -62,7 +62,7 @@ public:
 	ParamAutomationControlPair clone_param_actrl (const ParamAutomationControlPair& param_name) const;
 	AutomationListPtr clone_alist (AutomationListPtr alist) const;
 
-	void rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<size_t>& rd) const;
+	void rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<int>& rd) const;
 
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
@@ -105,18 +105,18 @@ public:
 	// end () pointer if it does not.
 	//
 	// Warning: it assumes the iterator exists, otherwise it crashes or returns garbage!
-	AutomationListIt get_alist_iterator (size_t rowi, const Evoral::Parameter& param);
+	AutomationListIt get_alist_iterator (int rowi, const Evoral::Parameter& param);
 
 	// Return the control event associated to param at rowi if exists or null
 	// pointer if it does not.
-	Evoral::ControlEvent* get_control_event (size_t rowi, const Evoral::Parameter& param);
-	const Evoral::ControlEvent* get_control_event (size_t rowi, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param);
+	const Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param) const;
 	
 	// Return a pair with the automation value and whether it is defined or not	
-	std::pair<double, bool> get_automation_value (size_t rowi, const Evoral::Parameter& param) const;
+	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
 
 	// Set the automation value val at rowi for param
-	void set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay);
+	void set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay);
 
 	// Delete automation value at rowi for param
 	void delete_automation_value (int rowi, const Evoral::Parameter& param);
@@ -142,8 +142,8 @@ public:
 	RowToAutomationListIt::const_iterator find_prev (int row, const RowToAutomationListIt& row2auto) const;
 	RowToAutomationListIt::const_iterator find_next (int row, const RowToAutomationListIt& row2auto) const;
 
-	// Return the range of rows that must be updateing if the event on the given
-	// row of it is modified
+	// Return the range of rows that must be updated if the event on the given
+	// row is modified
 	std::pair<int, int> prev_next_range (RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const;
 	std::pair<int, int> prev_next_range (int row, const RowToAutomationListIt& row2auto) const;
 

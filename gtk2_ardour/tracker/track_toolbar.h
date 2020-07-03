@@ -49,7 +49,7 @@ struct ProcessorAutomationNode {
 	Evoral::Parameter                         param;
 	Gtk::CheckMenuItem*                       menu_item;
 	// corresponding column index. If set to 0 then undetermined yet
-	size_t                                    column;
+	int                                       column;
 };
 
 struct ProcessorAutomationInfo {

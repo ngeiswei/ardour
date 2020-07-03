@@ -28,7 +28,7 @@ namespace Tracker {
 // Represent the differences that may impact grid rendition. For now only a
 // set of mti that have changed.
 struct MultiTrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff {
-	typedef std::map<size_t, TrackPatternPhenomenalDiff*> Mti2TrackPatternDiff;
+	typedef std::map<int, TrackPatternPhenomenalDiff*> Mti2TrackPatternDiff;
 	Mti2TrackPatternDiff mti2tp_diff;
 
 	bool empty () const;
