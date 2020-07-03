@@ -3101,7 +3101,7 @@ Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::
 	if (tooltip_msg.empty ())
 		return false;
 
-	tooltip->set_text (_(tooltip_msg.c_str ()));
+	tooltip->set_markup (_(tooltip_msg.c_str ()));
 	set_tooltip_cell(tooltip, &path, col, 0);
 	return true;
 }
@@ -3110,13 +3110,17 @@ std::string
 Grid::time_tooltip_msg (int row_idx) const
 {
 	Timecode::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
+	std::string dec_row = TrackerUtils::num_to_string (row_idx, 10);
+	std::string hex_row = TrackerUtils::num_to_string (row_idx, 16);
+	std::string dec_bbt = TrackerUtils::bbt_to_string (row_bbt, 10);
+	std::string hex_bbt = TrackerUtils::bbt_to_string (row_bbt, 16);
 	std::stringstream ss;
-	ss << "Decimal:" << std::endl
-	   << "  Row: " << TrackerUtils::num_to_string (row_idx, 10) << std::endl
-	   << "  BBT: " << TrackerUtils::bbt_to_string (row_bbt, 10) << std::endl
-	   << "Hexadecimal:" << std::endl
-	   << "  Row: " << TrackerUtils::num_to_string (row_idx, 16) << std::endl
-	   << "  BBT: " << TrackerUtils::bbt_to_string (row_bbt, 16);
+	ss << "<u>Dec</u>:" << std::endl
+	   << "  Row: " << "<b>" << dec_row << "</b>" << std::endl
+	   << "  BBT: " << "<b>" << dec_bbt << "</b>" << std::endl
+	   << "<u>Hex</u>:" << std::endl
+	   << "  Row: " << "<b>" << hex_row << "</b>" << std::endl
+	   << "  BBT: " << "<b>" << hex_bbt << "</b>";
 	return ss.str ();
 }
 
