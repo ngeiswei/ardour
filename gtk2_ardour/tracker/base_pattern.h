@@ -59,7 +59,7 @@ public:
 	virtual ~BasePattern ();
 
 	// A negative row index (i.e. max value) is considered invalid
-	static const uint32_t INVALID_ROW = -1;
+	static const int INVALID_ROW = -1;
 
 	// Phenomenal overload of operator= (), only need to copy what is necessary
 	// for phenomenal_diff to correctly operate.
@@ -84,63 +84,63 @@ public:
 	Temporal::Beats find_end_row_beats () const;
 
 	// Find the number of rows of the region
-	uint32_t find_nrows () const;
+	int find_nrows () const;
 
 	// Set position_row_beats, end_row_beats and nrows
 	virtual void set_row_range ();
 
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
-	Temporal::samplepos_t sample_at_row (uint32_t rowi, int32_t delay=0) const;
+	Temporal::samplepos_t sample_at_row (int rowi, int delay=0) const;
 
 	// Return the beats at the given row index and delay in relative ticks
-	Temporal::Beats beats_at_row (uint32_t rowi, int32_t delay=0) const;
+	Temporal::Beats beats_at_row (int rowi, int delay=0) const;
 
 	// Return BBT (bar beat tick) at the given row index and delay in relative ticks
-	Timecode::BBT_Time bbt_at_row (uint32_t rowi, int32_t delay=0) const;
+	Timecode::BBT_Time bbt_at_row (int rowi, int delay=0) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
-	Temporal::Beats region_relative_beats_at_row (uint32_t rowi, int32_t delay=0) const;
+	Temporal::Beats region_relative_beats_at_row (int rowi, int delay=0) const;
 
 	// Return the row index corresponding to the given beats, assuming the
 	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
 	// is _ticks_per_row/2.
-	uint32_t row_at_beats (const Temporal::Beats& beats) const;
+	int row_at_beats (const Temporal::Beats& beats) const;
 
 	// Return the number rows from contained between 2 beats. Return double just
 	// in case fraction of rows are used.
 	double row_distance (const Temporal::Beats& from, const Temporal::Beats& to) const;
 
 	// Like row_at_beats but use sample instead of beats
-	uint32_t row_at_sample (Temporal::samplepos_t sample) const;
+	int row_at_sample (Temporal::samplepos_t sample) const;
 
 	// Return the row index assuming the beats is allowed to have the minimum
 	// negative delay (1 - _ticks_per_row).
-	uint32_t row_at_beats_min_delay (const Temporal::Beats& beats) const;
+	int row_at_beats_min_delay (const Temporal::Beats& beats) const;
 
 	// Like row_at_beats_min_delay but use sample instead of beats
-	uint32_t row_at_sample_min_delay (Temporal::samplepos_t sample) const;
+	int row_at_sample_min_delay (Temporal::samplepos_t sample) const;
 
 	// Return the row index assuming the beats is allowed to have the maximum
 	// positive delay (_ticks_per_row - 1).
-	uint32_t row_at_beats_max_delay (const Temporal::Beats& beats) const;
+	int row_at_beats_max_delay (const Temporal::Beats& beats) const;
 
 	// Like row_at_beats_max_delay but use sample instead of beats
-	uint32_t row_at_sample_max_delay (Temporal::samplepos_t sample) const;
+	int row_at_sample_max_delay (Temporal::samplepos_t sample) const;
 
 	// Return an event's delay in a certain row in ticks
-	int64_t delay_ticks_at_row (const Temporal::Beats& event_time, uint32_t rowi) const;
+	int64_t delay_ticks_at_row (const Temporal::Beats& event_time, int rowi) const;
 
 	// Like delay_ticks above but uses sample instead of beats
-	int64_t delay_ticks_at_row (Temporal::samplepos_t sample, uint32_t rowi) const;
+	int64_t delay_ticks_at_row (Temporal::samplepos_t sample, int rowi) const;
 
 	// Like delay_ticks but the event_time is relative to the region position
-	int64_t region_relative_delay_ticks_at_row (const Temporal::Beats& event_time, uint32_t rowi) const;
+	int64_t region_relative_delay_ticks_at_row (const Temporal::Beats& event_time, int rowi) const;
 
 	// Return the minimum and maximum number ticks allowed for delay
-	int32_t delay_ticks_min () const;
-	int32_t delay_ticks_max () const;
+	int delay_ticks_min () const;
+	int delay_ticks_max () const;
 
 	// Return true iff the row index is within the defined range of
 	// rows. Specifially between 0 and nrow-1
@@ -191,7 +191,7 @@ public:
 	Temporal::Beats end_row_beats;
 
 	// Number of rows of that region (given the choosen resolution)
-	uint32_t nrows;
+	int nrows;
 
 	// If pattern disabled, do not display or update it
 	bool enabled;
@@ -200,12 +200,12 @@ public:
 	bool selected;
 
 protected:
-	uint32_t _ticks_per_row;		// number of ticks per rows
+	int _ticks_per_row;		// number of ticks per rows
 	ARDOUR::Session* _session;
 	ARDOUR::BeatsSamplesConverter _conv;
 
 	// Make sure a given row is clamped to be in [0, nrows)
-	uint32_t clamp (double row) const;
+	int clamp (double row) const;
 };
 
 } // ~namespace tracker

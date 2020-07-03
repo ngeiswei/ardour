@@ -139,7 +139,7 @@ BasePattern::find_end_row_beats () const
 	return global_end_beats.snap_to (beats_per_row);
 }
 
-uint32_t
+int
 BasePattern::find_nrows () const
 {
 	return (end_row_beats - position_row_beats).to_double () * rows_per_beat;
@@ -159,13 +159,13 @@ BasePattern::set_row_range ()
 }
 
 Temporal::samplepos_t
-BasePattern::sample_at_row (uint32_t rowi, int32_t delay) const
+BasePattern::sample_at_row (int rowi, int delay) const
 {
 	return _conv.to (beats_at_row (rowi, delay));
 }
 
 Temporal::Beats
-BasePattern::beats_at_row (uint32_t rowi, int32_t delay) const
+BasePattern::beats_at_row (int rowi, int delay) const
 {
 	Temporal::Beats result = position_row_beats + (rowi*1.0) / rows_per_beat;
 	result += Temporal::Beats::ticks (delay);
@@ -173,7 +173,7 @@ BasePattern::beats_at_row (uint32_t rowi, int32_t delay) const
 }
 
 Timecode::BBT_Time
-BasePattern::bbt_at_row (uint32_t rowi, int32_t delay) const
+BasePattern::bbt_at_row (int rowi, int delay) const
 {
 	Timecode::BBT_Time bbt;
 	_session->bbt_time (sample_at_row (rowi, delay), bbt);
@@ -181,12 +181,12 @@ BasePattern::bbt_at_row (uint32_t rowi, int32_t delay) const
 }
 
 Temporal::Beats
-BasePattern::region_relative_beats_at_row (uint32_t rowi, int32_t delay) const
+BasePattern::region_relative_beats_at_row (int rowi, int delay) const
 {
 	return beats_at_row (rowi, delay) - position_beats + start_beats;
 }
 
-uint32_t
+int
 BasePattern::row_at_beats (const Temporal::Beats& beats) const
 {
 	return clamp (row_distance (position_row_beats, beats));
@@ -199,71 +199,71 @@ BasePattern::row_distance (const Temporal::Beats& from, const Temporal::Beats& t
 	return (to - from + half_row).to_double () * rows_per_beat;
 }
 
-uint32_t
+int
 BasePattern::row_at_sample (Temporal::samplepos_t sample) const
 {
 	return row_at_beats (_conv.from (sample));
 }
 
-uint32_t
+int
 BasePattern::row_at_beats_min_delay (const Temporal::Beats& beats) const
 {
 	Temporal::Beats tpr_minus_1 = Temporal::Beats::ticks (_ticks_per_row - 1);
 	return clamp ((beats - position_row_beats + tpr_minus_1).to_double () * rows_per_beat);
 }
 
-uint32_t
+int
 BasePattern::row_at_sample_min_delay (Temporal::samplepos_t sample) const
 {
 	return row_at_beats_min_delay (_conv.from (sample));
 }
 
-uint32_t
+int
 BasePattern::row_at_beats_max_delay (const Temporal::Beats& beats) const
 {
 	return clamp ((beats - position_row_beats).to_double () * rows_per_beat);
 }
 
-uint32_t
+int
 BasePattern::row_at_sample_max_delay (Temporal::samplepos_t sample) const
 {
 	return row_at_beats_max_delay (_conv.from (sample));
 }
 
 int64_t
-BasePattern::delay_ticks_at_row (const Temporal::Beats& event_time, uint32_t rowi) const
+BasePattern::delay_ticks_at_row (const Temporal::Beats& event_time, int rowi) const
 {
 	return (event_time - beats_at_row (rowi)).to_ticks ();
 }
 
 int64_t
-BasePattern::delay_ticks_at_row (Temporal::samplepos_t sample, uint32_t rowi) const
+BasePattern::delay_ticks_at_row (Temporal::samplepos_t sample, int rowi) const
 {
 	return delay_ticks_at_row (_conv.from (sample), rowi);
 }
 
 int64_t
-BasePattern::region_relative_delay_ticks_at_row (const Temporal::Beats& event_time, uint32_t rowi) const
+BasePattern::region_relative_delay_ticks_at_row (const Temporal::Beats& event_time, int rowi) const
 {
 	return delay_ticks_at_row (event_time + position_beats - start_beats, rowi);
 }
 
-int32_t
+int
 BasePattern::delay_ticks_min () const
 {
-	return 1 - (int32_t)_ticks_per_row;
+	return 1 - _ticks_per_row;
 }
 
-int32_t
+int
 BasePattern::delay_ticks_max () const
 {
-	return (int32_t)_ticks_per_row - 1;
+	return _ticks_per_row - 1;
 }
 
 bool
 BasePattern::is_defined (int row_idx) const
 {
-	return enabled && 0 <= row_idx && row_idx < (int)nrows;
+	return enabled && 0 <= row_idx && row_idx < nrows;
 }
 
 void
@@ -278,7 +278,7 @@ BasePattern::set_selected (bool s)
 	selected = s;
 }
 
-uint32_t
+int
 BasePattern::clamp (double row) const
 {
 	return std::min (std::max (0.0, row), nrows - 1.0);
@@ -307,7 +307,7 @@ BasePattern::to_string (const std::string& indent) const
 	ss << header << "start_beats = " << start_beats << std::endl;
 	ss << header << "end_beats = " << end_beats << std::endl;
 	ss << header << "length_beats = " << length_beats << std::endl;
-	ss << header << "rows_per_beat = " << (int)rows_per_beat << std::endl;
+	ss << header << "rows_per_beat = " << rows_per_beat << std::endl;
 	ss << header << "beats_per_row = " << beats_per_row << std::endl;
 	ss << header << "position_row_beats = " << position_row_beats << std::endl;
 	ss << header << "end_row_beats = " << end_row_beats << std::endl;

@@ -109,7 +109,7 @@ void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 	AutomationPattern::insert (track->automation_control (param, true), track->describe_parameter (param));
 }
 
-uint32_t
+int
 TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	samplepos_t sample = event->when;
@@ -118,7 +118,7 @@ TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral:
 		return INVALID_ROW;
 	}
 
-	uint32_t row = row_at_sample (sample);
+	int row = row_at_sample (sample);
 	if (param_to_row_to_ali[param].count (row) != 0) {
 		row = row_at_sample_min_delay (sample);
 	}

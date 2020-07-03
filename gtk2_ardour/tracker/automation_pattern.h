@@ -53,7 +53,7 @@ public:
 	                   bool connect);
 
 	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	typedef std::multimap<uint32_t, AutomationListIt> RowToAutomationListIt;
+	typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
 	typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
 
 	// Make a deep copy of the automation controls
@@ -67,7 +67,7 @@ public:
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
 	// Assign a control event to a row
-	virtual uint32_t event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// Build or rebuild the pattern (implement BasePattern::update ())
 	virtual void update ();
@@ -87,7 +87,7 @@ public:
 	const AutomationControlPtr get_actrl (const Evoral::Parameter& param) const;
 
 	// Return the number of values within the same row. If undefined return 0.
-	size_t automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const;
+	size_t automation_list_count (int rowi, const Evoral::Parameter& param) const;
 
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 
@@ -98,8 +98,8 @@ public:
 	
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
-	bool is_displayable (uint32_t row, const Evoral::Parameter& param) const;
-	static bool is_displayable (uint32_t row, RowToAutomationListIt r2a);
+	bool is_displayable (int row, const Evoral::Parameter& param) const;
+	static bool is_displayable (int row, RowToAutomationListIt r2a);
 
 	// Return the control list iterator associated to param at rowi if exists or
 	// end () pointer if it does not.
@@ -139,13 +139,13 @@ public:
 	// iterator.
 	RowToAutomationListIt::const_iterator find_prev (RowToAutomationListIt::const_iterator it) const;
 	RowToAutomationListIt::const_iterator find_next (RowToAutomationListIt::const_iterator it) const;
-	RowToAutomationListIt::const_iterator find_prev (uint32_t row, const RowToAutomationListIt& row2auto) const;
-	RowToAutomationListIt::const_iterator find_next (uint32_t row, const RowToAutomationListIt& row2auto) const;
+	RowToAutomationListIt::const_iterator find_prev (int row, const RowToAutomationListIt& row2auto) const;
+	RowToAutomationListIt::const_iterator find_next (int row, const RowToAutomationListIt& row2auto) const;
 
 	// Return the range of rows that must be updateing if the event on the given
 	// row of it is modified
-	std::pair<uint32_t, uint32_t> prev_next_range (RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const;
-	std::pair<uint32_t, uint32_t> prev_next_range (uint32_t row, const RowToAutomationListIt& row2auto) const;
+	std::pair<int, int> prev_next_range (RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const;
+	std::pair<int, int> prev_next_range (int row, const RowToAutomationListIt& row2auto) const;
 
 	RowToAutomationListIt::const_iterator earliest (const RowToAutomationListItRange& rng) const;
 	RowToAutomationListIt::const_iterator lattest (const RowToAutomationListItRange& rng) const;
