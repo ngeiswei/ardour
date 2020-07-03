@@ -215,7 +215,7 @@ Grid::set_col_title (Gtk::TreeViewColumn* col, const std::string& title, const s
 	l->show ();
 }
 
-size_t
+int
 Grid::select_available_automation_column (int mti)
 {
 	// Find the next available column
@@ -223,18 +223,18 @@ Grid::select_available_automation_column (int mti)
 		cout << "Warning: no more available automation column" << endl;
 		return 0;
 	}
-	set<size_t>::iterator it = available_automation_columns[mti].begin ();
-	size_t column = *it;
+	set<int>::iterator it = available_automation_columns[mti].begin ();
+	int column = *it;
 	available_automation_columns[mti].erase (it);
 
 	return column;
 }
 
-size_t
+int
 Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 {
 	// Select the next available column
-	size_t column = select_available_automation_column (mti);
+	int column = select_available_automation_column (mti);
 	if (column == 0) {
 		return column;
 	}
@@ -250,7 +250,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	return column;
 }
 
-size_t
+int
 Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
 	// Insert the corresponding automation control (and connect to the grid if
@@ -258,7 +258,7 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	pattern.insert (mti, param);
 
 	// Select the next available column
-	size_t column = select_available_automation_column (mti);
+	int column = select_available_automation_column (mti);
 	if (column == 0) {
 		return column;
 	}
@@ -351,7 +351,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 
 	// Find the column associated to this parameter, assign one if necessary
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
-	size_t column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
+	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
 
 	// Still no column available, skip
@@ -374,7 +374,7 @@ Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const
 }
 
 void
-Grid::set_automation_column_visible (int mti, const Evoral::Parameter& param, size_t column, bool showit)
+Grid::set_automation_column_visible (int mti, const Evoral::Parameter& param, int column, bool showit)
 {
 	if (showit) {
 		visible_automation_columns.insert (column);
@@ -388,7 +388,7 @@ bool
 Grid::has_visible_automation (int mti) const
 {
 	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-		size_t col = automation_colnum (mti, cgi);
+		int col = automation_colnum (mti, cgi);
 		bool visible = TrackerUtils::is_in (col, visible_automation_columns);
 		if (visible) {
 			return true;
@@ -422,7 +422,7 @@ bool
 Grid::is_pan_visible (int mti) const
 {
 	bool visible = !pan_columns[mti].empty ();
-	for (vector<size_t>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
+	for (vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
 		visible = visible_automation_columns.find (*it) != visible_automation_columns.end ();
 		if (!visible) {
 			break;
@@ -508,7 +508,7 @@ Grid::update_pan_columns_visibility (int mti)
 		return;
 	}
 
-	for (vector<size_t>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
+	for (vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
 		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
@@ -695,7 +695,7 @@ Grid::redisplay_visible_automation ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-			size_t col = automation_colnum (mti, cgi);
+			int col = automation_colnum (mti, cgi);
 			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in (col, visible_automation_columns);
 			to_col (col)->set_visible (visible);
 		}
@@ -706,7 +706,7 @@ Grid::redisplay_visible_automation ()
 	tracker_editor.resize_width ();
 }
 
-size_t
+int
 Grid::automation_col_offset (int mti) const
 {
 	return mti_col_offset (mti) + 1 /* left separator */ + 1 /* region name */
@@ -724,7 +724,7 @@ Grid::redisplay_visible_automation_delay ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-			size_t col = automation_delay_colnum (mti, cgi);
+			int col = automation_delay_colnum (mti, cgi);
 			bool visible = pattern.tps[mti]->enabled
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay
 				&& TrackerUtils::is_in (col - 1, visible_automation_columns);
@@ -749,9 +749,9 @@ void
 Grid::redisplay_visible_automation_separator ()
 {
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		size_t greatest_visible_col = 0;
+		int greatest_visible_col = 0;
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-			size_t col = automation_separator_colnum (mti, cgi);
+			int col = automation_separator_colnum (mti, cgi);
 			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in (col - 2, visible_automation_columns);
 			if (visible) {
 				greatest_visible_col = std::max (greatest_visible_col, col);
@@ -1447,11 +1447,11 @@ Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& t
 	}
 
 	if (rows_diff == 0 || rows_diff->full) {
-		for (size_t row_idx = 0; row_idx < tap.nrows; row_idx++) {
+		for (int row_idx = 0; row_idx < tap.nrows; row_idx++) {
 			redisplay_track_automation_param_row (mti, cgi, row_idx, tap, param);
 		}
 	} else {
-		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin (); it != rows_diff->rows.end (); ++it) {
+		for (std::set<int>::const_iterator it = rows_diff->rows.begin (); it != rows_diff->rows.end (); ++it) {
 			redisplay_track_automation_param_row (mti, cgi, *it, tap, param);
 		}
 	}
@@ -1463,7 +1463,7 @@ Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int mri = -1;
-	size_t auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
+	int auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
 
 	// Fill background colors
 	redisplay_auto_background (row, mti, cgi);
@@ -1553,13 +1553,13 @@ Grid::redisplay_region_automation_param (int mti, int mri, const RegionAutomatio
 		return;
 	}
 
-	size_t row_offset = get_row_offset (mti, mri);
+	int row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
-		for (size_t row_idx = 0; row_idx < rap.nrows; row_idx++) {
+		for (int row_idx = 0; row_idx < rap.nrows; row_idx++) {
 			redisplay_region_automation_param_row (mti, mri, cgi, row_idx + row_offset, rap, param);
 		}
 	} else {
-		for (std::set<size_t>::const_iterator it = rows_diff->rows.begin (); it != rows_diff->rows.end (); ++it) {
+		for (std::set<int>::const_iterator it = rows_diff->rows.begin (); it != rows_diff->rows.end (); ++it) {
 			redisplay_region_automation_param_row (mti, mri, cgi, *it + row_offset, rap, param);
 		}
 	}
@@ -1570,7 +1570,7 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
-	size_t auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
+	int auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
 
 	// Fill background colors
 	redisplay_auto_background (row, mti, cgi);
@@ -1588,13 +1588,13 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 void
 Grid::redisplay_note_column (int mti, int mri, int cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff)
 {
-	size_t row_offset = get_row_offset (mti, mri);
+	int row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
 		for (int rrrow_idx = 0; rrrow_idx < get_row_size (mti, mri); rrrow_idx++) {
 			redisplay_note (mti, mri, cgi, row_offset + rrrow_idx, np);
 		}
 	} else {
-		for (std::set<size_t>::const_iterator row_it = rows_diff->rows.begin (); row_it != rows_diff->rows.end (); ++row_it) {
+		for (std::set<int>::const_iterator row_it = rows_diff->rows.begin (); row_it != rows_diff->rows.end (); ++row_it) {
 			redisplay_note (mti, mri, cgi, row_offset + *row_it, np);
 		}
 	}
@@ -2791,7 +2791,7 @@ Grid::get_param (int mti, int cgi) const
 	if (ac_it == col2auto_cgi[mti].right.end ()) {
 		return Evoral::Parameter ();
 	}
-	size_t edited_colnum = ac_it->second;
+	int edited_colnum = ac_it->second;
 	IndexParamBimap::left_const_iterator it = col2params[mti].left.find (edited_colnum);
 	if (it == col2params[mti].left.end ()) {
 		return Evoral::Parameter ();
@@ -2807,7 +2807,7 @@ Grid::get_cgi (int mti, const Evoral::Parameter& param) const
 	if (cp_it == col2params[mti].right.end ()) {
 		return -1;
 	}
-	size_t coli = cp_it->second;
+	int coli = cp_it->second;
 	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (coli);
 	if (cac_it == col2auto_cgi[mti].left.end ()) {
 		return -1;
@@ -3214,8 +3214,8 @@ Grid::setup_data_columns ()
 		mute_columns.push_back (0);
 		col2params.push_back (IndexParamBimap ());
 		col2auto_cgi.push_back (IndexBimap ());
-		pan_columns.push_back (vector<size_t> ());
-		available_automation_columns.push_back (set<size_t> ());
+		pan_columns.push_back (vector<int> ());
+		available_automation_columns.push_back (set<int> ());
 
 		// Instantiate note tracks
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -3443,7 +3443,7 @@ Grid::setup_automation_column (int mti, int cgi)
 	automation_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::automation_edited));
 	automation_cellrenderer->property_editable () = true;
 
-	size_t column = get_columns ().size ();
+	int column = get_columns ().size ();
 	append_column (*automation_columns[mti][cgi]);
 	col2auto_cgi[mti].insert (IndexBimap::value_type (column, cgi));
 	available_automation_columns[mti].insert (column);
@@ -3474,7 +3474,7 @@ Grid::setup_automation_delay_column (int mti, int cgi)
 	automation_delay_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::automation_delay_edited));
 	automation_delay_cellrenderer->property_editable () = true;
 
-	size_t column = get_columns ().size ();
+	int column = get_columns ().size ();
 	append_column (*automation_delay_columns[mti][cgi]);
 	to_col (column)->set_visible (false);
 }
@@ -3600,7 +3600,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 {
 	// Keep track of the init column type to support tab and detect infinit loops
 	TreeViewColumn* init_col = to_col (colnum);
-	size_t pre_mti = get_mti (init_col);
+	int pre_mti = get_mti (init_col);
 
 	const int n_col = get_columns ().size ();
 	TreeViewColumn* col;
@@ -3614,7 +3614,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
 			if (tab) {
-				size_t col_mti = get_mti (col);
+				int col_mti = get_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
 					++steps;
@@ -3638,7 +3638,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
 			if (tab) {
-				size_t col_mti = get_mti (col);
+				int col_mti = get_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
 					--steps;
@@ -3680,7 +3680,7 @@ Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* c
 	if (is_note_type (col)) {
 		return tc && is_region_defined (row_idx, mti);
 	} else {
-		size_t coli = to_col_index (col);
+		int coli = to_col_index (col);
 		if (tc && tc->auto_type == TrackerColumn::AUTOMATION_DELAY) {
 			coli--;
 		}
