@@ -106,7 +106,7 @@ NotePattern::rows_diff (int cgi, const NotePattern& lnp, const NotePattern& rnp,
 {
 	// Compare left on notes with right on notes
 	for (RowToNotes::const_iterator it = lnp.on_notes[cgi].begin (); it != lnp.on_notes[cgi].end ();) {
-		uint32_t row = it->first;
+		int row = it->first;
 
 		// First, look at the difference in displayability
 		bool is_cell_displayable = lnp.is_displayable (row, cgi);
@@ -135,7 +135,7 @@ NotePattern::rows_diff (int cgi, const NotePattern& lnp, const NotePattern& rnp,
 
 	// Compare left off notes with right off notes
 	for (RowToNotes::const_iterator it = lnp.off_notes[cgi].begin (); it != lnp.off_notes[cgi].end ();) {
-		uint32_t row = it->first;
+		int row = it->first;
 
 		// First, look at the difference in displayability
 		bool is_cell_displayable = lnp.is_displayable (row, cgi);
@@ -280,10 +280,10 @@ NotePattern::update_row_to_notes ()
 			// On and off times are absolute, not relative to the region
 			Temporal::Beats on_time = (*inote)->time () + position_beats - start_beats;
 			Temporal::Beats off_time = (*inote)->end_time () + position_beats - start_beats;
-			uint32_t on_max_delay_row = row_at_beats_max_delay (on_time);
-			uint32_t on_row = row_at_beats (on_time);
-			uint32_t off_min_delay_row = row_at_beats_min_delay (off_time);
-			uint32_t off_row = row_at_beats (off_time);
+			int on_max_delay_row = row_at_beats_max_delay (on_time);
+			int on_row = row_at_beats (on_time);
+			int off_min_delay_row = row_at_beats_min_delay (off_time);
+			int off_row = row_at_beats (off_time);
 
 			// TODO: make row assignement more intelligent. Given the possible
 			// rows for each on and off notes find an assignement that
@@ -328,7 +328,7 @@ NotePattern::dec_ntracks ()
 }
 
 NotePtr
-NotePattern::find_prev_on (uint32_t row, int cgi) const
+NotePattern::find_prev_on (int row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_reverse_iterator rit =
@@ -338,7 +338,7 @@ NotePattern::find_prev_on (uint32_t row, int cgi) const
 }
 
 NotePtr
-NotePattern::find_next_on (uint32_t row, int cgi) const
+NotePattern::find_next_on (int row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound (row);
@@ -347,7 +347,7 @@ NotePattern::find_next_on (uint32_t row, int cgi) const
 }
 
 NotePtr
-NotePattern::find_prev_off (uint32_t row, int cgi) const
+NotePattern::find_prev_off (int row, int cgi) const
 {
 	// TODO: implementation could simplified with a template of something
 	const RowToNotes& r2n = off_notes[cgi];
@@ -358,7 +358,7 @@ NotePattern::find_prev_off (uint32_t row, int cgi) const
 }
 
 NotePtr
-NotePattern::find_next_off (uint32_t row, int cgi) const
+NotePattern::find_next_off (int row, int cgi) const
 {
 	const RowToNotes& r2n = off_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound (row);
@@ -367,21 +367,21 @@ NotePattern::find_next_off (uint32_t row, int cgi) const
 }
 
 Temporal::Beats
-NotePattern::next_on (uint32_t row, int cgi) const
+NotePattern::next_on (int row, int cgi) const
 {
 	NotePtr next_note = find_next_on (row, cgi);
 	return next_note ? next_note->time () : end_beats;
 }
 
 Temporal::Beats
-NotePattern::next_off (uint32_t row, int cgi) const
+NotePattern::next_off (int row, int cgi) const
 {
 	NotePtr next_note = find_next_off (row, cgi);
 	return next_note ? next_note->end_time () : end_beats;
 }
 
 bool
-NotePattern::is_displayable (uint32_t row, int cgi) const
+NotePattern::is_displayable (int row, int cgi) const
 {
 	size_t off_notes_count = off_notes[cgi].count (row);
 	size_t on_notes_count = on_notes[cgi].count (row);

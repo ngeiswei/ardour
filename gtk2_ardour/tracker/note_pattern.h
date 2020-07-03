@@ -55,7 +55,7 @@ public:
 	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& prev) const;
 
 	// Map row index to note.
-	typedef std::multimap<uint32_t, NotePtr> RowToNotes;
+	typedef std::multimap<int, NotePtr> RowToNotes;
 	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
 	// Build or rebuild the pattern (implement BasePattern::update)
@@ -82,23 +82,23 @@ public:
 
 	// Find the previous (resp. next) on note of a given row on a given track
 	// index.
-	NotePtr find_prev_on (uint32_t row, int cgi) const;
-	NotePtr find_next_on (uint32_t row, int cgi) const;
+	NotePtr find_prev_on (int row, int cgi) const;
+	NotePtr find_next_on (int row, int cgi) const;
 
 	// Find the previous (resp. next) off note of a given row on a given track
 	// index.
-	NotePtr find_prev_off (uint32_t row, int cgi) const;
-	NotePtr find_next_off (uint32_t row, int cgi) const;
+	NotePtr find_prev_off (int row, int cgi) const;
+	NotePtr find_next_off (int row, int cgi) const;
 
 	// Return the Beats of the next note on (resp. off) or the end of the region
 	// if none
-	Temporal::Beats next_on (uint32_t row, int cgi) const;
-	Temporal::Beats next_off (uint32_t row, int cgi) const;
+	Temporal::Beats next_on (int row, int cgi) const;
+	Temporal::Beats next_off (int row, int cgi) const;
 
 	// Return true if the notes are displayable at this resolution. Basically
 	// if there are too many notes, unless its a pair (note off, note on)
 	// perfectly contiguous, it is not displayable.
-	bool is_displayable (uint32_t row, int cgi) const;
+	bool is_displayable (int row, int cgi) const;
 
 	// Add note in track_to_notes. Used by the grid so that the note pattern can
 	// know on which track idx a new note should be.
