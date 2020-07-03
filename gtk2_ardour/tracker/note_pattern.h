@@ -50,7 +50,7 @@ public:
 	NotePattern& operator= (const NotePattern& other);
 	NotePtr clone_note (NotePtr note) const;
 
-	static void rows_diff (int cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<size_t>& rd);
+	static void rows_diff (int cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<int>& rd);
 
 	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& prev) const;
 

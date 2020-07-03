@@ -58,8 +58,8 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 	// All regions are assumed to be deselected at this point
 	
 	// Add new regions or re-enable existing ones
-	for (size_t i = 0; i < regions.size (); i++) {
-		MidiRegionPtr midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[i]);
+	for (size_t mri = 0; mri < regions.size (); mri++) {
+		MidiRegionPtr midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[mri]);
 		MidiRegionPattern* mrp = find_midi_region_pattern (midi_region);
 		if (mrp) {
 			mrp->set_selected(true);
@@ -371,7 +371,7 @@ MidiTrackPattern::is_empty (const Evoral::Parameter& param) const
 }
 
 std::pair<double, bool>
-MidiTrackPattern::get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param)
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.get_automation_value (to_rrri (rowi, mri), param)
@@ -379,7 +379,7 @@ MidiTrackPattern::get_automation_value (size_t rowi, int mri, const Evoral::Para
 }
 
 void
-MidiTrackPattern::set_automation_value (double val, size_t rowi, int mri, const Evoral::Parameter& param, int delay)
+MidiTrackPattern::set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay)
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.set_automation_value (val, to_rrri (rowi, mri), param, delay)
@@ -387,7 +387,7 @@ MidiTrackPattern::set_automation_value (double val, size_t rowi, int mri, const 
 }
 
 void
-MidiTrackPattern::delete_automation_value (size_t rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::delete_automation_value (int rowi, int mri, const Evoral::Parameter& param)
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.delete_automation_value (to_rrri (rowi, mri), param)
@@ -395,7 +395,7 @@ MidiTrackPattern::delete_automation_value (size_t rowi, int mri, const Evoral::P
 }
 
 std::pair<int, bool>
-MidiTrackPattern::get_automation_delay (size_t rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Parameter& param)
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.get_automation_delay (to_rrri (rowi, mri), param)
@@ -403,7 +403,7 @@ MidiTrackPattern::get_automation_delay (size_t rowi, int mri, const Evoral::Para
 }
 
 void
-MidiTrackPattern::set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param)
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.set_automation_delay (delay, to_rrri (rowi, mri), param)

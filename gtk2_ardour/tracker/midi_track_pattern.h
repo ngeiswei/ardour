@@ -119,21 +119,21 @@ public:
 	bool is_empty (const Evoral::Parameter& param) const;
 
 	// Return a pair with the automation value and whether it is defined or not	
-	std::pair<double, bool> get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 
 	// Set the automation value val at rowi and mri for param
-	void set_automation_value (double val, size_t rowi, int mri, const Evoral::Parameter& param, int delay);
+	void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
 
 	// Delete automation value at rowi and mri for param
-	void delete_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
+	void delete_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 
 	// Return pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (size_t rowi, int mri, const Evoral::Parameter& param);
+	std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
 
 	// Get the relative beats w.r.t. region position at rowi, and region mri
 	Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
