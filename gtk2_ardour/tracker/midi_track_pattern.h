@@ -92,13 +92,13 @@ public:
 	bool is_region_defined (int rowi) const;
 
 	// Return the row index relative to the start of pattern at region index mri
-	int to_rrri (uint32_t rowi, int mri) const;
-	int to_rrri (uint32_t rowi) const;
+	int to_rrri (int rowi, int mri) const;
+	int to_rrri (int rowi) const;
 	
 	// Given the row index, calculate the corresponding midi region index. This
 	// can only work assuming that regions do not overlap in time. If no such
 	// mri is defined, then return -1.
-	int to_mri (uint32_t rowi) const;
+	int to_mri (int rowi) const;
 
 	// Number of note tracks
 	uint16_t get_ntracks () const;
@@ -136,12 +136,12 @@ public:
 	void set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param);
 
 	// Get the relative beats w.r.t. region position at rowi, and region mri
-	Temporal::Beats region_relative_beats (uint32_t rowi, int mri, int32_t delay) const;
+	Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 
-	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const;
-	bool is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
-	size_t automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
-	Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
+	bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
+	size_t automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
@@ -170,7 +170,7 @@ public:
 	ParameterSet enabled_region_params;
 
 	// Associate each mri to row_offset
-	std::vector<uint32_t> row_offset;
+	std::vector<int> row_offset;
 };
 
 } // ~namespace Tracker

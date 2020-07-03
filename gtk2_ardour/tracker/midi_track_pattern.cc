@@ -273,19 +273,19 @@ MidiTrackPattern::is_region_defined (int rowi) const
 }
 
 int
-MidiTrackPattern::to_rrri (uint32_t rowi, int mri) const
+MidiTrackPattern::to_rrri (int rowi, int mri) const
 {
-	return (int)rowi - (int)row_offset[mri];
+	return rowi - row_offset[mri];
 }
 
 int
-MidiTrackPattern::to_rrri (uint32_t rowi) const
+MidiTrackPattern::to_rrri (int rowi) const
 {
 	return to_rrri (rowi, to_mri (rowi));
 }
 
 int
-MidiTrackPattern::to_mri (uint32_t rowi) const
+MidiTrackPattern::to_mri (int rowi) const
 {
 	// Disgard is out of midi track pattern range
 	if (!BasePattern::is_defined (rowi)) {
@@ -294,7 +294,7 @@ MidiTrackPattern::to_mri (uint32_t rowi) const
 
 	// Check if rowi points to an existing region
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		if (mrps[mri]->is_defined (to_rrri ((uint32_t)rowi, mri))) {
+		if (mrps[mri]->is_defined (to_rrri (rowi, mri))) {
 			return mri;
 		}
 	}
@@ -411,19 +411,19 @@ MidiTrackPattern::set_automation_delay (int delay, size_t rowi, int mri, const E
 }
 
 Temporal::Beats
-MidiTrackPattern::region_relative_beats (uint32_t rowi, int mri, int32_t delay) const
+MidiTrackPattern::region_relative_beats (int rowi, int mri, int delay) const
 {
 	return mrps[mri]->region_relative_beats_at_row (to_rrri (rowi, mri), delay);
 }
 
 int64_t
-MidiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const
+MidiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const
 {
 	return mrps[mri]->region_relative_delay_ticks_at_row (event_time, to_rrri (rowi, mri));
 }
 
 bool
-MidiTrackPattern::is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const
+MidiTrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.is_displayable (to_rrri (rowi, mri), param)
@@ -431,7 +431,7 @@ MidiTrackPattern::is_auto_displayable (uint32_t rowi, int mri, const Evoral::Par
 }
 
 size_t
-MidiTrackPattern::automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const
+MidiTrackPattern::automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->rap.automation_list_count (to_rrri (rowi, mri), param)
@@ -439,7 +439,7 @@ MidiTrackPattern::automation_list_count (uint32_t rowi, int mri, const Evoral::P
 }
 
 Evoral::ControlEvent*
-MidiTrackPattern::get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const
+MidiTrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		*mrps[mri]->rap.param_to_row_to_ali.find (param)->second.find (to_rrri (rowi, mri))->second
