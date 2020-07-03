@@ -84,7 +84,7 @@ void RegionAutomationPattern::insert (const Evoral::Parameter& param)
 	AutomationPattern::insert (midi_model->automation_control (param, true), midi_track->describe_parameter (param));
 }
 
-uint32_t
+int
 RegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	Temporal::Beats relative_beats (event->when);
@@ -94,7 +94,7 @@ RegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral
 	}
 
 	Temporal::Beats beats (relative_beats + position_beats - start_beats);
-	uint32_t row = row_at_beats (beats);
+	int row = row_at_beats (beats);
 	if (param_to_row_to_ali[param].count (row) != 0) {
 		row = row_at_beats_min_delay (beats);
 	}
