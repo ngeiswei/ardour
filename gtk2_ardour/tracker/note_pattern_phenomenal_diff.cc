@@ -38,8 +38,8 @@ NotePatternPhenomenalDiff::to_string (const std::string& indent) const
 	for (Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin (); it != cgi2rows_diff.end (); ++it) {
 		ss << std::endl << indent << "  " << " (cgi=" << it->first << ", rows=";
 		const RowsPhenomenalDiff& rows_diff = it->second;
-		const std::set<size_t>& rows = rows_diff.rows;
-		for (std::set<size_t>::const_iterator row_it = rows.begin (); row_it != rows.end (); ++row_it) {
+		const std::set<int>& rows = rows_diff.rows;
+		for (std::set<int>::const_iterator row_it = rows.begin (); row_it != rows.end (); ++row_it) {
 			if (row_it != rows.begin ()) {
 				ss << ",";
 			}

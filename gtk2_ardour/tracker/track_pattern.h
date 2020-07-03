@@ -85,11 +85,11 @@ public:
 	virtual int to_mri (int rowi) const;
 	virtual AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	virtual const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
-	virtual std::pair<double, bool> get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
-	virtual void set_automation_value (double val, size_t rowi, int mri, const Evoral::Parameter& param, int delay);
-	virtual void delete_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);
-	virtual std::pair<int, bool> get_automation_delay (size_t rowi, int mri, const Evoral::Parameter& param);
-	virtual void set_automation_delay (int delay, size_t rowi, int mri, const Evoral::Parameter& param);
+	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
+	virtual void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
+	virtual void delete_automation_value (int rowi, int mri, const Evoral::Parameter& param);
+	virtual std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
+	virtual void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 

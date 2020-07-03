@@ -104,7 +104,7 @@ AutomationPattern::clone_alist (AutomationListPtr alist) const
 }
 
 void
-AutomationPattern::rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<size_t>& rows) const
+AutomationPattern::rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<int>& rows) const
 {
 	for (RowToAutomationListIt::const_iterator l_it = l_row2auto.begin (); l_it != l_row2auto.end ();) {
 		int row = l_it->first;
@@ -341,13 +341,13 @@ AutomationPattern::is_displayable (int row, RowToAutomationListIt r2a)
 }
 
 AutomationPattern::AutomationListIt
-AutomationPattern::get_alist_iterator (size_t rowi, const Evoral::Parameter& param)
+AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 {
 	return param_to_row_to_ali.find (param)->second.find (rowi)->second;
 }
 
 Evoral::ControlEvent*
-AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param)
+AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param)
 {
 	ParamToRowToAutomationListIt::iterator it = param_to_row_to_ali.find (param);
 	if (it == param_to_row_to_ali.end ()) {
@@ -363,7 +363,7 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 }
 
 const Evoral::ControlEvent*
-AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& param) const
+AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param) const
 {
 	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param);
 	if (it == param_to_row_to_ali.end ()) {
@@ -379,7 +379,7 @@ AutomationPattern::get_control_event (size_t rowi, const Evoral::Parameter& para
 }
 
 std::pair<double, bool>
-AutomationPattern::get_automation_value (size_t rowi, const Evoral::Parameter& param) const
+AutomationPattern::get_automation_value (int rowi, const Evoral::Parameter& param) const
 {
 	if (const Evoral::ControlEvent* ce = get_control_event (rowi, param)) {
 		return std::make_pair (ce->value, true);
@@ -389,7 +389,7 @@ AutomationPattern::get_automation_value (size_t rowi, const Evoral::Parameter& p
 }
 
 void
-AutomationPattern::set_automation_value (double val, size_t rowi, const Evoral::Parameter& param, int delay)
+AutomationPattern::set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay)
 {
 	// Fetch automation control and list
 	AutomationControlPtr actrl = get_actrl (param);
