@@ -87,7 +87,7 @@ public:
 	const AutomationControlPtr get_actrl (const Evoral::Parameter& param) const;
 
 	// Return the number of values within the same row. If undefined return 0.
-	size_t get_automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const;
+	size_t automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const;
 
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 

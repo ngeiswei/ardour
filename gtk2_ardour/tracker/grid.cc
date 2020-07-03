@@ -1463,7 +1463,7 @@ Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int mri = -1;
-	size_t auto_count = pattern.get_automation_list_count (row_idx, mti, mri, param);
+	size_t auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
 
 	// Fill background colors
 	redisplay_auto_background (row, mti, cgi);
@@ -1570,7 +1570,7 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
-	size_t auto_count = pattern.get_automation_list_count (row_idx, mti, mri, param);
+	size_t auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
 
 	// Fill background colors
 	redisplay_auto_background (row, mti, cgi);
@@ -3085,14 +3085,17 @@ Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::
 		return false;
 
 	int row_idx = to_row_index (path);
+	int mti = get_mti (col);
+	int mri = get_mri (path, col);
+	int cgi = get_cgi (col);
 
 	std::string tooltip_msg;
 	if (time_column == col) {
 		tooltip_msg = time_tooltip_msg (row_idx);
 	} else if (is_note_type (col)) {
-		tooltip_msg = note_tooltip_msg ();
+		tooltip_msg = note_tooltip_msg (row_idx, mti, mri, cgi);
 	} else if (is_auto_type (col)) {
-		tooltip_msg = auto_tooltip_msg ();
+		tooltip_msg = auto_tooltip_msg (row_idx, mti, mri, cgi);
 	}
 
 	if (tooltip_msg.empty ())
@@ -3118,16 +3121,23 @@ Grid::time_tooltip_msg (int row_idx) const
 }
 
 std::string
-Grid::note_tooltip_msg () const
+Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi) const
 {
-	// NEXT
-	return "Hello note!";
+	if (0 < pattern.off_notes_count (row_idx, mti, mri, cgi) or
+	    0 < pattern.on_notes_count (row_idx, mti, mri, cgi)) {
+		return "Hello note!";
+	} else {
+		return "";
+	}
 }
 std::string
-Grid::auto_tooltip_msg () const
+Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi) const
 {
-	// NEXT
-	return "Hello auto!";
+	if (0 < pattern.automation_list_count (row_idx, mti, mri, get_param (mti, cgi))) {
+		return "Hello auto!";
+	} else {
+		return "";
+	}
 }
 
 void

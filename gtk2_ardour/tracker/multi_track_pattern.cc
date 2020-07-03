@@ -370,9 +370,9 @@ MultiTrackPattern::is_auto_displayable (uint32_t rowi, int mti, int mri, const E
 }
 
 size_t
-MultiTrackPattern::get_automation_list_count (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::automation_list_count (uint32_t rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	return tps[mti]->get_automation_list_count (to_rri (rowi, mti), mri, param);
+	return tps[mti]->automation_list_count (to_rri (rowi, mti), mri, param);
 }
 
 Evoral::ControlEvent*
