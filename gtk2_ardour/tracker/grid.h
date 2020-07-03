@@ -119,9 +119,9 @@ public:
 
 	// Assign an automation parameter to a column and return the corresponding
 	// column index
-	size_t select_available_automation_column (int mti /* midi track index */);
-	size_t add_main_automation_column (int mti, const Evoral::Parameter& param);
-	size_t add_midi_automation_column (int mti, const Evoral::Parameter& param);
+	int select_available_automation_column (int mti /* midi track index */);
+	int add_main_automation_column (int mti, const Evoral::Parameter& param);
+	int add_midi_automation_column (int mti, const Evoral::Parameter& param);
 	void add_processor_automation_column (int mti, ProcessorPtr processor,
 	                                      const Evoral::Parameter& what);
 
@@ -131,7 +131,7 @@ public:
 	// Return if the automation column associated to this parameter is currently visible
 	bool is_automation_visible (int mti, const Evoral::Parameter& param) const;
 
-	void set_automation_column_visible (int mti, const Evoral::Parameter& param, size_t column, bool showit);
+	void set_automation_column_visible (int mti, const Evoral::Parameter& param, int column, bool showit);
 
 	// Return true iff there exists some automation in that mti that is visible
 	bool has_visible_automation (int mti) const;
@@ -165,7 +165,7 @@ public:
 	void redisplay_visible_note_separator ();
 	int note_separator_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation ();
-	size_t automation_col_offset (int mti) const;
+	int automation_col_offset (int mti) const;
 	int automation_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int mti, int cgi) const;
@@ -271,11 +271,11 @@ public:
 	TrackerEditor& tracker_editor;
 
 	// Map column index to automation parameter and vice versa
-	typedef boost::bimaps::bimap<size_t, Evoral::Parameter> IndexParamBimap;
+	typedef boost::bimaps::bimap<int, Evoral::Parameter> IndexParamBimap;
 	std::vector<IndexParamBimap> col2params; // For each track
 
 	// Keep track of all visible automation columns across all midi tracks
-	std::set<size_t> visible_automation_columns;
+	std::set<int> visible_automation_columns;
 
 	// Represent patterns across all tracks
 	MultiTrackPattern pattern;
@@ -667,7 +667,7 @@ private:
 	const std::string cellfont;
 
 	// Map column index to automation cgi and vice versa
-	typedef boost::bimaps::bimap<size_t, size_t> IndexBimap;
+	typedef boost::bimaps::bimap<int, int> IndexBimap;
 
 	// Columns
 	Gtk::TreeViewColumn* time_column;
@@ -688,13 +688,13 @@ private:
 	std::vector<IndexBimap> col2auto_cgi;
 
 	// Gain, trim, mute and pan columns per midi track
-	std::vector<size_t> gain_columns;
-	std::vector<size_t> trim_columns; // TODO: support audio tracks
-	std::vector<size_t> mute_columns;
-	std::vector<std::vector<size_t> > pan_columns;
+	std::vector<int> gain_columns;
+	std::vector<int> trim_columns; // TODO: support audio tracks
+	std::vector<int> mute_columns;
+	std::vector<std::vector<int> > pan_columns;
 
 	// List of column indices currently unassigned to an automation per midi track
-	std::vector<std::set<size_t>> available_automation_columns;
+	std::vector<std::set<int>> available_automation_columns;
 
 	// Colors from config
 	std::string gtk_bases_color;

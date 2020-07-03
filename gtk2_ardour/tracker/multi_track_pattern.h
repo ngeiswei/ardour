@@ -145,7 +145,7 @@ public:
 	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 	
 	// Return a pair with the automation value and whether it is defined or not
-	std::pair<double, bool> get_automation_value (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation value val at rowi, mti and mri for param
 	void set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay);
@@ -156,10 +156,10 @@ public:
 	// Get a pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, size_t rowi, int mti, int mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param);
 
 	// Return the track pattern assicuated to track, or 0 if it doesn't exist
 	TrackPattern* find_track_pattern (TrackPtr track);
