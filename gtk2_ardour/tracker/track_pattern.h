@@ -74,15 +74,15 @@ public:
 	AudioTrackPattern* audio_track_pattern ();
 
 	// Default implementation is for tracks not supporting regions
-	virtual Temporal::Beats	region_relative_beats (uint32_t rowi, int mri, int32_t delay) const;
-	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const;
-	virtual bool is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
-	virtual size_t automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
-	virtual Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	virtual Temporal::Beats	region_relative_beats (int rowi, int mri, int delay) const;
+	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
+	virtual bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual size_t automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
-	virtual int to_rrri (uint32_t rowi, int mri) const;
-	virtual int to_rrri (uint32_t rowi) const;
-	virtual int to_mri (uint32_t rowi) const;
+	virtual int to_rrri (int rowi, int mri) const;
+	virtual int to_rrri (int rowi) const;
+	virtual int to_mri (int rowi) const;
 	virtual AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	virtual const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 	virtual std::pair<double, bool> get_automation_value (size_t rowi, int mri, const Evoral::Parameter& param);

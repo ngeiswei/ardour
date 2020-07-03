@@ -53,7 +53,7 @@ public:
 	void insert (const Evoral::Parameter& param);
 
 	// Assign a control event to a row
-	virtual uint32_t event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 };
 
 } // ~namespace tracker
