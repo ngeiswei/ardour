@@ -77,7 +77,7 @@ public:
 	virtual Temporal::Beats	region_relative_beats (uint32_t rowi, int mri, int32_t delay) const;
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, uint32_t rowi, int mri) const;
 	virtual bool is_auto_displayable (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
-	virtual size_t get_automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
+	virtual size_t automation_list_count (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
 	virtual Evoral::ControlEvent* get_automation_control_event (uint32_t rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
 	virtual int to_rrri (uint32_t rowi, int mri) const;
