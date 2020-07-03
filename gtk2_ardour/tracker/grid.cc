@@ -905,7 +905,7 @@ Grid::redisplay_global_columns ()
 
 	// Set Time column, row background color, font
 	TreeModel::Children::iterator row_it = model->children ().begin ();
-	for (int row_idx = 0; row_idx < (int)pattern.global_nrows; row_idx++) {
+	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		// Get existing row, or create one if it does exist
 		if (row_it == model->children ().end ()) {
 			row_it = model->append ();
@@ -1067,7 +1067,7 @@ void
 Grid::redisplay_left_right_separator_columns (int mti)
 {
 	TreeModel::Children::iterator row_it = model->children ().begin ();
-	for (int row_idx = 0; row_idx < (int)pattern.global_nrows; row_idx++) {
+	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		TreeModel::Row row = *row_it++;
 		redisplay_left_right_separator (row, mti);
 	}
@@ -1482,7 +1482,7 @@ void
 Grid::redisplay_inter_midi_regions (int mti)
 {
 	TreeModel::Children::iterator row_it = model->children ().begin ();
-	for (int row_idx = 0; row_idx < (int)pattern.global_nrows; row_idx++) {
+	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		// Get row
 		TreeModel::Row row = *row_it++;
 		if (!is_region_defined (row_idx, mti)) {
@@ -2018,7 +2018,7 @@ Grid::to_row (int row_idx) const
 	// const auto row = *iter;
 
 	TreeModel::Children::const_iterator row_it = model->children ().begin ();
-	std::advance (row_it, (int)row_idx);
+	std::advance (row_it, row_idx);
 	return *row_it;
 }
 
@@ -3560,7 +3560,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 		++path[0];
 
 		// Wrap
-		if ((int)pattern.global_nrows <= path[0]) {
+		if (pattern.global_nrows <= path[0]) {
 			if (wrap) {
 				path[0] -= pattern.global_nrows;
 			} else {
@@ -4731,7 +4731,7 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 			ret = true;
 			break;
 		case GDK_Home:
-			vertical_move_current_cursor (-(int)pattern.global_nrows, false);
+			vertical_move_current_cursor (-pattern.global_nrows, false);
 			ret = true;
 			break;
 		case GDK_End:
@@ -4767,7 +4767,7 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 			ret = true;
 			break;
 		case GDK_Home:
-			vertical_move_current_row (-(int)pattern.global_nrows, false);
+			vertical_move_current_row (-pattern.global_nrows, false);
 			ret = true;
 			break;
 		case GDK_End:
