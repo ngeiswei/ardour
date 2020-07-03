@@ -60,13 +60,13 @@ MultiTrackPattern::operator= (const MultiTrackPattern& other)
 
 	// MultiTrackPattern
 	assert (tps.size () == other.tps.size ());
-	for (size_t i = 0; i < tps.size (); i++) {
-		if (tps[i]->is_midi_track_pattern ()) {
-			assert (other.tps[i]->is_midi_track_pattern ());
-			tps[i]->midi_track_pattern ()->operator= (*other.tps[i]->midi_track_pattern ());
-		} else if (tps[i]->is_audio_track_pattern ()) {
-			assert (other.tps[i]->is_audio_track_pattern ());
-			tps[i]->audio_track_pattern ()->operator= (*other.tps[i]->audio_track_pattern ());
+	for (size_t mti = 0; mti < tps.size (); mti++) {
+		if (tps[mti]->is_midi_track_pattern ()) {
+			assert (other.tps[mti]->is_midi_track_pattern ());
+			tps[mti]->midi_track_pattern ()->operator= (*other.tps[mti]->midi_track_pattern ());
+		} else if (tps[mti]->is_audio_track_pattern ()) {
+			assert (other.tps[mti]->is_audio_track_pattern ());
+			tps[mti]->audio_track_pattern ()->operator= (*other.tps[mti]->audio_track_pattern ());
 		} else {
 			std::cout << "Not implemented" << std::endl;
 		}
@@ -484,7 +484,7 @@ MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param) 
 }
 
 std::pair<double, bool>
-MultiTrackPattern::get_automation_value (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_value (to_rri (rowi, mti), mri, param);
 }
@@ -502,13 +502,13 @@ MultiTrackPattern::delete_automation_value (int rowi, int mti, int mri, const Ev
 }
 
 std::pair<int, bool>
-MultiTrackPattern::get_automation_delay (size_t rowi, int mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::get_automation_delay (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_delay (to_rri (rowi, mti), mri, param);
 }
 
 void
-MultiTrackPattern::set_automation_delay (int delay, size_t rowi, int mti, int mri, const Evoral::Parameter& param)
+MultiTrackPattern::set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri (rowi, mti), mri, param);
 }
@@ -516,9 +516,9 @@ MultiTrackPattern::set_automation_delay (int delay, size_t rowi, int mti, int mr
 TrackPattern*
 MultiTrackPattern::find_track_pattern (TrackPtr track)
 {
-	for (size_t i = 0; i < tps.size (); i++) {
-		if (tps[i]->track == track) {
-			return tps[i];
+	for (size_t mti = 0; mti < tps.size (); mti++) {
+		if (tps[mti]->track == track) {
+			return tps[mti];
 		}
 	}
 	return 0;
@@ -556,9 +556,9 @@ MultiTrackPattern::to_string (const std::string& indent) const
 	ss << BasePattern::to_string (indent) << std::endl;
 
 	std::string header = indent + self_to_string () + " ";
-	for (size_t i = 0; i != tps.size (); i++) {
-		ss << header << "tps[" << i << "]:" << std::endl
-		   << tps[i]->to_string (indent + "  ") << std::endl;
+	for (size_t mti = 0; mti != tps.size (); mti++) {
+		ss << header << "tps[" << mti << "]:" << std::endl
+		   << tps[mti]->to_string (indent + "  ") << std::endl;
 	}
 
 	ss << header << "earliest_mti = " << earliest_mti << std::endl;

@@ -30,7 +30,7 @@ namespace Tracker {
 // set of mti that have changed.
 struct NotePatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	typedef std::map<size_t, RowsPhenomenalDiff> Cgi2RowsPhenomenalDiff;
+	typedef std::map<int, RowsPhenomenalDiff> Cgi2RowsPhenomenalDiff;
 	Cgi2RowsPhenomenalDiff cgi2rows_diff;
 
 	bool empty () const;

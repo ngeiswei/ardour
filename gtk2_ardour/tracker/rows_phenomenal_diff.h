@@ -27,7 +27,7 @@ namespace Tracker {
 
 struct RowsPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	std::set<size_t> rows;
+	std::set<int> rows;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
