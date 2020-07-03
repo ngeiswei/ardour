@@ -283,7 +283,7 @@ AutomationPattern::get_actrl (const Evoral::Parameter& param) const
 }
 
 size_t
-AutomationPattern::get_automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const
+AutomationPattern::automation_list_count (uint32_t rowi, const Evoral::Parameter& param) const
 {
 	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param);
 	if (it != param_to_row_to_ali.end ()) {
