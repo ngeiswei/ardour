@@ -339,8 +339,8 @@ private:
 	void connect_tooltips ();
 	bool set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 	std::string time_tooltip_msg (int row_idx) const;
-	std::string note_tooltip_msg (int row_idx, int mti, int mri, int cgi) const;
-	std::string auto_tooltip_msg (int row_idx, int mti, int mri, int cgi) const;
+	std::string note_tooltip_msg (int row_idx, int mti, int mri, int cgi);
+	std::string auto_tooltip_msg (int row_idx, int mti, int mri, int cgi);
 	void connect_events ();
 	void setup_tree_view ();
 	void setup_time_column ();
