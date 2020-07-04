@@ -52,10 +52,6 @@ public:
 	                   Temporal::samplepos_t last_sample,
 	                   bool connect);
 
-	typedef ARDOUR::AutomationList::iterator AutomationListIt;
-	typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
-	typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
-
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator= (const AutomationPattern& other);
 	AutomationControlPtr clone_actrl (AutomationControlPtr actrl) const;
@@ -88,6 +84,13 @@ public:
 
 	// Return the number of values within the same row. If undefined return 0.
 	size_t automation_list_count (int rowi, const Evoral::Parameter& param) const;
+
+	// Return a range of iterators of all events at the given row index and
+	// parameter.
+	//
+	// Warning: if no such event exist the behavior is undefined (it might even
+	// crash).
+	RowToAutomationListItRange automation_list_range (int rowi, const Evoral::Parameter& param) const;
 
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 

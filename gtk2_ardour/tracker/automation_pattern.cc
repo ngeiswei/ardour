@@ -292,6 +292,12 @@ AutomationPattern::automation_list_count (int rowi, const Evoral::Parameter& par
 	return 0;
 }
 
+RowToAutomationListItRange
+AutomationPattern::automation_list_range (int rowi, const Evoral::Parameter& param) const
+{
+	param_to_row_to_ali.find (param)->second.equal_range (rowi);
+}
+
 std::string
 AutomationPattern::get_name (const Evoral::Parameter& param) const
 {
@@ -340,7 +346,7 @@ AutomationPattern::is_displayable (int row, RowToAutomationListIt r2a)
 	return r2a.count (row) <= 1;
 }
 
-AutomationPattern::AutomationListIt
+AutomationListIt
 AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 {
 	return param_to_row_to_ali.find (param)->second.find (rowi)->second;
@@ -354,7 +360,7 @@ AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param)
 		return 0;
 	}
 
-	AutomationPattern::RowToAutomationListIt::iterator auto_it = it->second.find (rowi);
+	RowToAutomationListIt::iterator auto_it = it->second.find (rowi);
 	if (auto_it != it->second.end ()) {
 		return *auto_it->second;
 	}
@@ -370,7 +376,7 @@ AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param) 
 		return 0;
 	}
 
-	AutomationPattern::RowToAutomationListIt::const_iterator auto_it = it->second.find (rowi);
+	RowToAutomationListIt::const_iterator auto_it = it->second.find (rowi);
 	if (auto_it != it->second.end ()) {
 		return *auto_it->second;
 	}
@@ -483,7 +489,7 @@ AutomationPattern::add_automation_point (AutomationListPtr alist, double when, d
 }
 
 void
-AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationPattern::AutomationListIt it, double when, double val)
+AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationListIt it, double when, double val)
 {
 	// Save state for undo
 	XMLNode& before = alist->get_state ();
@@ -493,7 +499,7 @@ AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationP
 }
 
 void
-AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationPattern::AutomationListIt it)
+AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationListIt it)
 {
 	// Save state for undo
 	XMLNode& before = alist->get_state ();
@@ -502,19 +508,19 @@ AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationPa
 	tracker_editor.grid.register_automation_undo (alist, _("delete automation event"), before, after);
 }
 
-AutomationPattern::RowToAutomationListIt::const_iterator
+RowToAutomationListIt::const_iterator
 AutomationPattern::find_prev (RowToAutomationListIt::const_iterator it) const
 {
 	return --it;
 }
 
-AutomationPattern::RowToAutomationListIt::const_iterator
+RowToAutomationListIt::const_iterator
 AutomationPattern::find_next (RowToAutomationListIt::const_iterator it) const
 {
 	return ++it;
 }
 
-AutomationPattern::RowToAutomationListIt::const_iterator
+RowToAutomationListIt::const_iterator
 AutomationPattern::find_prev (int row, const RowToAutomationListIt& r2a) const
 {
 	RowToAutomationListIt::const_reverse_iterator rit =
@@ -523,7 +529,7 @@ AutomationPattern::find_prev (int row, const RowToAutomationListIt& r2a) const
 	return rit != r2a.rend () ? lattest (r2a.equal_range (rit->first)) : rit.base ();
 }
 
-AutomationPattern::RowToAutomationListIt::const_iterator
+RowToAutomationListIt::const_iterator
 AutomationPattern::find_next (int row, const RowToAutomationListIt& r2a) const
 {
 	RowToAutomationListIt::const_iterator it = r2a.upper_bound (row);
@@ -555,7 +561,7 @@ AutomationPattern::prev_next_range (int row, const RowToAutomationListIt& row2au
 	return std::make_pair (p_row, n_row);
 }
 
-AutomationPattern::RowToAutomationListIt::const_iterator
+RowToAutomationListIt::const_iterator
 AutomationPattern::earliest (const RowToAutomationListItRange& rng) const
 {
 	RowToAutomationListIt::const_iterator res_it = rng.first;
@@ -569,7 +575,7 @@ AutomationPattern::earliest (const RowToAutomationListItRange& rng) const
 	return res_it;
 }
 
-AutomationPattern::RowToAutomationListIt::const_iterator
+RowToAutomationListIt::const_iterator
 AutomationPattern::lattest (const RowToAutomationListItRange& rng) const
 {
 	RowToAutomationListIt::const_iterator res_it = rng.first;
