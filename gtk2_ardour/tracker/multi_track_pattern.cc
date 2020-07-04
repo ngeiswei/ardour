@@ -328,13 +328,13 @@ MultiTrackPattern::is_note_displayable (int rowi, int mti, int mri, int cgi) con
 NotePtr
 MultiTrackPattern::off_note (int rowi, int mti, int mri, int cgi) const
 {
-	if (tps.size () <= mti)
+	if ((int)tps.size () <= mti)
 		return 0;
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
-	if (!mtp or mtp->mrps.size () <= mri)
+	if (!mtp or (int)mtp->mrps.size () <= mri)
 		return 0;
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
-	if (mrp.np.off_notes.size () <= cgi)
+	if ((int)mrp.np.off_notes.size () <= cgi)
 		return 0;
 	const NotePattern::RowToNotes& rtn = mrp.np.off_notes[cgi];
 	NotePattern::RowToNotes::const_iterator i_off = rtn.find (to_rrri (rowi, mti, mri));
@@ -347,13 +347,13 @@ MultiTrackPattern::off_note (int rowi, int mti, int mri, int cgi) const
 NotePtr
 MultiTrackPattern::on_note (int rowi, int mti, int mri, int cgi) const
 {
-	if (tps.size () <= mti)
+	if (mti < 0 && (int)tps.size () <= mti)
 		return 0;
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
-	if (!mtp or mtp->mrps.size () <= mri)
+	if (!mtp or (int)mtp->mrps.size () <= mri)
 		return 0;
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
-	if (mrp.np.on_notes.size () <= cgi)
+	if ((int)mrp.np.on_notes.size () <= cgi)
 		return 0;
 	const NotePattern::RowToNotes& rtn = mrp.np.on_notes[cgi];
 	NotePattern::RowToNotes::const_iterator i_on = rtn.find (to_rrri (rowi, mti, mri));
@@ -373,6 +373,12 @@ size_t
 MultiTrackPattern::automation_list_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->automation_list_count (to_rri (rowi, mti), mri, param);
+}
+
+RowToAutomationListItRange
+MultiTrackPattern::automation_list_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return tps[mti]->automation_list_range (to_rri (rowi, mti), mri, param);
 }
 
 Evoral::ControlEvent*
