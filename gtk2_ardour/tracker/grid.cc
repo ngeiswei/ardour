@@ -3125,7 +3125,7 @@ Grid::time_tooltip_msg (int row_idx) const
 }
 
 std::string
-Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi) const
+Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
 	if (0 < pattern.off_notes_count (row_idx, mti, mri, cgi) or
 	    0 < pattern.on_notes_count (row_idx, mti, mri, cgi)) {
@@ -3135,10 +3135,23 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi) const
 	}
 }
 std::string
-Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi) const
+Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
-	if (0 < pattern.automation_list_count (row_idx, mti, mri, get_param (mti, cgi))) {
-		return "Hello auto!";
+	Evoral::Parameter param = get_param (mti, cgi);
+	std::stringstream ss;
+	size_t count = pattern.automation_list_count (row_idx, mti, mri, param);
+	if (0 < count) {
+		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
+		if (0 <= mri) {
+			ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
+		}
+		ss << "<u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>" << std::endl;
+		ss << "<u>Count</u>: <b>" << count << "</b>" << std::endl;
+		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
+		for (; rng.first != rng.second; rng.first++) {
+			ss << std::endl << "Value";
+		}
+		return ss.str ();
 	} else {
 		return "";
 	}

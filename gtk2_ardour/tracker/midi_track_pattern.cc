@@ -438,6 +438,15 @@ MidiTrackPattern::automation_list_count (int rowi, int mri, const Evoral::Parame
 		: AutomationPattern::automation_list_count (rowi, param);
 }
 
+
+RowToAutomationListItRange
+MidiTrackPattern::automation_list_range (int rowi, int mri, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[mri]->rap.automation_list_range (to_rrri (rowi, mri), param)
+		: AutomationPattern::automation_list_range (rowi, param);
+}
+
 Evoral::ControlEvent*
 MidiTrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const
 {
