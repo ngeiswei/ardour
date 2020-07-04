@@ -171,7 +171,13 @@ TrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& p
 size_t
 TrackPattern::automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return param_to_row_to_ali.find (param)->second.count (rowi);
+	return AutomationPattern::automation_list_count (rowi, param);
+}
+
+RowToAutomationListItRange
+TrackPattern::automation_list_range (int rowi, int mri, const Evoral::Parameter& param) const
+{
+	return AutomationPattern::automation_list_range (rowi, param);
 }
 
 Evoral::ControlEvent*

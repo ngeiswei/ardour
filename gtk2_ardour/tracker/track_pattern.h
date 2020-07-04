@@ -78,6 +78,7 @@ public:
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
 	virtual bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual size_t automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual RowToAutomationListItRange automation_list_range (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
 	virtual int to_rrri (int rowi, int mri) const;
