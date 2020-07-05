@@ -128,6 +128,7 @@ public:
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param) const;
+	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param, const Evoral::ControlEvent* ce) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
