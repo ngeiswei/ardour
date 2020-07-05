@@ -3146,6 +3146,7 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << "<u>Count</u>: <b>" << count << "</b>" << std::endl;
 		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
+			// NEXT:
 			Evoral::ControlEvent* ce = *rng.first->second;
 			ss << std::endl << "<u>Value</u>: <b>" << ce->value << "</b>" << std::endl;
 		}
