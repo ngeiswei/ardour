@@ -1256,15 +1256,9 @@ void
 Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
 	if (pattern.is_auto_displayable (row_idx, mti, mri, param)) {
-		// NEXT: encapsulate ControlEvent, maybe try to use get_automation_value
-		// and get_automation_delay
-		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (row_idx, mti, mri, param);
-		double aval = ctl_event->value;
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval, base (), precision ());
-		double awhen = ctl_event->when;
-		int delay = TrackerUtils::is_region_automation (param) ?
-			pattern.region_relative_delay_ticks (Temporal::Beats (awhen), row_idx, mti, mri)
-			: pattern.delay_ticks ((samplepos_t)awhen, row_idx, mti);
+		double val = pattern.get_automation_value (row_idx, mti, mri, param).first;
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
+		int delay = pattern.get_automation_delay (row_idx, mti, mri, param).first;
 		if (delay != 0) {
 			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
