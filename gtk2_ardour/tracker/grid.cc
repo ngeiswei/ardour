@@ -1256,6 +1256,8 @@ void
 Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
 	if (pattern.is_auto_displayable (row_idx, mti, mri, param)) {
+		// NEXT: encapsulate ControlEvent, maybe try to use get_automation_value
+		// and get_automation_delay
 		Evoral::ControlEvent* ctl_event = pattern.get_automation_control_event (row_idx, mti, mri, param);
 		double aval = ctl_event->value;
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (aval, base (), precision ());
@@ -3134,6 +3136,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		return "";
 	}
 }
+
 std::string
 Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
@@ -3149,7 +3152,8 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << "<u>Count</u>: <b>" << count << "</b>" << std::endl;
 		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
-			ss << std::endl << "Value";
+			Evoral::ControlEvent* ce = *rng.first->second;
+			ss << std::endl << "<u>Value</u>: <b>" << ce->value << "</b>" << std::endl;
 		}
 		return ss.str ();
 	} else {
