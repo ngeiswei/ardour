@@ -3144,11 +3144,15 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		}
 		ss << "<u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>" << std::endl;
 		ss << "<u>Count</u>: <b>" << count << "</b>" << std::endl;
+		// NEXT: wrap in a method
+		AutomationPattern* ap;// = TrackerUtils::is_region_automation (param) ?
+			// pattern.midi_region_pattern (mti, mri).
+			// : // NEXT
 		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
-			// NEXT:
-			Evoral::ControlEvent* ce = *rng.first->second;
-			ss << std::endl << "<u>Value</u>: <b>" << ce->value << "</b>" << std::endl;
+			ss << std::endl << "<u>BBT</u>: <b>" << ap->get_automation_bbt (param, rng.first) << "</b>"
+			   << ", <u>Value</u>: <b>" << ap->get_automation_value (rng.first) << "</b>"
+			   << ", <u>Delay</u>: <b>" << ap->get_automation_delay (param, rng.first) << "</b>";
 		}
 		return ss.str ();
 	} else {

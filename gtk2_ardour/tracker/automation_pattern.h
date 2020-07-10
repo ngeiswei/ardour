@@ -117,6 +117,7 @@ public:
 	
 	// Return a pair with the automation value and whether it is defined or not	
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
+	double get_automation_value (RowToAutomationListIt::const_iterator it) const;
 
 	// Set the automation value val at rowi for param
 	void set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay);
@@ -129,9 +130,13 @@ public:
 	// undefined.
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param) const;
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param, const Evoral::ControlEvent* ce) const;
+	int get_automation_delay (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
+
+	// Get the bbt of an automation point
+	Timecode::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const;
 
 	// Add, modidy or erase automation point, and record undo history
 	void add_automation_point (AutomationListPtr alist, double when, double val);
