@@ -394,6 +394,12 @@ AutomationPattern::get_automation_value (int rowi, const Evoral::Parameter& para
 	return std::make_pair (0.0, false);
 }
 
+double
+AutomationPattern::get_automation_value (RowToAutomationListIt::const_iterator it) const
+{
+	return (*it->second)->value;
+}
+
 void
 AutomationPattern::set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay)
 {
@@ -453,6 +459,12 @@ AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& para
 	return std::make_pair (0, false);
 }
 
+int
+AutomationPattern::get_automation_delay (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const
+{
+	return get_automation_delay (it->first, param, *it->second).first;
+}
+
 void
 AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Parameter& param)
 {
@@ -481,6 +493,12 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 		(row_relative_beats < start_beats ? start_beats : row_relative_beats).to_double ()
 		: row_sample;
 	modify_automation_point (alist, get_alist_iterator (rowi, param), awhen, ce->value);
+}
+
+Timecode::BBT_Time
+AutomationPattern::get_automation_bbt (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const
+{
+	// NEXT
 }
 
 void
