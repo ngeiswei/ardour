@@ -462,7 +462,9 @@ AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& para
 int
 AutomationPattern::get_automation_delay (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const
 {
-	return get_automation_delay (it->first, param, *it->second).first;
+	int row_idx = it->first;
+	const Evoral::ControlEvent* ce = *it->second;
+	return get_automation_delay (row_idx, param, ce).first;
 }
 
 void
@@ -498,7 +500,11 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 Timecode::BBT_Time
 AutomationPattern::get_automation_bbt (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const
 {
-	// NEXT
+	Timecode::BBT_Time bbt;
+	int row_idx = it->first;
+	int delay = get_automation_delay (param, it);
+	_session->bbt_time (sample_at_row (row_idx, delay), bbt);
+	return bbt;
 }
 
 void
