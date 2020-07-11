@@ -88,6 +88,7 @@ TrackerUtils::num_to_string (int n, int base, int precision)
 	return ss.str();
 }
 
+// TODO: bug if precision is above 6
 std::string
 TrackerUtils::num_to_string (double n, int base, int precision)
 {
