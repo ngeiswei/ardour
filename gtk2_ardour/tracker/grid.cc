@@ -3113,12 +3113,10 @@ Grid::time_tooltip_msg (int row_idx) const
 	std::string dec_bbt = TrackerUtils::bbt_to_string (row_bbt, 10);
 	std::string hex_bbt = TrackerUtils::bbt_to_string (row_bbt, 16);
 	std::stringstream ss;
-	ss << "<u>Dec</u>:" << std::endl
-	   << "  Row: " << "<b>" << dec_row << "</b>" << std::endl
-	   << "  BBT: " << "<b>" << dec_bbt << "</b>" << std::endl
-	   << "<u>Hex</u>:" << std::endl
-	   << "  Row: " << "<b>" << hex_row << "</b>" << std::endl
-	   << "  BBT: " << "<b>" << hex_bbt << "</b>";
+	ss << "<u>Row</u> (Dec): " << "<b>" << dec_row << "</b>"
+	   << ", <u>BBT</u> (Dec): " << "<b>" << dec_bbt << "</b>" << std::endl
+	   << "<u>Row</u> (Hex): " << "<b>" << hex_row << "</b>"
+	   << ", <u>BBT</u> (Hex): " << "<b>" << hex_bbt << "</b>";
 	return ss.str ();
 }
 
@@ -3151,7 +3149,7 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			Timecode::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
 			double value = ap->get_automation_value (rng.first);
 			int delay = ap->get_automation_delay (param, rng.first);
-			const int precision = 12;
+			const int precision = 6;
 			ss << std::endl << "<u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
 			   << ", <u>Value</u>: <b>" << TrackerUtils::num_to_string(value, base (), precision) << "</b>"
 			   << ", <u>Delay</u>: <b>" << TrackerUtils::num_to_string(delay, base ()) << "</b>";
