@@ -1976,6 +1976,8 @@ Grid::to_row_index (const string& path_str) const
 int
 Grid::to_row_index (const TreeModel::Path& path) const
 {
+	if (path.empty ())
+		return -1;
 	return path.front ();
 }
 
@@ -3687,6 +3689,9 @@ bool
 Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* col)
 {
 	int row_idx = to_row_index (path);
+	if (row_idx < 0) {
+		return false;
+	}
 	int mti = get_mti (col);
 	if (mti < 0) {
 		return false;
