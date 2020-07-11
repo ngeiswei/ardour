@@ -471,6 +471,22 @@ MultiTrackPattern::midi_region_pattern (int mti, int mri) const
 	return *tps[mti]->midi_track_pattern ()->mrps[mri];
 }
 
+AutomationPattern*
+MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param)
+{
+	if (TrackerUtils::is_region_automation (param))
+		return &midi_region_pattern (mti, mri).rap;
+	return tps[mti];
+}
+
+const AutomationPattern*
+MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param) const
+{
+	if (TrackerUtils::is_region_automation (param))
+		return &midi_region_pattern (mti, mri).rap;
+	return tps[mti];
+}
+
 void
 MultiTrackPattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {

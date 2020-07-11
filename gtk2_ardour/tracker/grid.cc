@@ -3140,21 +3140,21 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 	std::stringstream ss;
 	size_t count = pattern.automation_list_count (row_idx, mti, mri, param);
 	if (0 < count) {
-		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
+		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>";
 		if (0 <= mri) {
-			ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
+			ss << ", <u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>";
 		}
-		ss << "<u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>" << std::endl;
-		ss << "<u>Count</u>: <b>" << count << "</b>" << std::endl;
-		// NEXT: wrap in a method
-		AutomationPattern* ap;// = TrackerUtils::is_region_automation (param) ?
-			// pattern.midi_region_pattern (mti, mri).
-			// : // NEXT
+		ss << ", <u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>";
+		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param);
 		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
-			ss << std::endl << "<u>BBT</u>: <b>" << ap->get_automation_bbt (param, rng.first) << "</b>"
-			   << ", <u>Value</u>: <b>" << ap->get_automation_value (rng.first) << "</b>"
-			   << ", <u>Delay</u>: <b>" << ap->get_automation_delay (param, rng.first) << "</b>";
+			Timecode::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
+			double value = ap->get_automation_value (rng.first);
+			int delay = ap->get_automation_delay (param, rng.first);
+			const int precision = 12;
+			ss << std::endl << "<u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
+			   << ", <u>Value</u>: <b>" << TrackerUtils::num_to_string(value, base (), precision) << "</b>"
+			   << ", <u>Delay</u>: <b>" << TrackerUtils::num_to_string(delay, base ()) << "</b>";
 		}
 		return ss.str ();
 	} else {
