@@ -138,6 +138,9 @@ public:
 	MidiRegionPattern& midi_region_pattern (int mti, int mri);
 	const MidiRegionPattern& midi_region_pattern (int mti, int mri) const;
 
+	AutomationPattern* automation_pattern (int mti, int mri, const Evoral::Parameter& param);
+	const AutomationPattern* automation_pattern (int mti, int mri, const Evoral::Parameter& param) const;
+
 	// Apply given command at mti
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
