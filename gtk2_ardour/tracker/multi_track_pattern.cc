@@ -307,6 +307,9 @@ MultiTrackPattern::sample_at_row_at_mti (int rowi, int mti, int delay) const
 size_t
 MultiTrackPattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
 {
+	if (rowi < 0 or mti < 0 or mri < 0 or cgi < 0)
+		return 0;
+
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	return mtp->mrps[mri]->np.off_notes[cgi].count (to_rrri (rowi, mti, mri));
 }
@@ -314,6 +317,9 @@ MultiTrackPattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
 size_t
 MultiTrackPattern::on_notes_count (int rowi, int mti, int mri, int cgi) const
 {
+	if (rowi < 0 or mti < 0 or mri < 0 or cgi < 0)
+		return 0;
+
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	return mtp->mrps[mri]->np.on_notes[cgi].count (to_rrri (rowi, mti, mri));
 }
@@ -321,6 +327,9 @@ MultiTrackPattern::on_notes_count (int rowi, int mti, int mri, int cgi) const
 bool
 MultiTrackPattern::is_note_displayable (int rowi, int mti, int mri, int cgi) const
 {
+	if (rowi < 0 or mti < 0 or mri < 0 or cgi < 0)
+		return 0;
+
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	return mtp->mrps[mri]->np.is_displayable (to_rrri (rowi, mti, mri), cgi);
 }
