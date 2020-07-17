@@ -274,6 +274,8 @@ AutomationPattern::get_actrl (const Evoral::Parameter& param) const
 		return 0;
 	}
 
+	std::cout << "AutomationPattern::to_string:" << std::endl << to_string() << std::endl;
+
 	ParamAutomationControlMap::const_iterator it = param_to_actrl.find (param);
 	if (it != param_to_actrl.end ()) {
 		return it->second;
