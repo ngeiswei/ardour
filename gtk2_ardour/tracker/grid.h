@@ -452,7 +452,7 @@ private:
 	bool is_current_col_defined () const;
 
 	// Return true iff the current cursor is defined.
-	// WARNING: cannot be const of is_defined,
+	// WARNING: cannot be const because of is_cell_defined.
 	bool is_current_cursor_defined ();
 
 	// Set current row, including drawing row background
@@ -490,7 +490,7 @@ private:
 	bool is_automation_defined (int row_idx, int mti, int cgi) const;
 
 	// Check if the cell is blank, that is it is defined and editable but
-	// contains no datum. Warning: cannot be const due to has_note.
+	// contains no datum. Warning: cannot be const due to is_cell_defined.
 	bool is_cell_blank (int row_idx, const Gtk::TreeViewColumn* col);
 	bool is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 
@@ -561,21 +561,24 @@ private:
 	bool step_editing_delete_automation_delay ();
 
 	// Get note from path, mti and cgi
-	NotePtr get_on_note (const std::string& path, int mti, int cgi);
-	NotePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi);
-	NotePtr get_on_note (int row_idx, int mti, int cgi);
-	NotePtr get_off_note (const std::string& path, int mti, int cgi);
-	NotePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
-	NotePtr get_off_note (int row_idx, int mti, int cgi);
+	NotePtr get_on_note (const std::string& path, int mti, int cgi) const;
+	NotePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi) const;
+	NotePtr get_on_note (int row_idx, int mti, int cgi) const;
+	NotePtr get_off_note (const std::string& path, int mti, int cgi) const;
+	NotePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
+	NotePtr get_off_note (int row_idx, int mti, int cgi) const;
 
-	// Get on or off note from path, mti and cgi
-	NotePtr get_note (int row_idx, int mti, int cgi);
-	NotePtr get_note (const std::string& path, int mti, int cgi);
-	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	// Get on or off note from path, mti and cgi.
+	NotePtr get_note (int row_idx, int mti, int cgi) const;
+	NotePtr get_note (const std::string& path, int mti, int cgi) const;
+	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 
-	// Return true iff there is a on or off note at this coordonate
-	// Warning: cannot be const due to get_note.
-	bool has_note (const Gtk::TreeModel::Path& path, int mti, int cgi);
+	// Return true iff there is a on or off note at this coordonate.
+	bool has_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
+
+	// Return iterator range of on (resp. off) notes
+	RowToNotesRange get_on_notes (int row_idx, int mti, int cgi) const;
+	RowToNotesRange get_off_notes (int row_idx, int mti, int cgi) const;
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);

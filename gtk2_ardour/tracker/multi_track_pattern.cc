@@ -345,8 +345,8 @@ MultiTrackPattern::off_note (int rowi, int mti, int mri, int cgi) const
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
 	if ((int)mrp.np.off_notes.size () <= cgi)
 		return 0;
-	const NotePattern::RowToNotes& rtn = mrp.np.off_notes[cgi];
-	NotePattern::RowToNotes::const_iterator i_off = rtn.find (to_rrri (rowi, mti, mri));
+	const RowToNotes& rtn = mrp.np.off_notes[cgi];
+	RowToNotes::const_iterator i_off = rtn.find (to_rrri (rowi, mti, mri));
 	if (i_off != rtn.end ()) {
 		return i_off->second;
 	}
@@ -364,12 +364,26 @@ MultiTrackPattern::on_note (int rowi, int mti, int mri, int cgi) const
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
 	if ((int)mrp.np.on_notes.size () <= cgi)
 		return 0;
-	const NotePattern::RowToNotes& rtn = mrp.np.on_notes[cgi];
-	NotePattern::RowToNotes::const_iterator i_on = rtn.find (to_rrri (rowi, mti, mri));
+	const RowToNotes& rtn = mrp.np.on_notes[cgi];
+	RowToNotes::const_iterator i_on = rtn.find (to_rrri (rowi, mti, mri));
 	if (i_on != rtn.end ()) {
 		return i_on->second;
 	}
 	return 0;
+}
+
+RowToNotesRange
+MultiTrackPattern::off_notes (int row_idx, int mti, int mri, int cgi) const
+{
+	// NEXT
+	return RowToNotesRange ();
+}
+
+RowToNotesRange
+MultiTrackPattern::on_notes (int row_idx, int mti, int mri, int cgi) const
+{
+	// NEXT
+	return RowToNotesRange ();
 }
 
 bool
