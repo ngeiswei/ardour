@@ -39,10 +39,6 @@
 
 namespace Tracker {
 
-typedef ARDOUR::AutomationList::iterator AutomationListIt;
-typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
-typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
-
 typedef boost::shared_ptr<ARDOUR::Track> TrackPtr;
 typedef boost::shared_ptr<ARDOUR::MidiTrack> MidiTrackPtr;
 typedef boost::shared_ptr<ARDOUR::AudioTrack> AudioTrackPtr;
@@ -60,6 +56,13 @@ typedef std::vector<MidiRegionPtr> MidiRegionSeq;
 typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 typedef std::map<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlMap;
 typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlPair;
+
+typedef ARDOUR::AutomationList::iterator AutomationListIt;
+typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
+typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
+
+typedef std::multimap<int, NotePtr> RowToNotes;
+typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
 /**
  * Less than operator for regions, order according to position, earlier comes first

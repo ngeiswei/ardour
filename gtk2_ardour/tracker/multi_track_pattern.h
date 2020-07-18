@@ -94,6 +94,8 @@ public:
 	bool is_note_displayable (int rowi, int mti, int mri, int cgi) const;
 	NotePtr off_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr on_note (int rowi, int mti, int mri, int cgi) const;
+	RowToNotesRange off_notes (int rowi, int mti, int mri, int cgi) const;
+	RowToNotesRange on_notes (int rowi, int mti, int mri, int cgi) const;
 
 	bool is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
