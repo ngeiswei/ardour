@@ -22,8 +22,8 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
-- [ ] Add tooltips to each cell, showing the parameter or note name, hex and
-      dec values with arbitrary precision.
+- [ ] Add tooltips to each cell showing note name
+- [ ] Set position when clicking on the digit position (if the cell is already selected)
 - [ ] Fix automation of different processors
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
