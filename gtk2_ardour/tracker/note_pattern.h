@@ -54,10 +54,6 @@ public:
 
 	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& prev) const;
 
-	// Map row index to note.
-	typedef std::multimap<int, NotePtr> RowToNotes;
-	typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
-
 	// Build or rebuild the pattern (implement BasePattern::update)
 	void update ();
 

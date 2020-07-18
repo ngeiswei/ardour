@@ -385,8 +385,8 @@ NotePattern::is_displayable (int row, int cgi) const
 {
 	size_t off_notes_count = off_notes[cgi].count (row);
 	size_t on_notes_count = on_notes[cgi].count (row);
-	NotePattern::RowToNotes::const_iterator i_off = off_notes[cgi].find (row);
-	NotePattern::RowToNotes::const_iterator i_on = on_notes[cgi].find (row);
+	RowToNotes::const_iterator i_off = off_notes[cgi].find (row);
+	RowToNotes::const_iterator i_on = on_notes[cgi].find (row);
 	return off_notes_count <= 1 && on_notes_count <= 1
 		&& (off_notes_count != 1 || on_notes_count != 1
 		    || i_off->second->end_time () == i_on->second->time ());
