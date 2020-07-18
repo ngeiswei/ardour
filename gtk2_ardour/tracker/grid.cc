@@ -2047,55 +2047,55 @@ Grid::to_col (int col_idx) const
 }
 
 NotePtr
-Grid::get_on_note (const string& path, int mti, int cgi)
+Grid::get_on_note (const string& path, int mti, int cgi) const
 {
 	return get_on_note (to_path (path), mti, cgi);
 }
 
 NotePtr
-Grid::get_on_note (const TreeModel::Path& path, int mti, int cgi)
+Grid::get_on_note (const TreeModel::Path& path, int mti, int cgi) const
 {
 	return get_on_note (to_row_index (path), mti, cgi);
 }
 
 NotePtr
-Grid::get_on_note (int row_idx, int mti, int cgi)
+Grid::get_on_note (int row_idx, int mti, int cgi) const
 {
 	return pattern.on_note (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
 }
 
 NotePtr
-Grid::get_off_note (const string& path_str, int mti, int cgi)
+Grid::get_off_note (const string& path_str, int mti, int cgi) const
 {
 	return get_off_note (to_path (path_str), mti, cgi);
 }
 
 NotePtr
-Grid::get_off_note (const TreeModel::Path& path, int mti, int cgi)
+Grid::get_off_note (const TreeModel::Path& path, int mti, int cgi) const
 {
 	return get_off_note (to_row_index (path), mti, cgi);
 }
 
 NotePtr
-Grid::get_off_note (int row_idx, int mti, int cgi)
+Grid::get_off_note (int row_idx, int mti, int cgi) const
 {
 	return pattern.off_note (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
 }
 
 NotePtr
-Grid::get_note (int row_idx, int mti, int cgi)
+Grid::get_note (int row_idx, int mti, int cgi) const
 {
 	return get_note (to_path (row_idx), mti, cgi);
 }
 
 NotePtr
-Grid::get_note (const string& path_str, int mti, int cgi)
+Grid::get_note (const string& path_str, int mti, int cgi) const
 {
 	return get_note (to_path (path_str), mti, cgi);
 }
 
 NotePtr
-Grid::get_note (const TreeModel::Path& path, int mti, int cgi)
+Grid::get_note (const TreeModel::Path& path, int mti, int cgi) const
 {
 	NotePtr on_note = get_on_note (path, mti, cgi);
 	if (on_note) {
@@ -2105,9 +2105,21 @@ Grid::get_note (const TreeModel::Path& path, int mti, int cgi)
 }
 
 bool
-Grid::has_note (const TreeModel::Path& path, int mti, int cgi)
+Grid::has_note (const TreeModel::Path& path, int mti, int cgi) const
 {
 	return get_note (path, mti, cgi) != 0;
+}
+
+RowToNotesRange
+Grid::get_on_notes (int row_idx, int mti, int cgi) const
+{
+	return pattern.on_notes (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
+}
+
+RowToNotesRange
+Grid::get_off_notes (int row_idx, int mti, int cgi) const
+{
+	return pattern.off_notes (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
 }
 
 void
@@ -3125,6 +3137,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
 	if (0 < pattern.off_notes_count (row_idx, mti, mri, cgi) or
 	    0 < pattern.on_notes_count (row_idx, mti, mri, cgi)) {
+		// NEXT: use get_on_notes and get_off_notes
 		return "Hello note!";
 	} else {
 		return "";
