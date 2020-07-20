@@ -912,14 +912,12 @@ Grid::redisplay_global_columns ()
 		}
 		TreeModel::Row row = *row_it++;
 
-		Temporal::Beats row_beats = pattern.earliest_tp->beats_at_row (row_idx);
-		int row_sample = pattern.earliest_tp->sample_at_row (row_idx);
-
 		// Time
 		Timecode::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
 		row[columns.time] = TrackerUtils::bbt_to_string (row_bbt, base ());
 
 		// If the row is on a bar, beat or otherwise, the color differs
+		Temporal::Beats row_beats = pattern.earliest_tp->beats_at_row (row_idx);
 		bool is_row_beat = row_beats == row_beats.round_up_to_beat ();
 		bool is_row_bar = row_bbt.beats == 1;
 		string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
@@ -2110,18 +2108,6 @@ Grid::has_note (const TreeModel::Path& path, int mti, int cgi) const
 	return get_note (path, mti, cgi) != 0;
 }
 
-RowToNotesRange
-Grid::get_on_notes (int row_idx, int mti, int cgi) const
-{
-	return pattern.on_notes (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
-}
-
-RowToNotesRange
-Grid::get_off_notes (int row_idx, int mti, int cgi) const
-{
-	return pattern.off_notes (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
-}
-
 void
 Grid::editing_note_started (CellEditable* ed, const string& path, int mti, int cgi)
 {
@@ -3135,13 +3121,30 @@ Grid::time_tooltip_msg (int row_idx) const
 std::string
 Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
-	if (0 < pattern.off_notes_count (row_idx, mti, mri, cgi) or
-	    0 < pattern.on_notes_count (row_idx, mti, mri, cgi)) {
-		// NEXT: use get_on_notes and get_off_notes
-		return "Hello note!";
-	} else {
-		return "";
+	size_t off_count = pattern.off_notes_count (row_idx, mti, mri, cgi);
+	size_t on_count = pattern.on_notes_count (row_idx, mti, mri, cgi);
+	if (0 < off_count || 0 < on_count) {
+		std::stringstream ss;
+		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
+		ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
+		ss << "<u>Notes</u>:";
+		if (0 < off_count) {
+			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
+			for (; off_rng.first != off_rng.second; ++off_rng.first) {
+				NotePtr off_note = *off_rng.first;
+				ss << std::endl << "    Off note"; // NEXT
+			}
+		}
+		if (0 < on_count) {
+			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
+			for (; on_rng.first != on_rng.second; ++on_rng.first) {
+				NotePtr on_note = *off_rng.first;
+				ss << std::endl << "    On note"; // NEXT
+			}
+		}
+		return ss.str ();
 	}
+	return std::string ();
 }
 
 std::string
@@ -3151,11 +3154,12 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 	std::stringstream ss;
 	size_t count = pattern.automation_list_count (row_idx, mti, mri, param);
 	if (0 < count) {
-		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>";
+		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
 		if (0 <= mri) {
-			ss << ", <u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>";
+			ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
 		}
-		ss << ", <u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>";
+		ss << "<u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>" << std::endl;
+		ss << "<u>Values</u>:";
 		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param);
 		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
@@ -3163,7 +3167,7 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			double value = ap->get_automation_value (rng.first);
 			int delay = ap->get_automation_delay (param, rng.first);
 			const int precision = 6;
-			ss << std::endl << "<u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
+			ss << std::endl << "  <u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
 			   << ", <u>Value</u>: <b>" << TrackerUtils::num_to_string(value, base (), precision) << "</b>"
 			   << ", <u>Delay</u>: <b>" << TrackerUtils::num_to_string(delay, base ()) << "</b>";
 		}
