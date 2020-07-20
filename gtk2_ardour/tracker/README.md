@@ -22,6 +22,7 @@ Just compile Ardour as you regularly would after checking out that branch.
 
 ## TODO
 
+- [ ] Avoid using `get_<something> ()` just use `<something> ()`
 - [ ] Add tooltips to each cell showing note name
 - [ ] Set position when clicking on the digit position (if the cell is already selected)
 - [ ] Fix automation of different processors
