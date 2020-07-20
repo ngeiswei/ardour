@@ -576,10 +576,6 @@ private:
 	// Return true iff there is a on or off note at this coordonate.
 	bool has_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 
-	// Return iterator range of on (resp. off) notes
-	RowToNotesRange get_on_notes (int row_idx, int mti, int cgi) const;
-	RowToNotesRange get_off_notes (int row_idx, int mti, int cgi) const;
-
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 	void editing_note_channel_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
 	void editing_note_velocity_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
