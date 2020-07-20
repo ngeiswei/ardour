@@ -175,9 +175,8 @@ BasePattern::beats_at_row (int rowi, int delay) const
 Timecode::BBT_Time
 BasePattern::bbt_at_row (int rowi, int delay) const
 {
-	Timecode::BBT_Time bbt;
-	_session->bbt_time (sample_at_row (rowi, delay), bbt);
-	return bbt;
+	double beats = beats_at_row (rowi, delay).to_double ();
+	return _session->tempo_map ().bbt_at_beat (beats);
 }
 
 Temporal::Beats
