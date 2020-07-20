@@ -94,8 +94,8 @@ public:
 	bool is_note_displayable (int rowi, int mti, int mri, int cgi) const;
 	NotePtr off_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr on_note (int rowi, int mti, int mri, int cgi) const;
-	RowToNotesRange off_notes (int rowi, int mti, int mri, int cgi) const;
-	RowToNotesRange on_notes (int rowi, int mti, int mri, int cgi) const;
+	RowToNotesRange off_notes_range (int rowi, int mti, int mri, int cgi) const;
+	RowToNotesRange on_notes_range (int rowi, int mti, int mri, int cgi) const;
 
 	bool is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
@@ -133,10 +133,13 @@ public:
 	// Return the midi region at mti and mri
 	MidiRegionPtr midi_region (int mti, int mri);
 	
-	// Return the note pattern at mti and mri
+	// Return the note pattern at mti and mri.  TODO: maybe return a pointer as
+	// to return 0 if undefined.
 	NotePattern& note_pattern (int mti, int mri);
+	const NotePattern& note_pattern (int mti, int mri) const;
 
-	// Return the midi region pattern at mti and mri
+	// Return the midi region pattern at mti and mri.  TODO: maybe return a
+	// pointer as to return 0 if undefined.
 	MidiRegionPattern& midi_region_pattern (int mti, int mri);
 	const MidiRegionPattern& midi_region_pattern (int mti, int mri) const;
 
