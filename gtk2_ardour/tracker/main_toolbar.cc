@@ -637,6 +637,7 @@ MainToolbar::hex_press (GdkEventButton* ev)
 	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	// TODO: send signal to TrackerEditor
+	// NEXT: make sure that everything is redrawn
 	tracker_editor.grid.redisplay_grid_direct_call ();
 
 	return false;
