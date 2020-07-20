@@ -3128,18 +3128,23 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
 		ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
 		ss << "<u>Notes</u>:";
+		const NotePattern& note_pattern = pattern.note_pattern (mti, mri);
 		if (0 < off_count) {
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
-				NotePtr off_note = *off_rng.first;
-				ss << std::endl << "    Off note"; // NEXT
+				NotePtr off_note = off_rng.first->second;
+				Timecode::BBT_Time bbt = note_pattern.off_note_bbt (off_note);
+				ss << std::endl << "  <u>BBT</u>: " << TrackerUtils::bbt_to_string (bbt, base ());
+				ss << ", Off note"; // NEXT
 			}
 		}
 		if (0 < on_count) {
 			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
-				NotePtr on_note = *off_rng.first;
-				ss << std::endl << "    On note"; // NEXT
+				NotePtr on_note = on_rng.first->second;
+				Timecode::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
+				ss << std::endl << "  <u>BBT</u>: " << TrackerUtils::bbt_to_string (bbt, base ());
+				ss << ", On note"; // NEXT
 			}
 		}
 		return ss.str ();
