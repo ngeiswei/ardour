@@ -100,6 +100,10 @@ public:
 	// know on which track idx a new note should be.
 	void add (int cgi, NotePtr note);
 
+	// Get the bbt of an on (resp. off) note
+	Timecode::BBT_Time on_note_bbt (NotePtr note) const;
+	Timecode::BBT_Time off_note_bbt (NotePtr note) const;
+
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
