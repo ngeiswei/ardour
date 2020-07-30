@@ -287,7 +287,7 @@ AutomationPattern::get_actrl (const Evoral::Parameter& param) const
 size_t
 AutomationPattern::automation_list_count (int rowi, const Evoral::Parameter& param) const
 {
-	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param);
+	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param); // NEXT: understand what the heck is going on (segfault)
 	if (it != param_to_row_to_ali.end ()) {
 		return it->second.count (rowi);
 	}
