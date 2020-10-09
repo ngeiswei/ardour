@@ -2598,7 +2598,7 @@ void Grid::play_note (int mti, uint8_t pitch, uint8_t ch, uint8_t vel)
 	event[0] = (MIDI_CMD_NOTE_ON | ch);
 	event[1] = pitch;
 	event[2] = vel;
-	pattern.tps[mti]->midi_track ()->write_immediate_event (3, event);
+	send_live_midi_event (mti, event);
 
 	pressed_keys_pitch_to_channel[pitch] = ch;
 }
@@ -2612,10 +2612,16 @@ void Grid::release_note (int mti, uint8_t pitch)
 	event[0] = (MIDI_CMD_NOTE_OFF | ch);
 	event[1] = pitch;
 	event[2] = 0;
-	pattern.tps[mti]->midi_track ()->write_immediate_event (3, event);
+	send_live_midi_event (mti, event);
 
 	if (is_present)
 		pressed_keys_pitch_to_channel.erase (it);
+}
+
+void
+Grid::send_live_midi_event (int mti, const uint8_t* buf)
+{
+	pattern.tps[mti]->midi_track ()->write_immediate_event (Evoral::LIVE_MIDI_EVENT, 3, buf);
 }
 
 void
