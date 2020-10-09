@@ -440,6 +440,7 @@ private:
 	void play_note (int mti, uint8_t pitch);
 	void play_note (int mti, uint8_t pitch, uint8_t ch, uint8_t vel);
 	void release_note (int mti, uint8_t pitch);
+	void send_live_midi_event (int mti, const uint8_t* buf);
 
 	// Set current cursor
 	void set_current_cursor (int row_idx, Gtk::TreeViewColumn* col, bool set_playhead=false);
