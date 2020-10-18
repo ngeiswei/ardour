@@ -148,6 +148,51 @@ AutomationPattern::rows_diff (const RowToAutomationListIt& l_row2auto, const Row
 	}
 }
 
+void
+AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToControlEvents& r_row2ces, std::set<int>& rows) const
+{
+	for (RowToControlEvents::const_iterator l_it = l_row2ces.begin (); l_it != l_row2ces.end ();) {
+		int row = l_it->first;
+		const Evoral::ControlEvent& l_ce = l_it->second;
+
+		// First, look at the difference in displayability
+		bool is_cell_displayable = is_displayable (row, l_row2ces);
+		bool cell_diff = is_cell_displayable != is_displayable (row, r_row2ces);
+		if (cell_diff) {
+			rows.insert (row);
+		}
+		if (!is_cell_displayable) {
+			// It means there are more than one value, jump to the next row
+			l_it = l_row2ces.upper_bound (row);
+			continue;
+		}
+		if (cell_diff) {
+			++l_it;
+			continue;
+		}
+
+		// Check if the event exist in other, and if so if it is equal
+		RowToControlEvents::const_iterator r_it = r_row2ces.find (row);
+		if (r_it != r_row2ces.end ()) {
+			const Evoral::ControlEvent& r_ce = r_it->second;
+			if (!TrackerUtils::is_equal (l_ce, r_ce)) {
+				// Update all affected row, taking interpolation into account
+				std::pair<int, int> r = prev_next_range (r_it, l_row2ces);
+				for (int rowi = r.first; rowi <= r.second; rowi++) {
+					rows.insert (rowi);
+				}
+			}
+		} else {
+			// Update all affected row, taking interpolation into account
+			std::pair<int, int> r = prev_next_range (row, l_row2ces);
+			for (int rowi = r.first; rowi <= r.second; rowi++) {
+				rows.insert (rowi);
+			}
+		}
+		++l_it;
+	}
+}
+
 AutomationPatternPhenomenalDiff
 AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 {
@@ -284,6 +329,7 @@ AutomationPattern::get_actrl (const Evoral::Parameter& param) const
 	return 0;
 }
 
+// NEXT: remove when useless
 size_t
 AutomationPattern::automation_list_count (int rowi, const Evoral::Parameter& param) const
 {
@@ -294,10 +340,27 @@ AutomationPattern::automation_list_count (int rowi, const Evoral::Parameter& par
 	return 0;
 }
 
+size_t
+AutomationPattern::control_events_count (int rowi, const Evoral::Parameter& param) const
+{
+	ParamToRowToControlEvents::const_iterator it = param_to_row_to_ces.find (param);
+	if (it != param_to_row_to_ces.end ()) {
+		return it->second.count (rowi);
+	}
+	return 0;
+}
+
+// NEXT: remove when useless
 RowToAutomationListItRange
 AutomationPattern::automation_list_range (int rowi, const Evoral::Parameter& param) const
 {
-	param_to_row_to_ali.find (param)->second.equal_range (rowi);
+	return param_to_row_to_ali.find (param)->second.equal_range (rowi);
+}
+
+RowToControlEventsRange
+AutomationPattern::control_events_range (int rowi, const Evoral::Parameter& param) const
+{
+	return param_to_row_to_ces.find (param)->second.equal_range (rowi);
 }
 
 std::string
@@ -342,15 +405,24 @@ AutomationPattern::is_displayable (int row, const Evoral::Parameter& param) cons
 	return pit == param_to_row_to_ali.end () || is_displayable (row, pit->second);
 }
 
+// NEXT: remove
 bool
-AutomationPattern::is_displayable (int row, RowToAutomationListIt r2a)
+AutomationPattern::is_displayable (int row, const RowToAutomationListIt& r2a)
 {
 	return r2a.count (row) <= 1;
+}
+
+bool
+AutomationPattern::is_displayable (int row, const RowToControlEvents& r2ces)
+{
+	return r2ces.count (row) <= 1;
 }
 
 AutomationListIt
 AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 {
+	// NEXT: maybe that's the part to change. Look for the iterator
+	// pointing to an event at rowi.
 	return param_to_row_to_ali.find (param)->second.find (rowi)->second;
 }
 
@@ -520,6 +592,9 @@ AutomationPattern::add_automation_point (AutomationListPtr alist, double when, d
 	}
 }
 
+// NEXT: probably overload modify_automation_point to take an index
+// and retrieve it to call that function below.
+
 void
 AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationListIt it, double when, double val)
 {
@@ -540,18 +615,21 @@ AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationLi
 	tracker_editor.grid.register_automation_undo (alist, _("delete automation event"), before, after);
 }
 
+// NEXT: port
 RowToAutomationListIt::const_iterator
 AutomationPattern::find_prev (RowToAutomationListIt::const_iterator it) const
 {
 	return --it;
 }
 
+// NEXT: port
 RowToAutomationListIt::const_iterator
 AutomationPattern::find_next (RowToAutomationListIt::const_iterator it) const
 {
 	return ++it;
 }
 
+// NEXT: port
 RowToAutomationListIt::const_iterator
 AutomationPattern::find_prev (int row, const RowToAutomationListIt& r2a) const
 {
@@ -561,6 +639,7 @@ AutomationPattern::find_prev (int row, const RowToAutomationListIt& r2a) const
 	return rit != r2a.rend () ? lattest (r2a.equal_range (rit->first)) : rit.base ();
 }
 
+// NEXT: port
 RowToAutomationListIt::const_iterator
 AutomationPattern::find_next (int row, const RowToAutomationListIt& r2a) const
 {
@@ -569,6 +648,7 @@ AutomationPattern::find_next (int row, const RowToAutomationListIt& r2a) const
 	return it != r2a.end () ? earliest (r2a.equal_range (it->first)) : it;
 }
 
+// NEXT: port
 std::pair<int, int>
 AutomationPattern::prev_next_range (RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const
 {
@@ -581,6 +661,7 @@ AutomationPattern::prev_next_range (RowToAutomationListIt::const_iterator it, co
 	return std::make_pair (p_row, n_row);
 }
 
+// NEXT: port
 std::pair<int, int>
 AutomationPattern::prev_next_range (int row, const RowToAutomationListIt& row2auto) const
 {
@@ -593,6 +674,7 @@ AutomationPattern::prev_next_range (int row, const RowToAutomationListIt& row2au
 	return std::make_pair (p_row, n_row);
 }
 
+// NEXT: port
 RowToAutomationListIt::const_iterator
 AutomationPattern::earliest (const RowToAutomationListItRange& rng) const
 {
@@ -607,6 +689,7 @@ AutomationPattern::earliest (const RowToAutomationListItRange& rng) const
 	return res_it;
 }
 
+// NEXT: port
 RowToAutomationListIt::const_iterator
 AutomationPattern::lattest (const RowToAutomationListItRange& rng) const
 {
@@ -615,6 +698,87 @@ AutomationPattern::lattest (const RowToAutomationListItRange& rng) const
 	++it;
 	for (; it != rng.second; ++it) {
 		if ((*it->second)->when < (*res_it->second)->when) {
+			res_it = it;
+		}
+	}
+	return res_it;
+}
+
+RowToControlEvents::const_iterator
+AutomationPattern::find_prev (RowToControlEvents::const_iterator it) const
+{
+	return --it;
+}
+
+RowToControlEvents::const_iterator
+AutomationPattern::find_next (RowToControlEvents::const_iterator it) const
+{
+	return ++it;
+}
+
+RowToControlEvents::const_iterator
+AutomationPattern::find_prev (int row, const RowToControlEvents& r2ces) const
+{
+	RowToControlEvents::const_reverse_iterator rit =
+		std::reverse_iterator<RowToControlEvents::const_iterator> (r2ces.lower_bound (row));
+	while (rit != r2ces.rend () && rit->first == row) { ++rit; };
+	return rit != r2ces.rend () ? lattest (r2ces.equal_range (rit->first)) : rit.base ();
+}
+
+RowToControlEvents::const_iterator
+AutomationPattern::find_next (int row, const RowToControlEvents& r2ces) const
+{
+	RowToControlEvents::const_iterator it = r2ces.upper_bound (row);
+	while (it != r2ces.end () && it->first == row) { ++it; };
+	return it != r2ces.end () ? earliest (r2ces.equal_range (it->first)) : it;
+}
+
+std::pair<int, int>
+AutomationPattern::prev_next_range (RowToControlEvents::const_iterator it, const RowToControlEvents& row2ces) const
+{
+	RowToControlEvents::const_iterator p_it = find_prev (it);
+	RowToControlEvents::const_iterator n_it = find_next (it);
+	int p_row = p_it != row2ces.end () ? p_it->first : 0;
+	int n_row = n_it != row2ces.end () ? n_it->first : nrows - 1;
+	p_row = std::min (p_row + 1, it->first);
+	n_row = std::max (n_row - 1, it->first);
+	return std::make_pair (p_row, n_row);
+}
+
+std::pair<int, int>
+AutomationPattern::prev_next_range (int row, const RowToControlEvents& row2ces) const
+{
+	RowToControlEvents::const_iterator p_it = find_prev (row, row2ces);
+	RowToControlEvents::const_iterator n_it = find_next (row, row2ces);
+	int p_row = p_it != row2ces.end () ? p_it->first : 0;
+	int n_row = n_it != row2ces.end () ? n_it->first : nrows - 1;
+	p_row = std::min (p_row + 1, row);
+	n_row = std::max (n_row - 1, row);
+	return std::make_pair (p_row, n_row);
+}
+
+RowToControlEvents::const_iterator
+AutomationPattern::earliest (const RowToControlEventsRange& rng) const
+{
+	RowToControlEvents::const_iterator res_it = rng.first;
+	RowToControlEvents::const_iterator it = res_it;
+	++it;
+	for (; it != rng.second; ++it) {
+		if (res_it->second.when < it->second.when) {
+			res_it = it;
+		}
+	}
+	return res_it;
+}
+
+RowToControlEvents::const_iterator
+AutomationPattern::lattest (const RowToControlEventsRange& rng) const
+{
+	RowToControlEvents::const_iterator res_it = rng.first;
+	RowToControlEvents::const_iterator it = res_it;
+	++it;
+	for (; it != rng.second; ++it) {
+		if (it->second.when < res_it->second.when) {
 			res_it = it;
 		}
 	}
