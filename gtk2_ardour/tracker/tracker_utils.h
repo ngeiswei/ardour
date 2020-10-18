@@ -57,10 +57,14 @@ typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap
 typedef std::map<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlMap;
 typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlPair;
 
+// NEXT: remove when useless
 typedef ARDOUR::AutomationList::iterator AutomationListIt;
 typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
 typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
 
+typedef std::multimap<int, Evoral::ControlEvent> RowToControlEvents;
+typedef std::pair<RowToControlEvents::const_iterator, RowToControlEvents::const_iterator> RowToControlEventsRange;
+	
 typedef std::multimap<int, NotePtr> RowToNotes;
 typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
