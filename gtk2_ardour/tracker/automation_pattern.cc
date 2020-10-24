@@ -194,7 +194,7 @@ AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToCo
 }
 
 AutomationPatternPhenomenalDiff
-AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
+AutomationPattern::phenomenal_diff_old (const AutomationPattern& prev) const
 {
 	AutomationPatternPhenomenalDiff diff;
 	if (!prev.enabled && !enabled) {
@@ -242,6 +242,54 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 	return diff;
 }
 
+AutomationPatternPhenomenalDiff
+AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
+{
+	AutomationPatternPhenomenalDiff diff;
+	if (!prev.enabled && !enabled) {
+		return diff;
+	}
+
+	for (ParamEnabledMap::const_iterator pe_it = param_to_enabled.begin (); pe_it != param_to_enabled.end (); ++pe_it) {
+		const Evoral::Parameter& param = pe_it->first;
+		RowsPhenomenalDiff rd;
+
+		// If this is disabled ignore their differences, otherwise consider full
+		// phenomenal diff if one is enabled while the other is not.
+		if (!pe_it->second) {
+			continue;
+		}
+		if (pe_it->second != prev.param_to_enabled[param]) {
+			rd.full = true;
+			diff.param2rows_diff[param] = rd;
+			continue;
+		}
+
+		// Make sure the parameter is in prev, otherwise make the corresponding RowsPhenomenalDiff full
+		ParamToRowToControlEvents::const_iterator pra_it = param_to_row_to_ces.find (param);
+		ParamToRowToControlEvents::const_iterator prev_pra_it = prev.param_to_row_to_ces.find (param);
+		if (pra_it == param_to_row_to_ces.end () && prev_pra_it == prev.param_to_row_to_ces.end ()) {
+			continue;
+		}
+		if (pra_it == param_to_row_to_ces.end () || prev_pra_it == prev.param_to_row_to_ces.end ()) {
+			rd.full = true;
+			diff.param2rows_diff[param] = rd;
+			continue;
+		}
+
+		// Both are defined, consider the rows for phenomenal diff
+		const RowToControlEvents& row2ces = pra_it->second;
+		const RowToControlEvents& prev_row2ces = prev_pra_it->second;
+		rows_diff (row2ces, prev_row2ces, rd.rows);
+		rows_diff (prev_row2ces, row2ces, rd.rows);
+		if (!rd.empty ()) {
+			diff.param2rows_diff[param] = rd;
+		}
+	}
+
+	return diff;
+}
+
 int
 AutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
@@ -258,7 +306,7 @@ AutomationPattern::update ()
 }
 
 void
-AutomationPattern::update_automations ()
+AutomationPattern::update_automations_old ()
 {
 	param_to_row_to_ali.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actrl = param_to_actrl.begin (); param_actrl != param_to_actrl.end (); ++param_actrl) {
@@ -276,6 +324,31 @@ AutomationPattern::update_automations ()
 			int row = event2row (param, *it);
 			if (row != INVALID_ROW) {
 				param_to_row_to_ali[param].insert (RowToAutomationListIt::value_type (row, it));
+			}
+		}
+	}
+}
+
+void
+AutomationPattern::update_automations ()
+{
+	param_to_row_to_ces.clear ();
+	for (ParamAutomationControlMap::const_iterator param_actrl = param_to_actrl.begin (); param_actrl != param_to_actrl.end (); ++param_actrl) {
+		AutomationControlPtr actrl = param_actrl->second;
+		AutomationListPtr al = actrl->alist ();
+		const Evoral::Parameter& param = actrl->parameter ();
+
+		// Save CPU resources
+		if (!param_to_enabled[param]) {
+			continue;
+		}
+
+		// Build automation pattern
+		for (ARDOUR::AutomationList::iterator it = al->begin (); it != al->end (); ++it) {
+			Evoral::ControlEvent* event = *it;
+			int row = event2row (param, event);
+			if (row != INVALID_ROW) {
+				param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
 			}
 		}
 	}
@@ -399,10 +472,17 @@ AutomationPattern::get_alist (const Evoral::Parameter& param) const
 }
 
 bool
-AutomationPattern::is_displayable (int row, const Evoral::Parameter& param) const
+AutomationPattern::is_displayable_old (int row, const Evoral::Parameter& param) const
 {
 	ParamToRowToAutomationListIt::const_iterator pit = param_to_row_to_ali.find (param);
 	return pit == param_to_row_to_ali.end () || is_displayable (row, pit->second);
+}
+
+bool
+AutomationPattern::is_displayable (int row, const Evoral::Parameter& param) const
+{
+	ParamToRowToControlEvents::const_iterator pit = param_to_row_to_ces.find (param);
+	return pit == param_to_row_to_ces.end () || is_displayable (row, pit->second);
 }
 
 // NEXT: remove
@@ -429,14 +509,14 @@ AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 Evoral::ControlEvent*
 AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param)
 {
-	ParamToRowToAutomationListIt::iterator it = param_to_row_to_ali.find (param);
-	if (it == param_to_row_to_ali.end ()) {
+	ParamToRowToControlEvents::iterator it = param_to_row_to_ces.find (param);
+	if (it == param_to_row_to_ces.end ()) {
 		return 0;
 	}
 
-	RowToAutomationListIt::iterator auto_it = it->second.find (rowi);
-	if (auto_it != it->second.end ()) {
-		return *auto_it->second;
+	RowToControlEvents::iterator ces_it = it->second.find (rowi);
+	if (ces_it != it->second.end ()) {
+		return &ces_it->second;
 	}
 
 	return 0;
@@ -445,14 +525,14 @@ AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param)
 const Evoral::ControlEvent*
 AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param) const
 {
-	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param);
-	if (it == param_to_row_to_ali.end ()) {
+	ParamToRowToControlEvents::const_iterator it = param_to_row_to_ces.find (param);
+	if (it == param_to_row_to_ces.end ()) {
 		return 0;
 	}
 
-	RowToAutomationListIt::const_iterator auto_it = it->second.find (rowi);
-	if (auto_it != it->second.end ()) {
-		return *auto_it->second;
+	RowToControlEvents::const_iterator ces_it = it->second.find (rowi);
+	if (ces_it != it->second.end ()) {
+		return &ces_it->second;
 	}
 
 	return 0;
@@ -834,11 +914,19 @@ AutomationPattern::to_string (const std::string& indent) const
 	std::string header = indent + self_to_string () + " ";
 	std::string indent_l1 = indent + "  ";
 	std::string indent_l2 = indent_l1 + "  ";
-	ss << std::endl << header << "param_to_row_to_ali:";
+	ss << std::endl << header << "param_to_row_to_ali:"; // NEXT: remove
 	for (ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.begin (); it != param_to_row_to_ali.end (); ++it) {
 		ss << std::endl << indent_l1 << "param[" << it->first << "]:";
-		for (std::multimap<int, AutomationListIt>::const_iterator r2a_it = it->second.begin (); r2a_it != it->second.end (); ++r2a_it) {
+		for (RowToAutomationListIt::const_iterator r2a_it = it->second.begin (); r2a_it != it->second.end (); ++r2a_it) {
 			ss << std::endl << indent_l2 << "row = " << r2a_it->first << ", auto_lst[" << *r2a_it->second << "] = (when=" << (*r2a_it->second)->when << ", value=" << (*r2a_it->second)->value << ")";
+		}
+	}
+	ss << std::endl << header << "param_to_row_to_ces:";
+	for (ParamToRowToControlEvents::const_iterator it = param_to_row_to_ces.begin (); it != param_to_row_to_ces.end (); ++it) {
+		ss << std::endl << indent_l1 << "param[" << it->first << "]:";
+		for (RowToControlEvents::const_iterator r2ces_it = it->second.begin (); r2ces_it != it->second.end (); ++r2ces_it) {
+			ss << std::endl << indent_l2 << "row = " << r2ces_it->first
+				<< ", ces[" << &r2ces_it->second << "] = (when=" << r2ces_it->second.when << ", value=" << r2ces_it->second.value << ")";
 		}
 	}
 	ss << std::endl << header << "param_to_actrl:";

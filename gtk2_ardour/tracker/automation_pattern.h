@@ -61,6 +61,7 @@ public:
 	void rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<int>& rd) const;
 	void rows_diff (const RowToControlEvents& l_row2ces, const RowToControlEvents& r_row2ces, std::set<int>& rd) const;
 
+	AutomationPatternPhenomenalDiff phenomenal_diff_old (const AutomationPattern& prev) const; // NEXT: remove
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
 	// Assign a control event to a row
@@ -68,6 +69,7 @@ public:
 
 	// Build or rebuild the pattern (implement BasePattern::update ())
 	virtual void update ();
+	void update_automations_old (); // NEXT: remove
 	void update_automations ();
 
 	// Add an automation control in the automation control set and connect it to
@@ -104,6 +106,7 @@ public:
 	
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
+	bool is_displayable_old (int row, const Evoral::Parameter& param) const;
 	bool is_displayable (int row, const Evoral::Parameter& param) const;
 	static bool is_displayable (int row, const RowToAutomationListIt& r2a); // NEXT: remove
 	static bool is_displayable (int row, const RowToControlEvents& r2ces);
