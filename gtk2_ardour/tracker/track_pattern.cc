@@ -169,29 +169,27 @@ TrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& p
 }
 
 size_t
-TrackPattern::automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const
+TrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return AutomationPattern::automation_list_count (rowi, param);
+	return AutomationPattern::control_events_count (rowi, param);
 }
 
-RowToAutomationListItRange
-TrackPattern::automation_list_range (int rowi, int mri, const Evoral::Parameter& param) const
+RowToControlEventsRange
+TrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return AutomationPattern::automation_list_range (rowi, param);
+	return AutomationPattern::control_events_range (rowi, param);
 }
 
 Evoral::ControlEvent*
+TrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param)
+{
+	return get_control_event (rowi, param);
+}
+
+const Evoral::ControlEvent*
 TrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	ParamToRowToAutomationListIt::const_iterator pit = param_to_row_to_ali.find (param);
-	if (pit == param_to_row_to_ali.end())
-		return 0;
-
-	RowToAutomationListIt::const_iterator r2al_it = pit->second.find (rowi);
-	if (r2al_it == pit->second.end())
-		return 0;
-
-	return *r2al_it->second;
+	return get_control_event (rowi, param);
 }
 
 bool

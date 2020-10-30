@@ -99,8 +99,8 @@ public:
 
 	bool is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
-	size_t automation_list_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
-	RowToAutomationListItRange automation_list_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	size_t control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	RowToControlEventsRange control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	NotePtr find_prev_on_note (int rowi, int mti, int mri, int cgi) const;
