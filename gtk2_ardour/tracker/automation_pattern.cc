@@ -139,6 +139,7 @@ AutomationPattern::rows_diff (const RowToAutomationListIt& l_row2auto, const Row
 			}
 		} else {
 			// Update all affected row, taking interpolation into account
+			// TODO: maybe use ControlList::control_points_adjacent
 			std::pair<int, int> r = prev_next_range (row, l_row2auto);
 			for (int rowi = r.first; rowi <= r.second; rowi++) {
 				rows.insert (rowi);
@@ -406,7 +407,7 @@ AutomationPattern::get_actrl (const Evoral::Parameter& param) const
 size_t
 AutomationPattern::automation_list_count (int rowi, const Evoral::Parameter& param) const
 {
-	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param); // NEXT: understand what the heck is going on (segfault)
+	ParamToRowToAutomationListIt::const_iterator it = param_to_row_to_ali.find (param);
 	if (it != param_to_row_to_ali.end ()) {
 		return it->second.count (rowi);
 	}
@@ -501,9 +502,14 @@ AutomationPattern::is_displayable (int row, const RowToControlEvents& r2ces)
 AutomationListIt
 AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 {
-	// NEXT: maybe that's the part to change. Look for the iterator
-	// pointing to an event at rowi.
-	return param_to_row_to_ali.find (param)->second.find (rowi)->second;
+	double when = get_control_event (rowi, param)->when;
+	AutomationListPtr alist = get_alist (param);
+	const Evoral::ControlEvent cp (when, 0.0);
+	AutomationListIt it = std::lower_bound(alist->begin(), alist->end(), &cp, Evoral::ControlList::time_comparator);
+	if (it != alist->end() && (*it)->when == when) {
+		return it;
+	}
+	return alist->end();
 }
 
 Evoral::ControlEvent*
@@ -671,9 +677,6 @@ AutomationPattern::add_automation_point (AutomationListPtr alist, double when, d
 		tracker_editor.grid.register_automation_undo (alist, _("add automation event"), before, after);
 	}
 }
-
-// NEXT: probably overload modify_automation_point to take an index
-// and retrieve it to call that function below.
 
 void
 AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationListIt it, double when, double val)
