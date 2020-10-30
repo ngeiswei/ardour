@@ -431,28 +431,36 @@ MidiTrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Paramete
 }
 
 size_t
-MidiTrackPattern::automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const
+MidiTrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri]->rap.automation_list_count (to_rrri (rowi, mri), param)
-		: AutomationPattern::automation_list_count (rowi, param);
+		mrps[mri]->rap.control_events_count (to_rrri (rowi, mri), param)
+		: AutomationPattern::control_events_count (rowi, param);
 }
 
 
-RowToAutomationListItRange
-MidiTrackPattern::automation_list_range (int rowi, int mri, const Evoral::Parameter& param) const
+RowToControlEventsRange
+MidiTrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri]->rap.automation_list_range (to_rrri (rowi, mri), param)
-		: AutomationPattern::automation_list_range (rowi, param);
+		mrps[mri]->rap.control_events_range (to_rrri (rowi, mri), param)
+		: AutomationPattern::control_events_range (rowi, param);
 }
 
 Evoral::ControlEvent*
+MidiTrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param)
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[mri]->rap.get_control_event (to_rrri (rowi, mri), param)
+		: TrackAutomationPattern::get_control_event (rowi, param);
+}
+
+const Evoral::ControlEvent*
 MidiTrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
-		*mrps[mri]->rap.param_to_row_to_ali.find (param)->second.find (to_rrri (rowi, mri))->second
-		: *TrackAutomationPattern::param_to_row_to_ali.find (param)->second.find (rowi)->second;
+		mrps[mri]->rap.get_control_event (to_rrri (rowi, mri), param)
+		: TrackAutomationPattern::get_control_event (rowi, param);
 }
 
 MidiRegionPattern*
