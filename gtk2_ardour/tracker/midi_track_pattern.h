@@ -140,9 +140,10 @@ public:
 
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
 	bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
-	size_t automation_list_count (int rowi, int mri, const Evoral::Parameter& param) const;
-	RowToAutomationListItRange automation_list_range (int rowi, int mri, const Evoral::Parameter& param) const;
-	Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const;
+	size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
+	RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
+	Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param);
+	const Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);

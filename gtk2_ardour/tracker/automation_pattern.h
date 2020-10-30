@@ -58,10 +58,8 @@ public:
 	ParamAutomationControlPair clone_param_actrl (const ParamAutomationControlPair& param_name) const;
 	AutomationListPtr clone_alist (AutomationListPtr alist) const;
 
-	void rows_diff (const RowToAutomationListIt& l_row2auto, const RowToAutomationListIt& r_row2auto, std::set<int>& rd) const;
 	void rows_diff (const RowToControlEvents& l_row2ces, const RowToControlEvents& r_row2ces, std::set<int>& rd) const;
 
-	AutomationPatternPhenomenalDiff phenomenal_diff_old (const AutomationPattern& prev) const; // NEXT: remove
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
 	// Assign a control event to a row
@@ -69,7 +67,6 @@ public:
 
 	// Build or rebuild the pattern (implement BasePattern::update ())
 	virtual void update ();
-	void update_automations_old (); // NEXT: remove
 	void update_automations ();
 
 	// Add an automation control in the automation control set and connect it to
@@ -86,7 +83,6 @@ public:
 	const AutomationControlPtr get_actrl (const Evoral::Parameter& param) const;
 
 	// Return the number of values within the same row. If undefined return 0.
-	size_t automation_list_count (int rowi, const Evoral::Parameter& param) const; // NEXT: remove
 	size_t control_events_count (int rowi, const Evoral::Parameter& param) const;
 
 	// Return a range of iterators of all events at the given row index and
@@ -94,7 +90,6 @@ public:
 	//
 	// Warning: if no such event exist the behavior is undefined (it might even
 	// crash).
-	RowToAutomationListItRange automation_list_range (int rowi, const Evoral::Parameter& param) const; // NEXT: remove
 	RowToControlEventsRange control_events_range (int rowi, const Evoral::Parameter& param) const;
 
 	virtual std::string get_name (const Evoral::Parameter& param) const;
@@ -106,9 +101,7 @@ public:
 	
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
-	bool is_displayable_old (int row, const Evoral::Parameter& param) const;
 	bool is_displayable (int row, const Evoral::Parameter& param) const;
-	static bool is_displayable (int row, const RowToAutomationListIt& r2a); // NEXT: remove
 	static bool is_displayable (int row, const RowToControlEvents& r2ces);
 
 	// Return the control list iterator associated to param at rowi if exists or
@@ -124,7 +117,7 @@ public:
 	
 	// Return a pair with the automation value and whether it is defined or not	
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
-	double get_automation_value (RowToAutomationListIt::const_iterator it) const;
+	double get_automation_value (RowToControlEvents::const_iterator it) const;
 
 	// Set the automation value val at rowi for param
 	void set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay);
@@ -137,13 +130,13 @@ public:
 	// undefined.
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param) const;
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param, const Evoral::ControlEvent* ce) const;
-	int get_automation_delay (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const;
+	int get_automation_delay (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
 
 	// Get the bbt of an automation point
-	Timecode::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToAutomationListIt::const_iterator it) const;
+	Timecode::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
 
 	// Add, modidy or erase automation point, and record undo history
 	void add_automation_point (AutomationListPtr alist, double when, double val);
@@ -153,10 +146,6 @@ public:
 	// Return RowToAutomationListIt corresponding to the previous (resp. next)
 	// event. If there is no such previous or next event then return end ()
 	// iterator.
-	RowToAutomationListIt::const_iterator find_prev (RowToAutomationListIt::const_iterator it) const; // NEXT: remove
-	RowToAutomationListIt::const_iterator find_next (RowToAutomationListIt::const_iterator it) const; // NEXT: remove
-	RowToAutomationListIt::const_iterator find_prev (int row, const RowToAutomationListIt& row2auto) const; // NEXT: remove
-	RowToAutomationListIt::const_iterator find_next (int row, const RowToAutomationListIt& row2auto) const; // NEXT: remove
 	RowToControlEvents::const_iterator find_prev (RowToControlEvents::const_iterator it) const;
 	RowToControlEvents::const_iterator find_next (RowToControlEvents::const_iterator it) const;
 	RowToControlEvents::const_iterator find_prev (int row, const RowToControlEvents& row2auto) const;
@@ -164,13 +153,9 @@ public:
 
 	// Return the range of rows that must be updated if the event on the given
 	// row is modified
-	std::pair<int, int> prev_next_range (RowToAutomationListIt::const_iterator it, const RowToAutomationListIt& row2auto) const; // NEXT
-	std::pair<int, int> prev_next_range (int row, const RowToAutomationListIt& row2auto) const; // NEXT
 	std::pair<int, int> prev_next_range (RowToControlEvents::const_iterator it, const RowToControlEvents& row2ces) const;
 	std::pair<int, int> prev_next_range (int row, const RowToControlEvents& row2ces) const;
 
-	RowToAutomationListIt::const_iterator earliest (const RowToAutomationListItRange& rng) const; // NEXT
-	RowToAutomationListIt::const_iterator lattest (const RowToAutomationListItRange& rng) const; // NEXT
 	RowToControlEvents::const_iterator earliest (const RowToControlEventsRange& rng) const;
 	RowToControlEvents::const_iterator lattest (const RowToControlEventsRange& rng) const;
 
@@ -186,10 +171,7 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	// Map parameters to maps of row to automation range
-	typedef std::map<Evoral::Parameter, RowToAutomationListIt> ParamToRowToAutomationListIt; // NEXT: remove
-	ParamToRowToAutomationListIt param_to_row_to_ali; // NEXT: remove
 	typedef std::map<Evoral::Parameter, RowToControlEvents> ParamToRowToControlEvents;
-	// NEXT: use param_to_row_to_ces instead
 	ParamToRowToControlEvents param_to_row_to_ces;	
 
 	// Map parameters to actrl
