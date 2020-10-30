@@ -95,7 +95,7 @@ RegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral
 
 	Temporal::Beats beats (relative_beats + position_beats - start_beats);
 	int row = row_at_beats (beats);
-	if (param_to_row_to_ali[param].count (row) != 0) {
+	if (control_events_count (row, param) != 0) {
 		row = row_at_beats_min_delay (beats);
 	}
 	return row;

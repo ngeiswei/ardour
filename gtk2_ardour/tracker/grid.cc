@@ -1457,7 +1457,7 @@ Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int mri = -1;
-	int auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
+	int auto_count = pattern.control_events_count (row_idx, mti, mri, param);
 
 	// Fill background colors
 	redisplay_auto_background (row, mti, cgi);
@@ -1564,7 +1564,7 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
-	int auto_count = pattern.automation_list_count (row_idx, mti, mri, param);
+	int auto_count = pattern.control_events_count (row_idx, mti, mri, param);
 
 	// Fill background colors
 	redisplay_auto_background (row, mti, cgi);
@@ -3163,7 +3163,7 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
 	Evoral::Parameter param = get_param (mti, cgi);
 	std::stringstream ss;
-	size_t count = pattern.automation_list_count (row_idx, mti, mri, param);
+	size_t count = pattern.control_events_count (row_idx, mti, mri, param);
 	if (0 < count) {
 		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
 		if (0 <= mri) {
@@ -3172,10 +3172,10 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << "<u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>" << std::endl;
 		ss << "<u>Values</u>:";
 		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param);
-		RowToAutomationListItRange rng = pattern.automation_list_range (row_idx, mti, mri, param);
+		RowToControlEventsRange rng = pattern.control_events_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
 			Timecode::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
-			double value = ap->get_automation_value (rng.first);
+			double value = ap->get_automation_value (rng.first); // NEXT
 			int delay = ap->get_automation_delay (param, rng.first);
 			const int precision = 6;
 			ss << std::endl << "  <u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
