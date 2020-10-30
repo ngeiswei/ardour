@@ -409,15 +409,15 @@ MultiTrackPattern::is_auto_displayable (int rowi, int mti, int mri, const Evoral
 }
 
 size_t
-MultiTrackPattern::automation_list_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+MultiTrackPattern::control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	return tps[mti]->automation_list_count (to_rri (rowi, mti), mri, param);
+	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, param);
 }
 
-RowToAutomationListItRange
-MultiTrackPattern::automation_list_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+RowToControlEventsRange
+MultiTrackPattern::control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	return tps[mti]->automation_list_range (to_rri (rowi, mti), mri, param);
+	return tps[mti]->control_events_range (to_rri (rowi, mti), mri, param);
 }
 
 Evoral::ControlEvent*
