@@ -32,6 +32,7 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Final off note management fixes
 - [ ] Create wscript under tracker folder
 - [ ] Create PR
+- [ ] Add option for velocity ramp
 - [ ] Handle keypressed the right way (which includes passing on space to play/stop)
 - [ ] Convert direct call to action when possible, see
       `gtk2_ardour/editor_actions.cc`, like `nudge-later`.
