@@ -194,75 +194,82 @@ MainToolbar::setup_layout ()
 	tr->show ();
 	pack_start (*tr, false, false);
 
-	// Bottom row
-	Gtk::HBox* br = Gtk::manage (new Gtk::HBox ());
-	br->set_spacing(spacing);
+	// Middle row
+	Gtk::HBox* mr = Gtk::manage (new Gtk::HBox ());
+	mr->set_spacing(spacing);
 
 	// Add beats per row selection
 	beats_per_row_selector.show ();
-	br->pack_start (beats_per_row_selector, false, false);
+	mr->pack_start (beats_per_row_selector, false, false);
 
 	// Overwrite default button
 	overwrite_default_separator.show ();
-	br->pack_start (overwrite_default_separator, false, false);
+	mr->pack_start (overwrite_default_separator, false, false);
 	overwrite_default_button.set_name ("overwrite default button");
 	overwrite_default_button.set_text (S_("Overwrite Default"));
 	overwrite_default_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_default_press), false);
 	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_default_button.show ();
-	br->pack_start (overwrite_default_button, false, false);
+	mr->pack_start (overwrite_default_button, false, false);
 
 	// Overwrite existing button
 	overwrite_existing_separator.show ();
-	br->pack_start (overwrite_existing_separator, false, false);
+	mr->pack_start (overwrite_existing_separator, false, false);
 	overwrite_existing_button.set_name ("overwrite existing button");
 	overwrite_existing_button.set_text (S_("Overwrite Existing"));
 	overwrite_existing_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_existing_press), false);
 	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_existing_button.show ();
-	br->pack_start (overwrite_existing_button, false, false);
+	mr->pack_start (overwrite_existing_button, false, false);
 
 	// Overwrite star button
 	overwrite_star_separator.show ();
-	br->pack_start (overwrite_star_separator, false, false);
+	mr->pack_start (overwrite_star_separator, false, false);
 	overwrite_star_button.set_name ("overwrite star button");
 	overwrite_star_button.set_text (S_("Overwrite *"));
 	overwrite_star_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_star_press), false);
 	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_star_button.show ();
-	br->pack_start (overwrite_star_button, false, false);
+	mr->pack_start (overwrite_star_button, false, false);
 
 	// Sync playhead
 	sync_playhead_separator.show ();
-	br->pack_start (sync_playhead_separator, false, false);
+	mr->pack_start (sync_playhead_separator, false, false);
 	sync_playhead_button.set_name ("sync playhead button");
 	sync_playhead_button.set_text (S_("Sync Playhead"));
 	sync_playhead_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::sync_playhead_press), false);
 	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	sync_playhead_button.show ();
-	br->pack_start (sync_playhead_button, false, false);
+	mr->pack_start (sync_playhead_button, false, false);
 
 	// Jump to next
 	jump_separator.show ();
-	br->pack_start (jump_separator, false, false);
+	mr->pack_start (jump_separator, false, false);
 	jump_button.set_name ("jump button");
 	jump_button.set_text (S_("Jump"));
 	jump_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::jump_press), false);
 	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	jump_button.show ();
-	br->pack_start (jump_button, false, false);
+	mr->pack_start (jump_button, false, false);
 
 	// Wrap vertical move
 	wrap_separator.show ();
-	br->pack_start (wrap_separator, false, false);
+	mr->pack_start (wrap_separator, false, false);
 	wrap_button.set_name ("wrap button");
 	wrap_button.set_text (S_("Wrap"));
 	wrap_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::wrap_press), false);
 	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	wrap_button.show ();
-	br->pack_start (wrap_button, false, false);
+	mr->pack_start (wrap_button, false, false);
 
-	// Wrap vertical move
+	mr->show ();
+	pack_start (*mr, false, false);
+
+	// Bottom row
+	Gtk::HBox* br = Gtk::manage (new Gtk::HBox ());
+	br->set_spacing(spacing);
+
+	// Hex
 	hex_separator.show ();
 	br->pack_start (hex_separator, false, false);
 	hex_button.set_name ("hex button");
@@ -271,6 +278,36 @@ MainToolbar::setup_layout ()
 	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	hex_button.show ();
 	br->pack_start (hex_button, false, false);
+
+	// Cut
+	cut_separator.show ();
+	br->pack_start (cut_separator, false, false);
+	cut_button.set_name ("cut button");
+	cut_button.set_text (S_("Cut"));
+	cut_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::cut_press), false);
+	cut_button.set_active_state (Gtkmm2ext::Off);
+	cut_button.show ();
+	br->pack_start (cut_button, false, false);
+
+	// Copy
+	copy_separator.show ();
+	br->pack_start (copy_separator, false, false);
+	copy_button.set_name ("copy button");
+	copy_button.set_text (S_("Copy"));
+	copy_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::copy_press), false);
+	copy_button.set_active_state (Gtkmm2ext::Off);
+	copy_button.show ();
+	br->pack_start (copy_button, false, false);
+
+	// Paste
+	paste_separator.show ();
+	br->pack_start (paste_separator, false, false);
+	paste_button.set_name ("paste button");
+	paste_button.set_text (S_("Paste"));
+	paste_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::paste_press), false);
+	paste_button.set_active_state (Gtkmm2ext::Off);
+	paste_button.show ();
+	br->pack_start (paste_button, false, false);
 
 	br->show ();
 	pack_start (*br, false, false);
@@ -641,6 +678,27 @@ MainToolbar::hex_press (GdkEventButton* ev)
 	tracker_editor.grid.redisplay_grid_direct_call ();
 
 	return false;
+}
+
+bool
+MainToolbar::cut_press (GdkEventButton* ev)
+{
+	// TODO
+	return true;
+}
+
+bool
+MainToolbar::copy_press (GdkEventButton* ev)
+{
+	// TODO
+	return true;
+}
+
+bool
+MainToolbar::paste_press (GdkEventButton* ev)
+{
+	// TODO
+	return true;
 }
 
 void
