@@ -100,6 +100,21 @@ public:
 	bool hex_press (GdkEventButton* ev);
 
 	/**
+	 * Triggered upon cut button press event.
+	 */
+	bool cut_press (GdkEventButton* ev);
+
+	/**
+	 * Triggered upon copy button press event.
+	 */
+	bool copy_press (GdkEventButton* ev);
+
+	/**
+	 * Triggered upon paste button press event.
+	 */
+	bool paste_press (GdkEventButton* ev);
+
+	/**
 	 * Trigger when precision_spinner value is changed.
 	 */
 	void change_precision ();
@@ -127,56 +142,82 @@ public:
 	ArdourWidgets::ArdourDropdown beats_per_row_selector;
 	std::vector<std::string>     beats_per_row_strings;
 	uint8_t                      rows_per_beat;
+
+	// Buttons
 	ArdourWidgets::ArdourButton  step_edit_button;
 	bool                         step_edit;
+
 	Gtk::VSeparator              overwrite_default_separator;
 	ArdourWidgets::ArdourButton  overwrite_default_button;
 	bool                         overwrite_default;
+
 	Gtk::VSeparator              overwrite_existing_separator;
 	ArdourWidgets::ArdourButton  overwrite_existing_button;
 	bool                         overwrite_existing;
+
 	Gtk::VSeparator              overwrite_star_separator;
 	ArdourWidgets::ArdourButton  overwrite_star_button;
 	bool                         overwrite_star;
+
 	Gtk::VSeparator              sync_playhead_separator;
 	ArdourWidgets::ArdourButton  sync_playhead_button;
 	bool                         sync_playhead;
+
 	Gtk::VSeparator              jump_separator;
 	ArdourWidgets::ArdourButton  jump_button;
 	bool                         jump;
+
 	Gtk::VSeparator              wrap_separator;
 	ArdourWidgets::ArdourButton  wrap_button;
 	bool                         wrap;
+
 	Gtk::VSeparator              hex_separator;
 	ArdourWidgets::ArdourButton  hex_button;
 	bool                         hex;
 	int                          base; // 16 if hex else 10
+
+	Gtk::VSeparator              cut_separator;
+	ArdourWidgets::ArdourButton  cut_button;
+
+	Gtk::VSeparator              copy_separator;
+	ArdourWidgets::ArdourButton  copy_button;
+
+	Gtk::VSeparator              paste_separator;
+	ArdourWidgets::ArdourButton  paste_button;
+
+	// Spinners
 	Gtk::VSeparator              octave_separator;
 	Gtk::Label                   octave_label;
 	Gtk::Adjustment              octave_adjustment;
 	Gtk::SpinButton              octave_spinner;
+
 	Gtk::VSeparator              channel_separator;
 	Gtk::Label                   channel_label;
 	Gtk::Adjustment              channel_adjustment;
 	Gtk::SpinButton              channel_spinner;
+
 	Gtk::VSeparator              velocity_separator;
 	Gtk::Label                   velocity_label;
 	Gtk::Adjustment              velocity_adjustment;
 	Gtk::SpinButton              velocity_spinner;
+
 	Gtk::VSeparator              delay_separator;
 	Gtk::Label                   delay_label;
 	Gtk::Adjustment              delay_adjustment;
 	Gtk::SpinButton              delay_spinner;
+
 	Gtk::VSeparator              precision_separator;
 	Gtk::Label                   precision_label;
 	Gtk::Adjustment              precision_adjustment;
 	Gtk::SpinButton              precision_spinner;
 	int                          precision;
+
 	Gtk::VSeparator              position_separator;
 	Gtk::Label                   position_label;
 	Gtk::Adjustment              position_adjustment;
 	Gtk::SpinButton              position_spinner;
 	int                          position;
+
 	Gtk::VSeparator              steps_separator;
 	Gtk::Label                   steps_label;
 	Gtk::Adjustment              steps_adjustment;
