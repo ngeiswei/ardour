@@ -412,7 +412,7 @@ private:
 	bool non_editing_key_press (GdkEventKey*);
 	bool on_key_press_event (GdkEventKey*);
 	bool non_editing_key_release (GdkEventKey*);
-	
+
 	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
 	bool mouse_button_event (GdkEventButton*);
@@ -480,6 +480,9 @@ private:
 
 	// Set current position (from main toolbar position spinner)
 	void set_current_pos (int min_pos, int max_pos);
+
+	// Set selector source or destination
+	void set_selector (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col);
 
 	/////////////////////
 	// Editing Actions //
