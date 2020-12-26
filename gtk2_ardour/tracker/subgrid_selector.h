@@ -47,6 +47,9 @@ public:
 	// destination rows and cols.
 	void set_rectangle ();
 
+	// Whether is a selection is defined
+	bool has_selection () const;
+
 	std::string to_string (std::string indent="") const;
 
 	// Source cell coordonates (first selected cell). Negative means
