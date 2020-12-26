@@ -452,6 +452,7 @@
     <ColorAlias name="tracker editor: cursor" alias="meter color0"/>
     <ColorAlias name="tracker editor: current row" alias="widget:ruddy"/>
     <ColorAlias name="tracker editor: current edit row" alias="alert:red"/>
+    <ColorAlias name="tracker editor: selection" alias="alert:blue"/>
     <ColorAlias name="tracknumber label: fill" alias="theme:bg"/>
     <ColorAlias name="tracknumber label: fill active" alias="neutral:background2"/>
     <ColorAlias name="tracknumber label: led active" alias="alert:red"/>
