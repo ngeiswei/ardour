@@ -713,6 +713,7 @@ private:
 	std::string cursor_color;
 	std::string current_row_color;
 	std::string current_edit_row_color;
+	std::string selection_color;
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
