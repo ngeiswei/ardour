@@ -894,6 +894,7 @@ Grid::read_colors ()
 	cursor_color = UIConfiguration::instance ().color_str ("tracker editor: cursor");
 	current_row_color = UIConfiguration::instance ().color_str ("tracker editor: current row");
 	current_edit_row_color = UIConfiguration::instance ().color_str ("tracker editor: current edit row");
+	selection_color = UIConfiguration::instance ().color_str ("tracker editor: selection");
 }
 
 void
