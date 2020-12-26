@@ -34,6 +34,7 @@
 #include "track_automation_pattern.h"
 #include "tracker_column.h"
 #include "tracker_utils.h"
+#include "subgrid_selector.h"
 
 namespace Tracker {
 
@@ -417,6 +418,12 @@ private:
 	bool mouse_button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
+	// Hack until proper dealing with shortcut keys
+	bool shift_key_press ();
+	bool shift_key_release (); // NEXT
+	bool is_shift_pressed () const;
+	bool shift_pressed;
+
 	// Return the row index of a tree model path and vice versa
 	int to_row_index (const std::string& path_str) const;
 	int to_row_index (const Gtk::TreeModel::Path& path) const;
@@ -725,6 +732,9 @@ private:
 
 	// Mapping PC keyboard key to note pitch
 	PianoKeyBindings _keyboard_layout;
+
+	// Subgrid Selector
+	SubgridSelector _subgrid_selector;
 };
 
 } // ~namespace tracker

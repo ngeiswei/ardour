@@ -113,6 +113,7 @@ Grid::Grid (TrackerEditor& te)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
+	, shift_pressed (false)
 	, cellfont ("Monospace")
 	, time_column (0)
 {
@@ -2645,6 +2646,14 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	set_current_row (path, set_playhead);
 	set_current_col (col);
 
+	// Set selector source or destination
+	int row_idx = to_row_index (path);
+	int col_idx = to_col_index (col);
+	if (is_shift_pressed ())
+		_subgrid_selector.set_destination (row_idx, col_idx);
+	else
+		_subgrid_selector.set_source (row_idx, col_idx);
+
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
 	tracker_editor.grid_header->align ();
@@ -4042,6 +4051,12 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
+		break;
+
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *to_col (current_col_idx), true);
@@ -4156,6 +4171,12 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
+		break;
+
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *to_col (current_col_idx), true);
@@ -4251,6 +4272,12 @@ Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
+		break;
+
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
 		break;
 
 	// Cell edit
@@ -4360,6 +4387,12 @@ Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
+		break;
+
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
 		break;
 
 	// Delete note delay
@@ -4485,6 +4518,12 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
+		break;
+
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
 		break;
 
 	// Delete automation
@@ -4631,6 +4670,12 @@ Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 	case GDK_Home:
 	case GDK_End:
 		ret = move_current_cursor_key_press (ev);
+		break;
+
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
 		break;
 
 	// Delete automation delay
@@ -4853,6 +4898,12 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
+	// Set shift modifier (TODO: very hacky way)
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_press ();
+		break;
+
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *to_col (current_col_idx), true);
@@ -5027,7 +5078,17 @@ Grid::key_press (GdkEventKey* ev)
 bool
 Grid::key_release (GdkEventKey* ev)
 {
-	bool ret = non_editing_key_release (ev);
+	bool ret = false;
+
+	// Hack to handle shift modifer
+	switch (ev->keyval) {
+	case GDK_Shift_L:
+	case GDK_Shift_R:
+		ret = shift_key_release ();
+		return ret;
+	}
+
+	ret = non_editing_key_release (ev);
 
 	// Reset last keyval
 	if (last_keyval == ev->keyval) {
@@ -5074,4 +5135,26 @@ Grid::scroll_event (GdkEventScroll* ev)
 {
 	// TODO change values if editing is active, otherwise scroll.
 	return false;               // Silence compiler
+}
+
+bool
+Grid::shift_key_press ()
+{
+	std::cout << "Grid::shift_key_press ()" << std::endl;
+	shift_pressed = true;
+	return true;
+}
+
+bool
+Grid::shift_key_release ()
+{
+	std::cout << "Grid::shift_key_release ()" << std::endl;
+	shift_pressed = false;
+	return true;
+}
+
+bool
+Grid::is_shift_pressed () const
+{
+	return shift_pressed;
 }
