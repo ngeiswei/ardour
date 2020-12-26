@@ -139,6 +139,12 @@ SubgridSelector::set_rectangle ()
 	right_col_idx = std::max (src_col_idx, dst_col_idx);
 }
 
+bool
+SubgridSelector::has_selection () const
+{
+	return 0 <= top_row_idx;
+}
+
 std::string
 SubgridSelector::to_string (std::string indent) const
 {
