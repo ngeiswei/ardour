@@ -16,33 +16,39 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <string>
+
 namespace Tracker {
 
 /**
  * Class handling the selected rectangle overlaying the tracker grid.
  */
-class SubgridSelection
+class SubgridSelector
 {
 public:
 	// CTor
-	SubgridSelection();
+	SubgridSelector ();
 
 	// Set/unset the selection coordinates
-	void set_source(int row_idx, int col_idx);
-	void set_destination(int row_idx, int col_idx);
-	void unset();
+	void set_source (int row_idx, int col_idx);
+	void set_destination (int row_idx, int col_idx);
+	void unset ();
 
 	// Check if there is a selection
-	bool is_set() const;
-	bool is_source_set() const;
-	bool is_destination_set() const;
+	bool is_source_set () const;
+	bool is_destination_set () const;
 
 	// Cut, copy or paste
-	void cut();
-	void copy();
-	void paste();
+	void cut ();
+	void copy ();
+	void paste ();
 
-private:
+	// Set top and bottom rows, left and right cols based on source and
+	// destination rows and cols.
+	void set_rectangle ();
+
+	std::string to_string (std::string indent="") const;
+
 	// Source cell coordonates (first selected cell). Negative means
 	// undefined.
 	int src_row_idx;
