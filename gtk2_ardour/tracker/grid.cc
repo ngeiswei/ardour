@@ -2648,12 +2648,7 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	set_current_col (col);
 
 	// Set selector source or destination
-	int row_idx = to_row_index (path);
-	int col_idx = to_col_index (col);
-	if (is_shift_pressed ())
-		_subgrid_selector.set_destination (row_idx, col_idx);
-	else
-		_subgrid_selector.set_source (row_idx, col_idx);
+	set_selector (path, col);
 
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
@@ -2763,6 +2758,7 @@ Grid::set_current_col (TreeViewColumn* col)
 	}
 
 	// Now display current row cursor background colors
+	// NEXT: display selection before that
 	redisplay_current_cursor ();
 
 	// Set underline
@@ -2794,6 +2790,20 @@ Grid::set_current_pos (int min_pos, int max_pos)
 {
 	int position = tracker_editor.main_toolbar.position;
 	current_pos = TrackerUtils::clamp (position, min_pos, max_pos);
+}
+
+void
+Grid::set_selector (const TreeModel::Path& path, TreeViewColumn* col)
+{
+	int row_idx = to_row_index (path);
+	int col_idx = to_col_index (col);
+	if (is_shift_pressed ()) {
+		// NEXT: paint in blue all selected cells
+		_subgrid_selector.set_destination (row_idx, col_idx);
+	} else {
+		// NEXT: unpaint all selected cells
+		_subgrid_selector.set_source (row_idx, col_idx);
+	}
 }
 
 Evoral::Parameter
