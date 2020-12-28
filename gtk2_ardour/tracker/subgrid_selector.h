@@ -35,8 +35,8 @@ public:
 	void unset ();
 
 	// Check if there is a selection
-	bool is_source_set () const;
-	bool is_destination_set () const;
+	bool has_source () const;
+	bool has_destination () const;
 
 	// Cut, copy or paste
 	void cut ();
@@ -47,7 +47,7 @@ public:
 	// destination rows and cols.
 	void set_rectangle ();
 
-	// Whether is a selection is defined
+	// Whether a selection is defined
 	bool has_selection () const;
 
 	std::string to_string (std::string indent="") const;

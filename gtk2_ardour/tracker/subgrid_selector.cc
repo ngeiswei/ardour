@@ -53,7 +53,7 @@ SubgridSelector::set_source (int row_idx, int col_idx)
 void
 SubgridSelector::set_destination (int row_idx, int col_idx)
 {
-	if (!is_source_set ())
+	if (!has_source ())
 		set_source (row_idx, col_idx);
 
 	dst_row_idx = row_idx;
@@ -80,14 +80,15 @@ SubgridSelector::unset ()
 }
 
 bool
-SubgridSelector::is_source_set () const
+SubgridSelector::has_source () const
 {
 	return 0 <= src_row_idx and 0 <= src_col_idx;
 }
 
 bool
-SubgridSelector::is_destination_set () const
+SubgridSelector::has_destination () const
 {
+	std::cout << "SubgridSelector::has_destination () = " << (0 <= dst_row_idx and 0 <= dst_col_idx) << std::endl;
 	return 0 <= dst_row_idx and 0 <= dst_col_idx;
 }
 
@@ -113,7 +114,7 @@ void
 SubgridSelector::set_rectangle ()
 {
 	// No source or destination set
-	if (not is_source_set ()) {
+	if (not has_source ()) {
 		top_row_idx = -1;
 		bottom_row_idx = -1;
 		left_col_idx = -1;
@@ -123,7 +124,7 @@ SubgridSelector::set_rectangle ()
 
 	// If there is a source but no destination then the rectangle is
 	// just the source cell.
-	if (not is_destination_set ()) {
+	if (not has_destination ()) {
 		top_row_idx = src_row_idx;
 		bottom_row_idx = src_row_idx;
 		left_col_idx = src_col_idx;
@@ -142,6 +143,7 @@ SubgridSelector::set_rectangle ()
 bool
 SubgridSelector::has_selection () const
 {
+	std::cout << "SubgridSelector::has_selection () = " << (0 <= top_row_idx) << std::endl;
 	return 0 <= top_row_idx;
 }
 

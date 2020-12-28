@@ -236,6 +236,10 @@ public:
 	void redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
 	void redisplay_note_column (int mti, int mri, int cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_note (int mti, int mri, int cgi, int row_idx, const NotePattern& np);
+	void redisplay_selection ();
+	void redisplay_cell_selection (int row_idx, int col_idx);
+	void redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
+	void redisplay_auto_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
 	void remove_unused_rows ();
 	void unset_underline_current_step_edit_cell ();
 	void unset_underline_current_step_edit_note_cell ();
@@ -482,7 +486,7 @@ private:
 	void set_current_pos (int min_pos, int max_pos);
 
 	// Set selector source or destination
-	void set_selector (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col);
+	void set_selector (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 
 	/////////////////////
 	// Editing Actions //
@@ -506,14 +510,14 @@ private:
 	bool is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 
 	// Return mti corresponding col, or -1 if invalid
-	int get_mti (const Gtk::TreeViewColumn* col) const;
+	int to_mti (const Gtk::TreeViewColumn* col) const;
 
 	// Return cgi (either note or automation) corresponding to col, or -1 if invalid
-	int get_cgi (const Gtk::TreeViewColumn* col) const;
+	int to_cgi (const Gtk::TreeViewColumn* col) const;
 
 	// Return mri corresponding to the cell at the given path and col, or -1 if
 	// invalid. Note: method cannot be cosnt due to the use of to_row_index.
-	int get_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
+	int to_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
 
 	// Return respectively note or auto type of the given col
 	TrackerColumn::midi_note_type get_note_type (const Gtk::TreeViewColumn* col) const;
@@ -622,7 +626,7 @@ private:
 	Evoral::Parameter get_param (int mti, int cgi) const;
 
 	// Return cgi associated to param at mti. If undefined for param return -1.
-	int get_cgi (int mti, const Evoral::Parameter& param) const;
+	int to_cgi (int mti, const Evoral::Parameter& param) const;
 
 	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
 	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
