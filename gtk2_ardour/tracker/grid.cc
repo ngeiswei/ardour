@@ -1037,7 +1037,7 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, int mti
 	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
-			int cgi = get_cgi (mti, param);
+			int cgi = to_cgi (mti, param);
 			redisplay_undefined_automation (row, mti, cgi);
 		}
 	}
@@ -1343,7 +1343,7 @@ Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, 
 	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
-			int cgi = get_cgi (mti, param);
+			int cgi = to_cgi (mti, param);
 			row[columns._automation_background_color[mti][cgi]] = color;
 			row[columns._automation_delay_background_color[mti][cgi]] = color;
 		}
@@ -1437,7 +1437,7 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	int cgi = get_cgi (mti, param);
+	int cgi = to_cgi (mti, param);
 	if (cgi < 0) {
 		return;
 	}
@@ -1543,7 +1543,7 @@ Grid::redisplay_region_automations (int mti, int mri, const RegionAutomationPatt
 void
 Grid::redisplay_region_automation_param (int mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	int cgi = get_cgi (mti, param);
+	int cgi = to_cgi (mti, param);
 
 	if (cgi < 0) {
 		return;
@@ -1614,6 +1614,81 @@ Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const NotePattern&
 	size_t on_notes_count = pattern.on_notes_count (row_idx, mti, mri, cgi);
 	if (0 < on_notes_count || 0 < off_notes_count) {
 		redisplay_note_foreground (row, row_idx, mti, mri, cgi);
+	}
+}
+
+void
+Grid::redisplay_selection ()
+{
+	std::cout << "Grid::redisplay_selection ()" << std::endl;
+	if (_subgrid_selector.has_selection ()) {
+		if (_subgrid_selector.has_destination ()) {
+			for (int row_idx = _subgrid_selector.top_row_idx; row_idx <= _subgrid_selector.bottom_row_idx; row_idx++) {
+				for (int col_idx = _subgrid_selector.left_col_idx; col_idx <= _subgrid_selector.right_col_idx; col_idx++) {
+					redisplay_cell_selection (row_idx, col_idx);
+				}
+			}
+		}
+	}
+}
+
+void
+Grid::redisplay_cell_selection (int row_idx, int col_idx)
+{
+	std::cout << "Grid::redisplay_cell_selection (row_idx=" << row_idx << ", col_idx=" << col_idx << ")" << std::endl;
+	Gtk::TreeViewColumn* col = to_col (col_idx);
+	if (is_cell_defined (row_idx, col)) {
+		if (is_note_type (col)) {
+			redisplay_note_cell_selection (row_idx, col);
+		} else {
+			redisplay_auto_cell_selection (row_idx, col);
+		}
+	}
+}
+
+void
+Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col)
+{
+	std::cout << "Grid::redisplay_note_cell_selection (row_idx=" << row_idx << ", col=" << col << ")" << std::endl;
+	// TODO: can be refactored with Grid::redisplay_current_note_cursor
+	int mti = to_mti (col);
+	int cgi = to_cgi (col);
+	Gtk::TreeModel::Row row = to_row (row_idx);
+	switch (get_note_type (col)) {
+	case TrackerColumn::NOTE:
+		row[columns._note_background_color[mti][cgi]] = selection_color;
+		break;
+	case TrackerColumn::CHANNEL:
+		row[columns._channel_background_color[mti][cgi]] = selection_color;
+		break;
+	case TrackerColumn::VELOCITY:
+		row[columns._velocity_background_color[mti][cgi]] = selection_color;
+		break;
+	case TrackerColumn::DELAY:
+		row[columns._delay_background_color[mti][cgi]] = selection_color;
+		break;
+	default:
+		cerr << "Grid::redisplay_note_cell_selection: Implementation Error!" << endl;
+	}
+}
+
+void
+Grid::redisplay_auto_cell_selection (int row_idx, const Gtk::TreeViewColumn* col)
+{
+	std::cout << "Grid::redisplay_auto_cell_selection (row_idx=" << row_idx << ", col=" << col << ")" << std::endl;
+	// TODO: can be refactored with Grid::redisplay_current_auto_cursor
+	int mti = to_mti (col);
+	int cgi = to_cgi (col);
+	Gtk::TreeModel::Row row = to_row (row_idx);
+	switch (get_auto_type (col)) {
+	case TrackerColumn::AUTOMATION:
+		row[columns._automation_background_color[mti][cgi]] = selection_color;
+		break;
+	case TrackerColumn::AUTOMATION_DELAY:
+		row[columns._automation_delay_background_color[mti][cgi]] = selection_color;
+		break;
+	default:
+		cerr << "Grid::redisplay_auto_cell_selection: Implementation Error!" << endl;
 	}
 }
 
@@ -2742,10 +2817,10 @@ Grid::set_current_col (TreeViewColumn* col)
 	current_col_idx = to_col_index (col);
 
 	// Update current mti, mtp, cgi and types
-	current_mti = get_mti (col);
+	current_mti = to_mti (col);
 	current_mtp = pattern.tps[current_mti];
 	current_mri = pattern.to_mri (current_row_idx, current_mti);
-	current_cgi = get_cgi (col);
+	current_cgi = to_cgi (col);
 	current_note_type = get_note_type (col);
 	current_auto_type = get_auto_type (col);
 	current_is_note_type = is_note_type (col);
@@ -2793,17 +2868,17 @@ Grid::set_current_pos (int min_pos, int max_pos)
 }
 
 void
-Grid::set_selector (const TreeModel::Path& path, TreeViewColumn* col)
+Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 {
+	std::cout << "Grid::set_selector (path=" << path << ", col=" << col << ")" << std::endl;
 	int row_idx = to_row_index (path);
 	int col_idx = to_col_index (col);
 	if (is_shift_pressed ()) {
-		// NEXT: paint in blue all selected cells
 		_subgrid_selector.set_destination (row_idx, col_idx);
 	} else {
-		// NEXT: unpaint all selected cells
 		_subgrid_selector.set_source (row_idx, col_idx);
 	}
+	redisplay_selection ();
 }
 
 Evoral::Parameter
@@ -2823,7 +2898,7 @@ Grid::get_param (int mti, int cgi) const
 }
 
 int
-Grid::get_cgi (int mti, const Evoral::Parameter& param) const
+Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 {
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (param);
 	if (cp_it == col2params[mti].right.end ()) {
@@ -3107,9 +3182,9 @@ Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::
 		return false;
 
 	int row_idx = to_row_index (path);
-	int mti = get_mti (col);
-	int mri = get_mri (path, col);
-	int cgi = get_cgi (col);
+	int mti = to_mti (col);
+	int mri = to_mri (path, col);
+	int cgi = to_cgi (col);
 
 	std::string tooltip_msg;
 	if (time_column == col) {
@@ -3664,7 +3739,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 {
 	// Keep track of the init column type to support tab and detect infinit loops
 	TreeViewColumn* init_col = to_col (colnum);
-	int pre_mti = get_mti (init_col);
+	int pre_mti = to_mti (init_col);
 
 	const int n_col = get_columns ().size ();
 	TreeViewColumn* col;
@@ -3678,7 +3753,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
 			if (tab) {
-				int col_mti = get_mti (col);
+				int col_mti = to_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
 					++steps;
@@ -3702,7 +3777,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
 			if (tab) {
-				int col_mti = get_mti (col);
+				int col_mti = to_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
 					--steps;
@@ -3738,7 +3813,7 @@ Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* c
 	if (row_idx < 0) {
 		return false;
 	}
-	int mti = get_mti (col);
+	int mti = to_mti (col);
 	if (mti < 0) {
 		return false;
 	}
@@ -3792,13 +3867,13 @@ Grid::is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn
 	if (!is_cell_defined (path, col))
 		return false;
 
-	int mti = get_mti (col);
-	int cgi = get_cgi (col);
+	int mti = to_mti (col);
+	int cgi = to_cgi (col);
 	if (0 <= mti && 0 <= cgi) {
 		if (is_note_type (col)) {
 			return !has_note (path, mti, cgi);
 		} else {
-			int mri = get_mri (path, col);
+			int mri = to_mri (path, col);
 			return !has_automation_value (to_row_index (path), mti, mri, cgi);
 		}
 	}
@@ -3806,14 +3881,14 @@ Grid::is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn
 }
 
 int
-Grid::get_mti (const TreeViewColumn* col) const
+Grid::to_mti (const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
 	return tc ? tc->mti : -1;
 }
 
 int
-Grid::get_cgi (const TreeViewColumn* col) const
+Grid::to_cgi (const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
 	if (!tc)
@@ -3822,9 +3897,9 @@ Grid::get_cgi (const TreeViewColumn* col) const
 }
 
 int
-Grid::get_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const
+Grid::to_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const
 {
-	int mti = get_mti (col);
+	int mti = to_mti (col);
 	if (0 <= mti)
 		return pattern.to_mri (to_row_index (path), mti);
 	return -1;
