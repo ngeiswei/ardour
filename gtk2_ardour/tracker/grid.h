@@ -214,6 +214,7 @@ public:
 	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
 	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
+	void redisplay_cell_background (int row_idx, int col_idx);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color);
