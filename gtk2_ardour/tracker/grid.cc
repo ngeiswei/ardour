@@ -1282,6 +1282,16 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, int mti, i
 }
 
 void
+Grid::redisplay_cell_background (int row_idx, int col_idx)
+{
+	std::cout << "Grid::redisplay_cell_background (row_idx=" << row_idx << ", col_idx=" << col_idx << ")" << std::endl;
+	int mti = to_mti (to_col (col_idx));
+	int cgi = to_cgi (to_col (col_idx));
+	Gtk::TreeModel::Row row = to_row (row_idx);
+	redisplay_cell_background (row, mti, cgi);
+}
+
+void
 Grid::redisplay_cell_background (TreeModel::Row& row, int mti, int cgi)
 {
 	if (current_is_note_type) {
@@ -1621,6 +1631,13 @@ void
 Grid::redisplay_selection ()
 {
 	std::cout << "Grid::redisplay_selection ()" << std::endl;
+	if (_subgrid_selector.has_prev_selection ()) {
+		for (int row_idx = _subgrid_selector.prev_top_row_idx; row_idx <= _subgrid_selector.prev_bottom_row_idx; row_idx++) {
+			for (int col_idx = _subgrid_selector.prev_left_col_idx; col_idx <= _subgrid_selector.prev_right_col_idx; col_idx++) {
+				redisplay_cell_background (row_idx, col_idx);
+			}
+		}
+	}
 	if (_subgrid_selector.has_selection ()) {
 		if (_subgrid_selector.has_destination ()) {
 			for (int row_idx = _subgrid_selector.top_row_idx; row_idx <= _subgrid_selector.bottom_row_idx; row_idx++) {

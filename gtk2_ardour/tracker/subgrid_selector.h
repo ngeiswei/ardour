@@ -50,6 +50,9 @@ public:
 	// Whether a selection is defined
 	bool has_selection () const;
 
+	// Whether a previous selection was defined
+	bool has_prev_selection () const;
+
 	std::string to_string (std::string indent="") const;
 
 	// Source cell coordonates (first selected cell). Negative means
@@ -76,7 +79,14 @@ public:
 	//
 	// Negative means undefined.
 	int left_col_idx;
-	int right_col_idx;	
+	int right_col_idx;
+
+	// Like above but for previous selection (used for calculating
+	// selection difference for removing selection)
+	int prev_top_row_idx;
+	int prev_bottom_row_idx;
+	int prev_left_col_idx;
+	int prev_right_col_idx;
 };
 
 } // ~namespace tracker

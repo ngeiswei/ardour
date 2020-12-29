@@ -33,6 +33,10 @@ SubgridSelector::SubgridSelector ()
 	, bottom_row_idx (-1)
 	, left_col_idx (-1)
 	, right_col_idx (-1)
+	, prev_top_row_idx (-1)
+	, prev_bottom_row_idx (-1)
+	, prev_left_col_idx (-1)
+	, prev_right_col_idx (-1)
 {
 }
 
@@ -113,6 +117,12 @@ SubgridSelector::paste ()
 void
 SubgridSelector::set_rectangle ()
 {
+	// Save previous rectangle
+	prev_top_row_idx = top_row_idx;
+	prev_bottom_row_idx = bottom_row_idx;
+	prev_left_col_idx = left_col_idx;
+	prev_right_col_idx = right_col_idx;
+
 	// No source or destination set
 	if (not has_source ()) {
 		top_row_idx = -1;
@@ -145,6 +155,13 @@ SubgridSelector::has_selection () const
 {
 	std::cout << "SubgridSelector::has_selection () = " << (0 <= top_row_idx) << std::endl;
 	return 0 <= top_row_idx;
+}
+
+bool
+SubgridSelector::has_prev_selection () const
+{
+	std::cout << "SubgridSelector::has_prev_selection () = " << (0 <= prev_top_row_idx) << std::endl;
+	return 0 <= prev_top_row_idx;
 }
 
 std::string
