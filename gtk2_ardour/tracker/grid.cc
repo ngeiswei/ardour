@@ -1632,14 +1632,20 @@ Grid::redisplay_selection ()
 {
 	std::cout << "Grid::redisplay_selection ()" << std::endl;
 	if (_subgrid_selector.has_prev_selection ()) {
+		// Undisplay selection
 		for (int row_idx = _subgrid_selector.prev_top_row_idx; row_idx <= _subgrid_selector.prev_bottom_row_idx; row_idx++) {
 			for (int col_idx = _subgrid_selector.prev_left_col_idx; col_idx <= _subgrid_selector.prev_right_col_idx; col_idx++) {
 				redisplay_cell_background (row_idx, col_idx);
 			}
 		}
+		// Redisplay current row background and cursor possibly deleted
+		// by previous selection (TODO: redundant most of the time)
+		redisplay_current_row_background ();
+		redisplay_current_cursor ();
 	}
 	if (_subgrid_selector.has_selection ()) {
 		if (_subgrid_selector.has_destination ()) {
+			// Display selection
 			for (int row_idx = _subgrid_selector.top_row_idx; row_idx <= _subgrid_selector.bottom_row_idx; row_idx++) {
 				for (int col_idx = _subgrid_selector.left_col_idx; col_idx <= _subgrid_selector.right_col_idx; col_idx++) {
 					redisplay_cell_selection (row_idx, col_idx);
@@ -2850,7 +2856,6 @@ Grid::set_current_col (TreeViewColumn* col)
 	}
 
 	// Now display current row cursor background colors
-	// NEXT: display selection before that
 	redisplay_current_cursor ();
 
 	// Set underline
