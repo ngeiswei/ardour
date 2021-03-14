@@ -87,6 +87,11 @@ public:
 	int prev_bottom_row_idx;
 	int prev_left_col_idx;
 	int prev_right_col_idx;
+
+	// NEXT: define a double dictionary entry, mapping row and column
+	// to string (content of each non empty cell), populated when
+	// copy() or cut() is invoked. Columns should only be relative to
+	// visible columns, not the actual indices in the Grid class.
 };
 
 } // ~namespace tracker
