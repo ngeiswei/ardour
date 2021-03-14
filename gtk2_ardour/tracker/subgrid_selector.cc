@@ -22,10 +22,13 @@
 #include <sstream>
 #include <algorithm>
 
+#include "tracker_editor.h"
+
 using namespace Tracker;
 
-SubgridSelector::SubgridSelector ()
-	: src_row_idx (-1)
+SubgridSelector::SubgridSelector (TrackerEditor& te)
+	: tracker_editor (te)
+	, src_row_idx (-1)
 	, src_col_idx (-1)
 	, dst_row_idx (-1)
 	, dst_col_idx (-1)
@@ -99,19 +102,33 @@ SubgridSelector::has_destination () const
 void
 SubgridSelector::cut ()
 {
-	// NEXT
+	copy ();
+	clear_subgrid ();
+}
+
+void
+SubgridSelector::clear_subgrid ()
+{
+	// NEXT: Remove all selected events from the grid
 }
 
 void
 SubgridSelector::copy ()
 {
-	// NEXT
+	// NEXT: fill SubgridSelector::reg
 }
 
 void
 SubgridSelector::paste ()
 {
 	// NEXT
+}
+
+void
+SubgridSelector::paste_overlay ()
+{
+	// NEXT: like paste but does not delete the existing events when
+	// possible
 }
 
 void
