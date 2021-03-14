@@ -116,6 +116,7 @@ Grid::Grid (TrackerEditor& te)
 	, shift_pressed (false)
 	, cellfont ("Monospace")
 	, time_column (0)
+	, _subgrid_selector (te)
 {
 	UIConfiguration::instance().ParameterChanged.connect (sigc::mem_fun (*this, &Grid::parameter_changed));
 	UIConfiguration::instance().ColorsChanged.connect (sigc::mem_fun (*this, &Grid::color_changed));
