@@ -16,9 +16,15 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#ifndef __ardour_tracker_subgrid_selector_h_
+#define __ardour_tracker_subgrid_selector_h_
+
+#include <map>
 #include <string>
 
 namespace Tracker {
+
+class TrackerEditor;
 
 /**
  * Class handling the selected rectangle overlaying the tracker grid.
@@ -27,7 +33,7 @@ class SubgridSelector
 {
 public:
 	// CTor
-	SubgridSelector ();
+	SubgridSelector (TrackerEditor& te);
 
 	// Set/unset the selection coordinates
 	void set_source (int row_idx, int col_idx);
@@ -40,8 +46,10 @@ public:
 
 	// Cut, copy or paste
 	void cut ();
+	void clear_subgrid ();
 	void copy ();
 	void paste ();
+	void paste_overlay ();
 
 	// Set top and bottom rows, left and right cols based on source and
 	// destination rows and cols.
@@ -54,6 +62,8 @@ public:
 	bool has_prev_selection () const;
 
 	std::string to_string (std::string indent="") const;
+
+	TrackerEditor& tracker_editor;
 
 	// Source cell coordonates (first selected cell). Negative means
 	// undefined.
@@ -88,10 +98,16 @@ public:
 	int prev_left_col_idx;
 	int prev_right_col_idx;
 
-	// NEXT: define a double dictionary entry, mapping row and column
-	// to string (content of each non empty cell), populated when
-	// copy() or cut() is invoked. Columns should only be relative to
-	// visible columns, not the actual indices in the Grid class.
+	// Register holding the copied subgrid.  The first unsigned is the
+	// column index (relative to the left border of the selection only
+	// considering visible columns in the grid).  The second unsigned
+	// is the row index (relative to the top border of the selection).
+	// The mapped string is the verbatim content of the cell at this
+	// relative coordinate.
+	typedef std::map<unsigned, std::map<unsigned, std::string> > Register;
+	Register reg;
 };
 
 } // ~namespace tracker
+
+#endif /* __ardour_tracker_subgrid_selector_h_ */
