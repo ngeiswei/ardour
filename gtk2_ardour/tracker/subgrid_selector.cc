@@ -115,7 +115,15 @@ SubgridSelector::clear_subgrid ()
 void
 SubgridSelector::copy ()
 {
-	// NEXT: fill SubgridSelector::reg
+	if (not has_selection ())
+		return;
+
+	
+	// VERY NEXT: fill SubgridSelector::reg by looping over
+	// int top_row_idx;
+	// int bottom_row_idx;
+	// int left_col_idx;
+	// int right_col_idx;
 }
 
 void
