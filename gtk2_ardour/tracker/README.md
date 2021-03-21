@@ -29,9 +29,11 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
-- [ ] Final off note management fixes
+- [ ] Final off note management fixes (look for NEXT)
 - [ ] Create wscript under tracker folder
 - [ ] Create PR
+- [ ] Fix situation when the cursor on the current track is different than the
+      selected track
 - [ ] Add option for velocity ramp
 - [ ] Handle keypressed the right way (which includes passing on space to play/stop)
 - [ ] Convert direct call to action when possible, see
