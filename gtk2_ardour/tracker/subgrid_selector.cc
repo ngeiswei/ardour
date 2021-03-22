@@ -118,12 +118,34 @@ SubgridSelector::copy ()
 	if (not has_selection ())
 		return;
 
-	
-	// VERY NEXT: fill SubgridSelector::reg by looping over
-	// int top_row_idx;
-	// int bottom_row_idx;
-	// int left_col_idx;
-	// int right_col_idx;
+	// Clear register
+	reg.clear ();
+
+	// Fill register
+	unsigned rgtr_col_idx = 0;
+	unsigned rgtr_row_idx = 0;
+	for (int col_idx = left_col_idx; col_idx <= right_col_idx; col_idx++) {
+		// Column does not hold data, skip it
+		if (!tracker_editor.grid.is_editable (col_idx)) {
+			continue;
+		}
+		// Fill register column
+		std::map<unsigned, std::string> rgtr_col;
+		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
+			// Cell does not hold data, skip it
+			if (!tracker_editor.grid.is_cell_defined (row_idx, col_idx)) {
+				continue;
+			}
+			std::string content = tracker_editor.grid.get_cell_content (row_idx, col_idx);
+			if (content.empty ()) {
+				continue;
+			}
+			rgtr_col[rgtr_row_idx] = content;
+			rgtr_row_idx++;
+		}
+		reg[rgtr_col_idx] = rgtr_col;
+		rgtr_col_idx++;
+	}
 }
 
 void

@@ -249,6 +249,11 @@ public:
 	void set_underline_current_step_edit_note_cell ();
 	void set_underline_current_step_edit_auto_cell ();
 
+	// Modifier/Accessor.
+	void set_cell_content (int row_idx, int col_idx, std::string str);
+	// Return an empty string if the data is blank or interpolated
+	std::string get_cell_content (int row_idx, int col_idx) const;
+
 	// To align grid header
 	int get_time_width () const;
 	int get_track_width (int mti) const;
@@ -445,6 +450,8 @@ private:
 	// Return the column index of a tree view column, -1 if col doesn't exist.
 	int to_col_index (const Gtk::TreeViewColumn* col);
 
+	// Return the TreeViewColumn pointing to the given column index, or
+	// NULL if it doesn't exist.
 	Gtk::TreeViewColumn* to_col (int col_idx);
 	const Gtk::TreeViewColumn* to_col (int col_idx) const;
 
@@ -493,12 +500,23 @@ private:
 	// Editing Actions //
 	/////////////////////
 
+	////////////////
+	// Properties //
+	////////////////
+
 	// Check whether a given column is editable. Note, due to technical reasons
 	// outside of our control col cannot be const.
+public:
+	bool is_editable (int col_idx) const; // Accessed by SubgridSelector
+private:
+	// TODO: see if we can constify col using const_cast in the code
 	bool is_editable (Gtk::TreeViewColumn* col) const;
 
 	// Check if the cell is defined and editable
 	// Warning: can't be const because of to_col_index
+public:
+	bool is_cell_defined (int row_idx, int col_idx); // Accessed by SubgridSelector
+private:
 	bool is_cell_defined (int row_idx, const Gtk::TreeViewColumn* col);
 	bool is_cell_defined (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
 	bool is_region_defined (const Gtk::TreeModel::Path& path, int mti) const;
