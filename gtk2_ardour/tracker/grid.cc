@@ -1926,6 +1926,19 @@ Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioT
 	// VT: implement
 }
 
+void
+Grid::set_cell_content (int row_idx, int col_idx, std::string str)
+{
+	// VERY NEXT: implement
+}
+
+std::string
+Grid::get_cell_content (int row_idx, int col_idx) const
+{
+	return "";
+	// VERY NEXT: implement
+}
+
 int
 Grid::get_time_width () const
 {
@@ -3817,10 +3830,25 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 }
 
 bool
+Grid::is_editable (int col_idx) const
+{
+	return is_editable (const_cast<TreeViewColumn*>(to_col (col_idx)));
+}
+
+bool
 Grid::is_editable (TreeViewColumn* col) const
 {
+	if (col == 0)
+		return false;
+
 	CellRendererText* cellrenderer = dynamic_cast<CellRendererText*> (col->get_first_cell_renderer ());
 	return cellrenderer->property_editable ();
+}
+
+bool
+Grid::is_cell_defined (int row_idx, int col_idx)
+{
+	return is_cell_defined (to_path (row_idx), to_col (col_idx));
 }
 
 bool
