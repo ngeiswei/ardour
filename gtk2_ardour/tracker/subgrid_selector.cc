@@ -223,5 +223,10 @@ SubgridSelector::to_string (std::string indent) const
 	ss << indent << "bottom_row_idx = " << bottom_row_idx << std::endl;
 	ss << indent << "left_col_idx = " << left_col_idx << std::endl;
 	ss << indent << "right_col_idx = " << right_col_idx << std::endl;
+	ss << indent << "prev_top_row_idx = " << prev_top_row_idx << std::endl;
+	ss << indent << "prev_bottom_row_idx = " << prev_bottom_row_idx << std::endl;
+	ss << indent << "prev_left_col_idx = " << prev_left_col_idx << std::endl;
+	ss << indent << "prev_right_col_idx = " << prev_right_col_idx << std::endl;
+	// VERY MEXT: show reg, and test copy.
 	return ss.str ();
 }
