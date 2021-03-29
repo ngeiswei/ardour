@@ -83,7 +83,7 @@ using namespace Editing;
 using namespace Tracker;
 
 const string Grid::note_off_str = "===";
-const string Grid::undefined_str = "***";
+const string Grid::undisplayable_str = "***";
 
 Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
@@ -1184,7 +1184,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			int delay = pattern.region_relative_delay_ticks (note->end_time (), row_idx, mti, mri);
+			int delay = get_on_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1202,7 +1202,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
 			row[columns._velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
-			int delay = pattern.region_relative_delay_ticks (note->time (), row_idx, mti, mri);
+			int delay = get_on_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1210,7 +1210,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		}
 	} else {
 		// Too many notes, not displayable
-		row[columns.note_name[mti][cgi]] = undefined_str;
+		row[columns.note_name[mti][cgi]] = undisplayable_str;
 		row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
 	}
 }
@@ -1256,7 +1256,7 @@ Grid::redisplay_blank_auto_foreground (TreeModel::Row& row, int mti, int cgi)
 void
 Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
-	if (pattern.is_auto_displayable (row_idx, mti, mri, param)) {
+	if (is_auto_displayable (row_idx, mti, mri, param)) {
 		double val = pattern.get_automation_value (row_idx, mti, mri, param).first;
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
 		int delay = pattern.get_automation_delay (row_idx, mti, mri, param).first;
@@ -1265,7 +1265,7 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
 		}
 	} else {
-		row[columns.automation[mti][cgi]] = undefined_str;
+		row[columns.automation[mti][cgi]] = undisplayable_str;
 	}
 	row[columns._automation_foreground_color[mti][cgi]] = active_foreground_color;
 }
@@ -1923,20 +1923,110 @@ Grid::set_underline_current_step_edit_auto_cell ()
 void
 Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
 {
-	// VT: implement
+	// TODO: implement
 }
 
 void
 Grid::set_cell_content (int row_idx, int col_idx, std::string str)
 {
-	// VERY NEXT: implement
+	const TreeViewColumn* col = to_col (col_idx);
+	Gtk::TreeModel::Path path = to_path (row_idx);
+	int mti = to_mti (col);
+	int cgi = to_cgi (col);
+	int mri = to_mri (path, col);
+
+	// VERY NEXT: Use set_on_note, set_off_note, delete_note,
+	// set_note_channel, set_note_velocity, set_note_delay,
+	// set_automation_value, delete_automation_value,
+	// set_automation_delay, delete_automation_delay.
 }
 
 std::string
 Grid::get_cell_content (int row_idx, int col_idx) const
 {
+	const TreeViewColumn* col = to_col (col_idx);
+	Gtk::TreeModel::Path path = to_path (row_idx);
+	int mti = to_mti (col);
+	int cgi = to_cgi (col);
+	int mri = to_mri (path, col);
+
+	if (is_note_type (col)) {
+		if (has_note (path, mti, cgi)) {
+			return "";
+		}
+
+		// For now ignore ***
+		if (!is_note_displayable (row_idx, mti, mri, cgi)) {
+			return "";
+		}
+
+		NotePtr on_note = get_on_note (row_idx, mti, cgi);
+		NotePtr off_note = get_off_note (row_idx, mti, cgi);
+		switch (get_note_type (col)) {
+		case TrackerColumn::NOTE:
+			if (on_note) {
+				return ParameterDescriptor::midi_note_name (on_note->note ());
+			} else {
+				return note_off_str;
+			}
+			break;
+		case TrackerColumn::CHANNEL:
+			if (on_note) {
+				return TrackerUtils::num_to_string (on_note->channel () + 1, base (), precision ());
+			} else {
+				return "";
+			}
+			break;
+		case TrackerColumn::VELOCITY:
+			if (on_note) {
+				TrackerUtils::num_to_string ((int)on_note->velocity (), base (), precision ());
+			} else {
+				return "";
+			}
+			break;
+		case TrackerColumn::DELAY: {
+			int delay = on_note ? get_on_note_delay (on_note, row_idx, mti, mri)
+				: get_on_note_delay (off_note, row_idx, mti, mri);
+			if (delay != 0) {
+				return TrackerUtils::num_to_string (delay, base (), precision ());
+			} else {
+				return "";
+			}
+			break;
+		}
+		default:
+			cerr << "Grid::get_cell_content: Implementation Error!" << endl;
+		}
+	} else { // Auto type
+		if (!has_automation_value (row_idx, mti, mri, cgi)) {
+			return "";
+		}
+
+		// For now ignore ***
+		if (!is_auto_displayable (row_idx, mti, mri, cgi)) {
+			return "";
+		}
+
+		switch (get_auto_type (col)) {
+		case TrackerColumn::AUTOMATION: {
+			double value = get_automation_value (row_idx, mti, mri, cgi).first;
+			return TrackerUtils::num_to_string(value, base (), precision ());
+			break;
+		}
+		case TrackerColumn::AUTOMATION_DELAY: {
+			int delay = get_automation_delay (row_idx, mti, mri, cgi).first;
+			if (delay != 0) {
+				return TrackerUtils::num_to_string (delay, base (), precision ());
+			} else {
+				return "";
+			}
+			break;
+		}
+		default:
+			cerr << "Grid::get_cell_content: Implementation Error!" << endl;
+		}
+	}
 	return "";
-	// VERY NEXT: implement
 }
 
 int
@@ -2158,6 +2248,25 @@ Grid::to_col (int col_idx) const
 	return get_column (col_idx);
 }
 
+bool
+Grid::is_note_displayable (int row_idx, int mti, int mri, int cgi) const
+{
+	return pattern.is_note_displayable (row_idx, mti, mri, cgi);
+}
+
+bool
+Grid::is_auto_displayable (int row_idx, int mti, int mri, int cgi) const
+{
+	Evoral::Parameter param = get_param (mti, cgi);
+	return pattern.is_auto_displayable (row_idx, mti, mri, param);
+}
+
+bool
+Grid::is_auto_displayable (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return pattern.is_auto_displayable (row_idx, mti, mri, param);
+}
+
 NotePtr
 Grid::get_on_note (const string& path, int mti, int cgi) const
 {
@@ -2192,6 +2301,18 @@ NotePtr
 Grid::get_off_note (int row_idx, int mti, int cgi) const
 {
 	return pattern.off_note (row_idx, mti, pattern.to_mri (row_idx, mti), cgi);
+}
+
+int
+Grid::get_on_note_delay (NotePtr on_note, int row_idx, int mti, int mri) const
+{
+	return pattern.region_relative_delay_ticks (on_note->time (), row_idx, mti, mri);
+}
+
+int
+Grid::get_off_note_delay (NotePtr off_note, int row_idx, int mti, int mri) const
+{
+	return pattern.region_relative_delay_ticks (off_note->end_time (), row_idx, mti, mri);
 }
 
 NotePtr
@@ -2316,7 +2437,7 @@ Grid::note_edited (const string& path, const string& text)
 	bool is_on = pitch <= 127;
 
 	// Can't edit ***
-	if (!pattern.is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
+	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -2539,7 +2660,7 @@ Grid::note_channel_edited (const string& path, const string& text)
 	}
 
 	// Can't edit ***
-	if (!pattern.is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
+	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -2582,7 +2703,7 @@ Grid::note_velocity_edited (const string& path, const string& text)
 	}
 
 	// Can't edit ***
-	if (!pattern.is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
+	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -2621,7 +2742,7 @@ void
 Grid::note_delay_edited (const string& path, const string& text)
 {
 	// Can't edit ***
-	if (!pattern.is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
+	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -2659,7 +2780,7 @@ Grid::set_note_delay (int delay, int row_idx, int mti, int mri, int cgi)
 		// Modify the start time and length according to the new on note delay
 
 		// Change start time according to new delay
-		int delta = delay - pattern.region_relative_delay_ticks (on_note->time (), row_idx, mti, mri);
+		int delta = delay - get_on_note_delay (on_note, row_idx, mti, mri);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks (delta);
 		Temporal::Beats new_start = on_note->time () + relative_beats;
 		// Make sure the new_start is still within the visible region
@@ -2682,7 +2803,7 @@ Grid::set_note_delay (int delay, int row_idx, int mti, int mri, int cgi)
 	else if (off_note) {
 		// There is only an off note. Modify its length accoding to the new off
 		// note delay.
-		int delta = delay - pattern.region_relative_delay_ticks (off_note->end_time (), row_idx, mti, mri);
+		int delta = delay - get_off_note_delay (off_note, row_idx, mti, mri);
 		Temporal::Beats relative_beats = Temporal::Beats::ticks (delta);
 		Temporal::Beats new_length = off_note->length () + relative_beats;
 		// Make sure the off note is after the on note
@@ -2971,8 +3092,7 @@ Grid::automation_edited (const string& path, const string& text)
 	}
 
 	// Can't edit *** (NEXT: support Overwrite * button)
-	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
-	if (!pattern.is_auto_displayable (edit_row_idx, edit_mti, edit_mri, param)) {
+	if (!is_auto_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -3058,8 +3178,7 @@ Grid::automation_delay_edited (const string& path, const string& text)
 	}
 
 	// Can't edit *** (NEXT: support Overwrite * button)
-	Evoral::Parameter param = get_param (edit_mti, edit_cgi);
-	if (!pattern.is_auto_displayable (edit_row_idx, edit_mti, edit_mri, param)) {
+	if (!is_auto_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
 		clear_editables ();
 		return;
 	}
@@ -4559,8 +4678,8 @@ Grid::step_editing_set_note_delay (int digit)
 	NotePtr off_note = get_off_note (current_row_idx, current_mti, current_cgi);
 	if (on_note || off_note) {
 		// Fetch delay
-		int old_delay = on_note ? pattern.region_relative_delay_ticks (on_note->time (), current_row_idx, current_mti, current_mri)
-			: pattern.region_relative_delay_ticks (off_note->end_time (), current_row_idx, current_mti, current_mri);
+		int old_delay = on_note ? get_on_note_delay (on_note, current_row_idx, current_mti, current_mri)
+			: get_off_note_delay (off_note, current_row_idx, current_mti, current_mri);
 
 		// Update delay
 		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos, base (), precision ());

@@ -75,7 +75,7 @@ public:
 		// TODO: add empty columns to separate between each note track and each automations
 		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color, maybe
 		Gtk::TreeModelColumn<std::string> _family; // font family
-		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator		
+		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator
 		Gtk::TreeModelColumn<std::string> _time_background_color;
 		// TODO: maybe use a row_idx column to rapidely retrieve the row_idx of a row
 		Gtk::TreeModelColumn<std::string> time;
@@ -93,7 +93,7 @@ public:
 		Gtk::TreeModelColumn<std::string> _velocity_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<Pango::AttrList> _velocity_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<Pango::Alignment> _velocity_alignment[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];		
+		Gtk::TreeModelColumn<Pango::Alignment> _velocity_alignment[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
@@ -178,7 +178,7 @@ public:
 	int base () const;
 	bool is_hex () const;
 	int precision () const;
-	
+
 	// Return the column of the first defined and editable cell of the current
 	// row
 	Gtk::TreeViewColumn* first_defined_col ();
@@ -299,7 +299,7 @@ public:
 
 	// If the resolution isn't fine enough and multiple notes do not fit in the
 	// same row, then this string is printed.
-	static const std::string undefined_str;
+	static const std::string undisplayable_str;
 
 	GridModelColumns columns;
 	Glib::RefPtr<Gtk::ListStore> model;
@@ -594,6 +594,12 @@ private:
 	bool step_editing_set_automation_delay (int digit);
 	bool step_editing_delete_automation_delay ();
 
+	// Whether a note or automation is dispayable, if not then it's
+	// content is replaced by ***
+	bool is_note_displayable (int row_idx, int mti, int mri, int cgi) const;
+	bool is_auto_displayable (int row_idx, int mti, int mri, int cgi) const;
+	bool is_auto_displayable (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
+
 	// Get note from path, mti and cgi
 	NotePtr get_on_note (const std::string& path, int mti, int cgi) const;
 	NotePtr get_on_note (const Gtk::TreeModel::Path& path, int mri, int cgi) const;
@@ -601,6 +607,10 @@ private:
 	NotePtr get_off_note (const std::string& path, int mti, int cgi) const;
 	NotePtr get_off_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 	NotePtr get_off_note (int row_idx, int mti, int cgi) const;
+
+	// Get on/off note delay
+	int get_on_note_delay (NotePtr on_note, int row_idx, int mti, int mri) const;
+	int get_off_note_delay (NotePtr off_note, int row_idx, int mti, int mri) const;
 
 	// Get on or off note from path, mti and cgi.
 	NotePtr get_note (int row_idx, int mti, int cgi) const;
