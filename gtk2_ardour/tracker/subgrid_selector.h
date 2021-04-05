@@ -104,7 +104,8 @@ public:
 	// is the row index (relative to the top border of the selection).
 	// The mapped string is the verbatim content of the cell at this
 	// relative coordinate.
-	typedef std::map<unsigned, std::map<unsigned, std::string> > Register;
+	typedef std::map<unsigned, std::string> ColumnData;
+	typedef std::map<unsigned, ColumnData> Register;
 	Register reg;
 };
 

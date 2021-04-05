@@ -115,10 +115,15 @@ public:
 	bool paste_press (GdkEventButton* ev);
 
 	/**
+	 * Triggered upon paste button press event.
+	 */
+	bool paste_overlay_press (GdkEventButton* ev);
+
+	/**
 	 * Trigger when precision_spinner value is changed.
 	 */
 	void change_precision ();
-	
+
 	/**
 	 * Trigger when position_spinner value is changed.
 	 */
@@ -184,6 +189,9 @@ public:
 
 	Gtk::VSeparator              paste_separator;
 	ArdourWidgets::ArdourButton  paste_button;
+
+	Gtk::VSeparator              paste_overlay_separator;
+	ArdourWidgets::ArdourButton  paste_overlay_button;
 
 	// Spinners
 	Gtk::VSeparator              octave_separator;

@@ -309,6 +309,16 @@ MainToolbar::setup_layout ()
 	paste_button.show ();
 	br->pack_start (paste_button, false, false);
 
+	// Paste Overlay
+	paste_overlay_separator.show ();
+	br->pack_start (paste_overlay_separator, false, false);
+	paste_overlay_button.set_name ("paste overlay button");
+	paste_overlay_button.set_text (S_("Paste Overlay"));
+	paste_overlay_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::paste_overlay_press), false);
+	paste_overlay_button.set_active_state (Gtkmm2ext::Off);
+	paste_overlay_button.show ();
+	br->pack_start (paste_overlay_button, false, false);
+
 	br->show ();
 	pack_start (*br, false, false);
 
@@ -683,21 +693,28 @@ MainToolbar::hex_press (GdkEventButton* ev)
 bool
 MainToolbar::cut_press (GdkEventButton* ev)
 {
-	// TODO
+	// VERY NEXT
 	return true;
 }
 
 bool
 MainToolbar::copy_press (GdkEventButton* ev)
 {
-	// TODO
+	// VERY NEXT
 	return true;
 }
 
 bool
 MainToolbar::paste_press (GdkEventButton* ev)
 {
-	// TODO
+	// VERY NEXT
+	return true;
+}
+
+bool
+MainToolbar::paste_overlay_press (GdkEventButton* ev)
+{
+	// VERY NEXT
 	return true;
 }
 
