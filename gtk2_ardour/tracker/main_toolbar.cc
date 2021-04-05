@@ -693,28 +693,32 @@ MainToolbar::hex_press (GdkEventButton* ev)
 bool
 MainToolbar::cut_press (GdkEventButton* ev)
 {
-	// VERY NEXT
+	// TODO: maybe use signal instead of direct call
+	tracker_editor.grid._subgrid_selector.cut ();
 	return true;
 }
 
 bool
 MainToolbar::copy_press (GdkEventButton* ev)
 {
-	// VERY NEXT
+	// TODO: maybe use signal instead of direct call
+	tracker_editor.grid._subgrid_selector.copy ();
 	return true;
 }
 
 bool
 MainToolbar::paste_press (GdkEventButton* ev)
 {
-	// VERY NEXT
+	// TODO: maybe use signal instead of direct call
+	tracker_editor.grid._subgrid_selector.paste ();
 	return true;
 }
 
 bool
 MainToolbar::paste_overlay_press (GdkEventButton* ev)
 {
-	// VERY NEXT
+	// TODO: maybe use signal instead of direct call
+	tracker_editor.grid._subgrid_selector.paste_overlay ();
 	return true;
 }
 

@@ -52,9 +52,6 @@ SubgridSelector::set_source (int row_idx, int col_idx)
 	dst_col_idx = -1;
 
 	set_rectangle ();
-
-	std::cout << "SubgridSelector::set_source (row_idx=" << row_idx << ", col_idx=" << col_idx << "):" << std::endl;
-	std::cout << to_string ("  ") << std::endl;
 }
 
 void
@@ -67,9 +64,6 @@ SubgridSelector::set_destination (int row_idx, int col_idx)
 	dst_col_idx = col_idx;
 
 	set_rectangle ();
-
-	std::cout << "SubgridSelector::destination (row_idx=" << row_idx << ", col_idx=" << col_idx << "):" << std::endl;
-	std::cout << to_string ("  ") << std::endl;
 }
 
 void
@@ -81,9 +75,6 @@ SubgridSelector::unset ()
 	dst_row_idx = -1;
 
 	set_rectangle ();
-
-	std::cout << "SubgridSelector::unset ():" << std::endl;
-	std::cout << to_string ("  ") << std::endl;
 }
 
 bool
@@ -95,7 +86,6 @@ SubgridSelector::has_source () const
 bool
 SubgridSelector::has_destination () const
 {
-	std::cout << "SubgridSelector::has_destination () = " << (0 <= dst_row_idx and 0 <= dst_col_idx) << std::endl;
 	return 0 <= dst_row_idx and 0 <= dst_col_idx;
 }
 
@@ -109,14 +99,12 @@ SubgridSelector::cut ()
 void
 SubgridSelector::clear_subgrid ()
 {
-	// NEXT: Remove all selected events from the grid
+	// VERY NEXT: Remove all selected events from the grid
 }
 
 void
 SubgridSelector::copy ()
 {
-	std::cout << "SubgridSelector::copy ()" << std::endl;
-
 	if (not has_selection ())
 		return;
 
@@ -125,21 +113,29 @@ SubgridSelector::copy ()
 
 	// Fill register
 	unsigned rgtr_col_idx = 0;
-	unsigned rgtr_row_idx = 0;
 	for (int col_idx = left_col_idx; col_idx <= right_col_idx; col_idx++) {
 		// Column does not hold data, skip it
 		if (!tracker_editor.grid.is_editable (col_idx)) {
 			continue;
 		}
+
+		// Column is not visible, skip it
+		if (!tracker_editor.grid.is_visible (col_idx)) {
+			continue;
+		}
+
 		// Fill register column
 		std::map<unsigned, std::string> rgtr_col;
+		unsigned rgtr_row_idx = 0;
 		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
 			// Cell does not hold data, skip it
 			if (!tracker_editor.grid.is_cell_defined (row_idx, col_idx)) {
+				rgtr_row_idx++;
 				continue;
 			}
 			std::string content = tracker_editor.grid.get_cell_content (row_idx, col_idx);
 			if (content.empty ()) {
+				rgtr_row_idx++;
 				continue;
 			}
 			rgtr_col[rgtr_row_idx] = content;
@@ -149,19 +145,19 @@ SubgridSelector::copy ()
 		rgtr_col_idx++;
 	}
 
-	std::cout << "*this:" << std::endl << to_string ("  ") << std::endl;
+	std::cout << "SubgridSelector::copy () *this:" << std::endl << to_string ("  ") << std::endl;
 }
 
 void
 SubgridSelector::paste ()
 {
-	// NEXT
+	// VERY NEXT
 }
 
 void
 SubgridSelector::paste_overlay ()
 {
-	// NEXT: like paste but does not delete the existing events when
+	// VERY NEXT: like paste but does not delete the existing events when
 	// possible
 }
 
@@ -233,10 +229,10 @@ SubgridSelector::to_string (std::string indent) const
 	ss << indent << "prev_right_col_idx = " << prev_right_col_idx << std::endl;
 
 	// Register
+	ss << indent << "Register:" << std::endl;
 	Register::const_iterator col_it = reg.begin ();
 	for (; col_it != reg.end (); ++col_it) {
 		unsigned col_idx = col_it->first;
-		ss << indent << "reg[col_idx=" << col_idx << "]:" << std::endl;
 		const ColumnData& col_data = col_it->second;
 		ColumnData::const_iterator row_it = col_data.begin ();
 		for (; row_it != col_data.end (); ++row_it) {
