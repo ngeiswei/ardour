@@ -115,6 +115,8 @@ SubgridSelector::clear_subgrid ()
 void
 SubgridSelector::copy ()
 {
+	std::cout << "SubgridSelector::copy ()" << std::endl;
+
 	if (not has_selection ())
 		return;
 
@@ -146,6 +148,8 @@ SubgridSelector::copy ()
 		reg[rgtr_col_idx] = rgtr_col;
 		rgtr_col_idx++;
 	}
+
+	std::cout << "*this:" << std::endl << to_string ("  ") << std::endl;
 }
 
 void
@@ -227,6 +231,20 @@ SubgridSelector::to_string (std::string indent) const
 	ss << indent << "prev_bottom_row_idx = " << prev_bottom_row_idx << std::endl;
 	ss << indent << "prev_left_col_idx = " << prev_left_col_idx << std::endl;
 	ss << indent << "prev_right_col_idx = " << prev_right_col_idx << std::endl;
-	// VERY MEXT: show reg, and test copy.
+
+	// Register
+	Register::const_iterator col_it = reg.begin ();
+	for (; col_it != reg.end (); ++col_it) {
+		unsigned col_idx = col_it->first;
+		ss << indent << "reg[col_idx=" << col_idx << "]:" << std::endl;
+		const ColumnData& col_data = col_it->second;
+		ColumnData::const_iterator row_it = col_data.begin ();
+		for (; row_it != col_data.end (); ++row_it) {
+			unsigned row_idx = row_it->first;
+			ss << indent << "  " << "reg[col_idx=" << col_idx << "][row_idx="
+				<< row_idx << "] = " << row_it->second << std::endl;
+		}
+	}
+
 	return ss.str ();
 }
