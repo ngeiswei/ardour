@@ -508,9 +508,11 @@ private:
 	// outside of our control col cannot be const.
 public:
 	bool is_editable (int col_idx) const; // Accessed by SubgridSelector
-private:
 	// TODO: see if we can constify col using const_cast in the code
 	bool is_editable (Gtk::TreeViewColumn* col) const;
+	bool is_visible (int col_idx) const;  // Accessed by SubgridSelector
+	// TODO: see if we can constify col using const_cast in the code
+	bool is_visible (Gtk::TreeViewColumn* col) const;
 
 	// Check if the cell is defined and editable
 	// Warning: can't be const because of to_col_index
@@ -771,7 +773,8 @@ private:
 	PianoKeyBindings _keyboard_layout;
 
 	// Subgrid Selector
-	SubgridSelector _subgrid_selector;
+public:
+	SubgridSelector _subgrid_selector; // TODO: used by MainToolBar move to public officially
 };
 
 } // ~namespace tracker
