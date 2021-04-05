@@ -1951,7 +1951,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 	int mri = to_mri (path, col);
 
 	if (is_note_type (col)) {
-		if (has_note (path, mti, cgi)) {
+		if (!has_note (path, mti, cgi)) {
 			return "";
 		}
 
@@ -1979,14 +1979,14 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			break;
 		case TrackerColumn::VELOCITY:
 			if (on_note) {
-				TrackerUtils::num_to_string ((int)on_note->velocity (), base (), precision ());
+				return TrackerUtils::num_to_string ((int)on_note->velocity (), base (), precision ());
 			} else {
 				return "";
 			}
 			break;
 		case TrackerColumn::DELAY: {
 			int delay = on_note ? get_on_note_delay (on_note, row_idx, mti, mri)
-				: get_on_note_delay (off_note, row_idx, mti, mri);
+				: get_off_note_delay (off_note, row_idx, mti, mri);
 			if (delay != 0) {
 				return TrackerUtils::num_to_string (delay, base (), precision ());
 			} else {
@@ -3962,6 +3962,20 @@ Grid::is_editable (TreeViewColumn* col) const
 
 	CellRendererText* cellrenderer = dynamic_cast<CellRendererText*> (col->get_first_cell_renderer ());
 	return cellrenderer->property_editable ();
+}
+
+bool
+Grid::is_visible (int col_idx) const
+{
+	return is_visible (const_cast<TreeViewColumn*>(to_col (col_idx)));
+}
+
+bool
+Grid::is_visible (TreeViewColumn* col) const
+{
+	if (col == 0)
+		return false;
+	return col->get_visible ();
 }
 
 bool
