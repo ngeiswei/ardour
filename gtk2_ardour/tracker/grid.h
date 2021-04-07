@@ -636,21 +636,27 @@ private:
 	// Midi note callbacks
 	uint8_t parse_pitch (const std::string& text) const;
 	void note_edited (const std::string& path, const std::string& text);
+	void set_note_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 
 	// Set a new on note (resp. off note, or none) on the grid. The
 	// return pair of set_on_note is the channel and velocity of the
 	// new note. It is returned to be passed to play_note.
-	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, int row_idx, int mti, int mri, int cgi);
-	std::pair<uint8_t, uint8_t> set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti, int mri, int cgi);
+	std::pair<uint8_t, uint8_t> set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch);
+	std::pair<uint8_t, uint8_t> set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_t ch, uint8_t vel);
 	void set_off_note (int row_idx, int mti, int mri, int cgi);
 	void delete_note (int row_idx, int mti, int mri, int cgi);
 
 	void note_channel_edited (const std::string& path, const std::string& text);
+	void set_note_channel_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 	void set_note_channel (int mti, int mri, NotePtr note, int ch);
+
 	void note_velocity_edited (const std::string& path, const std::string& text);
+	void set_note_velocity_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 	void set_note_velocity (int mti, int mri, NotePtr note, int vel);
+
 	void note_delay_edited (const std::string& path, const std::string& text);
-	void set_note_delay (int delay, int row_idx, int mti, int mri, int cgi);
+	void set_note_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
+	void set_note_delay (int row_idx, int mti, int mri, int cgi, int delay);
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
@@ -670,13 +676,18 @@ private:
 	// In case no such value exists, then return its interpolation (or default)
 	double get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const;
 	double get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
-	void set_automation_value (double val, int row_idx, int mti, int mri, int automation_cgi);
+	void set_automation_value (int row_idx, int mti, int mri, int cgi, double val);
 	void delete_automation_value (int row_idx, int mti, int mri, int automation_cgi);
+	// Like set_automation_value but provide a text representating the
+	// value instead of value itself.  If empty then it deletes the
+	// value instead.
+	void set_automation_value_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 	void automation_delay_edited (const std::string& path, const std::string& text);
 	std::pair<int, bool> get_automation_delay (int row_idx, int mti, int mri, int cgi) const; // return (0, false) if undefined
 	bool has_automation_delay (int row_idx, int mti, int mri, int cgi) const; // Whether automation is defined (regardless of whether it is null)
-	void set_automation_delay (int delay, int row_idx, int mti, int mri, int automation_cgi);
+	void set_automation_delay (int row_idx, int mti, int mri, int cgi, int delay);
 	void delete_automation_delay (int row_idx, int mti, int mri, int cgi);
+	void set_automation_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 
 	// Return lower and upper bounds of the given parameter
 	double lower (int row_idx, int mti, const Evoral::Parameter& param) const;
