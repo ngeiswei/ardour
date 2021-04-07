@@ -200,14 +200,12 @@ SubgridSelector::set_rectangle ()
 bool
 SubgridSelector::has_selection () const
 {
-	std::cout << "SubgridSelector::has_selection () = " << (0 <= top_row_idx) << std::endl;
 	return 0 <= top_row_idx;
 }
 
 bool
 SubgridSelector::has_prev_selection () const
 {
-	std::cout << "SubgridSelector::has_prev_selection () = " << (0 <= prev_top_row_idx) << std::endl;
 	return 0 <= prev_top_row_idx;
 }
 
