@@ -72,7 +72,7 @@
 #include "tracker_editor.h"
 #include "tracker_utils.h"
 
-using namespace std;
+using namespace std;				  // TODO: remove, bad idea.
 using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace Glib;
@@ -1927,7 +1927,7 @@ Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioT
 }
 
 void
-Grid::set_cell_content (int row_idx, int col_idx, std::string str)
+Grid::set_cell_content (int row_idx, int col_idx, std::string text)
 {
 	const TreeViewColumn* col = to_col (col_idx);
 	Gtk::TreeModel::Path path = to_path (row_idx);
@@ -1935,10 +1935,35 @@ Grid::set_cell_content (int row_idx, int col_idx, std::string str)
 	int cgi = to_cgi (col);
 	int mri = to_mri (path, col);
 
-	// VERY NEXT: Use set_on_note, set_off_note, delete_note,
-	// set_note_channel, set_note_velocity, set_note_delay,
-	// set_automation_value, delete_automation_value,
-	// set_automation_delay, delete_automation_delay.
+	if (is_note_type (col)) {
+		switch (get_note_type (col)) {
+		case TrackerColumn::NOTE:
+			set_note_text(row_idx, mti, mri, cgi, text);
+			break;
+		case TrackerColumn::CHANNEL:
+			set_note_channel_text (row_idx, mti, mri, cgi, text);
+			break;
+		case TrackerColumn::VELOCITY:
+			set_note_velocity_text (row_idx, mti, mri, cgi, text);
+			break;
+		case TrackerColumn::DELAY:
+			set_note_delay_text (row_idx, mti, mri, cgi, text);
+			break;
+		default:
+			cerr << "Grid::set_cell_content: Implementation Error!" << endl;
+		}
+	} else { // Auto type
+		switch (get_auto_type (col)) {
+		case TrackerColumn::AUTOMATION:
+			set_automation_value_text (row_idx, mti, mri, cgi, text);
+			break;
+		case TrackerColumn::AUTOMATION_DELAY:
+			set_automation_delay_text (row_idx, mti, mri, cgi, text);
+			break;
+		default:
+			cerr << "Grid::set_cell_content: Implementation Error!" << endl;
+		}
+	}
 }
 
 std::string
@@ -2430,6 +2455,13 @@ Grid::parse_pitch (const string& text) const
 void
 Grid::note_edited (const string& path, const string& text)
 {
+	set_note_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
+	clear_editables ();
+}
+
+void
+Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const string& text)
+{
 	string norm_text = boost::erase_all_copy (text, " ");
 	bool is_del = norm_text.empty ();
 	bool is_off = !is_del && (norm_text[0] == note_off_str[0]);
@@ -2437,32 +2469,29 @@ Grid::note_edited (const string& path, const string& text)
 	bool is_on = pitch <= 127;
 
 	// Can't edit ***
-	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
-		clear_editables ();
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
 	if (is_on) {
-		set_on_note (pitch, edit_row_idx, edit_mti, edit_mri, edit_cgi);
+		set_on_note (row_idx, mti, mri, cgi, pitch);
 	} else if (is_off) {
-		set_off_note (edit_row_idx, edit_mti, edit_mri, edit_cgi);
+		set_off_note (row_idx, mti, mri, cgi);
 	} else if (is_del) {
-		delete_note (edit_row_idx, edit_mti, edit_mri, edit_cgi);
+		delete_note (row_idx, mti, mri, cgi);
 	}
-
-	clear_editables ();
 }
 
 std::pair<uint8_t, uint8_t>
-Grid::set_on_note (uint8_t pitch, int row_idx, int mti, int mri, int cgi)
+Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch)
 {
 	uint8_t channel = tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1;
 	uint8_t velocity = tracker_editor.main_toolbar.velocity_spinner.get_value_as_int ();
-	return set_on_note (pitch, channel, velocity, row_idx, mti, mri, cgi);
+	return set_on_note (row_idx, mti, mri, cgi, pitch, channel, velocity);
 }
 
 std::pair<uint8_t, uint8_t>
-Grid::set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, int row_idx, int mti, int mri, int cgi)
+Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_t ch, uint8_t vel)
 {
 	uint8_t new_ch = ch;
 	uint8_t new_vel = vel;
@@ -2653,25 +2682,28 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 void
 Grid::note_channel_edited (const string& path, const string& text)
 {
-	NotePtr note = get_on_note (path, edit_mti, edit_cgi);
+	set_note_channel_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
+	clear_editables ();
+}
+
+void
+Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const string& text)
+{
+	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty () || !note) {
-		clear_editables ();
 		return;
 	}
 
 	// Can't edit ***
-	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
-		clear_editables ();
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
 	if (TrackerUtils::is_number<int> (text, base ())) {
 		int ch = TrackerUtils::string_to_num<int> (text, base ());
 		ch--;  // Adjust for zero-based counting
-		set_note_channel (edit_mti, edit_mri, note, ch);
+		set_note_channel (mti, mri, note, ch);
 	}
-
-	clear_editables ();
 }
 
 void
@@ -2696,25 +2728,28 @@ Grid::set_note_channel (int mti, int mri, NotePtr note, int ch)
 void
 Grid::note_velocity_edited (const string& path, const string& text)
 {
-	NotePtr note = get_on_note (path, edit_mti, edit_cgi);
+	set_note_velocity_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
+	clear_editables ();
+}
+
+void
+Grid::set_note_velocity_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
+{
+	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty () || !note) {
-		clear_editables ();
 		return;
 	}
 
 	// Can't edit ***
-	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
-		clear_editables ();
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
 	// Parse the edited velocity and set the note velocity
 	if (TrackerUtils::is_number<int> (text, base ())) {
 		int vel = TrackerUtils::string_to_num<int> (text, base ());
-		set_note_velocity (edit_mti, edit_mri, note, vel);
+		set_note_velocity (mti, mri, note, vel);
 	}
-
-	clear_editables ();
 }
 
 void
@@ -2741,23 +2776,27 @@ Grid::set_note_velocity (int mti, int mri, NotePtr note, int vel)
 void
 Grid::note_delay_edited (const string& path, const string& text)
 {
+	set_note_delay_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
+	clear_editables ();
+}
+
+void
+Grid::set_note_delay_text (int row_idx, int mti, int mri, int cgi, const string& text)
+{
 	// Can't edit ***
-	if (!is_note_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
-		clear_editables ();
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
 	// Parse the edited delay and set note delay
 	if (TrackerUtils::is_number<int> (text, base ())) {
 		int delay = TrackerUtils::string_to_num<int> (text, base ());
-		set_note_delay (delay, edit_row_idx, edit_mti, edit_mri, edit_cgi);
+		set_note_delay (row_idx, mti, mri, cgi, delay);
 	}
-
-	clear_editables ();
 }
 
 void
-Grid::set_note_delay (int delay, int row_idx, int mti, int mri, int cgi)
+Grid::set_note_delay (int row_idx, int mti, int mri, int cgi, int delay)
 {
 	NotePtr on_note = get_on_note (row_idx, mti, cgi);
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
@@ -3084,27 +3123,7 @@ Grid::get_alist (int mti, int mri, const Evoral::Parameter& param) const
 void
 Grid::automation_edited (const string& path, const string& text)
 {
-	bool is_del = text.empty();
-	bool is_valid = TrackerUtils::is_number<double> (text, base ());
-	if (!is_del && !is_valid) {
-		clear_editables ();
-		return;
-	}
-
-	// Can't edit *** (NEXT: support Overwrite * button)
-	if (!is_auto_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
-		clear_editables ();
-		return;
-	}
-
-	// Can edit
-	if (is_del) {
-		delete_automation_value (edit_row_idx, edit_mti, edit_mri, edit_cgi);
-	} else {
-		double nval = TrackerUtils::string_to_num<double> (text, base ());
-		set_automation_value (nval, edit_row_idx, edit_mti, edit_mri, edit_cgi);
-	}
-
+	set_automation_value_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
 }
 
@@ -3147,7 +3166,30 @@ Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const E
 }
 
 void
-Grid::set_automation_value (double val, int row_idx, int mti, int mri, int cgi)
+Grid::set_automation_value_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
+{
+	bool is_del = text.empty();
+	bool is_valid = TrackerUtils::is_number<double> (text, base ());
+	if (!is_del && !is_valid) {
+		return;
+	}
+
+	// Can't edit *** (NEXT: support Overwrite * button)
+	if (!is_auto_displayable (row_idx, mti, mri, cgi)) {
+		return;
+	}
+
+	// Can edit
+	if (is_del) {
+		delete_automation_value (row_idx, mti, mri, cgi);
+	} else {
+		double nval = TrackerUtils::string_to_num<double> (text, base ());
+		set_automation_value (row_idx, mti, mri, cgi, nval);
+	}
+}
+
+void
+Grid::set_automation_value (int row_idx, int mti, int mri, int cgi, double val)
 {
 	// Find the parameter to automate
 	Evoral::Parameter param = get_param (mti, cgi);
@@ -3170,29 +3212,7 @@ Grid::delete_automation_value (int row_idx, int mti, int mri, int cgi)
 void
 Grid::automation_delay_edited (const string& path, const string& text)
 {
-	bool is_del = text.empty();
-	bool is_valid = TrackerUtils::is_number<int> (text, base ());
-	if (!is_del && !is_valid) {
-		clear_editables ();
-		return;
-	}
-
-	// Can't edit *** (NEXT: support Overwrite * button)
-	if (!is_auto_displayable (edit_row_idx, edit_mti, edit_mri, edit_cgi)) {
-		clear_editables ();
-		return;
-	}
-
-	// Check if within acceptable boundaries (NEXT: maybe clamp instead)
-	int delay = TrackerUtils::string_to_num<int> (text, base ());
-	if (delay < edit_mtp->delay_ticks_min () || edit_mtp->delay_ticks_max () < delay) {
-		clear_editables ();
-		return;
-	}
-
-	// Can edit
-	set_automation_delay (delay, edit_row_idx, edit_mti, edit_mri, edit_cgi);
-
+	set_automation_delay_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
 }
 
@@ -3211,7 +3231,7 @@ Grid::has_automation_delay (int row_idx, int mti, int mri, int cgi) const
 }
 
 void
-Grid::set_automation_delay (int delay, int row_idx, int mti, int mri, int cgi)
+Grid::set_automation_delay (int row_idx, int mti, int mri, int cgi, int delay)
 {
 	Evoral::Parameter param = get_param (mti, cgi);
 	return pattern.set_automation_delay (delay, row_idx, mti, mri, param);
@@ -3221,8 +3241,33 @@ void
 Grid::delete_automation_delay (int row_idx, int mti, int mri, int cgi)
 {
 	if (has_automation_delay (row_idx, mti, mri, cgi)) {
-		set_automation_delay (0, row_idx, mti, mri, cgi);
+		set_automation_delay (row_idx, mti, mri, cgi, 0);
 	}
+}
+
+void
+Grid::set_automation_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
+{
+	bool is_del = text.empty();
+	bool is_valid = TrackerUtils::is_number<int> (text, base ());
+	if (!is_del && !is_valid) {
+		return;
+	}
+
+	// Can't edit *** (NEXT: support Overwrite * button)
+	if (!is_auto_displayable (row_idx, mti, mri, cgi)) {
+		return;
+	}
+
+	// Check if within acceptable boundaries (NEXT: maybe clamp instead)
+	int delay = TrackerUtils::string_to_num<int> (text, base ());
+	// TODO: re-enable
+	// if (delay < edit_mtp->delay_ticks_min () || edit_mtp->delay_ticks_max () < delay) {
+	// 	return;
+	// }
+
+	// Can edit
+	set_automation_delay (row_idx, mti, mri, cgi, delay);
 }
 
 double
@@ -4348,7 +4393,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
-	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, current_row_idx, current_mti, current_mri, current_cgi);
+	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
@@ -4358,7 +4403,7 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
-	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (pitch, ch, vel, current_row_idx, current_mti, current_mri, current_cgi);
+	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
@@ -4697,7 +4742,7 @@ Grid::step_editing_set_note_delay (int digit)
 
 		// Update delay
 		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos, base (), precision ());
-		set_note_delay (new_delay, current_row_idx, current_mti, current_mri, current_cgi);
+		set_note_delay (current_row_idx, current_mti, current_mri, current_cgi, new_delay);
 	}
 
 	// Move the cursor
@@ -4710,7 +4755,7 @@ Grid::step_editing_delete_note_delay ()
 {
 	NotePtr note = get_note (current_row_idx, current_mti, current_cgi);
 	if (note) {
-		set_note_delay (0, current_row_idx, current_mti, current_mri, current_cgi);
+		set_note_delay (current_row_idx, current_mti, current_mri, current_cgi, 0);
 	}
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	return true;
@@ -4832,7 +4877,7 @@ Grid::step_editing_set_automation_value (int digit)
 	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
 	// return when such lock is taken.
 	redisplay_grid_connect_call_enabled = false;
-	set_automation_value (nval, current_row_idx, current_mti, current_mri, current_cgi);
+	set_automation_value (current_row_idx, current_mti, current_mri, current_cgi, nval);
 
 	// Move cursor
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
@@ -4981,7 +5026,7 @@ Grid::step_editing_set_automation_delay (int digit)
 	// Set new value
 	if (val_def.second) {
 		int new_delay = TrackerUtils::change_digit_or_sign (old_delay, digit, current_pos, base (), precision ());
-		set_automation_delay (new_delay, current_row_idx, current_mti, current_mri, current_cgi);
+		set_automation_delay (current_row_idx, current_mti, current_mri, current_cgi, new_delay);
 	}
 
 	// Move cursor
