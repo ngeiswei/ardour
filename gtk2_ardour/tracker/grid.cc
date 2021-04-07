@@ -1285,7 +1285,6 @@ Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, int mti, i
 void
 Grid::redisplay_cell_background (int row_idx, int col_idx)
 {
-	std::cout << "Grid::redisplay_cell_background (row_idx=" << row_idx << ", col_idx=" << col_idx << ")" << std::endl;
 	int mti = to_mti (to_col (col_idx));
 	int cgi = to_cgi (to_col (col_idx));
 	Gtk::TreeModel::Row row = to_row (row_idx);
@@ -1631,7 +1630,6 @@ Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const NotePattern&
 void
 Grid::redisplay_selection ()
 {
-	std::cout << "Grid::redisplay_selection ()" << std::endl;
 	if (_subgrid_selector.has_prev_selection ()) {
 		// Undisplay selection
 		for (int row_idx = _subgrid_selector.prev_top_row_idx; row_idx <= _subgrid_selector.prev_bottom_row_idx; row_idx++) {
@@ -3066,7 +3064,6 @@ Grid::set_current_pos (int min_pos, int max_pos)
 void
 Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 {
-	std::cout << "Grid::set_selector (path=" << path << ", col=" << col << ")" << std::endl;
 	int row_idx = to_row_index (path);
 	int col_idx = to_col_index (col);
 	if (is_shift_pressed ()) {
