@@ -157,8 +157,17 @@ SubgridSelector::paste ()
 void
 SubgridSelector::paste_overlay ()
 {
-	// VERY NEXT: like paste but does not delete the existing events when
-	// possible
+	std::cout << "SubgridSelector::paste_overlay ()" << std::endl;
+	Register::const_iterator col_it = reg.begin ();
+	for (; col_it != reg.end (); ++col_it) {
+		int col_idx = col_it->first + left_col_idx;
+		const ColumnData& col_data = col_it->second;
+		ColumnData::const_iterator row_it = col_data.begin ();
+		for (; row_it != col_data.end (); ++row_it) {
+			int row_idx = row_it->first + top_row_idx;
+			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
+		}
+	}
 }
 
 void
