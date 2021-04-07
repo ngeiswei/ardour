@@ -1184,7 +1184,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			int delay = get_on_note_delay (note, row_idx, mti, mri);
+			int delay = get_off_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
