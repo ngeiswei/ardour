@@ -250,7 +250,7 @@ public:
 	void set_underline_current_step_edit_auto_cell ();
 
 	// Modifier/Accessor.
-	void set_cell_content (int row_idx, int col_idx, std::string str);
+	void set_cell_content (int row_idx, int col_idx, const std::string& text);
 	// Return an empty string if the data is blank or interpolated
 	std::string get_cell_content (int row_idx, int col_idx) const;
 

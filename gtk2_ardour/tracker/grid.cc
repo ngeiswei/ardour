@@ -1925,8 +1925,9 @@ Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioT
 }
 
 void
-Grid::set_cell_content (int row_idx, int col_idx, std::string text)
+Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 {
+	std::cout << "Grid::set_cell_content (row_idx=" << row_idx << ", col_idx=" << col_idx << ", text=" << text << ")" << std::endl;
 	const TreeViewColumn* col = to_col (col_idx);
 	Gtk::TreeModel::Path path = to_path (row_idx);
 	int mti = to_mti (col);
@@ -1939,12 +1940,15 @@ Grid::set_cell_content (int row_idx, int col_idx, std::string text)
 			set_note_text(row_idx, mti, mri, cgi, text);
 			break;
 		case TrackerColumn::CHANNEL:
+			// VERY NEXT: fix
 			set_note_channel_text (row_idx, mti, mri, cgi, text);
 			break;
 		case TrackerColumn::VELOCITY:
+			// VERY NEXT: fix
 			set_note_velocity_text (row_idx, mti, mri, cgi, text);
 			break;
 		case TrackerColumn::DELAY:
+			// VERY NEXT: fix
 			set_note_delay_text (row_idx, mti, mri, cgi, text);
 			break;
 		default:
