@@ -158,15 +158,38 @@ void
 SubgridSelector::paste_overlay ()
 {
 	std::cout << "SubgridSelector::paste_overlay ()" << std::endl;
-	Register::const_iterator col_it = reg.begin ();
-	for (; col_it != reg.end (); ++col_it) {
-		int col_idx = col_it->first + left_col_idx;
-		const ColumnData& col_data = col_it->second;
+
+	if (reg.empty ())
+		return;
+
+	// Calculate the width of the selection to paste
+	unsigned width = reg.rend ()->first;
+
+	// Loop over columns, skipping uneditable or invisible ones
+	int col_idx = left_col_idx;
+	Register::const_iterator rgtr_col_it = reg.begin ();
+	for (unsigned rgtr_col_idx = 0; rgtr_col_idx <= width; rgtr_col_idx++) {
+		// Column does not hold data or is not visible, skip it
+		while (!tracker_editor.grid.is_editable (col_idx) or
+				 !tracker_editor.grid.is_visible (col_idx)) {
+			col_idx++;
+		}
+
+		// Column has nothing to paste, skip it
+		if (rgtr_col_idx < rgtr_col_it->first) {
+			col_idx++;
+			continue;
+		}
+
+		// Paste the column
+		const ColumnData& col_data = rgtr_col_it->second;
 		ColumnData::const_iterator row_it = col_data.begin ();
 		for (; row_it != col_data.end (); ++row_it) {
 			int row_idx = row_it->first + top_row_idx;
 			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
 		}
+		col_idx++;
+		++rgtr_col_it;
 	}
 }
 
