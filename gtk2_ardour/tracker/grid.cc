@@ -2464,6 +2464,7 @@ Grid::note_edited (const string& path, const string& text)
 void
 Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const string& text)
 {
+	std::cout << "Grid::set_note_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	string norm_text = boost::erase_all_copy (text, " ");
 	bool is_del = norm_text.empty ();
 	bool is_off = !is_del && (norm_text[0] == note_off_str[0]);
@@ -2691,6 +2692,7 @@ Grid::note_channel_edited (const string& path, const string& text)
 void
 Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const string& text)
 {
+	std::cout << "Grid::set_note_channel_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty () || !note) {
 		return;
@@ -2737,21 +2739,26 @@ Grid::note_velocity_edited (const string& path, const string& text)
 void
 Grid::set_note_velocity_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
+	std::cout << "Grid::set_note_velocity_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty () || !note) {
 		return;
 	}
 
+	std::cout << "Grid::set_note_velocity_text -1-" << std::endl;
 	// Can't edit ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
+	std::cout << "Grid::set_note_velocity_text -2-" << std::endl;
 	// Parse the edited velocity and set the note velocity
 	if (TrackerUtils::is_number<int> (text, base ())) {
 		int vel = TrackerUtils::string_to_num<int> (text, base ());
 		set_note_velocity (mti, mri, note, vel);
 	}
+
+	std::cout << "Grid::set_note_velocity_text END" << std::endl;
 }
 
 void
@@ -2785,6 +2792,7 @@ Grid::note_delay_edited (const string& path, const string& text)
 void
 Grid::set_note_delay_text (int row_idx, int mti, int mri, int cgi, const string& text)
 {
+	std::cout << "Grid::set_note_delay_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	// Can't edit ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
