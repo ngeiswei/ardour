@@ -1657,7 +1657,6 @@ Grid::redisplay_selection ()
 void
 Grid::redisplay_cell_selection (int row_idx, int col_idx)
 {
-	std::cout << "Grid::redisplay_cell_selection (row_idx=" << row_idx << ", col_idx=" << col_idx << ")" << std::endl;
 	Gtk::TreeViewColumn* col = to_col (col_idx);
 	if (is_cell_defined (row_idx, col)) {
 		if (is_note_type (col)) {
@@ -1671,7 +1670,6 @@ Grid::redisplay_cell_selection (int row_idx, int col_idx)
 void
 Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col)
 {
-	std::cout << "Grid::redisplay_note_cell_selection (row_idx=" << row_idx << ", col=" << col << ")" << std::endl;
 	// TODO: can be refactored with Grid::redisplay_current_note_cursor
 	int mti = to_mti (col);
 	int cgi = to_cgi (col);
@@ -1697,7 +1695,6 @@ Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col
 void
 Grid::redisplay_auto_cell_selection (int row_idx, const Gtk::TreeViewColumn* col)
 {
-	std::cout << "Grid::redisplay_auto_cell_selection (row_idx=" << row_idx << ", col=" << col << ")" << std::endl;
 	// TODO: can be refactored with Grid::redisplay_current_auto_cursor
 	int mti = to_mti (col);
 	int cgi = to_cgi (col);
@@ -1927,7 +1924,6 @@ Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioT
 void
 Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 {
-	std::cout << "Grid::set_cell_content (row_idx=" << row_idx << ", col_idx=" << col_idx << ", text=" << text << ")" << std::endl;
 	const TreeViewColumn* col = to_col (col_idx);
 	Gtk::TreeModel::Path path = to_path (row_idx);
 	int mti = to_mti (col);
@@ -2252,7 +2248,7 @@ Grid::to_row (int row_idx) const
 int
 Grid::to_col_index (const TreeViewColumn* col)
 {
-	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns ();
+	const vector<TreeViewColumn*>& cols = (vector<TreeViewColumn*>)get_columns ();
 
 	for (int i = 0; i < (int)cols.size (); i++) {
 		if (cols[i] == col) {
@@ -2464,7 +2460,6 @@ Grid::note_edited (const string& path, const string& text)
 void
 Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const string& text)
 {
-	std::cout << "Grid::set_note_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	string norm_text = boost::erase_all_copy (text, " ");
 	bool is_del = norm_text.empty ();
 	bool is_off = !is_del && (norm_text[0] == note_off_str[0]);
@@ -2692,7 +2687,6 @@ Grid::note_channel_edited (const string& path, const string& text)
 void
 Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const string& text)
 {
-	std::cout << "Grid::set_note_channel_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty () || !note) {
 		return;
@@ -2739,26 +2733,21 @@ Grid::note_velocity_edited (const string& path, const string& text)
 void
 Grid::set_note_velocity_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
-	std::cout << "Grid::set_note_velocity_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty () || !note) {
 		return;
 	}
 
-	std::cout << "Grid::set_note_velocity_text -1-" << std::endl;
 	// Can't edit ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
-	std::cout << "Grid::set_note_velocity_text -2-" << std::endl;
 	// Parse the edited velocity and set the note velocity
 	if (TrackerUtils::is_number<int> (text, base ())) {
 		int vel = TrackerUtils::string_to_num<int> (text, base ());
 		set_note_velocity (mti, mri, note, vel);
 	}
-
-	std::cout << "Grid::set_note_velocity_text END" << std::endl;
 }
 
 void
@@ -2792,7 +2781,6 @@ Grid::note_delay_edited (const string& path, const string& text)
 void
 Grid::set_note_delay_text (int row_idx, int mti, int mri, int cgi, const string& text)
 {
-	std::cout << "Grid::set_note_delay_text (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", text=" << text << ")" << std::endl;
 	// Can't edit ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
@@ -5464,7 +5452,6 @@ Grid::scroll_event (GdkEventScroll* ev)
 bool
 Grid::shift_key_press ()
 {
-	std::cout << "Grid::shift_key_press ()" << std::endl;
 	shift_pressed = true;
 	return true;
 }
@@ -5472,7 +5459,6 @@ Grid::shift_key_press ()
 bool
 Grid::shift_key_release ()
 {
-	std::cout << "Grid::shift_key_release ()" << std::endl;
 	shift_pressed = false;
 	return true;
 }
