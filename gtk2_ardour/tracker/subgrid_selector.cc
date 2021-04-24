@@ -144,8 +144,6 @@ SubgridSelector::copy ()
 		reg[rgtr_col_idx] = rgtr_col;
 		rgtr_col_idx++;
 	}
-
-	std::cout << "SubgridSelector::copy () *this:" << std::endl << to_string ("  ") << std::endl;
 }
 
 void
@@ -157,13 +155,15 @@ SubgridSelector::paste ()
 void
 SubgridSelector::paste_overlay ()
 {
-	std::cout << "SubgridSelector::paste_overlay ()" << std::endl;
-
 	if (reg.empty ())
 		return;
 
+	// Maximum number of columns and rows in the pattern
+	int global_ncols = tracker_editor.grid.get_columns ().size ();
+	int global_nrows = tracker_editor.grid.pattern.global_nrows;
+
 	// Calculate the width of the selection to paste
-	unsigned width = reg.rend ()->first;
+	unsigned width = reg.rbegin ()->first;
 
 	// Loop over columns, skipping uneditable or invisible ones
 	int col_idx = left_col_idx;
@@ -173,11 +173,14 @@ SubgridSelector::paste_overlay ()
 		while (!tracker_editor.grid.is_editable (col_idx) or
 				 !tracker_editor.grid.is_visible (col_idx)) {
 			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overload
 		}
+		if (global_ncols <= col_idx) break; // Avoid horizontal overload
 
 		// Column has nothing to paste, skip it
 		if (rgtr_col_idx < rgtr_col_it->first) {
 			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overload
 			continue;
 		}
 
@@ -186,9 +189,11 @@ SubgridSelector::paste_overlay ()
 		ColumnData::const_iterator row_it = col_data.begin ();
 		for (; row_it != col_data.end (); ++row_it) {
 			int row_idx = row_it->first + top_row_idx;
+			if (global_nrows <= row_idx) break; // Avoid vertical overflow
 			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
 		}
 		col_idx++;
+		if (global_ncols <= col_idx) break; // Avoid horizontal overload
 		++rgtr_col_it;
 	}
 }
