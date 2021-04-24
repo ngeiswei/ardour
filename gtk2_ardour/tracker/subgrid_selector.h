@@ -27,6 +27,32 @@ namespace Tracker {
 class TrackerEditor;
 
 /**
+ * Class holding the copied subgrid
+ */
+class Register
+{
+public:
+	// Width and height of the register
+	unsigned width;
+	unsigned height;
+
+	// The first unsigned is the column index (relative to the left
+	// border of the selection only considering visible columns in the
+	// grid).  The second unsigned is the row index (relative to the
+	// top border of the selection).  The mapped string is the verbatim
+	// content of the cell at this relative coordinate.
+	typedef std::map<unsigned, std::string> ColumnData;
+	typedef std::map<unsigned, ColumnData> Data;
+	Data data;
+
+	// Clear the register
+	void clear ();
+
+	// Check if the register is empty
+	bool empty () const;
+};
+
+/**
  * Class handling the selected rectangle overlaying the tracker grid.
  */
 class SubgridSelector
@@ -98,14 +124,7 @@ public:
 	int prev_left_col_idx;
 	int prev_right_col_idx;
 
-	// Register holding the copied subgrid.  The first unsigned is the
-	// column index (relative to the left border of the selection only
-	// considering visible columns in the grid).  The second unsigned
-	// is the row index (relative to the top border of the selection).
-	// The mapped string is the verbatim content of the cell at this
-	// relative coordinate.
-	typedef std::map<unsigned, std::string> ColumnData;
-	typedef std::map<unsigned, ColumnData> Register;
+	// Hold the copied data
 	Register reg;
 };
 

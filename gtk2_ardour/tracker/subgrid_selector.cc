@@ -26,6 +26,18 @@
 
 using namespace Tracker;
 
+void Register::clear ()
+{
+	width = 0;
+	height = 0;
+	data.clear ();
+}
+
+bool Register::empty () const
+{
+	return width == 0;
+}
+
 SubgridSelector::SubgridSelector (TrackerEditor& te)
 	: tracker_editor (te)
 	, src_row_idx (-1)
@@ -111,6 +123,9 @@ SubgridSelector::copy ()
 	// Clear register
 	reg.clear ();
 
+	// Set height
+	reg.height = (bottom_row_idx - top_row_idx) + 1;
+
 	// Fill register
 	unsigned rgtr_col_idx = 0;
 	for (int col_idx = left_col_idx; col_idx <= right_col_idx; col_idx++) {
@@ -141,15 +156,62 @@ SubgridSelector::copy ()
 			rgtr_col[rgtr_row_idx] = content;
 			rgtr_row_idx++;
 		}
-		reg[rgtr_col_idx] = rgtr_col;
+		reg.data[rgtr_col_idx] = rgtr_col;
 		rgtr_col_idx++;
 	}
+	reg.width = rgtr_col_idx;
 }
 
 void
 SubgridSelector::paste ()
 {
-	// VERY NEXT
+	if (reg.empty ())
+		return;
+
+	// Maximum number of columns and rows in the pattern
+	int global_ncols = tracker_editor.grid.get_columns ().size ();
+	int global_nrows = tracker_editor.grid.pattern.global_nrows;
+	int bottom_row_idx = std::min (global_nrows, (int)reg.height + top_row_idx) - 1;
+
+	// Loop over columns, skipping uneditable or invisible ones
+	int col_idx = left_col_idx;
+	Register::Data::const_iterator rgtr_col_it = reg.data.begin ();
+	for (unsigned rgtr_col_idx = 0; rgtr_col_idx < reg.width; rgtr_col_idx++) {
+		// Column does not hold data or is not visible, skip it
+		while (!tracker_editor.grid.is_editable (col_idx) or
+				 !tracker_editor.grid.is_visible (col_idx)) {
+			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+		}
+		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+
+		// Column has no record, paste empty cells
+		if (rgtr_col_it == reg.data.end () or rgtr_col_idx < rgtr_col_it->first) {
+			for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
+				tracker_editor.grid.set_cell_content(row_idx, col_idx, "");
+			}
+			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+			continue;
+		}
+
+		// Paste the column
+		const Register::ColumnData& col_data = rgtr_col_it->second;
+		Register::ColumnData::const_iterator row_it = col_data.begin ();
+		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; ++row_it, row_idx++) {
+			// Paste empty cells between recorded values
+			while (row_it == col_data.end () or row_idx < (int)row_it->first + top_row_idx) {
+				tracker_editor.grid.set_cell_content(row_idx, col_idx, "");
+				row_idx++;
+				if (bottom_row_idx < row_idx) break; // Avoid vertical overflow
+			}
+			if (bottom_row_idx < row_idx) break; // Avoid vertical overflow
+			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
+		}
+		col_idx++;
+		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+		++rgtr_col_it;
+	}
 }
 
 void
@@ -162,38 +224,38 @@ SubgridSelector::paste_overlay ()
 	int global_ncols = tracker_editor.grid.get_columns ().size ();
 	int global_nrows = tracker_editor.grid.pattern.global_nrows;
 
-	// Calculate the width of the selection to paste
-	unsigned width = reg.rbegin ()->first;
+	// Calculate the max column with content to paste
+	unsigned max_rgtr_col_idx = reg.data.rbegin ()->first;
 
 	// Loop over columns, skipping uneditable or invisible ones
 	int col_idx = left_col_idx;
-	Register::const_iterator rgtr_col_it = reg.begin ();
-	for (unsigned rgtr_col_idx = 0; rgtr_col_idx <= width; rgtr_col_idx++) {
+	Register::Data::const_iterator rgtr_col_it = reg.data.begin ();
+	for (unsigned rgtr_col_idx = 0; rgtr_col_idx <= max_rgtr_col_idx; rgtr_col_idx++) {
 		// Column does not hold data or is not visible, skip it
 		while (!tracker_editor.grid.is_editable (col_idx) or
 				 !tracker_editor.grid.is_visible (col_idx)) {
 			col_idx++;
-			if (global_ncols <= col_idx) break; // Avoid horizontal overload
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 		}
-		if (global_ncols <= col_idx) break; // Avoid horizontal overload
+		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 
 		// Column has nothing to paste, skip it
 		if (rgtr_col_idx < rgtr_col_it->first) {
 			col_idx++;
-			if (global_ncols <= col_idx) break; // Avoid horizontal overload
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 			continue;
 		}
 
 		// Paste the column
-		const ColumnData& col_data = rgtr_col_it->second;
-		ColumnData::const_iterator row_it = col_data.begin ();
+		const Register::ColumnData& col_data = rgtr_col_it->second;
+		Register::ColumnData::const_iterator row_it = col_data.begin ();
 		for (; row_it != col_data.end (); ++row_it) {
 			int row_idx = row_it->first + top_row_idx;
 			if (global_nrows <= row_idx) break; // Avoid vertical overflow
 			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
 		}
 		col_idx++;
-		if (global_ncols <= col_idx) break; // Avoid horizontal overload
+		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 		++rgtr_col_it;
 	}
 }
@@ -265,14 +327,17 @@ SubgridSelector::to_string (std::string indent) const
 
 	// Register
 	ss << indent << "Register:" << std::endl;
-	Register::const_iterator col_it = reg.begin ();
-	for (; col_it != reg.end (); ++col_it) {
+	ss << indent << "  " << "width = " << reg.width << std::endl;
+	ss << indent << "  " << "height = " << reg.height << std::endl;
+	ss << indent << "  " << "data:" << std::endl;
+	Register::Data::const_iterator col_it = reg.data.begin ();
+	for (; col_it != reg.data.end (); ++col_it) {
 		unsigned col_idx = col_it->first;
-		const ColumnData& col_data = col_it->second;
-		ColumnData::const_iterator row_it = col_data.begin ();
+		const Register::ColumnData& col_data = col_it->second;
+		Register::ColumnData::const_iterator row_it = col_data.begin ();
 		for (; row_it != col_data.end (); ++row_it) {
 			unsigned row_idx = row_it->first;
-			ss << indent << "  " << "reg[col_idx=" << col_idx << "][row_idx="
+			ss << indent << "    " << "reg[col_idx=" << col_idx << "][row_idx="
 				<< row_idx << "] = " << row_it->second << std::endl;
 		}
 	}
