@@ -28,7 +28,7 @@ class TrackerColumn : public Gtk::TreeViewColumn
 {
 public:
 
-	// NEXT: merge in the same enum, maybe
+	// TODO: merge in the same enum, maybe
 
 	// Type of data the midi note column is holding. It also serve to calculate
 	// the column index as well.
