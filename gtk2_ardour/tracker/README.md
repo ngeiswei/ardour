@@ -39,7 +39,7 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Convert direct call to action when possible, see
       `gtk2_ardour/editor_actions.cc`, like `nudge-later`.
 - [ ] What to do when playing and step editing is on?
-- [ ] Add copy/move, interpolate, etc + popup menu
+- [ ] Add popup menu with copy/paste, interpolate, etc
 - [ ] Maybe save octave value per each track, possibly more
 - [ ] Support arbitrary number of tracks (put all properties in tracker_column)
 - [ ] Fix alignment with track toolbar
