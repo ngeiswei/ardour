@@ -430,7 +430,7 @@ private:
 
 	// Hack until proper dealing with shortcut keys
 	bool shift_key_press ();
-	bool shift_key_release (); // NEXT
+	bool shift_key_release ();
 	bool is_shift_pressed () const;
 	bool shift_pressed;
 
