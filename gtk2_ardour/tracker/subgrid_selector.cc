@@ -111,7 +111,31 @@ SubgridSelector::cut ()
 void
 SubgridSelector::clear_subgrid ()
 {
-	// VERY NEXT: Remove all selected events from the grid
+	if (reg.empty ())
+		return;
+
+	// Maximum number of columns and rows in the pattern
+	int global_ncols = tracker_editor.grid.get_columns ().size ();
+	int global_nrows = tracker_editor.grid.pattern.global_nrows;
+	int top_row_idx = this->top_row_idx; // Mask attribute in case it changes
+	int bottom_row_idx = std::min (global_nrows, (int)reg.height + top_row_idx) - 1;
+
+	// Loop over columns, skipping uneditable or invisible ones
+	int col_idx = left_col_idx;
+	for (unsigned rgtr_col_idx = 0; rgtr_col_idx < reg.width; rgtr_col_idx++, col_idx++) {
+		// Column does not hold data or is not visible, skip it
+		while (!tracker_editor.grid.is_editable (col_idx) or
+				 !tracker_editor.grid.is_visible (col_idx)) {
+			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+		}
+		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+
+		// Paste empty cells
+		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
+			tracker_editor.grid.set_cell_content(row_idx, col_idx, "");
+		}
+	}
 }
 
 void
@@ -124,6 +148,7 @@ SubgridSelector::copy ()
 	reg.clear ();
 
 	// Set height
+	int top_row_idx = this->top_row_idx; // Mask attribute in case it changes
 	reg.height = (bottom_row_idx - top_row_idx) + 1;
 
 	// Fill register
@@ -171,6 +196,7 @@ SubgridSelector::paste ()
 	// Maximum number of columns and rows in the pattern
 	int global_ncols = tracker_editor.grid.get_columns ().size ();
 	int global_nrows = tracker_editor.grid.pattern.global_nrows;
+	int top_row_idx = this->top_row_idx; // Mask attribute in case it changes
 	int bottom_row_idx = std::min (global_nrows, (int)reg.height + top_row_idx) - 1;
 
 	// Loop over columns, skipping uneditable or invisible ones
@@ -223,6 +249,7 @@ SubgridSelector::paste_overlay ()
 	// Maximum number of columns and rows in the pattern
 	int global_ncols = tracker_editor.grid.get_columns ().size ();
 	int global_nrows = tracker_editor.grid.pattern.global_nrows;
+	int top_row_idx = this->top_row_idx; // Mask attribute in case it changes
 
 	// Calculate the max column with content to paste
 	unsigned max_rgtr_col_idx = reg.data.rbegin ()->first;
