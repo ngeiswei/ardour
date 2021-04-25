@@ -3434,7 +3434,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 				NotePtr off_note = off_rng.first->second;
 				Timecode::BBT_Time bbt = note_pattern.off_note_bbt (off_note);
 				ss << std::endl << "  <u>BBT</u>: " << TrackerUtils::bbt_to_string (bbt, base ());
-				ss << ", Off note"; // NEXT
+				ss << ", Off note"; // VERY NEXT
 			}
 		}
 		if (0 < on_count) {
@@ -3443,7 +3443,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 				NotePtr on_note = on_rng.first->second;
 				Timecode::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
 				ss << std::endl << "  <u>BBT</u>: " << TrackerUtils::bbt_to_string (bbt, base ());
-				ss << ", On note"; // NEXT
+				ss << ", On note"; // VERY NEXT
 			}
 		}
 		return ss.str ();
@@ -3468,7 +3468,7 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		RowToControlEventsRange rng = pattern.control_events_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
 			Timecode::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
-			double value = ap->get_automation_value (rng.first); // NEXT
+			double value = ap->get_automation_value (rng.first); // NEXT?
 			int delay = ap->get_automation_delay (param, rng.first);
 			const int precision = 6;
 			ss << std::endl << "  <u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
