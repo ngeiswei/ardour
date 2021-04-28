@@ -486,3 +486,15 @@ TrackerUtils::bbt_to_string (const Timecode::BBT_Time& bbt, int base)
 	}
 	return ss.str ();
 }
+
+std::string
+TrackerUtils::underline (const std::string& str)
+{
+	return std::string("<u>") + str + "</u>";
+}
+
+std::string
+TrackerUtils::bold (const std::string& str)
+{
+	return std::string("<b>") + str + "</b>";
+}
