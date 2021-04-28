@@ -3456,9 +3456,20 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
 				Timecode::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
+				std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
+				int ch = on_note->channel ();
+				int vel = on_note->velocity ();
+				int delay = get_on_note_delay (on_note, row_idx, mti, mri);
 				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
-				   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ()))
-				   << "On note"; // VERY NEXT
+				   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
+				   << TrackerUtils::underline("Note") << ": "
+				   << TrackerUtils::bold(note_name) << ", "
+				   << TrackerUtils::underline("Channel") << ": "
+				   << TrackerUtils::bold(TrackerUtils::num_to_string (ch + 1, base ())) << ", "
+				   << TrackerUtils::underline("Velocity") << ": "
+				   << TrackerUtils::bold(TrackerUtils::num_to_string (vel, base ())) << ", "
+				   << TrackerUtils::underline("Delay") << ": "
+				   << TrackerUtils::bold(TrackerUtils::num_to_string(delay, base ()));
 			}
 		}
 		return ss.str ();
