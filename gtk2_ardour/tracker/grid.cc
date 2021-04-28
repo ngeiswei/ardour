@@ -3410,10 +3410,14 @@ Grid::time_tooltip_msg (int row_idx) const
 	std::string dec_bbt = TrackerUtils::bbt_to_string (row_bbt, 10);
 	std::string hex_bbt = TrackerUtils::bbt_to_string (row_bbt, 16);
 	std::stringstream ss;
-	ss << "<u>Row</u> (Dec): " << "<b>" << dec_row << "</b>"
-	   << ", <u>BBT</u> (Dec): " << "<b>" << dec_bbt << "</b>" << std::endl
-	   << "<u>Row</u> (Hex): " << "<b>" << hex_row << "</b>"
-	   << ", <u>BBT</u> (Hex): " << "<b>" << hex_bbt << "</b>";
+	ss << TrackerUtils::underline("Row") << " (Dec): "
+	   << TrackerUtils::bold(dec_row) << ", "
+	   << TrackerUtils::underline("BBT") << " (Dec): "
+	   << TrackerUtils::bold(dec_bbt) << std::endl
+	   << TrackerUtils::underline("Row") << " (Hex): "
+	   << TrackerUtils::bold(hex_row) << ", "
+	   << TrackerUtils::underline("BBT") << " (Hex): "
+	   << TrackerUtils::bold(hex_bbt);
 	return ss.str ();
 }
 
@@ -3424,17 +3428,27 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 	size_t on_count = pattern.on_notes_count (row_idx, mti, mri, cgi);
 	if (0 < off_count || 0 < on_count) {
 		std::stringstream ss;
-		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
-		ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
-		ss << "<u>Notes</u>:";
+		ss << TrackerUtils::underline("Track") << ": "
+		   << "<b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
+		ss << TrackerUtils::underline("Region") << ": "
+		   << "<b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
+		ss << TrackerUtils::underline("Notes") << ":";
 		const NotePattern& note_pattern = pattern.note_pattern (mti, mri);
 		if (0 < off_count) {
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
 				NotePtr off_note = off_rng.first->second;
 				Timecode::BBT_Time bbt = note_pattern.off_note_bbt (off_note);
-				ss << std::endl << "  <u>BBT</u>: " << TrackerUtils::bbt_to_string (bbt, base ());
-				ss << ", Off note"; // VERY NEXT
+				int ch = off_note->channel ();
+				int delay = get_off_note_delay (off_note, row_idx, mti, mri);
+				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
+				   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
+				   << TrackerUtils::underline("Note") << ": "
+				   << TrackerUtils::bold("Off") << ", "
+				   << TrackerUtils::underline("Channel") << ": "
+				   << TrackerUtils::bold(TrackerUtils::num_to_string (ch + 1, base ())) << ", "
+				   << TrackerUtils::underline("Delay") << ": "
+				   << TrackerUtils::bold(TrackerUtils::num_to_string(delay, base ()));
 			}
 		}
 		if (0 < on_count) {
@@ -3442,8 +3456,9 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
 				Timecode::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
-				ss << std::endl << "  <u>BBT</u>: " << TrackerUtils::bbt_to_string (bbt, base ());
-				ss << ", On note"; // VERY NEXT
+				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
+				   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ()))
+				   << "On note"; // VERY NEXT
 			}
 		}
 		return ss.str ();
@@ -3458,12 +3473,15 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 	std::stringstream ss;
 	size_t count = pattern.control_events_count (row_idx, mti, mri, param);
 	if (0 < count) {
-		ss << "<u>Track</u>: <b>" << pattern.tps[mti]->track->name () << "</b>" << std::endl;
+		ss << TrackerUtils::underline("Track") << ": "
+		   << TrackerUtils::bold(pattern.tps[mti]->track->name ()) << std::endl;
 		if (0 <= mri) {
-			ss << "<u>Region</u>: <b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
+			ss << TrackerUtils::underline("Region") << ": "
+			   << TrackerUtils::bold(pattern.midi_region (mti, mri)->name ()) << std::endl;
 		}
-		ss << "<u>Parameter</u>: <b>" << get_name (mti, param, false) << "</b>" << std::endl;
-		ss << "<u>Values</u>:";
+		ss << TrackerUtils::underline("Parameter") << ": "
+		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl;
+		ss << TrackerUtils::underline("Values") << ":";
 		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param);
 		RowToControlEventsRange rng = pattern.control_events_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
@@ -3471,9 +3489,12 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			double value = ap->get_automation_value (rng.first); // NEXT?
 			int delay = ap->get_automation_delay (param, rng.first);
 			const int precision = 6;
-			ss << std::endl << "  <u>BBT</u>: <b>" << TrackerUtils::bbt_to_string (bbt, base ()) << "</b>"
-			   << ", <u>Value</u>: <b>" << TrackerUtils::num_to_string(value, base (), precision) << "</b>"
-			   << ", <u>Delay</u>: <b>" << TrackerUtils::num_to_string(delay, base ()) << "</b>";
+			ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
+			   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
+			   << TrackerUtils::underline("Value") << ": "
+			   << TrackerUtils::bold(TrackerUtils::num_to_string(value, base (), precision)) << ", "
+			   << TrackerUtils::underline("Delay") << ": "
+			   << TrackerUtils::bold(TrackerUtils::num_to_string(delay, base ()));
 		}
 		return ss.str ();
 	} else {
