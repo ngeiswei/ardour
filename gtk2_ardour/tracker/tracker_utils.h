@@ -369,6 +369,12 @@ public:
 	// Render a BBT, padding if necessary taking into account whether it is
 	// rendered in decimal or hexadecimal.
 	static std::string bbt_to_string (const Timecode::BBT_Time& bbt, int base=10);
+
+	// Wrap <u> </u> around the givem string
+	static std::string underline (const std::string& str);
+
+	// Wrap <b> </b> around the givem string
+	static std::string bold (const std::string& str);
 };
 
 } // ~namespace tracker
