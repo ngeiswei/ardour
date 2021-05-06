@@ -31,6 +31,7 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Final off note management fixes (look for NEXT)
 - [ ] Create wscript under tracker folder
 - [ ] Create PR
+- [ ] Add Row column (very first one)
 - [ ] Fix situation when the cursor on the current track is different than the
       selected track
 - [ ] Add option for velocity ramp
