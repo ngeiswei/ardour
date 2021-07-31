@@ -1509,6 +1509,10 @@ int main () { __int128 x = 0; return 0; }
             or conf.env['BUILD_PULSEAUDIO']):
         conf.fatal("Must configure and build at least one backend")
 
+    if (Options.options.tracker_interface):
+        conf.define('HAVE_TRACKER_INTERFACE', 1)
+    conf.env['HAVE_TRACKER_INTERFACE'] = Options.options.tracker_interface
+
     if (Options.options.use_lld):
         if re.search ("linux", sys.platform) is not None and Options.options.dist_target != 'mingw' and conf.env['BUILD_PABACKEND']:
             conf.fatal("lld is only for Linux builds")
@@ -1634,6 +1638,7 @@ const char* const ardour_config_info = "\\n\\
     write_config_text('Threaded WaveViews',    not opts.no_threaded_waveviews)
     write_config_text('Translation',           not opts.no_nls)
 #    write_config_text('Tranzport',             opts.tranzport)
+    write_config_text('Tracker Interface',     conf.env['HAVE_TRACKER_INTERFACE'])
     write_config_text('Unit tests',            conf.env['BUILD_TESTS'])
     write_config_text('Use LLD linker',        opts.use_lld)
     write_config_text('VST3 support',          conf.is_defined('VST3_SUPPORT'))
