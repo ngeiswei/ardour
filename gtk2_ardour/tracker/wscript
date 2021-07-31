@@ -1,9 +1,0 @@
-import waflib.Logs as Logs, waflib.Utils as Utils
-import os
-
-# Mandatory variables
-top = '.'
-out = 'build'
-
-def build(bld):
-    # TODO
