@@ -18,7 +18,12 @@ WARNING!!! **Alpha** software, it may **crash** and you may **loose your work**.
 
 ## Build
 
-Just compile Ardour as you regularly would after checking out that branch.
+Compile Ardour as you regularly would after checking out that branch, appending
+the flag `--tracker-interface`, such as
+
+```bash
+./waf configure --tracker-interface
+```
 
 ## TODO
 
@@ -29,7 +34,6 @@ Just compile Ardour as you regularly would after checking out that branch.
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] Final off note management fixes (look for NEXT)
-- [ ] Create wscript under tracker folder
 - [ ] Create PR
 - [ ] Add Row column (very first one)
 - [ ] Fix situation when the cursor on the current track is different than the
