@@ -506,10 +506,10 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	modify_automation_point (alist, get_alist_iterator (rowi, param), awhen, ce->value);
 }
 
-Timecode::BBT_Time
+Temporal::BBT_Time
 AutomationPattern::get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const
 {
-	Timecode::BBT_Time bbt;
+	Temporal::BBT_Time bbt;
 	int row_idx = it->first;
 	int delay = get_automation_delay (param, it);
 	_session->bbt_time (sample_at_row (row_idx, delay), bbt);
