@@ -124,7 +124,7 @@ BasePattern::set_rows_per_beat (uint16_t rpb)
 	rows_per_beat = rpb;
 	// TODO: deal with rpb == 0 which would mean one row per bar
 	beats_per_row = Temporal::Beats (1.0 / rows_per_beat);
-	_ticks_per_row = Timecode::BBT_Time::ticks_per_beat/rows_per_beat;
+	_ticks_per_row = Temporal::BBT_Time::ticks_per_beat/rows_per_beat;
 }
 
 Temporal::Beats
@@ -172,7 +172,7 @@ BasePattern::beats_at_row (int rowi, int delay) const
 	return result;
 }
 
-Timecode::BBT_Time
+Temporal::BBT_Time
 BasePattern::bbt_at_row (int rowi, int delay) const
 {
 	double beats = beats_at_row (rowi, delay).to_double ();
