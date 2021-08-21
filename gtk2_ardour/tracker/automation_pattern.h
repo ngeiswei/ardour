@@ -136,7 +136,7 @@ public:
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
 
 	// Get the bbt of an automation point
-	Timecode::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
+	Temporal::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
 
 	// Add, modidy or erase automation point, and record undo history
 	void add_automation_point (AutomationListPtr alist, double when, double val);

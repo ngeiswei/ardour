@@ -101,8 +101,8 @@ public:
 	void add (int cgi, NotePtr note);
 
 	// Get the bbt of an on (resp. off) note
-	Timecode::BBT_Time on_note_bbt (NotePtr note) const;
-	Timecode::BBT_Time off_note_bbt (NotePtr note) const;
+	Temporal::BBT_Time on_note_bbt (NotePtr note) const;
+	Temporal::BBT_Time off_note_bbt (NotePtr note) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;

@@ -364,11 +364,11 @@ public:
 	static bool is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);
 
 	// Like print_padded in bbt_time.h but for hexadecimal
-	static std::ostream&	hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt);
+	static std::ostream& hex_print_padded (std::ostream& o, const Temporal::BBT_Time& bbt);
 
 	// Render a BBT, padding if necessary taking into account whether it is
 	// rendered in decimal or hexadecimal.
-	static std::string bbt_to_string (const Timecode::BBT_Time& bbt, int base=10);
+	static std::string bbt_to_string (const Temporal::BBT_Time& bbt, int base=10);
 
 	// Wrap <u> </u> around the givem string
 	static std::string underline (const std::string& str);

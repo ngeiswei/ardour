@@ -405,14 +405,14 @@ NotePattern::add (int cgi, NotePtr note)
 	track_to_notes[cgi].insert (note);
 }
 
-Timecode::BBT_Time
+Temporal::BBT_Time
 NotePattern::on_note_bbt (NotePtr note) const
 {
 	Temporal::Beats note_time = position_beats - start_beats + note->time ();
 	return _session->tempo_map ().bbt_at_beat (note_time.to_double ());
 }
 
-Timecode::BBT_Time
+Temporal::BBT_Time
 NotePattern::off_note_bbt (NotePtr note) const
 {
 	Temporal::Beats end_note_time = position_beats - start_beats + note->end_time ();
