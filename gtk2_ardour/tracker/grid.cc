@@ -916,7 +916,7 @@ Grid::redisplay_global_columns ()
 		TreeModel::Row row = *row_it++;
 
 		// Time
-		Timecode::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
+		Temporal::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
 		row[columns.time] = TrackerUtils::bbt_to_string (row_bbt, base ());
 
 		// If the row is on a bar, beat or otherwise, the color differs
@@ -3404,7 +3404,7 @@ Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::
 std::string
 Grid::time_tooltip_msg (int row_idx) const
 {
-	Timecode::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
+	Temporal::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
 	std::string dec_row = TrackerUtils::num_to_string (row_idx, 10);
 	std::string hex_row = TrackerUtils::num_to_string (row_idx, 16);
 	std::string dec_bbt = TrackerUtils::bbt_to_string (row_bbt, 10);
@@ -3438,7 +3438,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
 				NotePtr off_note = off_rng.first->second;
-				Timecode::BBT_Time bbt = note_pattern.off_note_bbt (off_note);
+				Temporal::BBT_Time bbt = note_pattern.off_note_bbt (off_note);
 				int ch = off_note->channel ();
 				int delay = get_off_note_delay (off_note, row_idx, mti, mri);
 				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
@@ -3455,7 +3455,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
-				Timecode::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
+				Temporal::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
 				std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
 				int ch = on_note->channel ();
 				int vel = on_note->velocity ();
@@ -3496,7 +3496,7 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param);
 		RowToControlEventsRange rng = pattern.control_events_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
-			Timecode::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
+			Temporal::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
 			double value = ap->get_automation_value (rng.first); // NEXT?
 			int delay = ap->get_automation_delay (param, rng.first);
 			const int precision = 6;

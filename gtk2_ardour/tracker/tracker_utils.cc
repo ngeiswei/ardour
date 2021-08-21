@@ -465,7 +465,7 @@ TrackerUtils::is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEv
 }
 
 std::ostream&
-TrackerUtils::hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt)
+TrackerUtils::hex_print_padded (std::ostream& o, const Temporal::BBT_Time& bbt)
 {
 	o << std::setfill ('0') << std::right << std::uppercase << std::hex
 	  << std::setw (3) << bbt.bars << "|"
@@ -476,7 +476,7 @@ TrackerUtils::hex_print_padded (std::ostream& o, const Timecode::BBT_Time& bbt)
 }
 
 std::string
-TrackerUtils::bbt_to_string (const Timecode::BBT_Time& bbt, int base)
+TrackerUtils::bbt_to_string (const Temporal::BBT_Time& bbt, int base)
 {
 	std::stringstream ss;
 	if (base == 16) {

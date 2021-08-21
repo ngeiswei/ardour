@@ -97,7 +97,7 @@ public:
 	Temporal::Beats beats_at_row (int rowi, int delay=0) const;
 
 	// Return BBT (bar beat tick) at the given row index and delay in relative ticks
-	Timecode::BBT_Time bbt_at_row (int rowi, int delay=0) const;
+	Temporal::BBT_Time bbt_at_row (int rowi, int delay=0) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
