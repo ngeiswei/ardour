@@ -267,73 +267,73 @@ TrackerUtils::get_sorted_regions (const RegionSelection& region_selection)
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_position (const RegionSeq& regions)
+TrackerUtils::get_position_sample (const RegionSeq& regions)
 {
 	if (regions.empty ())
 		return 0;
 
 	size_t i = 0;
-	Temporal::samplepos_t position = regions[i++]->position ();
+	Temporal::samplepos_t position_sample = regions[i++]->position_sample ();
 	for (; i < regions.size (); i++) {
-		position = std::min (position, regions[i]->position ());
+		position_sample = std::min (position_sample, regions[i]->position_sample ());
 	}
-	return position;
+	return position_sample;
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_position (const MidiRegionSeq& regions)
+TrackerUtils::get_position_sample (const MidiRegionSeq& regions)
 {
 	if (regions.empty ())
 		return 0;
 
 	size_t i = 0;
-	Temporal::samplepos_t position = regions[i++]->position ();
+	Temporal::samplepos_t position_sample = regions[i++]->position_sample ();
 	for (; i < regions.size (); i++) {
-		position = std::min (position, regions[i]->position ());
+		position_sample = std::min (position_sample, regions[i]->position_sample ());
 	}
-	return position;
+	return position_sample;
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_position (const RegionSelection& region_selection)
+TrackerUtils::get_position_sample (const RegionSelection& region_selection)
 {
-	return region_selection.start ();
+	return region_selection.start_time ().samples ();
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_position (const TrackRegionsMap& regions_per_track)
+TrackerUtils::get_position_sample (const TrackRegionsMap& regions_per_track)
 {
 	if (regions_per_track.empty())
 		return 0;
 
 	TrackRegionsMap::const_iterator it = regions_per_track.begin();
-	Temporal::samplepos_t position = get_position(it->second);
+	Temporal::samplepos_t position_sample = get_position_sample (it->second);
 	for (; it != regions_per_track.end(); ++it) {
-		position = std::min (position, get_position(it->second));
+		position_sample = std::min (position_sample, get_position_sample (it->second));
 	}
-	return position;
+	return position_sample;
 }
 
 Temporal::samplecnt_t
-TrackerUtils::get_length (const RegionSeq& regions)
+TrackerUtils::get_length_sample (const RegionSeq& regions)
 {
 	return get_last_sample (regions) + 1 - get_first_sample (regions);
 }
 
 Temporal::samplecnt_t
-TrackerUtils::get_length (const MidiRegionSeq& regions)
+TrackerUtils::get_length_sample (const MidiRegionSeq& regions)
 {
 	return get_last_sample (regions) + 1 - get_first_sample (regions);
 }
 
 Temporal::samplecnt_t
-TrackerUtils::get_length (const RegionSelection& region_selection)
+TrackerUtils::get_length_sample (const RegionSelection& region_selection)
 {
 	return get_last_sample (region_selection) + 1 - get_first_sample (region_selection);
 }
 
 Temporal::samplepos_t
-TrackerUtils::get_length (const TrackRegionsMap& regions_per_track)
+TrackerUtils::get_length_sample (const TrackRegionsMap& regions_per_track)
 {
 	return get_last_sample (regions_per_track) + 1 - get_first_sample (regions_per_track);
 }
@@ -426,7 +426,7 @@ TrackerUtils::get_last_sample (const MidiRegionSeq& regions)
 Temporal::samplepos_t
 TrackerUtils::get_last_sample (const RegionSelection& region_selection)
 {
-	return region_selection.end_sample ();
+	return region_selection.end_time ().samples ();
 }
 
 Temporal::samplepos_t
@@ -482,7 +482,7 @@ TrackerUtils::bbt_to_string (const Temporal::BBT_Time& bbt, int base)
 	if (base == 16) {
 		TrackerUtils::hex_print_padded (ss, bbt);
 	} else {
-		print_padded (ss, bbt);
+		bbt.print_padded (ss);
 	}
 	return ss.str ();
 }
