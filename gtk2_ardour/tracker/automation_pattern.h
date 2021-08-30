@@ -98,7 +98,7 @@ public:
 	// return 0.
 	AutomationListPtr get_alist (const Evoral::Parameter& param);
 	const AutomationListPtr get_alist (const Evoral::Parameter& param) const;
-	
+
 	// Return true iff the automation point is displayable, i.e. iff there is
 	// only one of them.
 	bool is_displayable (int row, const Evoral::Parameter& param) const;
@@ -114,8 +114,8 @@ public:
 	// pointer if it does not.
 	Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param);
 	const Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param) const;
-	
-	// Return a pair with the automation value and whether it is defined or not	
+
+	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
 	double get_automation_value (RowToControlEvents::const_iterator it) const;
 
@@ -139,8 +139,8 @@ public:
 	Temporal::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
 
 	// Add, modidy or erase automation point, and record undo history
-	void add_automation_point (AutomationListPtr alist, double when, double val);
-	void modify_automation_point (AutomationListPtr alist, AutomationListIt it, double when, double val);
+	void add_automation_point (AutomationListPtr alist, Temporal::timepos_t when, double val);
+	void modify_automation_point (AutomationListPtr alist, AutomationListIt it, Temporal::timepos_t when, double val);
 	void erase_automation_point (AutomationListPtr alist, AutomationListIt it);
 
 	// Return RowToAutomationListIt corresponding to the previous (resp. next)
@@ -172,7 +172,7 @@ public:
 
 	// Map parameters to maps of row to automation range
 	typedef std::map<Evoral::Parameter, RowToControlEvents> ParamToRowToControlEvents;
-	ParamToRowToControlEvents param_to_row_to_ces;	
+	ParamToRowToControlEvents param_to_row_to_ces;
 
 	// Map parameters to actrl
 	ParamAutomationControlMap param_to_actrl;

@@ -26,14 +26,14 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "evoral/Note.h"
-#include "evoral/Parameter.h"
-
 #include "ardour/midi_track.h"
 #include "ardour/audio_track.h"
 #include "ardour/midi_region.h"
 #include "ardour/parameter_descriptor.h"
 #include "ardour/types.h"
+#include "evoral/Note.h"
+#include "evoral/Parameter.h"
+#include "temporal/bbt_time.h"
 
 #include "region_selection.h"
 
@@ -326,18 +326,18 @@ public:
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the earliest one.  If empty then return 0.
-	static Temporal::samplepos_t get_position (const RegionSeq& regions);
-	static Temporal::samplepos_t get_position (const MidiRegionSeq& regions);
-	static Temporal::samplepos_t get_position (const RegionSelection& region_selection);
-	static Temporal::samplepos_t get_position (const TrackRegionsMap& regions_per_track);
+	static Temporal::samplepos_t get_position_sample (const RegionSeq& regions);
+	static Temporal::samplepos_t get_position_sample (const MidiRegionSeq& regions);
+	static Temporal::samplepos_t get_position_sample (const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_position_sample (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the length between the very first position of the position very last + 1.
 	// If empty then return 0.
-	static Temporal::samplecnt_t get_length (const RegionSeq& regions);
-	static Temporal::samplecnt_t get_length (const MidiRegionSeq& regions);
-	static Temporal::samplepos_t get_length (const RegionSelection& region_selection);
-	static Temporal::samplepos_t get_length (const TrackRegionsMap& regions_per_track);
+	static Temporal::samplecnt_t get_length_sample (const RegionSeq& regions);
+	static Temporal::samplecnt_t get_length_sample (const MidiRegionSeq& regions);
+	static Temporal::samplepos_t get_length_sample (const RegionSelection& region_selection);
+	static Temporal::samplepos_t get_length_sample (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the very first sample (it looks identical to get_regions_position).  If
