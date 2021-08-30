@@ -351,7 +351,7 @@ AutomationPattern::is_displayable (int row, const RowToControlEvents& r2ces)
 AutomationListIt
 AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 {
-	double when = get_control_event (rowi, param)->when;
+	Temporal::timepos_t when = get_control_event (rowi, param)->when;
 	AutomationListPtr alist = get_alist (param);
 	const Evoral::ControlEvent cp (when, 0.0);
 	AutomationListIt it = std::lower_bound(alist->begin(), alist->end(), &cp, Evoral::ControlList::time_comparator);
@@ -428,14 +428,14 @@ AutomationPattern::set_automation_value (double val, int rowi, const Evoral::Par
 	// If no existing value, insert one
 	if (!ce) {
 		Temporal::Beats row_relative_beats = region_relative_beats_at_row (rowi, delay);
-		int row_sample = sample_at_row (rowi, delay);
-		double awhen = TrackerUtils::is_region_automation (param) ? row_relative_beats.to_double () : row_sample;
+		Temporal::samplepos_t row_sample = sample_at_row (rowi, delay);
+		Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ? Temporal::timepos_t (row_relative_beats) : Temporal::timepos_t (row_sample);
 		add_automation_point (alist, awhen, val);
 		return;
 	}
 
 	// Change existing value
-	double awhen = ce->when;
+	Temporal::timepos_t awhen = ce->when;
 	modify_automation_point (alist, get_alist_iterator (rowi, param), awhen, val);
 }
 
@@ -459,10 +459,10 @@ std::pair<int, bool>
 AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& param, const Evoral::ControlEvent* ce) const
 {
 	if (ce) {
-		double awhen = ce->when;
+		Temporal::timepos_t awhen = ce->when;
 		int delay = TrackerUtils::is_region_automation (param) ?
-			region_relative_delay_ticks_at_row (Temporal::Beats (awhen), rowi)
-			: delay_ticks_at_row ((samplepos_t)awhen, rowi);
+			region_relative_delay_ticks_at_row (awhen.beats (), rowi)
+			: delay_ticks_at_row (awhen.samples (), rowi);
 		return std::make_pair (delay, true);
 	}
 	return std::make_pair (0, false);
@@ -500,9 +500,9 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 	}
 
 	// Change existing delay
-	double awhen = TrackerUtils::is_region_automation (param) ?
-		(row_relative_beats < start_beats ? start_beats : row_relative_beats).to_double ()
-		: row_sample;
+	Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ?
+		Temporal::timepos_t (row_relative_beats < start_beats ? start_beats : row_relative_beats)
+		: Temporal::timepos_t (row_sample);
 	modify_automation_point (alist, get_alist_iterator (rowi, param), awhen, ce->value);
 }
 
@@ -512,12 +512,12 @@ AutomationPattern::get_automation_bbt (const Evoral::Parameter& param, RowToCont
 	Temporal::BBT_Time bbt;
 	int row_idx = it->first;
 	int delay = get_automation_delay (param, it);
-	_session->bbt_time (sample_at_row (row_idx, delay), bbt);
+	_session->bbt_time (Temporal::timepos_t (sample_at_row (row_idx, delay)), bbt);
 	return bbt;
 }
 
 void
-AutomationPattern::add_automation_point (AutomationListPtr alist, double when, double val)
+AutomationPattern::add_automation_point (AutomationListPtr alist, Temporal::timepos_t when, double val)
 {
 	// Save state for undo
 	XMLNode& before = alist->get_state ();
@@ -528,7 +528,7 @@ AutomationPattern::add_automation_point (AutomationListPtr alist, double when, d
 }
 
 void
-AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationListIt it, double when, double val)
+AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationListIt it, Temporal::timepos_t when, double val)
 {
 	// Save state for undo
 	XMLNode& before = alist->get_state ();
