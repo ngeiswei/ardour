@@ -31,9 +31,9 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             const RegionSeq& regions,
                             bool connect)
 	: AutomationPattern (te,
-	                     TrackerUtils::get_position (regions),
+	                     TrackerUtils::get_position_sample (regions),
 	                     0,
-	                     TrackerUtils::get_length (regions),
+	                     TrackerUtils::get_length_sample (regions),
 	                     TrackerUtils::get_first_sample (regions),
 	                     TrackerUtils::get_last_sample (regions),
 	                     connect)

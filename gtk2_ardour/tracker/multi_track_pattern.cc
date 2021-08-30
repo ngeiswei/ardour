@@ -28,9 +28,9 @@ using namespace Tracker;
 
 MultiTrackPattern::MultiTrackPattern (TrackerEditor& te, bool connect)
 	: BasePattern (te,
-	               TrackerUtils::get_position (te.region_selection),
+	               TrackerUtils::get_position_sample (te.region_selection),
 	               0,
-	               TrackerUtils::get_length (te.region_selection),
+	               TrackerUtils::get_length_sample (te.region_selection),
 	               TrackerUtils::get_first_sample (te.region_selection),
 	               TrackerUtils::get_last_sample (te.region_selection))
 	, earliest_mti (0)
@@ -169,13 +169,13 @@ MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 	MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
 		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
-		                                              position, length, first_sample, last_sample, _connect);
+		                                              position_sample, length_sample, first_sample, last_sample, _connect);
 		tps.push_back (mtp);
 	}
 	AudioTrackPtr audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 	if (audio_track) {
 		AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
-		                                                position, length, first_sample, last_sample, _connect);
+		                                                position_sample, length_sample, first_sample, last_sample, _connect);
 		tps.push_back (atp);
 	}
 }
@@ -201,14 +201,14 @@ MultiTrackPattern::update ()
 void
 MultiTrackPattern::update_position_etc ()
 {
-	position = TrackerUtils::get_position (regions_per_track);
-	length = TrackerUtils::get_length (regions_per_track);
+	position_sample = TrackerUtils::get_position_sample (regions_per_track);
+	length_sample = TrackerUtils::get_length_sample (regions_per_track);
 	first_sample = TrackerUtils::get_first_sample (regions_per_track);
 	last_sample = TrackerUtils::get_last_sample (regions_per_track);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
-		tp->position = position;
-		tp->length = length;
+		tp->position_sample = position_sample;
+		tp->length_sample = length_sample;
 		tp->first_sample = first_sample;
 		tp->last_sample = last_sample;
 	}

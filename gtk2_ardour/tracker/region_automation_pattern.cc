@@ -87,7 +87,7 @@ void RegionAutomationPattern::insert (const Evoral::Parameter& param)
 int
 RegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	Temporal::Beats relative_beats (event->when);
+	Temporal::Beats relative_beats (event->when.beats ());
 
 	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats) {
 		return INVALID_ROW;
