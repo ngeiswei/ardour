@@ -323,7 +323,7 @@ public:
 	bool current_is_note_type;
 
 	// Clock position
-	samplepos_t                  clock_pos;
+	Temporal::timepos_t                  clock_pos;
 
 	// Coordonates associated to edited note and value (this is *not* related to
 	// step edit).
@@ -698,7 +698,7 @@ public:
 
 private:
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
-	void follow_playhead (samplepos_t);
+	void follow_playhead (Temporal::timepos_t);
 
 	/**
 	 * Create a string of n blank chars.

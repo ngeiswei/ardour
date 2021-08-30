@@ -25,7 +25,6 @@
 #include "widgets/ardour_dropdown.h"
 
 #include "ardour/session_handle.h"
-#include "ardour/beats_samples_converter.h"
 
 #include "ardour_window.h"
 #include "editing.h"
@@ -160,9 +159,10 @@ public:
 	TrackerEditor& tracker_editor;
 
 	// Samples corresponding to typical region
-	Temporal::samplepos_t position;
-	Temporal::samplepos_t start;
-	Temporal::samplecnt_t length;
+	// NEXT: should be replaced/complemented by timepos_t
+	Temporal::samplepos_t position_sample;
+	Temporal::samplepos_t start_sample;
+	Temporal::samplecnt_t length_sample;
 	Temporal::samplepos_t first_sample;
 	Temporal::samplepos_t last_sample;
 
@@ -200,9 +200,10 @@ public:
 	bool selected;
 
 protected:
-	int _ticks_per_row;		// number of ticks per rows
+	// number of ticks per rows
+	int _ticks_per_row;
+
 	ARDOUR::Session* _session;
-	ARDOUR::BeatsSamplesConverter _conv;
 
 	// Make sure a given row is clamped to be in [0, nrows)
 	int clamp (double row) const;

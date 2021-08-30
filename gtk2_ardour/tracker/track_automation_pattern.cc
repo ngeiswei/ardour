@@ -39,8 +39,8 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
                                                 const RegionSeq& regions,
                                                 bool connect)
 	: TrackPattern (te, trk,
-	                TrackerUtils::get_position (regions),
-	                TrackerUtils::get_length (regions),
+	                TrackerUtils::get_position_sample (regions),
+	                TrackerUtils::get_length_sample (regions),
 	                TrackerUtils::get_first_sample (regions),
 	                TrackerUtils::get_last_sample (regions),
 	                connect)
@@ -112,15 +112,15 @@ void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 int
 TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	samplepos_t sample = event->when;
+	timepos_t when = event->when;
 
-	if (sample < first_sample || last_sample < sample) {
+	if (when < Temporal::timepos_t (first_sample) || Temporal::timepos_t (last_sample) < when) {
 		return INVALID_ROW;
 	}
 
-	int row = row_at_sample (sample);
+	int row = row_at_sample (Temporal::timepos_t (when).samples ());
 	if (AutomationPattern::control_events_count (row, param) != 0) {
-		row = row_at_sample_min_delay (sample);
+		row = row_at_sample_min_delay (Temporal::timepos_t (when).samples ());
 	}
 	return row;
 }

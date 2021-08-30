@@ -45,7 +45,6 @@
 #include "evoral/midi_util.h"
 
 #include "ardour/amp.h"
-#include "ardour/beats_samples_converter.h"
 #include "ardour/midi_model.h"
 #include "ardour/midi_patch_manager.h"
 #include "ardour/midi_playlist.h"
@@ -89,7 +88,6 @@ Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
 	, pattern (te, true /* connect */)
 	, prev_pattern (te, false /* not connect */)
-	, current_beats (0)
 	, current_path (1)			  // NEXT: why 1?
 	, current_row_idx (-1)
 	, current_col_idx (0)
@@ -2991,9 +2989,9 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 
 	// Update playhead accordingly
 	if (set_playhead and tracker_editor.main_toolbar.sync_playhead) {
-		clock_pos = pattern.sample_at_row (current_row_idx);
+		clock_pos = Temporal::timepos_t (pattern.sample_at_row (current_row_idx));
 		skip_follow_playhead.push (current_row_idx);
-		tracker_editor.session->request_locate (clock_pos);
+		tracker_editor.session->request_locate (clock_pos.samples ());
 	}
 
 	// TODO: remove that when no longer necessary
@@ -3153,9 +3151,9 @@ Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const E
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
 		// of the WriteLock in ControlList::erase and such, then eval can be used.
 		// Get corresponding beats and samples
-		double awhen = TrackerUtils::is_region_automation (param) ?
-			pattern.region_relative_beats (row_idx, mti, mri).to_double ()
-			: pattern.sample_at_row_at_mti (row_idx, mti);
+		Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ?
+			Temporal::timepos_t(pattern.region_relative_beats (row_idx, mti, mri))
+			: Temporal::timepos_t(pattern.sample_at_row_at_mti (row_idx, mti));
 		// Get interpolation
 		bool ok;
 		inter_auto_val = alist->rt_safe_eval (awhen, ok);
@@ -3297,12 +3295,13 @@ Grid::apply_command (int mti, int mri, MidiModel::NoteDiffCommand* cmd)
 }
 
 void
-Grid::follow_playhead (samplepos_t pos)
+Grid::follow_playhead (Temporal::timepos_t pos)
 {
 	if (skip_follow_playhead.empty ()) { // Do not skip
 		// TODO: relax that interval so that follow goes to the extremes
-		if (pattern.first_sample <= pos && pos <= pattern.last_sample && pos != clock_pos) {
-			int row_idx = pattern.row_at_sample (pos);
+		Temporal::samplepos_t sample_pos = Temporal::timepos_t (pos).samples ();
+		if (pattern.first_sample <= sample_pos && sample_pos <= pattern.last_sample && pos != clock_pos) {
+			int row_idx = pattern.row_at_sample (sample_pos);
 			if (row_idx != current_row_idx) {
 				if (is_cell_defined (row_idx, current_col)) {
 					set_current_cursor (row_idx, current_col, false);

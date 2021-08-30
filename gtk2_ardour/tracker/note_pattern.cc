@@ -22,7 +22,6 @@
 #include "evoral/Note.h"
 #include "evoral/midi_util.h"
 
-#include "ardour/beats_samples_converter.h"
 #include "ardour/midi_model.h"
 #include "ardour/midi_region.h"
 #include "ardour/midi_source.h"
@@ -215,7 +214,7 @@ NotePattern::update_track_to_notes ()
 	// to some defined order.
 	const MidiModel::Notes& notes = _midi_model->notes ();
 	MidiModel::StrictNotes strict_notes;
-	Temporal::Beats end_time = start_beats + _conv.from (length);
+	Temporal::Beats end_time = start_beats + Temporal::timepos_t (length_sample).beats ();
 	for (MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound (start_beats);
 	     it != notes.end () && (*it)->time () < end_time; ++it)
 		strict_notes.insert (*it);
@@ -409,14 +408,18 @@ Temporal::BBT_Time
 NotePattern::on_note_bbt (NotePtr note) const
 {
 	Temporal::Beats note_time = position_beats - start_beats + note->time ();
-	return _session->tempo_map ().bbt_at_beat (note_time.to_double ());
+	Temporal::BBT_Time bbt_time;
+	_session->bbt_time (Temporal::timepos_t (note_time), bbt_time);
+	return bbt_time;
 }
 
 Temporal::BBT_Time
 NotePattern::off_note_bbt (NotePtr note) const
 {
 	Temporal::Beats end_note_time = position_beats - start_beats + note->end_time ();
-	return _session->tempo_map ().bbt_at_beat (end_note_time.to_double ());
+	Temporal::BBT_Time bbt_time;
+	_session->bbt_time (Temporal::timepos_t (end_note_time), bbt_time);
+	return bbt_time;
 }
 
 std::string
