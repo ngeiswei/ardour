@@ -55,6 +55,12 @@ public:
 	             Temporal::samplecnt_t length,
 	             Temporal::samplepos_t first_sample,
 	             Temporal::samplepos_t last_sample);
+	BasePattern (TrackerEditor& te,
+	             Temporal::timepos_t position,
+	             Temporal::timepos_t start,
+	             Temporal::timepos_t length,
+	             Temporal::timepos_t end,
+	             Temporal::timepos_t nt_last);
 	virtual ~BasePattern ();
 
 	// A negative row index (i.e. max value) is considered invalid
@@ -159,12 +165,19 @@ public:
 	TrackerEditor& tracker_editor;
 
 	// Samples corresponding to typical region
-	// NEXT: should be replaced/complemented by timepos_t
+	// NEXT: remove when no longer required
 	Temporal::samplepos_t position_sample;
 	Temporal::samplepos_t start_sample;
 	Temporal::samplecnt_t length_sample;
 	Temporal::samplepos_t first_sample;
 	Temporal::samplepos_t last_sample;
+
+	// Time position corresponding to typical region
+	Temporal::timepos_t position;
+	Temporal::timepos_t start;
+	Temporal::timepos_t length;
+	Temporal::timepos_t end;
+	Temporal::timepos_t nt_last;
 
 	// Beats of the region's position relative to ardour time line, and end
 	// relative to ardour time line as well, thus called global.
