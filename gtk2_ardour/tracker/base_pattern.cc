@@ -40,16 +40,17 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, length_sample (region->length_samples ())
 	, first_sample (region->first_sample ())
 	, last_sample (region->last_sample ())
+	, position (region->position ())
+	, start (region->start ())
+	, length (region->length ())
+	, end (region->end ())
+	, nt_last (region->nt_last ())
 	, rows_per_beat (0)
 	, nrows (0)
 	, enabled (true)
 	, selected (false)
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
-{
-}
-
-BasePattern::~BasePattern ()
 {
 }
 
@@ -73,6 +74,30 @@ BasePattern::BasePattern (TrackerEditor& te,
 {
 }
 
+BasePattern::BasePattern (TrackerEditor& te,
+                          Temporal::timepos_t pos,
+                          Temporal::timepos_t sta,
+                          Temporal::timepos_t len,
+                          Temporal::timepos_t ed,
+                          Temporal::timepos_t ntl)
+	: tracker_editor (te)
+	, position (pos)
+	, start (sta)
+	, length (len)
+	, end (ed)
+	, nt_last (ntl)
+	, rows_per_beat (0)
+	, nrows (0)
+	, enabled (true)
+	, _ticks_per_row (0)
+	, _session (tracker_editor.session)
+{
+}
+
+BasePattern::~BasePattern ()
+{
+}
+
 BasePattern&
 BasePattern::operator= (const BasePattern& other)
 {
@@ -86,6 +111,12 @@ BasePattern::operator= (const BasePattern& other)
 	length_sample = other.length_sample;
 	first_sample = other.first_sample;
 	last_sample = other.last_sample;
+
+	position = other.position;
+	start = other.position;
+	length = other.length;
+	end = other.end;
+	nt_last = other.nt_last;
 
 	position_beats = other.position_beats;
 	global_end_beats = other.global_end_beats;
@@ -112,6 +143,7 @@ BasePattern::operator= (const BasePattern& other)
 bool
 BasePattern::operator< (const BasePattern& other) const
 {
+	// NEXT: use position
 	return position_sample < other.position_sample;
 }
 
@@ -145,6 +177,7 @@ BasePattern::find_nrows () const
 void
 BasePattern::set_row_range ()
 {
+	// NEXT: why is that not called at construction?
 	position_beats = Temporal::timepos_t (position_sample).beats ();
 	global_end_beats = Temporal::timepos_t (last_sample + 1).beats ();
 	length_beats = global_end_beats - position_beats;
