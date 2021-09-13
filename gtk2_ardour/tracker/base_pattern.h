@@ -77,6 +77,10 @@ public:
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update ().
+	//
+	// It is virtual because sophisticated inherited pattern classes
+	// may want to overwrite it to trickle down set_rows_per_beat to
+	// their subpatterns.
 	virtual void set_rows_per_beat (uint16_t rpb);
 
 	// Build or rebuild the pattern
@@ -88,10 +92,13 @@ public:
 	// Find the beats corresponding to the end row (not visible)
 	Temporal::Beats find_end_row_beats () const;
 
-	// Find the number of rows of the region
+	// Find the number of rows of the region.  Requires rows_per_beat
+	// to be set (which can be done with set_rows_per_beat).
 	int find_nrows () const;
 
-	// Set position_row_beats, end_row_beats and nrows
+	// Set position_row_beats, end_row_beats and nrows.  Requires
+	// rows_per_beat to be set (which can be done with
+	// set_rows_per_beat).
 	virtual void set_row_range ();
 
 	// Return the sample at the corresponding row index and delay in relative
