@@ -1629,9 +1629,11 @@ void
 Grid::redisplay_selection ()
 {
 	if (_subgrid_selector.has_prev_selection ()) {
+		int max_row_idx = std::min(_subgrid_selector.prev_bottom_row_idx, pattern.global_nrows);
+		int max_col_idx = _subgrid_selector.prev_right_col_idx;
 		// Undisplay selection
-		for (int row_idx = _subgrid_selector.prev_top_row_idx; row_idx <= _subgrid_selector.prev_bottom_row_idx; row_idx++) {
-			for (int col_idx = _subgrid_selector.prev_left_col_idx; col_idx <= _subgrid_selector.prev_right_col_idx; col_idx++) {
+		for (int row_idx = _subgrid_selector.prev_top_row_idx; row_idx <= max_row_idx; row_idx++) {
+			for (int col_idx = _subgrid_selector.prev_left_col_idx; col_idx <= max_col_idx; col_idx++) {
 				redisplay_cell_background (row_idx, col_idx);
 			}
 		}
