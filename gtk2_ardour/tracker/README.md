@@ -35,7 +35,7 @@ the flag `--tracker-interface`, such as
       notes coming from midi input
 - [ ] Final off note management fixes (look for NEXT)
 - [ ] Create PR
-- [ ] Add Row column (very first one)
+- [ ] Add row index column (very first one)
 - [ ] Fix situation when the cursor on the current track is different than the
       selected track
 - [ ] Add option for velocity ramp
