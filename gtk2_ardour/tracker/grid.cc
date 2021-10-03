@@ -4414,7 +4414,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	default: {
 		// On notes
 		uint8_t ptc = pitch_key (ev);
-		if (ptc < 128)
+		if (ptc < 128 && 0 <= current_mti)
 			ret = step_editing_set_on_note (ptc);
 		break;
 	}
