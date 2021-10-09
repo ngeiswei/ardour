@@ -3625,11 +3625,12 @@ Grid::setup_init_row ()
 void
 Grid::setup_init_col ()
 {
+	// NEXT
 	TreeViewColumn* col = first_defined_col ();
 	if (col)
 		set_current_col (col);
-	else
-		std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug." << std::endl;
+	// else
+	// 	std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug." << std::endl;
 }
 
 void
@@ -4414,7 +4415,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	default: {
 		// On notes
 		uint8_t ptc = pitch_key (ev);
-		if (ptc < 128 && 0 <= current_mti)
+		if (is_current_cursor_defined () && ptc < 128)
 			ret = step_editing_set_on_note (ptc);
 		break;
 	}
@@ -5334,7 +5335,7 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		// On notes
 		uint8_t ptc = pitch_key (ev);
 		std::cout << "Grid::non_editing_key_press current_mti = " << current_mti << ", ptc = " << (int)ptc << std::endl;
-		if (ptc < 128 && 0 <= current_mti) {
+		if (is_current_cursor_defined () && ptc < 128) {
 			if (last_keyval != ev->keyval) {
 				play_note (current_mti, ptc);
 			}
