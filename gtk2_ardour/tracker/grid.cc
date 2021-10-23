@@ -3625,7 +3625,7 @@ Grid::setup_init_row ()
 void
 Grid::setup_init_col ()
 {
-	// NEXT
+	// VERY NEXT
 	TreeViewColumn* col = first_defined_col ();
 	if (col)
 		set_current_col (col);
