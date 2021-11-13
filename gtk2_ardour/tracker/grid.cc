@@ -3629,6 +3629,13 @@ Grid::setup_init_col ()
 	TreeViewColumn* col = first_defined_col ();
 	if (col)
 		set_current_col (col);
+	// VERY NEXT: do we really want to systematically find a col?
+	// Probably not.  When no note or automation column has been
+	// created yet, we don't want step edit to write anything (first
+	// task of this fix).  Then the question is: if a column is
+	// created, should first_defined_col be automatically called again,
+	// or should the user manually select the col?
+	//
 	// else
 	// 	std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug." << std::endl;
 }
