@@ -4299,7 +4299,9 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
-	// NEXT: make sure some current cursor is defined
+	// Make sure some current cursor is defined
+	if (!is_current_cursor_defined ())
+		return true;
 
 	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
