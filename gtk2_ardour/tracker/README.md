@@ -27,14 +27,14 @@ the flag `--tracker-interface`, such as
 
 ## TODO
 
-- [ ] Avoid using `get_<something> ()` just use `<something> ()`
-- [ ] Set position when clicking on the digit position (if the cell is already selected)
 - [ ] Fix automation of different processors
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
+- [ ] Final off note management fixes (look for NEXT)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
-- [ ] Final off note management fixes (look for NEXT)
+- [ ] Avoid using `get_<something> ()` just use `<something> ()`
 - [ ] Create PR
+- [ ] Set position when clicking on the digit position (if the cell is already selected)
 - [ ] Add row index column (very first one)
 - [ ] Fix situation when the cursor on the current track is different than the
       selected track
