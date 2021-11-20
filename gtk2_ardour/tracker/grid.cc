@@ -3625,19 +3625,13 @@ Grid::setup_init_row ()
 void
 Grid::setup_init_col ()
 {
-	// VERY NEXT
 	TreeViewColumn* col = first_defined_col ();
-	if (col)
+	if (col) {
 		set_current_col (col);
-	// VERY NEXT: do we really want to systematically find a col?
-	// Probably not.  When no note or automation column has been
-	// created yet, we don't want step edit to write anything (first
-	// task of this fix).  Then the question is: if a column is
-	// created, should first_defined_col be automatically called again,
-	// or should the user manually select the col?
-	//
-	// else
-	// 	std::cerr << "Grid::setup_init_col () failed to find a first column. There is probably a bug." << std::endl;
+	}
+
+	// TODO: If no current col is defined and a column is created,
+	// automatically jump to it.
 }
 
 void
@@ -4205,7 +4199,7 @@ void
 Grid::select_current_track ()
 {
 	TimeAxisView* tav = tracker_editor.public_editor.time_axis_view_from_stripable (current_mtp->track);
-	tracker_editor.public_editor.get_selection ().set (tav);    
+	tracker_editor.public_editor.get_selection ().set (tav);
 }
 
 void
@@ -4371,7 +4365,7 @@ Grid::step_editing_check_midi_event ()
 bool
 Grid::step_editing_note_key_press (GdkEventKey* ev)
 {
-	std::cout << "Grid::step_editing_note_key_press (ev=" << ev << ")" << std::endl;
+	// std::cout << "Grid::step_editing_note_key_press (ev=" << ev << ")" << std::endl;
 
 	bool ret = false;
 
@@ -4422,8 +4416,9 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 	default: {
 		// On notes
 		uint8_t ptc = pitch_key (ev);
-		if (is_current_cursor_defined () && ptc < 128)
+		if (is_current_cursor_defined () && ptc < 128) {
 			ret = step_editing_set_on_note (ptc);
+		}
 		break;
 	}
 	}
@@ -4434,7 +4429,7 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
-	std::cout << "Grid::step_editing_set_on_note (pitch=" << pitch << ", play=" << play << ")" << std::endl;
+	// std::cout << "Grid::step_editing_set_on_note (pitch=" << pitch << ", play=" << play << ")" << std::endl;
 
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
 	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
@@ -5235,7 +5230,8 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 bool
 Grid::non_editing_key_press (GdkEventKey* ev)
 {
-	std::cout << "Grid::non_editing_key_press (ev=" << ev << ")" << std::endl;
+	// std::cout << "Grid::non_editing_key_press (ev=" << ev << ")" << std::endl;
+
 	bool ret = false;
 
 	switch (ev->keyval) {
@@ -5341,7 +5337,6 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 	default: {
 		// On notes
 		uint8_t ptc = pitch_key (ev);
-		std::cout << "Grid::non_editing_key_press current_mti = " << current_mti << ", ptc = " << (int)ptc << std::endl;
 		if (is_current_cursor_defined () && ptc < 128) {
 			if (last_keyval != ev->keyval) {
 				play_note (current_mti, ptc);
@@ -5360,9 +5355,6 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 bool
 Grid::on_key_press_event (GdkEventKey* event)
 {
-	// std::cout << "Grid::on_key_press_event" << std::endl;
-	// if (event->keyval == GDK_space)
-	// 	std::cout << "Grid::space!" << std::endl;
 	return false;
 }
 
