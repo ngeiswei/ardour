@@ -568,7 +568,8 @@ public:
 
 	/**
 	 * Call many times per second to read the midi ring buffer of the
-	 * midi track step editor.
+	 * midi track step editor.  For now it always returns true (meaning
+	 * checking should repeat, seemingly.
 	 */
 	bool step_editing_check_midi_event ();
 
