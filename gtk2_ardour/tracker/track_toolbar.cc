@@ -49,6 +49,13 @@ std::string
 ProcessorAutomationNode::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
+	// VERY NEXT: use AutomationPattern::get_name to get the name of
+	// param (maybe Grid::get_name that calls
+	// AutomationPattern::get_name could be used as well)
+	//
+	// Question:
+	// should that name be stored in the ProcessorAutomationNode?
+	// Wait, it is stored for the menu, hmm.
 	ss << indent << "param = " << param << std::endl
 	   << indent << "menu_item = " << menu_item << std::endl
 	   << indent << "column = " << column << std::endl;
@@ -355,6 +362,13 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 void
 TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, ProcessorAutomationNode* pauno)
 {
+	// VERY NEXT:
+	// 1. Select ACE_Delay->Time
+	// 2. ACE_Reverb->RoomSize appears
+	//
+	// TODO: Make ProcessorAutomationInfo::to_string() and
+	// ProcessorAutomationNode::to_string more informative.
+
 	std::cout << "TrackToolbar::processor_menu_item_toggled (rai=" << rai << ", pauno=" << pauno << ")" << std::endl;
 	std::cout << "*rai:" << std::endl << rai->to_string() << std::endl;
 	std::cout << "*pauno:" << std::endl << pauno->to_string() << std::endl;
