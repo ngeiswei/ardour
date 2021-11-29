@@ -57,7 +57,7 @@ struct ProcessorAutomationInfo {
 
 	std::string to_string (const std::string& indent="") const;
 
-	ProcessorPtr  processor;
+	ProcessorPtr                          processor;
 	Gtk::Menu*                            menu;
 	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
 };
