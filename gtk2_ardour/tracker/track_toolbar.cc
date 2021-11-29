@@ -269,6 +269,12 @@ TrackToolbar::setup_processor_menu_and_curves ()
 void
 TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
 {
+	// VERY NEXT: study carefully to understand how the name is
+	// obtained, and evaluate if it can be passed to the construction
+	// of ProcessorAutomationNode so that
+	// ProcessorAutomationNode::to_string() can display more
+	// information about the param.
+
 	ProcessorPtr processor (p.lock ());
 
 	if (!processor || !processor->display_to_user ()) {
