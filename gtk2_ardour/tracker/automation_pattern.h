@@ -37,7 +37,8 @@ namespace Tracker {
 typedef std::map<AutomationControlPtr, std::string> AutomationControlStringMap;
 
 /**
- * Data structure holding the automation list pattern.
+ * Data structure holding the automation list pattern.  Multiple
+ * automations (typically belonging to a track) are stored here.
  */
 class AutomationPattern : public BasePattern {
 public:
