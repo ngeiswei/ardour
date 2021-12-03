@@ -269,6 +269,8 @@ TrackToolbar::setup_processor_menu_and_curves ()
 void
 TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
 {
+	using namespace Menu_Helpers;
+
 	// VERY NEXT: study carefully to understand how the name is
 	// obtained, and evaluate if it can be passed to the construction
 	// of ProcessorAutomationNode so that
@@ -290,36 +292,34 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		return;
 	}
 
-	using namespace Menu_Helpers;
-	ProcessorAutomationInfo *rai;
-	std::list<ProcessorAutomationInfo*>::iterator x;
-
+	// Abort here if nothing is automatable
 	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
-
 	if (automatable.empty ()) {
 		return;
 	}
 
-	for (x = processor_automation.begin (); x != processor_automation.end (); ++x) {
-		if ((*x)->processor == processor) {
-			break;
-		}
-	}
-
-	if (x == processor_automation.end ()) {
-		rai = new ProcessorAutomationInfo (processor);
-		processor_automation.push_back (rai);
+	// Find the processor automation info corresponding to the given
+	// processor if it exists, otherwise construct it first.
+	ProcessorAutomationInfo *pai;
+	ProcessorAutomationInfoSeqIt it = find_processor_automation_info (processor);
+	if (it == processor_automations.end ()) {
+		// VERY NEXT: can we add track pattern in
+		// ProcessorAutomationInfo ctor, in order to access the
+		// parameter names?
+		pai = new ProcessorAutomationInfo (processor);
+		processor_automations.push_back (pai);
 	} else {
-		rai = *x;
+		pai = *it;
 	}
 
-	/* any older menu was deleted at the top of processors_changed ()
-	   when we cleared the subplugin menu.
-	*/
+	// VERY NEXT: study carefully
 
-	rai->menu = Gtk::manage (new Menu);
-	MenuList& items = rai->menu->items ();
-	rai->menu->set_name ("ArdourContextMenu");
+	// Any older menu was deleted at the top of processors_changed ()
+	// when we cleared the subplugin menu.
+
+	pai->menu = Gtk::manage (new Menu);
+	MenuList& items = pai->menu->items ();
+	pai->menu->set_name ("ArdourContextMenu");
 
 	items.clear ();
 
@@ -342,12 +342,12 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		if ((pauno = find_processor_automation_node (processor, *p)) == 0) {
 			/* new item */
 			pauno = new ProcessorAutomationNode (*p, mitem);
-			rai->columns.push_back (pauno);
+			pai->columns.push_back (pauno);
 		} else {
 			pauno->menu_item = mitem;
 		}
 
-		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), rai, pauno));
+		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), pai, pauno));
 		bool visible = grid.is_automation_visible (track_index, *p);
 		mitem->set_active (visible);
 	}
@@ -362,11 +362,11 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 	   GTK+.
 	*/
 
-	subplugin_menu.items ().push_back (MenuElem (processor->name (), *rai->menu));
+	subplugin_menu.items ().push_back (MenuElem (processor->name (), *pai->menu));
 }
 
 void
-TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, ProcessorAutomationNode* pauno)
+TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, ProcessorAutomationNode* pauno)
 {
 	// VERY NEXT:
 	// 1. Select ACE_Delay->Time
@@ -375,13 +375,13 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Process
 	// TODO: Make ProcessorAutomationInfo::to_string() and
 	// ProcessorAutomationNode::to_string more informative.
 
-	std::cout << "TrackToolbar::processor_menu_item_toggled (rai=" << rai << ", pauno=" << pauno << ")" << std::endl;
-	std::cout << "*rai:" << std::endl << rai->to_string() << std::endl;
+	std::cout << "TrackToolbar::processor_menu_item_toggled (pai=" << pai << ", pauno=" << pauno << ")" << std::endl;
+	std::cout << "*pai:" << std::endl << pai->to_string() << std::endl;
 	std::cout << "*pauno:" << std::endl << pauno->to_string() << std::endl;
 	const bool showit = pauno->menu_item->get_active ();
 
 	if (pauno->column == 0) {
-		grid.add_processor_automation_column (track_index, rai->processor, pauno->param);
+		grid.add_processor_automation_column (track_index, pai->processor, pauno->param);
 	}
 
 	grid.set_automation_column_visible (track_index, pauno->param, pauno->column, showit);
@@ -390,21 +390,39 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* rai, Process
 	redisplay_grid ();
 }
 
+ProcessorAutomationInfoSeqIt
+TrackToolbar::find_processor_automation_info (ProcessorPtr processor)
+{
+	ProcessorAutomationInfoSeqIt it;
+	for (it = processor_automations.begin (); it != processor_automations.end (); ++it) {
+		if ((*it)->processor == processor) {
+			break;
+		}
+	}
+	return it;
+}
+
+ProcessorAutomationInfoSeqConstIt
+TrackToolbar::find_processor_automation_info (ProcessorPtr processor) const
+{
+	ProcessorAutomationInfoSeqConstIt it;
+	for (it = processor_automations.begin (); it != processor_automations.end (); ++it) {
+		if ((*it)->processor == processor) {
+			break;
+		}
+	}
+	return it;
+}
+
 ProcessorAutomationNode*
 TrackToolbar::find_processor_automation_node (ProcessorPtr processor, Evoral::Parameter param)
 {
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin (); i != processor_automation.end (); ++i) {
-
-		if ((*i)->processor == processor) {
-
-			for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-				if ((*ii)->param == param) {
-					return *ii;
-				}
-			}
+	ProcessorAutomationInfoSeqIt i = find_processor_automation_info (processor);
+	for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
+		if ((*ii)->param == param) {
+			return *ii;
 		}
 	}
-
 	return 0;
 }
 
@@ -520,9 +538,8 @@ void
 TrackToolbar::show_all_processor_automations ()
 {
 	std::cout << "TrackToolbar::show_all_processor_automations ()" << std::endl;
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
-	     i != processor_automation.end (); ++i) {
-		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
+	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
+		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
 			if (column == 0) {
 				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->param);
@@ -545,9 +562,8 @@ TrackToolbar::show_existing_processor_automations ()
 {
 	std::cout << "TrackToolbar::show_existing_processor_automations ()" << std::endl;
 	// NEXT: understand the weirdness (other processor automation)
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
-	     i != processor_automation.end (); ++i) {
-		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
+	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
+		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
 			bool exist = !track_pattern->is_empty ((*ii)->param);
 
@@ -573,9 +589,8 @@ TrackToolbar::show_existing_processor_automations ()
 void
 TrackToolbar::hide_processor_automations ()
 {
-	for (std::list<ProcessorAutomationInfo*>::iterator i = processor_automation.begin ();
-	     i != processor_automation.end (); ++i) {
-		for (std::vector<ProcessorAutomationNode*>::iterator ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
+	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
+		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int column = (*ii)->column;
 			if (column != 0) {
 				grid.set_automation_column_visible (track_index, (*ii)->param, column, false);
