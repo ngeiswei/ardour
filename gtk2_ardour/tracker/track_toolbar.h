@@ -51,16 +51,22 @@ struct ProcessorAutomationNode {
 	// corresponding column index. If set to 0 then undetermined yet
 	int                                       column;
 };
+typedef std::vector<ProcessorAutomationNode*> ProcessorAutomationNodeSeq;
+typedef ProcessorAutomationNodeSeq::iterator ProcessorAutomationNodeSeqIt;
+typedef ProcessorAutomationNodeSeq::const_iterator ProcessorAutomationNodeSeqConstIt;
 
 struct ProcessorAutomationInfo {
 	explicit ProcessorAutomationInfo (ProcessorPtr i);
 
 	std::string to_string (const std::string& indent="") const;
 
-	ProcessorPtr                          processor;
-	Gtk::Menu*                            menu;
-	std::vector<ProcessorAutomationNode*> columns; // TODO: why is it called columns?
+	ProcessorPtr               processor;
+	Gtk::Menu*                 menu;
+	ProcessorAutomationNodeSeq columns; // TODO: why is it called columns?
 };
+typedef std::list<ProcessorAutomationInfo*> ProcessorAutomationInfoSeq;
+typedef ProcessorAutomationInfoSeq::iterator ProcessorAutomationInfoSeqIt;
+typedef ProcessorAutomationInfoSeq::const_iterator ProcessorAutomationInfoSeqConstIt;
 
 class TrackToolbar : public Gtk::HBox
 {
@@ -95,6 +101,8 @@ public:
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
 	void processor_menu_item_toggled (ProcessorAutomationInfo*, ProcessorAutomationNode*);
+	ProcessorAutomationInfoSeqIt find_processor_automation_info (ProcessorPtr processor);
+	ProcessorAutomationInfoSeqConstIt find_processor_automation_info (ProcessorPtr processor) const;
 	ProcessorAutomationNode* find_processor_automation_node (ProcessorPtr processor, Evoral::Parameter what);
 
 	/**
@@ -149,7 +157,7 @@ public:
 	 * Information about all automatable processor parameters that apply to
 	 * this route (midi track). The Amp processor is not included in this list.
 	 */
-	std::list<ProcessorAutomationInfo*> processor_automation;
+	ProcessorAutomationInfoSeq processor_automations;
 
 	/** parameter -> menu item map for the plugin automation menu */
 	ParameterMenuMap _subplugin_menu_map;
