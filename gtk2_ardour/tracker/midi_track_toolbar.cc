@@ -641,8 +641,8 @@ MidiTrackToolbar::hide_all_automation ()
 void
 MidiTrackToolbar::show_existing_midi_automations ()
 {
-	const std::set<Evoral::Parameter> params = midi_track->midi_playlist ()->contained_automation ();
-	for (std::set<Evoral::Parameter>::const_iterator p = params.begin (); p != params.end (); ++p) {
+	const ParameterSet params = midi_track->midi_playlist ()->contained_automation ();
+	for (ParameterSetConstIt p = params.begin (); p != params.end (); ++p) {
 		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find (*p);
 		int column = (it == grid.col2params[track_index].right.end ()) || (it->second == 0) ?
 			grid.add_midi_automation_column (track_index, *p) : it->second;
