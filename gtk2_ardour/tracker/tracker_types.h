@@ -23,6 +23,8 @@ namespace Tracker {
 
 // Map Parameter to AutomationControl
 
+// VERY NEXT: is it used at all?
+
 } // ~namespace tracker
 
 #endif /* __ardour_tracker_tracker_types_h_ */

@@ -98,8 +98,8 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 		return;
 	}
 
-	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
-	for (std::set<Evoral::Parameter>::const_iterator ait = automatable.begin (); ait != automatable.end (); ++ait) {
+	const ParameterSet& automatable = processor->what_can_be_automated ();
+	for (ParameterSetConstIt ait = automatable.begin (); ait != automatable.end (); ++ait) {
 		AutomationPattern::insert (boost::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
 	}
 }

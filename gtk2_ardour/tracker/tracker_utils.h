@@ -67,6 +67,10 @@ typedef std::pair<RowToControlEvents::const_iterator, RowToControlEvents::const_
 typedef std::multimap<int, NotePtr> RowToNotes;
 typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToNotesRange;
 
+typedef std::set<Evoral::Parameter> ParameterSet;
+typedef ParameterSet::iterator ParameterSetIt;
+typedef ParameterSet::const_iterator ParameterSetConstIt;
+
 /**
  * Less than operator for regions, order according to position, earlier comes first
  */

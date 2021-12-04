@@ -168,7 +168,6 @@ public:
 	std::vector<MidiRegionPattern*> mrps;
 
 	// Keep track of enabled region automations
-	typedef std::set<Evoral::Parameter> ParameterSet;
 	ParameterSet enabled_region_params;
 
 	// Associate each mri to row_offset
