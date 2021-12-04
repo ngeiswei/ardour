@@ -292,8 +292,8 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		return;
 	}
 
-	// Abort here if nothing is automatable
-	const std::set<Evoral::Parameter>& automatable = processor->what_can_be_automated ();
+	// Abort if nothing is automatable
+	const ParameterSet& automatable = processor->what_can_be_automated ();
 	if (automatable.empty ()) {
 		return;
 	}
@@ -312,43 +312,42 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		pai = *it;
 	}
 
-	// VERY NEXT: study carefully
-
 	// Any older menu was deleted at the top of processors_changed ()
 	// when we cleared the subplugin menu.
-
 	pai->menu = Gtk::manage (new Menu);
-	MenuList& items = pai->menu->items ();
 	pai->menu->set_name ("ArdourContextMenu");
-
+	MenuList& items = pai->menu->items ();
 	items.clear ();
 
-	for (std::set<Evoral::Parameter>::const_iterator p = automatable.begin (); p != automatable.end (); ++p) {
+	for (ParameterSetConstIt param_it = automatable.begin (); param_it != automatable.end (); ++param_it) {
 
-		ProcessorAutomationNode* pauno = 0;
-		CheckMenuItem* mitem;
+		// VERY VERY NEXT: understand exactly what is that name
+		// (probably what we are looking for).  Compare with
+		// AutomationPattern::get_name to understand.
+		std::string name = processor->describe_parameter (*param_it);
 
-		std::string name = processor->describe_parameter (*p);
-
-		if (name == X_("hidden")) {
+		if (name == X_("hidden")) { // TODO: What does that mean?
 			continue;
 		}
 
 		items.push_back (CheckMenuElem (name));
-		mitem = dynamic_cast<CheckMenuItem*> (&items.back ());
+		CheckMenuItem* mitem = dynamic_cast<CheckMenuItem*> (&items.back ()); // VERY NEXT: what is this?
 
-		_subplugin_menu_map[*p] = mitem;
+		_subplugin_menu_map[*param_it] = mitem;
 
-		if ((pauno = find_processor_automation_node (processor, *p)) == 0) {
+		// VERY NEXT: study carefully
+
+		ProcessorAutomationNode* pauno = 0;
+		if ((pauno = find_processor_automation_node (processor, *param_it)) == 0) {
 			/* new item */
-			pauno = new ProcessorAutomationNode (*p, mitem);
+			pauno = new ProcessorAutomationNode (*param_it, mitem);
 			pai->columns.push_back (pauno);
 		} else {
 			pauno->menu_item = mitem;
 		}
 
 		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), pai, pauno));
-		bool visible = grid.is_automation_visible (track_index, *p);
+		bool visible = grid.is_automation_visible (track_index, *param_it);
 		mitem->set_active (visible);
 	}
 
@@ -501,8 +500,8 @@ TrackToolbar::show_existing_main_automations ()
 
 	// Pan
 	bool pan_visible = false;
-	std::set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
-	for (std::set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
+	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
+	for (ParameterSetConstIt p = pan_params.begin (); p != pan_params.end (); ++p) {
 		if (!track_pattern->is_empty (*p)) {
 			pan_visible = true;
 			break;
