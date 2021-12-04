@@ -1526,7 +1526,7 @@ Grid::redisplay_region_automations (int mti, int mri, const RegionAutomationPatt
 {
 	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
 		const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
-		for (MidiTrackPattern::ParameterSet::const_iterator it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
+		for (ParameterSetConstIt it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
 		{
 			const Evoral::Parameter& param = *it;
 			// Make sure the param of that region, this may not be the case if
