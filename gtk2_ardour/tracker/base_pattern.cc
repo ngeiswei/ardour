@@ -173,13 +173,15 @@ BasePattern::set_rows_per_beat (uint16_t rpb)
 Temporal::Beats
 BasePattern::find_position_row_beats () const
 {
-	return position_beats.snap_to (beats_per_row);
+	// TODO: it could be round_up_to_multiple or round_down_to_multiple
+	return position_beats.round_to_multiple (beats_per_row);
 }
 
 Temporal::Beats
 BasePattern::find_end_row_beats () const
 {
-	return global_end_beats.snap_to (beats_per_row);
+	// TODO: it could be round_up_to_multiple or round_down_to_multiple
+	return global_end_beats.round_to_multiple (beats_per_row);
 }
 
 int
