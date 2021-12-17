@@ -29,7 +29,6 @@
 #include "ardour/processor.h"
 
 #include "midi_track_pattern.h"
-#include "tracker_types.h"
 
 namespace Tracker {
 

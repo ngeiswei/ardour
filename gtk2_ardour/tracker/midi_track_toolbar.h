@@ -32,7 +32,6 @@
 
 #include "midi_track_pattern.h"
 #include "track_toolbar.h"
-#include "tracker_types.h"
 
 namespace Tracker {
 
