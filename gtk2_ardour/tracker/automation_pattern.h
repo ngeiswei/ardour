@@ -28,7 +28,6 @@
 
 #include "automation_pattern_phenomenal_diff.h"
 #include "base_pattern.h"
-#include "tracker_types.h"
 
 namespace Tracker {
 
