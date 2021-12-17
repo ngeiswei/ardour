@@ -42,7 +42,6 @@
 #include "grid_header.h"
 #include "main_toolbar.h"
 #include "midi_track_toolbar.h"
-#include "tracker_types.h"
 
 namespace Evoral {
 	template<typename Time> class Note;
