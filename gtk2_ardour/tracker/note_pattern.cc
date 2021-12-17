@@ -408,18 +408,14 @@ Temporal::BBT_Time
 NotePattern::on_note_bbt (NotePtr note) const
 {
 	Temporal::Beats note_time = position_beats - start_beats + note->time ();
-	Temporal::BBT_Time bbt_time;
-	_session->bbt_time (Temporal::timepos_t (note_time), bbt_time);
-	return bbt_time;
+	return Temporal::TempoMap::use()->bbt_at (note_time);
 }
 
 Temporal::BBT_Time
 NotePattern::off_note_bbt (NotePtr note) const
 {
 	Temporal::Beats end_note_time = position_beats - start_beats + note->end_time ();
-	Temporal::BBT_Time bbt_time;
-	_session->bbt_time (Temporal::timepos_t (end_note_time), bbt_time);
-	return bbt_time;
+	return Temporal::TempoMap::use()->bbt_at (end_note_time);
 }
 
 std::string
