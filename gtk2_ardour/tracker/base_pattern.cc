@@ -221,9 +221,7 @@ Temporal::BBT_Time
 BasePattern::bbt_at_row (int rowi, int delay) const
 {
 	Temporal::Beats beats = beats_at_row (rowi, delay);
-	Temporal::BBT_Time bbt_time;
-	_session->bbt_time (Temporal::timepos_t (beats), bbt_time);
-	return bbt_time;
+	return Temporal::TempoMap::use()->bbt_at (beats);
 }
 
 Temporal::Beats
