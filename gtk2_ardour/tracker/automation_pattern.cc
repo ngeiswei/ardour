@@ -507,11 +507,9 @@ AutomationPattern::set_automation_delay (int delay, int rowi, const Evoral::Para
 Temporal::BBT_Time
 AutomationPattern::get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const
 {
-	Temporal::BBT_Time bbt;
 	int row_idx = it->first;
 	int delay = get_automation_delay (param, it);
-	_session->bbt_time (Temporal::timepos_t (sample_at_row (row_idx, delay)), bbt);
-	return bbt;
+	return bbt_at_row (row_idx, delay);
 }
 
 void
