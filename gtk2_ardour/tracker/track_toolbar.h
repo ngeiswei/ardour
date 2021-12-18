@@ -38,29 +38,31 @@ class MidiTrackToolbar;
 class AudioTrackToolbar;
 
 struct ProcessorAutomationNode {
-	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem);
+	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem, const TrackPattern* tp);
 	// TODO: do we really need this?
 	~ProcessorAutomationNode ();
 
 	// For debugging
 	std::string to_string (const std::string& indent="") const;
 
-	Evoral::Parameter                         param;
-	Gtk::CheckMenuItem*                       menu_item;
+	Evoral::Parameter param;
+	Gtk::CheckMenuItem* menu_item;
+	const TrackPattern* track_pattern;
 	// corresponding column index. If set to 0 then undetermined yet
-	int                                       column;
+	int column;
 };
 typedef std::vector<ProcessorAutomationNode*> ProcessorAutomationNodeSeq;
 typedef ProcessorAutomationNodeSeq::iterator ProcessorAutomationNodeSeqIt;
 typedef ProcessorAutomationNodeSeq::const_iterator ProcessorAutomationNodeSeqConstIt;
 
 struct ProcessorAutomationInfo {
+	// explicit ProcessorAutomationInfo (ProcessorPtr i, const TrackPattern* tp);
 	explicit ProcessorAutomationInfo (ProcessorPtr i);
 
 	std::string to_string (const std::string& indent="") const;
 
-	ProcessorPtr               processor;
-	Gtk::Menu*                 menu;
+	ProcessorPtr processor;
+	Gtk::Menu* menu;
 	ProcessorAutomationNodeSeq columns; // TODO: why is it called columns?
 };
 typedef std::list<ProcessorAutomationInfo*> ProcessorAutomationInfoSeq;
