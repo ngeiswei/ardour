@@ -32,7 +32,7 @@ namespace Tracker {
 
 class MidiTrackPattern;
 class AudioTrackPattern;
-	
+
 // TODO: maybe implement some MultiRegionPattern class that deals with mri and
 // have TrackPattern inherits that one as well.
 

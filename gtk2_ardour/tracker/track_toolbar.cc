@@ -40,8 +40,8 @@ using namespace Gtkmm2ext;
 using namespace ARDOUR;
 using namespace Tracker;
 
-ProcessorAutomationNode::ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem)
-	: param (p), menu_item (mitem), column (0)
+ProcessorAutomationNode::ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem, const TrackPattern* tp)
+	: param (p), menu_item (mitem), track_pattern(tp), column (0)
 {
 }
 
@@ -49,14 +49,7 @@ std::string
 ProcessorAutomationNode::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	// VERY NEXT: use AutomationPattern::get_name to get the name of
-	// param (maybe Grid::get_name that calls
-	// AutomationPattern::get_name could be used as well)
-	//
-	// Question:
-	// should that name be stored in the ProcessorAutomationNode?
-	// Wait, it is stored for the menu, hmm.
-	ss << indent << "param = " << param << std::endl
+	ss << indent << "param[" << param << "] name = " << track_pattern->get_name (param) << std::endl
 	   << indent << "menu_item = " << menu_item << std::endl
 	   << indent << "column = " << column << std::endl;
 	return ss.str ();
@@ -271,12 +264,6 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 {
 	using namespace Menu_Helpers;
 
-	// VERY NEXT: study carefully to understand how the name is
-	// obtained, and evaluate if it can be passed to the construction
-	// of ProcessorAutomationNode so that
-	// ProcessorAutomationNode::to_string() can display more
-	// information about the param.
-
 	ProcessorPtr processor (p.lock ());
 
 	if (!processor || !processor->display_to_user ()) {
@@ -303,9 +290,6 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 	ProcessorAutomationInfo *pai;
 	ProcessorAutomationInfoSeqIt it = find_processor_automation_info (processor);
 	if (it == processor_automations.end ()) {
-		// VERY NEXT: can we add track pattern in
-		// ProcessorAutomationInfo ctor, in order to access the
-		// parameter names?
 		pai = new ProcessorAutomationInfo (processor);
 		processor_automations.push_back (pai);
 	} else {
@@ -321,9 +305,6 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 
 	for (ParameterSetConstIt param_it = automatable.begin (); param_it != automatable.end (); ++param_it) {
 
-		// VERY VERY NEXT: understand exactly what is that name
-		// (probably what we are looking for).  Compare with
-		// AutomationPattern::get_name to understand.
 		std::string name = processor->describe_parameter (*param_it);
 
 		if (name == X_("hidden")) { // TODO: What does that mean?
@@ -340,7 +321,7 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		ProcessorAutomationNode* pauno = 0;
 		if ((pauno = find_processor_automation_node (processor, *param_it)) == 0) {
 			/* new item */
-			pauno = new ProcessorAutomationNode (*param_it, mitem);
+			pauno = new ProcessorAutomationNode (*param_it, mitem, track_pattern);
 			pai->columns.push_back (pauno);
 		} else {
 			pauno->menu_item = mitem;
@@ -370,6 +351,7 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, Process
 	// VERY NEXT:
 	// 1. Select ACE_Delay->Time
 	// 2. ACE_Reverb->RoomSize appears
+	// It looks like ACE_Delay->SyncBPM, ACE_Delay->Time, ACE_Delay->Divisor are overlaid with ACE_Reverb->Blend to ACE_Reverb->Enable.
 	//
 	// TODO: Make ProcessorAutomationInfo::to_string() and
 	// ProcessorAutomationNode::to_string more informative.
