@@ -51,7 +51,7 @@ ProcessorAutomationNode::to_string (const std::string& indent) const
 	std::stringstream ss;
 	ss << indent << "param[" << param << "] name = " << track_pattern->get_name (param) << std::endl
 	   << indent << "menu_item = " << menu_item << std::endl
-	   << indent << "column = " << column << std::endl;
+	   << indent << "column = " << column;
 	return ss.str ();
 }
 
