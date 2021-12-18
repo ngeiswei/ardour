@@ -236,6 +236,7 @@ AutomationPattern::update_automations ()
 	}
 }
 
+// VERY NEXT: where is name determined?  Does it really consider the processor?
 void
 AutomationPattern::insert (AutomationControlPtr actrl, const std::string& name)
 {
