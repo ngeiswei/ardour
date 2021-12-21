@@ -47,7 +47,7 @@ struct ProcessorAutomationNode {
 
 	Evoral::Parameter param;
 	Gtk::CheckMenuItem* menu_item;
-	const TrackPattern* track_pattern;
+	const TrackPattern* track_pattern; // VERY NEXT: maybe replace by processor_pattern or such
 	// corresponding column index. If set to 0 then undetermined yet
 	int column;
 };
