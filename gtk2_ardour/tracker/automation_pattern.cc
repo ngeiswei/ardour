@@ -25,6 +25,8 @@
 #include "tracker_editor.h"
 #include "tracker_utils.h"
 
+#include <boost/stacktrace.hpp>
+
 using namespace Tracker;
 
 ///////////////////////
@@ -237,10 +239,63 @@ AutomationPattern::update_automations ()
 }
 
 // VERY NEXT: where is name determined?  Does it really consider the processor?
+//
+// See stack trace:
+//
+//  0# Tracker::AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  1# Tracker::TrackAutomationPattern::setup_processor_automation_control(boost::weak_ptr<ARDOUR::Processor>) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  2# boost::detail::function::void_function_obj_invoker1<sigc::bound_mem_functor1<void, Tracker::TrackAutomationPattern, boost::weak_ptr<ARDOUR::Processor> >, void, boost::weak_ptr<ARDOUR::Processor> >::invoke(boost::detail::function::function_buffer&, boost::weak_ptr<ARDOUR::Processor>) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  3# Tracker::TrackAutomationPattern::setup_processors_automation_controls() in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  4# Tracker::TrackAutomationPattern::TrackAutomationPattern(Tracker::TrackerEditor&, boost::shared_ptr<ARDOUR::Track>, long, long, long, long, bool) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  5# Tracker::MidiTrackPattern::MidiTrackPattern(Tracker::TrackerEditor&, boost::shared_ptr<ARDOUR::Track>, std::vector<RegionView*, std::allocator<RegionView*> > const&, std::vector<boost::shared_ptr<ARDOUR::Region>, std::allocator<boost::shared_ptr<ARDOUR::Region> > > const&, long, long, long, long, bool) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  6# Tracker::MultiTrackPattern::add_track_pattern(boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region>, std::allocator<boost::shared_ptr<ARDOUR::Region> > > const&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  7# Tracker::MultiTrackPattern::setup_track_patterns() in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  8# Tracker::MultiTrackPattern::setup() in /usr/lib/ardour7/ardour-7.0.pre0.1766
+//  9# Tracker::Grid::setup() in /usr/lib/ardour7/ardour-7.0.pre0.1766
+// 10# Tracker::TrackerEditor::setup(RegionSelection&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
+// 11# Editor::show_tracker_editor() in /usr/lib/ardour7/ardour-7.0.pre0.1766
+// 12# Glib::SignalProxyNormal::slot0_void_callback(_GObject*, void*) in /usr/lib/libglibmm-2.4.so.1
+// 13# g_closure_invoke in /usr/lib/libgobject-2.0.so.0
+// 14# 0x00007EFFDF29190B in /usr/lib/libgobject-2.0.so.0
+// 15# g_signal_emit_valist in /usr/lib/libgobject-2.0.so.0
+// 16# g_signal_emit in /usr/lib/libgobject-2.0.so.0
+// 17# 0x00007EFFDED2F5C5 in /usr/lib/libgtk-x11-2.0.so.0
+// 18# g_closure_invoke in /usr/lib/libgobject-2.0.so.0
+// 19# 0x00007EFFDF29135F in /usr/lib/libgobject-2.0.so.0
+// 20# g_signal_emit_valist in /usr/lib/libgobject-2.0.so.0
+// 21# g_signal_emit in /usr/lib/libgobject-2.0.so.0
+// 22# gtk_widget_activate in /usr/lib/libgtk-x11-2.0.so.0
+// 23# gtk_menu_shell_activate_item in /usr/lib/libgtk-x11-2.0.so.0
+// 24# 0x00007EFFDEE0A10F in /usr/lib/libgtk-x11-2.0.so.0
+// 25# 0x00007EFFDEDF70A8 in /usr/lib/libgtk-x11-2.0.so.0
+// 26# g_closure_invoke in /usr/lib/libgobject-2.0.so.0
+// 27# 0x00007EFFDF2910EE in /usr/lib/libgobject-2.0.so.0
+// 28# g_signal_emit_valist in /usr/lib/libgobject-2.0.so.0
+// 29# g_signal_emit in /usr/lib/libgobject-2.0.so.0
+// 30# 0x00007EFFDEF1C275 in /usr/lib/libgtk-x11-2.0.so.0
+// 31# gtk_propagate_event in /usr/lib/libgtk-x11-2.0.so.0
+// 32# gtk_main_do_event in /usr/lib/libgtk-x11-2.0.so.0
+// 33# 0x00007EFFDEC643BE in /usr/lib/libgdk-x11-2.0.so.0
+// 34# g_main_context_dispatch in /usr/lib/libglib-2.0.so.0
+// 35# 0x00007EFFDF1D5799 in /usr/lib/libglib-2.0.so.0
+// 36# g_main_loop_run in /usr/lib/libglib-2.0.so.0
+// 37# gtk_main in /usr/lib/libgtk-x11-2.0.so.0
+// 38# Gtkmm2ext::UI::run(Receiver&) in /usr/lib/ardour7/libgtkmm2ext.so.0
+// 39# main in /usr/lib/ardour7/ardour-7.0.pre0.1766
+// 40# __libc_start_main in /usr/lib/libc.so.6
+// 41# _start in /usr/lib/ardour7/ardour-7.0.pre0.1766
+
+// for
+
+// AutomationPattern[0x563676e100e0]::insert (actrl=0x563675798de0, name=Time) param = 7-5-0
+
 void
 AutomationPattern::insert (AutomationControlPtr actrl, const std::string& name)
 {
 	Evoral::Parameter param = actrl->parameter ();
+	std::cout << boost::stacktrace::stacktrace() << std::endl;
+	std::cout << "AutomationPattern[" << this << "]::insert (actrl=" << actrl << ", name=" << name << ") param = " << param << std::endl;
+	// VERY NEXT: problem is here!!!  param is not unique.
 	std::pair<ParamAutomationControlMap::iterator, bool> actrl_result = param_to_actrl.insert (std::make_pair (param, actrl));
 	param_to_name.insert (std::make_pair (param, name));
 	if (actrl_result.second && _connect) {
@@ -299,6 +354,7 @@ AutomationPattern::control_events_range (int rowi, const Evoral::Parameter& para
 	return param_to_row_to_ces.find (param)->second.equal_range (rowi);
 }
 
+// VERY NEXT: not enough, needs processor as well
 std::string
 AutomationPattern::get_name (const Evoral::Parameter& param) const
 {
