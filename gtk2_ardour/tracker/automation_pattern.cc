@@ -253,40 +253,9 @@ AutomationPattern::update_automations ()
 //  8# Tracker::MultiTrackPattern::setup() in /usr/lib/ardour7/ardour-7.0.pre0.1766
 //  9# Tracker::Grid::setup() in /usr/lib/ardour7/ardour-7.0.pre0.1766
 // 10# Tracker::TrackerEditor::setup(RegionSelection&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-// 11# Editor::show_tracker_editor() in /usr/lib/ardour7/ardour-7.0.pre0.1766
-// 12# Glib::SignalProxyNormal::slot0_void_callback(_GObject*, void*) in /usr/lib/libglibmm-2.4.so.1
-// 13# g_closure_invoke in /usr/lib/libgobject-2.0.so.0
-// 14# 0x00007EFFDF29190B in /usr/lib/libgobject-2.0.so.0
-// 15# g_signal_emit_valist in /usr/lib/libgobject-2.0.so.0
-// 16# g_signal_emit in /usr/lib/libgobject-2.0.so.0
-// 17# 0x00007EFFDED2F5C5 in /usr/lib/libgtk-x11-2.0.so.0
-// 18# g_closure_invoke in /usr/lib/libgobject-2.0.so.0
-// 19# 0x00007EFFDF29135F in /usr/lib/libgobject-2.0.so.0
-// 20# g_signal_emit_valist in /usr/lib/libgobject-2.0.so.0
-// 21# g_signal_emit in /usr/lib/libgobject-2.0.so.0
-// 22# gtk_widget_activate in /usr/lib/libgtk-x11-2.0.so.0
-// 23# gtk_menu_shell_activate_item in /usr/lib/libgtk-x11-2.0.so.0
-// 24# 0x00007EFFDEE0A10F in /usr/lib/libgtk-x11-2.0.so.0
-// 25# 0x00007EFFDEDF70A8 in /usr/lib/libgtk-x11-2.0.so.0
-// 26# g_closure_invoke in /usr/lib/libgobject-2.0.so.0
-// 27# 0x00007EFFDF2910EE in /usr/lib/libgobject-2.0.so.0
-// 28# g_signal_emit_valist in /usr/lib/libgobject-2.0.so.0
-// 29# g_signal_emit in /usr/lib/libgobject-2.0.so.0
-// 30# 0x00007EFFDEF1C275 in /usr/lib/libgtk-x11-2.0.so.0
-// 31# gtk_propagate_event in /usr/lib/libgtk-x11-2.0.so.0
-// 32# gtk_main_do_event in /usr/lib/libgtk-x11-2.0.so.0
-// 33# 0x00007EFFDEC643BE in /usr/lib/libgdk-x11-2.0.so.0
-// 34# g_main_context_dispatch in /usr/lib/libglib-2.0.so.0
-// 35# 0x00007EFFDF1D5799 in /usr/lib/libglib-2.0.so.0
-// 36# g_main_loop_run in /usr/lib/libglib-2.0.so.0
-// 37# gtk_main in /usr/lib/libgtk-x11-2.0.so.0
-// 38# Gtkmm2ext::UI::run(Receiver&) in /usr/lib/ardour7/libgtkmm2ext.so.0
-// 39# main in /usr/lib/ardour7/ardour-7.0.pre0.1766
-// 40# __libc_start_main in /usr/lib/libc.so.6
-// 41# _start in /usr/lib/ardour7/ardour-7.0.pre0.1766
-
+//
 // for
-
+//
 // AutomationPattern[0x563676e100e0]::insert (actrl=0x563675798de0, name=Time) param = 7-5-0
 
 void
