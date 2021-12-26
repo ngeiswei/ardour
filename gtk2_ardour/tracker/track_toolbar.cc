@@ -312,11 +312,9 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 		}
 
 		items.push_back (CheckMenuElem (name));
-		CheckMenuItem* mitem = dynamic_cast<CheckMenuItem*> (&items.back ()); // VERY NEXT: what is this?
+		CheckMenuItem* mitem = dynamic_cast<CheckMenuItem*> (&items.back ());
 
 		_subplugin_menu_map[*param_it] = mitem;
-
-		// VERY NEXT: study carefully
 
 		ProcessorAutomationNode* pauno = 0;
 		if ((pauno = find_processor_automation_node (processor, *param_it)) == 0) {

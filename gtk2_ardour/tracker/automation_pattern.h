@@ -180,9 +180,8 @@ public:
 // Ardour::Route::nth_plugin
 // to get all plugin params as std::set<Evoral::Parameter>  search for `what_can_be_automated`
 //
-// Alternatively we could have processor_automation_pattern or
-// plugin_automation_pattern, then track_pattern would be a collection
-// of these.
+// Alternatively we could have processor_pattern, then track_pattern
+// would be a sequence of these.
 
 	// Map parameters to maps of row to automation range
 	typedef std::map<Evoral::Parameter, RowToControlEvents> ParamToRowToControlEvents;
