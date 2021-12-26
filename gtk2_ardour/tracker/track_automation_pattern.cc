@@ -89,6 +89,7 @@ void TrackAutomationPattern::setup_processors_automation_controls ()
 	track->foreach_processor (sigc::mem_fun (*this, &TrackAutomationPattern::setup_processor_automation_control));
 }
 
+// VERY NEXT: move to processor_pattern
 void
 TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p)
 {
