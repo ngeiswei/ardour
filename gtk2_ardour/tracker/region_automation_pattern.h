@@ -29,7 +29,10 @@
 namespace Tracker {
 
 /**
- * Data structure holding the automation list pattern held by a region.
+ * Data structure holding the automation list pattern held by a
+ * region.  TODO: for now it is overspecialized for midi region, later
+ * it should probably be abstracted to support (be the base of) audio
+ * and midi region patterns.
  */
 class RegionAutomationPattern : public AutomationPattern {
 public:
