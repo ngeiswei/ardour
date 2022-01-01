@@ -83,10 +83,10 @@ public:
 
 	// Update enabled flag
 	void update_enabled ();
-	
+
 	// Update row_offset (representing row offsets of region patterns)
 	void update_row_offset ();
-	
+
 	// Return true iff the row is defined, that is if such a row points to an
 	// existing region.
 	bool is_region_defined (int rowi) const;
@@ -94,7 +94,7 @@ public:
 	// Return the row index relative to the start of pattern at region index mri
 	int to_rrri (int rowi, int mri) const;
 	int to_rrri (int rowi) const;
-	
+
 	// Given the row index, calculate the corresponding midi region index. This
 	// can only work assuming that regions do not overlap in time. If no such
 	// mri is defined, then return -1.
@@ -105,7 +105,7 @@ public:
 
 	// Set the number of note tracks
 	void set_ntracks (uint16_t);
-	
+
 	// Increase the number of note tracks
 	void inc_ntracks ();
 
@@ -114,11 +114,11 @@ public:
 
 	// Minimum number of note tracks required
 	uint16_t get_nreqtracks () const;
-	
+
 	// Return whether the automation associated to param is empty
 	bool is_empty (const Evoral::Parameter& param) const;
 
-	// Return a pair with the automation value and whether it is defined or not	
+	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 
 	// Set the automation value val at rowi and mri for param

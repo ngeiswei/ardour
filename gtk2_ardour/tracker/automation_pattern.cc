@@ -238,7 +238,7 @@ AutomationPattern::update_automations ()
 	}
 }
 
-// VERY NEXT: where is name determined?  Does it really consider the processor?
+// VERY NEXT: where is name determined?  Does it really consider the processor?  Answer: No!
 //
 // See stack trace:
 //
