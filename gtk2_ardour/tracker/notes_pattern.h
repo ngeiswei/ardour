@@ -16,14 +16,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_note_pattern_h_
-#define __ardour_tracker_note_pattern_h_
+#ifndef __ardour_tracker_notes_pattern_h_
+#define __ardour_tracker_notes_pattern_h_
 
 #include "ardour/midi_model.h"
 #include "ardour/session_handle.h"
 
 #include "base_pattern.h"
-#include "note_pattern_phenomenal_diff.h"
+#include "notes_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
 
 namespace ARDOUR {
@@ -36,23 +36,25 @@ namespace ARDOUR {
 namespace Tracker {
 
 /**
- * Data structure holding the pattern of midi notes for the pattern editor.
- * Plus some goodies method to generate a pattern given a midi region. The
- * notion of track is used instead of column as this term is reserved to the
- * gtk widget representing notes and automations. The term track should not be
- * confused with the term track of the horizontal editor view.
+ * Data structure holding the pattern of midi notes for the pattern
+ * editor.  Plus some goodies method to generate a pattern given a
+ * midi region. Warning: the notion of track is used instead of column
+ * as this term is reserved to the gtk widget representing notes and
+ * automations. The term track should not be confused with the term
+ * track of the horizontal editor view.
  */
-class NotePattern : public BasePattern {
+// NEXT: should be renamed NotesPattern.
+class NotesPattern : public BasePattern {
 public:
-	NotePattern (TrackerEditor& te,
-	             MidiRegionPtr region);
+	NotesPattern (TrackerEditor& te,
+	              MidiRegionPtr region);
 
-	NotePattern& operator= (const NotePattern& other);
+	NotesPattern& operator= (const NotesPattern& other);
 	NotePtr clone_note (NotePtr note) const;
 
-	static void rows_diff (int cgi, const NotePattern& lnp, const NotePattern& rnp, std::set<int>& rd);
+	static void rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& rnp, std::set<int>& rd);
 
-	NotePatternPhenomenalDiff phenomenal_diff (const NotePattern& prev) const;
+	NotesPatternPhenomenalDiff phenomenal_diff (const NotesPattern& prev) const;
 
 	// Build or rebuild the pattern (implement BasePattern::update)
 	void update ();
@@ -165,7 +167,7 @@ private:
 };
 
 template<typename NoteContainer>
-typename NoteContainer::const_iterator NotePattern::find_eq_id (const NoteContainer& notes, NotePtr note) const
+typename NoteContainer::const_iterator NotesPattern::find_eq_id (const NoteContainer& notes, NotePtr note) const
 {
 	Evoral::event_id_t id = note->id ();
 	typename NoteContainer::const_iterator it = notes.begin ();
@@ -178,7 +180,7 @@ typename NoteContainer::const_iterator NotePattern::find_eq_id (const NoteContai
 }
 
 template <typename NoteContainer>
-typename NoteContainer::iterator NotePattern::find_eq_id (NoteContainer& notes, NotePtr note)
+typename NoteContainer::iterator NotesPattern::find_eq_id (NoteContainer& notes, NotePtr note)
 {
 	Evoral::event_id_t id = note->id ();
 	typename NoteContainer::iterator it = notes.begin ();
@@ -192,4 +194,4 @@ typename NoteContainer::iterator NotePattern::find_eq_id (NoteContainer& notes, 
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_note_pattern_h_ */
+#endif /* __ardour_tracker_notes_pattern_h_ */

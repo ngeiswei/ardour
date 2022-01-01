@@ -23,7 +23,7 @@
 #include "ardour/midi_track.h"
 
 #include "midi_region_pattern_phenomenal_diff.h"
-#include "note_pattern.h"
+#include "notes_pattern.h"
 #include "region_automation_pattern.h"
 
 namespace Tracker {
@@ -72,7 +72,7 @@ public:
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
-	NotePattern np;
+	NotesPattern np;
 	RegionAutomationPattern rap; // TODO: another option would be to have
 										  // MidiRegionPattern inherits from
 										  // RegionAutomationPattern, but maybe it's an
