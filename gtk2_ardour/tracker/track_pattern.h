@@ -39,6 +39,15 @@ class AudioTrackPattern;
 /**
  * Abstract class to represent track patterns (midi, audio, etc).
  */
+// VERY NEXT: do we really want to inherit from AutomationPattern?
+// Probably not, would be better to have route (fader, etc) and
+// processor automation patterns.  BTW, we might want to have
+// RegionAutomationPattern and TrackAutomationPattern, wait a minute!
+// Is that what TrackAutomationPattern for?  Answer: Yes!
+// TrackAutomationPattern is track automation, as opposed to region
+// automation.  Except that now TrackAutomationPattern should actually
+// be a vector of ProcessorAutomationPattern.  Need to rethink that
+// carefully.
 class TrackPattern : public AutomationPattern {
 public:
 	TrackPattern (TrackerEditor& te,
@@ -74,7 +83,7 @@ public:
 	AudioTrackPattern* audio_track_pattern ();
 
 	// Default implementation is for tracks not supporting regions
-	virtual Temporal::Beats	region_relative_beats (int rowi, int mri, int delay) const;
+	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
 	virtual bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;

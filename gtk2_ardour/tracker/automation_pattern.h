@@ -170,33 +170,26 @@ public:
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
-// VERY NEXT: param is not sufficient, needs processor as well
-//
-// [8:31:29 PM] <x42> Guest14: API wise the OSC control surfaces has `oscsend localhost 3819 /strip/plugin/parameter iiif 2 1 1 .5  # <track-id> <plugin-num> <parameter-num> <value>`
-// [8:32:11 PM] <Guest14> Oh, cool!  And C++ API wise?
-// IIRC that looks up plugin parameters by numeric ID   ::nth_parameter()
-// ARDOUR::Plugin::nth_parameter
-// there's also ROute::nth_plugin (uint32_t n)
-// Ardour::Route::nth_plugin
-// to get all plugin params as std::set<Evoral::Parameter>  search for `what_can_be_automated`
-//
-// Alternatively we could have processor_pattern, then track_pattern
-// would be a sequence of these.
-
-	// Map parameters to maps of row to automation range
+	// Map parameters to maps of row to automation range.  Note that
+	// Evoral::parameter do not uniquely identify parameters across
+	// plugins, so such mapping is only valid within single processor,
+	// route or midi parameter set.
 	typedef std::map<Evoral::Parameter, RowToControlEvents> ParamToRowToControlEvents;
 	ParamToRowToControlEvents param_to_row_to_ces;
 
-	// Map parameters to actrl
+	// Map parameters to actrl. See comment about the non-uniqueness of
+	// Evoral::parameter above.
 	ParamAutomationControlMap param_to_actrl;
 
-	// Map parameters to name
+	// Map parameters to name. See comment about the non-uniqueness of
+	// Evoral::parameter above.
 	typedef std::map<Evoral::Parameter, std::string> ParamNameMap;
 	ParamNameMap param_to_name;
 
-	// Map parameters to whether the automation is enabled. This is kept track
-	// of here in case it can affect updating its content, to save calculations
-	// or measure its phenomenal difference.
+	// Map parameters to whether the automation is enabled. This is
+	// kept track of here in case it can affect updating its content,
+	// to save calculations or measure its phenomenal difference. See
+	// comment about the non-uniqueness of Evoral::parameter above.
 	typedef std::map<Evoral::Parameter, bool> ParamEnabledMap;
 	mutable ParamEnabledMap param_to_enabled; // disabled by default
 
