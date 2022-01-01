@@ -492,14 +492,14 @@ MultiTrackPattern::midi_region (int mti, int mri)
 	return midi_region_pattern (mti, mri).midi_region;
 }
 
-NotePattern&
-MultiTrackPattern::note_pattern (int mti, int mri)
+NotesPattern&
+MultiTrackPattern::notes_pattern (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).np;
 }
 
-const NotePattern&
-MultiTrackPattern::note_pattern (int mti, int mri) const
+const NotesPattern&
+MultiTrackPattern::notes_pattern (int mti, int mri) const
 {
 	return midi_region_pattern (mti, mri).np;
 }
