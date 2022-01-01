@@ -28,7 +28,7 @@
 
 #include "midi_region_pattern.h"
 #include "multi_track_pattern_phenomenal_diff.h"
-#include "note_pattern.h"
+#include "notes_pattern.h"
 #include "track_pattern.h"
 #include "tracker_utils.h"
 
@@ -135,8 +135,8 @@ public:
 	
 	// Return the note pattern at mti and mri.  TODO: maybe return a pointer as
 	// to return 0 if undefined.
-	NotePattern& note_pattern (int mti, int mri);
-	const NotePattern& note_pattern (int mti, int mri) const;
+	NotesPattern& notes_pattern (int mti, int mri);
+	const NotesPattern& notes_pattern (int mti, int mri) const;
 
 	// Return the midi region pattern at mti and mri.  TODO: maybe return a
 	// pointer as to return 0 if undefined.
