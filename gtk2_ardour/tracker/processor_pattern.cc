@@ -56,7 +56,12 @@ ProcessorPattern::operator= (const ProcessorPattern& other)
 ProcessorPatternPhenomenalDiff
 ProcessorPattern::phenomenal_diff (const ProcessorPattern& prev) const
 {
-	return AutomationPattern::phenomenal_diff (prev);
+	// NEXT: fix compile error:
+	//
+	// could not convert ‘Tracker::AutomationPattern::phenomenal_diff(const Tracker::AutomationPattern&) const(prev.Tracker::ProcessorPattern::<anonymous>)’ from ‘Tracker::AutomationPatternPhenomenalDiff’ to ‘Tracker::ProcessorPatternPhenomenalDiff’
+	//
+	// return AutomationPattern::phenomenal_diff (prev);
+	return ProcessorPatternPhenomenalDiff();
 }
 
 std::string
@@ -73,6 +78,6 @@ ProcessorPattern::to_string (const std::string& indent) const
 	std::stringstream ss;
 	ss << AutomationPattern::to_string (indent) << std::endl;
 	std::string header = indent + self_to_string () + " ";
-	ss << header << "processor = " << processor;
+	ss << header << "processor = " << _processor;
 	return ss.str ();
 }

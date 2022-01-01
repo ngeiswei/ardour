@@ -20,6 +20,7 @@
 #define __ardour_tracker_processor_pattern_h_
 
 #include "automation_pattern.h"
+#include "processor_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -50,10 +51,11 @@ public:
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
-};
 
 private:
 	ProcessorPtr _processor;
+};
+
 } // ~namespace tracker
 
 #endif /* __ardour_tracker_processor_pattern_h_ */
