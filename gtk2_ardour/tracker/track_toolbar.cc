@@ -209,6 +209,8 @@ TrackToolbar::build_automation_menu ()
 
 	/* Add any route automation */
 
+	// VERY NEXT: wrap in TrackToolbar::build_route_automation_menu
+
 	if (true) {
 		items.push_back (CheckMenuElem (_("Fader"), sigc::bind (sigc::mem_fun (grid, &Grid::update_gain_column_visibility), track_index)));
 		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
