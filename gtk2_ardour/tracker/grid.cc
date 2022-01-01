@@ -1507,15 +1507,15 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 }
 
 void
-Grid::redisplay_region_notes (int mti, int mri, const NotePattern& np, const NotePatternPhenomenalDiff* np_diff)
+Grid::redisplay_region_notes (int mti, int mri, const NotesPattern& np, const NotesPatternPhenomenalDiff* np_diff)
 {
 	if (np_diff == 0 || np_diff->full) {
 		for (size_t cgi = 0; cgi < np.ntracks; cgi++) {
 			redisplay_note_column (mti, mri, cgi, np);
 		}
 	} else {
-		const NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = np_diff->cgi2rows_diff;
-		for (NotePatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin (); it != cgi2rows_diff.end (); ++it) {
+		const NotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = np_diff->cgi2rows_diff;
+		for (NotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin (); it != cgi2rows_diff.end (); ++it) {
 			redisplay_note_column (mti, mri, it->first, np, &it->second);
 		}
 	}
@@ -1590,7 +1590,7 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 }
 
 void
-Grid::redisplay_note_column (int mti, int mri, int cgi, const NotePattern& np, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_note_column (int mti, int mri, int cgi, const NotesPattern& np, const RowsPhenomenalDiff* rows_diff)
 {
 	int row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
@@ -1605,7 +1605,7 @@ Grid::redisplay_note_column (int mti, int mri, int cgi, const NotePattern& np, c
 }
 
 void
-Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const NotePattern& np)
+Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const NotesPattern& np)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
@@ -2534,7 +2534,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		cmd->add (new_note);
 		// Pre-emptively add the note in the pattern so that it knows in which
 		// track it is supposed to be.
-		pattern.note_pattern (mti, mri).add (cgi, new_note);
+		pattern.notes_pattern (mti, mri).add (cgi, new_note);
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
@@ -2571,7 +2571,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		cmd->add (new_note);
 		// Pre-emptively add the note in np so that it knows in which track it is
 		// supposed to be.
-		pattern.note_pattern (mti, mri).add (cgi, new_note);
+		pattern.notes_pattern (mti, mri).add (cgi, new_note);
 	}
 
 	// Apply note changes
@@ -3434,12 +3434,12 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << TrackerUtils::underline("Region") << ": "
 		   << "<b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
 		ss << TrackerUtils::underline("Notes") << ":";
-		const NotePattern& note_pattern = pattern.note_pattern (mti, mri);
+		const NotesPattern& notes_pattern = pattern.notes_pattern (mti, mri);
 		if (0 < off_count) {
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
 				NotePtr off_note = off_rng.first->second;
-				Temporal::BBT_Time bbt = note_pattern.off_note_bbt (off_note);
+				Temporal::BBT_Time bbt = notes_pattern.off_note_bbt (off_note);
 				int ch = off_note->channel ();
 				int delay = get_off_note_delay (off_note, row_idx, mti, mri);
 				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
@@ -3456,7 +3456,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
-				Temporal::BBT_Time bbt = note_pattern.on_note_bbt (on_note);
+				Temporal::BBT_Time bbt = notes_pattern.on_note_bbt (on_note);
 				std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
 				int ch = on_note->channel ();
 				int vel = on_note->velocity ();
