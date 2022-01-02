@@ -98,8 +98,8 @@ public:
 	 * Helpers for building automation menu.
 	 */
 	void build_automation_menu ();
+	void build_route_automation_menu (Gtk::Menu_Helpers::MenuList& items);
 	virtual void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
-	void build_controller_menu ();
 	void setup_processor_menu_and_curves ();
 	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
 	void processor_menu_item_toggled (ProcessorAutomationInfo*, ProcessorAutomationNode*);
@@ -114,9 +114,9 @@ public:
 	void show_existing_automation ();
 	void hide_all_automation ();
 	// Show/hide gain, trim, mute and pan
-	void show_all_main_automations ();
-	void show_existing_main_automations ();
-	void hide_main_automations ();
+	void show_all_route_automations ();
+	void show_existing_route_automations ();
+	void hide_route_automations ();
 	// Show/hide processor automations
 	void show_all_processor_automations ();
 	void show_existing_processor_automations ();
