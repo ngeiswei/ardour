@@ -39,7 +39,7 @@ class AudioTrackPattern;
 /**
  * Abstract class to represent track patterns (midi, audio, etc).
  */
-// VERY NEXT: do we really want to inherit from AutomationPattern?
+// VERY VERY NEXT: do we really want to inherit from AutomationPattern?
 // Probably not, would be better to have route (fader, etc) and
 // processor automation patterns.  BTW, we might want to have
 // RegionAutomationPattern and TrackAutomationPattern, wait a minute!
