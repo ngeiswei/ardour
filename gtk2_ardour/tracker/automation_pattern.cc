@@ -238,33 +238,12 @@ AutomationPattern::update_automations ()
 	}
 }
 
-// VERY NEXT: where is name determined?  Does it really consider the processor?  Answer: No!
-//
-// See stack trace:
-//
-//  0# Tracker::AutomationPattern::insert(boost::shared_ptr<ARDOUR::AutomationControl>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  1# Tracker::TrackAutomationPattern::setup_processor_automation_control(boost::weak_ptr<ARDOUR::Processor>) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  2# boost::detail::function::void_function_obj_invoker1<sigc::bound_mem_functor1<void, Tracker::TrackAutomationPattern, boost::weak_ptr<ARDOUR::Processor> >, void, boost::weak_ptr<ARDOUR::Processor> >::invoke(boost::detail::function::function_buffer&, boost::weak_ptr<ARDOUR::Processor>) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  3# Tracker::TrackAutomationPattern::setup_processors_automation_controls() in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  4# Tracker::TrackAutomationPattern::TrackAutomationPattern(Tracker::TrackerEditor&, boost::shared_ptr<ARDOUR::Track>, long, long, long, long, bool) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  5# Tracker::MidiTrackPattern::MidiTrackPattern(Tracker::TrackerEditor&, boost::shared_ptr<ARDOUR::Track>, std::vector<RegionView*, std::allocator<RegionView*> > const&, std::vector<boost::shared_ptr<ARDOUR::Region>, std::allocator<boost::shared_ptr<ARDOUR::Region> > > const&, long, long, long, long, bool) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  6# Tracker::MultiTrackPattern::add_track_pattern(boost::shared_ptr<ARDOUR::Track>, std::vector<boost::shared_ptr<ARDOUR::Region>, std::allocator<boost::shared_ptr<ARDOUR::Region> > > const&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  7# Tracker::MultiTrackPattern::setup_track_patterns() in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  8# Tracker::MultiTrackPattern::setup() in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//  9# Tracker::Grid::setup() in /usr/lib/ardour7/ardour-7.0.pre0.1766
-// 10# Tracker::TrackerEditor::setup(RegionSelection&) in /usr/lib/ardour7/ardour-7.0.pre0.1766
-//
-// for
-//
-// AutomationPattern[0x563676e100e0]::insert (actrl=0x563675798de0, name=Time) param = 7-5-0
-
 void
 AutomationPattern::insert (AutomationControlPtr actrl, const std::string& name)
 {
 	Evoral::Parameter param = actrl->parameter ();
 	std::cout << boost::stacktrace::stacktrace() << std::endl;
 	std::cout << "AutomationPattern[" << this << "]::insert (actrl=" << actrl << ", name=" << name << ") param = " << param << std::endl;
-	// VERY NEXT: problem is here!!!  param is not unique.
 	std::pair<ParamAutomationControlMap::iterator, bool> actrl_result = param_to_actrl.insert (std::make_pair (param, actrl));
 	param_to_name.insert (std::make_pair (param, name));
 	if (actrl_result.second && _connect) {
@@ -323,7 +302,6 @@ AutomationPattern::control_events_range (int rowi, const Evoral::Parameter& para
 	return param_to_row_to_ces.find (param)->second.equal_range (rowi);
 }
 
-// VERY NEXT: not enough, needs processor as well
 std::string
 AutomationPattern::get_name (const Evoral::Parameter& param) const
 {
