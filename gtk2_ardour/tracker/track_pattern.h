@@ -24,6 +24,7 @@
 #include "ardour/region.h"
 #include "ardour/track.h"
 
+#include "base_pattern.h"
 #include "automation_pattern.h"
 #include "track_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
@@ -48,7 +49,7 @@ class AudioTrackPattern;
 // automation.  Except that now TrackAutomationPattern should actually
 // be a vector of ProcessorAutomationPattern.  Need to rethink that
 // carefully.
-class TrackPattern : public AutomationPattern {
+class TrackPattern : public BasePattern /* VERY VERY NEXT: used to inherit from AutomationPattern */ {
 public:
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
@@ -83,6 +84,9 @@ public:
 	AudioTrackPattern* audio_track_pattern ();
 
 	// Default implementation is for tracks not supporting regions
+	// VERY VERY NEXT:
+	// 1. Do not change that API, just make it work buggy like before
+	// 2. Then change the API to make it work
 	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
 	virtual bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
@@ -104,7 +108,29 @@ public:
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
+	// For displaying pattern data. Mostly for debugging
+	// VERY VERY NEXT: implement
+	virtual std::string self_to_string () const;
+	virtual std::string to_string (const std::string& indent = std::string ()) const;
+
 	TrackPtr track;
+	AutomationPattern route_automation_pattern; // VERY VERY NEXT:
+															  // maybe it could be a
+															  // TrackAutomationPattern
+															  // (or
+															  // RouteAutomationPattern
+															  // inheriting from
+															  // TrackAutomationPattern)
+	std::vector<ProcessorAutomationPattern> processor_automation_patterns; // VERY
+																								  // VERY
+																								  // NEXT:
+																								  // likewise
+																								  // ProcessorAutomationPattern
+																								  // could
+																								  // inherit
+																								  // from
+																								  // a
+																								  // TrackAutomationPattern
 };
 
 } // ~namespace Tracker

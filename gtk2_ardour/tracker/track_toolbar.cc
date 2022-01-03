@@ -353,7 +353,8 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 void
 TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, ProcessorAutomationNode* pauno)
 {
-	// VERY NEXT:
+	// VERY NEXT: to reproduce problem:
+	//
 	// 1. Select ACE_Delay->Time
 	// 2. ACE_Reverb->RoomSize appears
 	// It looks like ACE_Delay->SyncBPM, ACE_Delay->Time, ACE_Delay->Divisor are overlaid with ACE_Reverb->Blend to ACE_Reverb->Enable.
