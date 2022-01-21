@@ -476,9 +476,9 @@ TrackToolbar::show_existing_route_automations ()
 
 	// Trim
 	if (is_audio_track_toolbar ()) {
-		bool trim_visible = !track_pattern->is_empty (Evoral::Parameter (GainAutomation));
+		bool trim_visible = !track_pattern->is_empty (Evoral::Parameter (TrimAutomation));
 		trim_automation_item->set_active (trim_visible);
-		grid.update_gain_column_visibility (track_index);
+		grid.update_trim_column_visibility (track_index);
 	}
 
 	// Mute
