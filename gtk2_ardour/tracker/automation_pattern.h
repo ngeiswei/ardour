@@ -72,6 +72,10 @@ public:
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
 	void insert (AutomationControlPtr actrl, const std::string& name);
+
+	// Purely virtual because the modality of insertion depends on the
+	// automation pattern.  RegionAutomationPattern requires a
+	// midi_model, while TrackAutomationPattern requires a track.
 	virtual void insert (const Evoral::Parameter& param) = 0;
 
 	// Return whether the automation associated to param is empty.
