@@ -12,6 +12,7 @@ plugin automations with a tracker style interface.
 
 ## Videos
 
+- [Tracker Demo (a call for help)-Jan 2022](https://odysee.com/@ngeiswei:d/ardour-tracker-interface-on-2022-01-24-17-37:9)
 - [Presentation at Sonoj-2019](https://media.ccc.de/v/sonoj2019-1909-tracker-pianoroll)
 - [Small introduction](https://lbry.tv/@ngeiswei:d/Tracker-inside-Ardour:9)
 - [Demo song](https://lbry.tv/@ngeiswei:d/Tracker-in-Ardour.-Song-demo,-blend-of-audio-and-midi-tracks:e)
@@ -23,10 +24,10 @@ WARNING!!! **Alpha** software, it may **crash** and you may **loose your work**.
 ## Build
 
 Compile Ardour as you regularly would after checking out that branch, appending
-the flag `--tracker-interface`, such as
+the flag `--with-tracker-editor`, such as
 
 ```bash
-./waf configure --tracker-interface
+./waf configure --with-tracker-editor
 ```
 
 ## TODO
