@@ -1017,9 +1017,9 @@ def options(opt):
         dest='qm_dsp_include', default='/usr/include/qm-dsp',
         help='Directory where the header files of qm-dsp can be found')
     opt.add_option ('--use-lld', action='store_true', default=False, dest='use_lld', help='Use LLD linker instead of ld (Linux only)')
-    opt.add_option('--tracker-interface', action='store_true', default=False, dest='tracker_interface',
-                   help='Enable tracker interface')
-    opt.add_option('--no-tracker-interface', action='store_false', dest='tracker_interface')
+    opt.add_option('--with-tracker-editor', action='store_true', default=False, dest='tracker_editor',
+                   help='Enable tracker editor')
+    opt.add_option('--without-tracker-editor', action='store_false', dest='tracker_editor')
 
     for i in children:
         opt.recurse(i)
@@ -1509,9 +1509,9 @@ int main () { __int128 x = 0; return 0; }
             or conf.env['BUILD_PULSEAUDIO']):
         conf.fatal("Must configure and build at least one backend")
 
-    if (Options.options.tracker_interface):
-        conf.define('HAVE_TRACKER_INTERFACE', 1)
-    conf.env['HAVE_TRACKER_INTERFACE'] = Options.options.tracker_interface
+    if (Options.options.tracker_editor):
+        conf.define('HAVE_TRACKER_EDITOR', 1)
+    conf.env['HAVE_TRACKER_EDITOR'] = Options.options.tracker_editor
 
     if (Options.options.use_lld):
         if re.search ("linux", sys.platform) is not None and Options.options.dist_target != 'mingw' and conf.env['BUILD_PABACKEND']:
@@ -1637,8 +1637,8 @@ const char* const ardour_config_info = "\\n\\
 #    write_config_text('Soundtouch',            conf.is_defined('HAVE_SOUNDTOUCH'))
     write_config_text('Threaded WaveViews',    not opts.no_threaded_waveviews)
     write_config_text('Translation',           not opts.no_nls)
+    write_config_text('Tracker Editor',        conf.env['HAVE_TRACKER_EDITOR'])
 #    write_config_text('Tranzport',             opts.tranzport)
-    write_config_text('Tracker Interface',     conf.env['HAVE_TRACKER_INTERFACE'])
     write_config_text('Unit tests',            conf.env['BUILD_TESTS'])
     write_config_text('Use LLD linker',        opts.use_lld)
     write_config_text('VST3 support',          conf.is_defined('VST3_SUPPORT'))
