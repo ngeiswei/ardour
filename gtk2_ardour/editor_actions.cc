@@ -1973,7 +1973,7 @@ Editor::register_region_actions ()
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "loudness-analyze-region", _("Loudness Analysis..."), sigc::mem_fun (*this, &Editor::loudness_analyze_region_selection));
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "spectral-analyze-region", _("Spectral Analysis..."), sigc::mem_fun (*this, &Editor::spectral_analyze_region_selection));
 
-#ifdef HAVE_TRACKER_INTERFACE
+#ifdef HAVE_TRACKER_EDITOR
 	/* Open the tracker editor for the selected regions */
 	register_region_action (_region_actions, RegionActionTarget (SelectedRegions), "tracker-editor", _("Tracker Editor (Experimental)..."), sigc::mem_fun (*this, &Editor::show_tracker_editor));
 #endif
