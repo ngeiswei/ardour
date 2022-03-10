@@ -64,7 +64,7 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 		if (mrp) {
 			mrp->set_selected(true);
 		} else {
-			MidiRegionPattern* new_mrp = new MidiRegionPattern(tracker_editor, midi_track, midi_region, _connect);
+			MidiRegionPattern* new_mrp = new MidiRegionPattern(tracker_editor, midi_track, midi_region, /*_connect NEXT.6*/true);
 			new_mrp->set_selected(true);
 			mrps.push_back (new_mrp);
 		}

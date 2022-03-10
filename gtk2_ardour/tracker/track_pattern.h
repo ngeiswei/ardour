@@ -26,6 +26,8 @@
 
 #include "base_pattern.h"
 #include "automation_pattern.h"
+#include "main_automation_pattern.h"
+#include "processor_automation_pattern.h"
 #include "track_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
 
@@ -40,8 +42,8 @@ class AudioTrackPattern;
 /**
  * Abstract class to represent track patterns (midi, audio, etc).
  */
-// VERY VERY NEXT: do we really want to inherit from AutomationPattern?
-// Probably not, would be better to have route (fader, etc) and
+// NEXT.2: do we really want to inherit from AutomationPattern?
+// Probably not, would be better to have main (fader, etc) and
 // processor automation patterns.  BTW, we might want to have
 // RegionAutomationPattern and TrackAutomationPattern, wait a minute!
 // Is that what TrackAutomationPattern for?  Answer: Yes!
@@ -49,7 +51,7 @@ class AudioTrackPattern;
 // automation.  Except that now TrackAutomationPattern should actually
 // be a vector of ProcessorAutomationPattern.  Need to rethink that
 // carefully.
-class TrackPattern : public BasePattern /* VERY VERY NEXT: used to inherit from AutomationPattern */ {
+class TrackPattern : public BasePattern /* NEXT: used to inherit from AutomationPattern, but I believe it should NOT, instead BasePattern seems reasonable */ {
 public:
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
@@ -89,6 +91,7 @@ public:
 	// 2. Then change the API to make it work
 	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
+	// VERY VERY NEXT:
 	virtual bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
@@ -108,29 +111,67 @@ public:
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
+	// NEXT: TEMPORARY METHODS FROM OLD API BEFORE TRANSITIONING TO NEW API
+	// NEXT.9: add insert(param) method
+
 	// For displaying pattern data. Mostly for debugging
-	// VERY VERY NEXT: implement
+	// NEXT.2: implement
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	TrackPtr track;
-	AutomationPattern route_automation_pattern; // VERY VERY NEXT:
-															  // maybe it could be a
-															  // TrackAutomationPattern
-															  // (or
-															  // RouteAutomationPattern
-															  // inheriting from
-															  // TrackAutomationPattern)
-	std::vector<ProcessorAutomationPattern> processor_automation_patterns; // VERY
-																								  // VERY
-																								  // NEXT:
-																								  // likewise
-																								  // ProcessorAutomationPattern
-																								  // could
-																								  // inherit
-																								  // from
-																								  // a
-																								  // TrackAutomationPattern
+	// NEXT.8
+// 	../gtk2_ardour/tracker/track_pattern.h:120:31: error: cannot declare field ‘Tracker::TrackPattern::main_automation_pattern’ to be of abstract type ‘Tracker::MainAutomationPattern’
+//   120 |         MainAutomationPattern main_automation_pattern;
+//       |                               ^~~~~~~~~~~~~~~~~~~~~~~
+// In file included from ../gtk2_ardour/tracker/track_pattern.h:29,
+//                  from ../gtk2_ardour/tracker/track_automation_pattern.h:24,
+//                  from ../gtk2_ardour/tracker/audio_track_pattern.h:25,
+//                  from ../gtk2_ardour/tracker/audio_track_toolbar.h:22,
+//                  from ../gtk2_ardour/tracker/tracker_editor.h:40,
+//                  from ../gtk2_ardour/editor.h:80,
+//                  from ../gtk2_ardour/editor_audiotrack.cc:25:
+// ../gtk2_ardour/tracker/main_automation_pattern.h:33:7: note:   because the following virtual functions are pure within ‘Tracker::MainAutomationPattern’:
+//    33 | class MainAutomationPattern : public AutomationPattern {
+//       |       ^~~~~~~~~~~~~~~~~~~~~
+// In file included from ../gtk2_ardour/tracker/track_pattern.h:28,
+//                  from ../gtk2_ardour/tracker/track_automation_pattern.h:24,
+//                  from ../gtk2_ardour/tracker/audio_track_pattern.h:25,
+//                  from ../gtk2_ardour/tracker/audio_track_toolbar.h:22,
+//                  from ../gtk2_ardour/tracker/tracker_editor.h:40,
+//                  from ../gtk2_ardour/editor.h:80,
+//                  from ../gtk2_ardour/editor_audiotrack.cc:25:
+// ../gtk2_ardour/tracker/automation_pattern.h:91:22: note:     ‘virtual void Tracker::AutomationPattern::insert(const Evoral::Parameter&)’
+//    91 |         virtual void insert (const Evoral::Parameter& param) = 0;
+//       |                      ^~~~~~
+// In file included from /usr/include/glib-2.0/glib/gthread.h:32,
+//                  from /usr/include/glib-2.0/glib/gasyncqueue.h:32,
+//                  from /usr/include/glib-2.0/glib.h:32,
+//                  from /usr/include/glibmm-2.4/glibmm/threads.h:30,
+//                  from ../libs/pbd/pbd/id.h:28,
+//                  from ../libs/ardour/ardour/types.h:52,
+//                  from ../libs/ardour/ardour/rc_configuration.h:30,
+//                  from ../gtk2_ardour/editor_audiotrack.cc:21:
+// ../libs/ardour/ardour/pannable.h: In member function ‘bool ARDOUR::Pannable::touching() const’:
+
+	// NEXT.9: For now we use AutomationPattern for a smooth transition between
+	// the old way when TrackPattern inherited from AutomationPattern and the
+	// new way using MainAutomationPattern and vector of
+	// ProcessorAutomationPattern as attributes.
+	//
+	// ARGGGGG: AutomationPattern is abstract, so I suppose we should use
+	// MainAutomationPattern instead.
+	// AutomationPattern automation_pattern;
+
+	MainAutomationPattern main_automation_pattern;
+	// std::vector<ProcessorAutomationPattern> processor_automation_patterns; // NEXT.2:
+	// 																							  // likewise
+	// 																							  // ProcessorAutomationPattern
+	// 																							  // could
+	// 																							  // inherit
+	// 																							  // from
+	// 																							  // a
+	// 																							  // TrackAutomationPattern
 };
 
 } // ~namespace Tracker
