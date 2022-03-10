@@ -43,6 +43,8 @@ ControlSet::ControlSet (ControlSet const & other)
 void
 ControlSet::add_control(std::shared_ptr<Control> ac)
 {
+	// NEXT.7: test to understand what _controls contains
+	std::cout << "ControlSet[" << this << "]::add_control (ac[" << ac << "]=" << ac->parameter() << ")" << std::endl;
 	_controls[ac->parameter()] = ac;
 
 	ac->ListMarkedDirty.connect_same_thread (_control_connections, boost::bind (&ControlSet::control_list_marked_dirty, this));
