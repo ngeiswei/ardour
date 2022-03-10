@@ -24,7 +24,7 @@
 namespace Tracker {
 
 // Represent the differences that may impact grid rendition.
-struct ProcessorPatternPhenomenalDiff : public AutomationPatternPhenomenalDiff
+struct ProcessorAutomationPatternPhenomenalDiff : public AutomationPatternPhenomenalDiff
 {
 };
 

@@ -207,12 +207,12 @@ TrackToolbar::build_automation_menu ()
 		items.back ().set_sensitive (true);
 	}
 
-	/* Add any route automation */
-	build_route_automation_menu (items);
+	/* Add any main automation */
+	build_main_automation_menu (items);
 }
 
 void
-TrackToolbar::build_route_automation_menu (Menu_Helpers::MenuList& items)
+TrackToolbar::build_main_automation_menu (Menu_Helpers::MenuList& items)
 {
 	using namespace Menu_Helpers;
 
@@ -420,7 +420,7 @@ TrackToolbar::find_processor_automation_node (ProcessorPtr processor, Evoral::Pa
 void
 TrackToolbar::show_all_automation ()
 {
-	show_all_route_automations ();
+	show_all_main_automations ();
 	show_all_processor_automations ();
 
 	redisplay_grid ();
@@ -429,7 +429,7 @@ TrackToolbar::show_all_automation ()
 void
 TrackToolbar::show_existing_automation ()
 {
-	show_existing_route_automations ();
+	show_existing_main_automations ();
 	show_existing_processor_automations ();
 
 	redisplay_grid ();
@@ -438,14 +438,14 @@ TrackToolbar::show_existing_automation ()
 void
 TrackToolbar::hide_all_automation ()
 {
-	hide_route_automations ();
+	hide_main_automations ();
 	hide_processor_automations ();
 
 	redisplay_grid ();
 }
 
 void
-TrackToolbar::show_all_route_automations ()
+TrackToolbar::show_all_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (true);
@@ -467,7 +467,7 @@ TrackToolbar::show_all_route_automations ()
 }
 
 void
-TrackToolbar::show_existing_route_automations ()
+TrackToolbar::show_existing_main_automations ()
 {
 	// Gain
 	bool gain_visible = !track_pattern->is_empty (Evoral::Parameter (GainAutomation));
@@ -500,7 +500,7 @@ TrackToolbar::show_existing_route_automations ()
 }
 
 void
-TrackToolbar::hide_route_automations ()
+TrackToolbar::hide_main_automations ()
 {
 	// Gain
 	gain_automation_item->set_active (false);

@@ -75,13 +75,13 @@ void RegionAutomationPattern::setup_automation_controls ()
 {
 	const set<Evoral::Parameter> midi_params = midi_track->midi_playlist ()->contained_automation ();
 	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin (); i != midi_params.end (); ++i) {
-		AutomationPattern::insert (midi_model->automation_control (*i, true), midi_track->describe_parameter (*i));
+		AutomationPattern::insert_actl (midi_model->automation_control (*i, true), midi_track->describe_parameter (*i));
 	}
 }
 
 void RegionAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	AutomationPattern::insert (midi_model->automation_control (param, true), midi_track->describe_parameter (param));
+	AutomationPattern::insert_actl (midi_model->automation_control (param, true), midi_track->describe_parameter (param));
 }
 
 int
@@ -99,6 +99,13 @@ RegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral
 		row = row_at_beats_min_delay (beats);
 	}
 	return row;
+}
+
+const ParameterSet&
+RegionAutomationPattern::automatable_parameters () const
+{
+	// NEXT.6
+	return ParameterSet();
 }
 
 std::string
