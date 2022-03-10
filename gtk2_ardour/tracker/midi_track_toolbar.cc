@@ -611,7 +611,7 @@ CheckMenuItem* MidiTrackToolbar::automation_child_menu_item (const Evoral::Param
 void
 MidiTrackToolbar::show_all_automation ()
 {
-	show_all_route_automations ();
+	show_all_main_automations ();
 	show_existing_midi_automations ();
 	show_all_processor_automations ();
 
@@ -621,7 +621,7 @@ MidiTrackToolbar::show_all_automation ()
 void
 MidiTrackToolbar::show_existing_automation ()
 {
-	show_existing_route_automations ();
+	show_existing_main_automations ();
 	show_existing_midi_automations ();
 	show_existing_processor_automations ();
 
@@ -631,7 +631,7 @@ MidiTrackToolbar::show_existing_automation ()
 void
 MidiTrackToolbar::hide_all_automation ()
 {
-	hide_route_automations ();
+	hide_main_automations ();
 	hide_midi_automations ();
 	hide_processor_automations ();
 

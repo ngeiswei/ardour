@@ -29,19 +29,18 @@ namespace Tracker {
  * Data structure holding the automation list pattern of a track (as
  * opposed to a region).
  */
-// VERY NEXT: understand how that class is gonna play with
+// NEXT.1: understand how that class is gonna play with
 // ProcessorPattern.  Answer: AudioTrackPattern and MidiTrackPattern
 // inherit from TrackAutomationPattern.
 //
-// VERY NEXT: maybe this should be replaced by RouteAutomationPattern
+// NEXT.1: maybe this should be replaced by MainAutomationPattern
 // (fader, etc) and ProcessorAutomationPattern.  Maybe move all that
 // directly inside TrackPattern (since they all use these
 // automations).
 //
-// VERY NEXT: maybe RouteAutomationPattern and
-// ProcessorAutomationPattern should inherit from
-// TrackAutomationPattern?  But then I don't think it should itself
-// inherit from TrackPattern, rather it should inherit from
+// NEXT.1: maybe MainAutomationPattern and ProcessorAutomationPattern should
+// inherit from TrackAutomationPattern?  But then I don't think it should
+// itself inherit from TrackPattern, rather it should inherit from
 // AutomationPattern.
 class TrackAutomationPattern : public TrackPattern {
 public:

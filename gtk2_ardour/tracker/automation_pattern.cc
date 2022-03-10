@@ -65,9 +65,9 @@ AutomationPattern::operator= (const AutomationPattern& other)
 
 	// Deep copy _automation_controls to be sure that changing the event doesn't
 	// change the copy
-	param_to_actrl.clear ();
-	for (ParamAutomationControlMap::const_iterator it = other.param_to_actrl.begin (); it != other.param_to_actrl.end (); ++it) {
-		param_to_actrl.insert (clone_param_actrl (*it));
+	param_to_actl.clear ();
+	for (ParamAutomationControlMap::const_iterator it = other.param_to_actl.begin (); it != other.param_to_actl.end (); ++it) {
+		param_to_actl.insert (clone_param_actl (*it));
 	}
 
 	param_to_name.clear ();
@@ -82,16 +82,16 @@ AutomationPattern::operator= (const AutomationPattern& other)
 }
 
 AutomationControlPtr
-AutomationPattern::clone_actrl (AutomationControlPtr actrl) const
+AutomationPattern::clone_actl (AutomationControlPtr actl) const
 {
-	AutomationControlPtr actrl_cp (new ARDOUR::AutomationControl (const_cast<ARDOUR::Session&> (actrl->session ()), actrl->parameter (), actrl->desc (), clone_alist (actrl->alist ())));
-	return actrl_cp;
+	AutomationControlPtr actl_cp (new ARDOUR::AutomationControl (const_cast<ARDOUR::Session&> (actl->session ()), actl->parameter (), actl->desc (), clone_alist (actl->alist ())));
+	return actl_cp;
 }
 
 ParamAutomationControlPair
-AutomationPattern::clone_param_actrl (const ParamAutomationControlPair& param_actrl) const
+AutomationPattern::clone_param_actl (const ParamAutomationControlPair& param_actl) const
 {
-	return std::make_pair (param_actrl.first, clone_actrl (param_actrl.second));
+	return std::make_pair (param_actl.first, clone_actl (param_actl.second));
 }
 
 AutomationListPtr
@@ -217,10 +217,10 @@ void
 AutomationPattern::update_automations ()
 {
 	param_to_row_to_ces.clear ();
-	for (ParamAutomationControlMap::const_iterator param_actrl = param_to_actrl.begin (); param_actrl != param_to_actrl.end (); ++param_actrl) {
-		AutomationControlPtr actrl = param_actrl->second;
-		AutomationListPtr al = actrl->alist ();
-		const Evoral::Parameter& param = actrl->parameter ();
+	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
+		AutomationControlPtr actl = param_actl->second;
+		AutomationListPtr al = actl->alist ();
+		const Evoral::Parameter& param = actl->parameter ();
 
 		// Save CPU resources
 		if (!param_to_enabled[param]) {
@@ -239,15 +239,15 @@ AutomationPattern::update_automations ()
 }
 
 void
-AutomationPattern::insert (AutomationControlPtr actrl, const std::string& name)
+AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& name)
 {
-	Evoral::Parameter param = actrl->parameter ();
+	Evoral::Parameter param = actl->parameter ();
 	std::cout << boost::stacktrace::stacktrace() << std::endl;
-	std::cout << "AutomationPattern[" << this << "]::insert (actrl=" << actrl << ", name=" << name << ") param = " << param << std::endl;
-	std::pair<ParamAutomationControlMap::iterator, bool> actrl_result = param_to_actrl.insert (std::make_pair (param, actrl));
+	std::cout << "AutomationPattern[" << this << "]::insert (actl=" << actl << ", name=" << name << ") param = " << param << std::endl;
+	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
-	if (actrl_result.second && _connect) {
-		tracker_editor.connect_automation (actrl);
+	if (actl_result.second && _connect) {
+		tracker_editor.connect_automation (actl);
 	}
 }
 
@@ -257,14 +257,14 @@ AutomationPattern::is_empty (const Evoral::Parameter& param) const
 	return get_alist (param)->size () == 0;
 }
 
-AutomationControlPtr AutomationPattern::get_actrl (const Evoral::Parameter& param)
+AutomationControlPtr AutomationPattern::get_actl (const Evoral::Parameter& param)
 {
 	if (!param) {
 		return 0;
 	}
 
-	ParamAutomationControlMap::iterator it = param_to_actrl.find (param);
-	if (it != param_to_actrl.end ()) {
+	ParamAutomationControlMap::iterator it = param_to_actl.find (param);
+	if (it != param_to_actl.end ()) {
 		return it->second;
 	}
 
@@ -272,14 +272,14 @@ AutomationControlPtr AutomationPattern::get_actrl (const Evoral::Parameter& para
 }
 
 const AutomationControlPtr
-AutomationPattern::get_actrl (const Evoral::Parameter& param) const
+AutomationPattern::get_actl (const Evoral::Parameter& param) const
 {
 	if (!param) {
 		return 0;
 	}
 
-	ParamAutomationControlMap::const_iterator it = param_to_actrl.find (param);
-	if (it != param_to_actrl.end ()) {
+	ParamAutomationControlMap::const_iterator it = param_to_actl.find (param);
+	if (it != param_to_actl.end ()) {
 		return it->second;
 	}
 
@@ -320,8 +320,8 @@ AutomationPattern::get_name (const Evoral::Parameter& param) const
 AutomationListPtr
 AutomationPattern::get_alist (const Evoral::Parameter& param)
 {
-	if (AutomationControlPtr actrl = get_actrl (param)) {
-		return actrl->alist ();
+	if (AutomationControlPtr actl = get_actl (param)) {
+		return actl->alist ();
 	}
 
 	return 0;
@@ -330,8 +330,8 @@ AutomationPattern::get_alist (const Evoral::Parameter& param)
 const AutomationListPtr
 AutomationPattern::get_alist (const Evoral::Parameter& param) const
 {
-	if (const AutomationControlPtr actrl = get_actrl (param)) {
-		return actrl->alist ();
+	if (const AutomationControlPtr actl = get_actl (param)) {
+		return actl->alist ();
 	}
 
 	return 0;
@@ -415,14 +415,14 @@ void
 AutomationPattern::set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay)
 {
 	// Fetch automation control and list
-	AutomationControlPtr actrl = get_actrl (param);
-	if (!actrl) {
+	AutomationControlPtr actl = get_actl (param);
+	if (!actl) {
 		return;
 	}
-	AutomationListPtr alist = actrl->alist ();
+	AutomationListPtr alist = actl->alist ();
 
 	// Clamp val to its range
-	val = TrackerUtils::clamp (val, actrl->lower (), actrl->upper ());
+	val = TrackerUtils::clamp (val, actl->lower (), actl->upper ());
 
 	// Find control event at rowi, if any
 	Evoral::ControlEvent* ce = get_control_event (rowi, param);
@@ -643,21 +643,21 @@ AutomationPattern::is_param_enabled (const Evoral::Parameter& param) const
 double
 AutomationPattern::lower (const Evoral::Parameter& param) const
 {
-	const AutomationControlPtr actrl = get_actrl (param);
-	if (!actrl) {
+	const AutomationControlPtr actl = get_actl (param);
+	if (!actl) {
 		return -1e16;             // TODO: replace by something better
 	}
-	return actrl->lower ();
+	return actl->lower ();
 }
 
 double
 AutomationPattern::upper (const Evoral::Parameter& param) const
 {
-	const AutomationControlPtr actrl = get_actrl (param);
-	if (!actrl) {
+	const AutomationControlPtr actl = get_actl (param);
+	if (!actl) {
 		return 1e16;             // TODO: replace by something better
 	}
-	return actrl->upper ();
+	return actl->upper ();
 }
 
 std::string
@@ -685,10 +685,10 @@ AutomationPattern::to_string (const std::string& indent) const
 				<< ", ces[" << &r2ces_it->second << "] = (when=" << r2ces_it->second.when << ", value=" << r2ces_it->second.value << ")";
 		}
 	}
-	ss << std::endl << header << "param_to_actrl:";
-	for (ParamAutomationControlMap::const_iterator it = param_to_actrl.begin (); it != param_to_actrl.end (); ++it) {
+	ss << std::endl << header << "param_to_actl:";
+	for (ParamAutomationControlMap::const_iterator it = param_to_actl.begin (); it != param_to_actl.end (); ++it) {
 		const Evoral::Parameter& param = it->first;
-		ss << std::endl << indent_l1 << "param[" << param << "] name = " << get_name (param) << ", actrl = " << it->second;
+		ss << std::endl << indent_l1 << "param[" << param << "] name = " << get_name (param) << ", actl = " << it->second;
 	}
 	ss << std::endl << header << "param_to_enabled:";
 	for (ParamEnabledMap::const_iterator it = param_to_enabled.begin (); it != param_to_enabled.end (); ++it) {
