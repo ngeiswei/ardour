@@ -1,3 +1,7 @@
+# Next
+
+NEXT.10
+
 # Tracker Editor
 
 ## Overview
@@ -8,7 +12,7 @@ plugin automations with a tracker style interface.
 
 ## Videos
 
-- [Presentation at Sonoj-2019](https://media.ccc.de/v/sonoj2019-1909-tracker-pianoroll) 
+- [Presentation at Sonoj-2019](https://media.ccc.de/v/sonoj2019-1909-tracker-pianoroll)
 - [Small introduction](https://lbry.tv/@ngeiswei:d/Tracker-inside-Ardour:9)
 - [Demo song](https://lbry.tv/@ngeiswei:d/Tracker-in-Ardour.-Song-demo,-blend-of-audio-and-midi-tracks:e)
 

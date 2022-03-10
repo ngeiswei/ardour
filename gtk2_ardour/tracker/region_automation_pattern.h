@@ -56,6 +56,8 @@ public:
 	// Assign a control event to a row
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
+	virtual const ParameterSet& automatable_parameters () const;
+
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;

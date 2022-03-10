@@ -26,18 +26,57 @@
 
 using namespace Tracker;
 
+// NEXT.9
+//
+// We need to think about how to have TrackPattern implement
+//
+// void insert (const Evoral::Parameter& param)
+//
+// Likely, it shouldn't implement it but rather implement
+//
+// insert(param, processor) or such.  Though in the mean time it could try to
+// be backward compatible and implement insert(param), TBD.
+//
+// Note: the problem has been raised by the following compile error:
+//
+// ../gtk2_ardour/tracker/multi_track_pattern.cc: In member function ‘void Tracker::MultiTrackPattern::insert(int, const Evoral::Parameter&)’:
+// ../gtk2_ardour/tracker/multi_track_pattern.cc:480:19: error: ‘class Tracker::TrackPattern’ has no member named ‘insert’
+//   480 |         tps[mti]->insert (param);
+//       |                   ^~~~~~
+//
+// NEXT.8
+//
+// ../gtk2_ardour/tracker/track_pattern.cc: In constructor ‘Tracker::TrackPattern::TrackPattern(Tracker::TrackerEditor&, Tracker::TrackPtr, const RegionSeq&, bool)’:
+// ../gtk2_ardour/tracker/track_pattern.cc:33:11: error: type ‘Tracker::AutomationPattern’ is not a direct base of ‘Tracker::TrackPattern’
+//    33 |         : AutomationPattern (te,
+//       |           ^~~~~~~~~~~~~~~~~
+// ../gtk2_ardour/tracker/track_pattern.cc:40:21: error: no matching function for call to ‘Tracker::BasePattern::BasePattern()’
+//    40 |         , track (trk)
+//       |                     ^
+// In file included from ../gtk2_ardour/tracker/track_pattern.h:27,
+//                  from ../gtk2_ardour/tracker/track_automation_pattern.h:24,
+//                  from ../gtk2_ardour/tracker/audio_track_pattern.h:25,
+//                  from ../gtk2_ardour/tracker/track_pattern.cc:19:
+// ../gtk2_ardour/tracker/base_pattern.h:58:9: note: candidate: ‘Tracker::BasePattern::BasePattern(Tracker::TrackerEditor&, Temporal::timepos_t, Temporal::timepos_t, Temporal::timepos_t, Temporal::timepos_t, Temporal::timepos_t)’
+//    58 |         BasePattern (TrackerEditor& te,
+//       |         ^~~~~~~~~~~
 TrackPattern::TrackPattern (TrackerEditor& te,
                             TrackPtr trk,
                             const RegionSeq& regions,
                             bool connect)
-	: AutomationPattern (te,
-	                     TrackerUtils::get_position_sample (regions),
-	                     0,
-	                     TrackerUtils::get_length_sample (regions),
-	                     TrackerUtils::get_first_sample (regions),
-	                     TrackerUtils::get_last_sample (regions),
-	                     connect)
+	: BasePattern (te,
+	               TrackerUtils::get_position_sample (regions),
+	               0,
+	               TrackerUtils::get_length_sample (regions),
+	               TrackerUtils::get_first_sample (regions),
+	               TrackerUtils::get_last_sample (regions))
 	, track (trk)
+	, main_automation_pattern (te, TrackerUtils::get_position_sample (regions),
+	                           0,
+	                           TrackerUtils::get_length_sample (regions),
+	                           TrackerUtils::get_first_sample (regions),
+	                           TrackerUtils::get_last_sample (regions),
+	                           connect)
 {
 	if (connect)
 		tracker_editor.connect_track (track);
@@ -50,8 +89,9 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             Temporal::samplepos_t fst,
                             Temporal::samplepos_t lst,
                             bool connect)
-	: AutomationPattern (te, pos, 0, len, fst, lst, connect)
+	: BasePattern (te, pos, 0, len, fst, lst)
 	, track (trk)
+	, main_automation_pattern (te, pos, 0, len, fst, lst, connect)
 {
 	if (connect)
 		tracker_editor.connect_track (track);
@@ -165,6 +205,9 @@ TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, in
 bool
 TrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const
 {
+	// VERY VERY NEXT: look for main or processors with such param and
+	// call its corresponding is_displayable method.  Maybe using
+	// what_can_be_automated ().
 	return is_displayable (rowi, param);
 }
 

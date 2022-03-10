@@ -54,13 +54,22 @@ public:
 
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator= (const AutomationPattern& other);
-	AutomationControlPtr clone_actrl (AutomationControlPtr actrl) const;
-	ParamAutomationControlPair clone_param_actrl (const ParamAutomationControlPair& param_name) const;
+	AutomationControlPtr clone_actl (AutomationControlPtr actl) const;
+	ParamAutomationControlPair clone_param_actl (const ParamAutomationControlPair& param_name) const;
 	AutomationListPtr clone_alist (AutomationListPtr alist) const;
 
 	void rows_diff (const RowToControlEvents& l_row2ces, const RowToControlEvents& r_row2ces, std::set<int>& rd) const;
 
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
+
+	// To be implemented by the child class.  Very much like
+	// Automatable::what_can_be_automated() but given another name to
+	// avoid confusion.
+	// NEXT.3: implement in MainAutomationPattern and ProcessorAutomationPattern.
+	//
+	// NEXT.3: medidate over x42 comment
+	// Plugins are wrapped inside a PluginInsert class, which is-a Processor
+	virtual const ParameterSet& automatable_parameters () const = 0;
 
 	// Assign a control event to a row
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
@@ -71,8 +80,11 @@ public:
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
-	void insert (AutomationControlPtr actrl, const std::string& name);
+	void insert_actl (AutomationControlPtr actl, const std::string& name);
 
+	// Retrieve the AutomationControlPtr and its name corresponding to
+	// the given parameter, and insert it.
+	//
 	// Purely virtual because the modality of insertion depends on the
 	// automation pattern.  RegionAutomationPattern requires a
 	// midi_model, while TrackAutomationPattern requires a track.
@@ -83,8 +95,8 @@ public:
 
 	// Return automation control associated to the given parameter. If absent,
 	// return 0.
-	AutomationControlPtr get_actrl (const Evoral::Parameter& param);
-	const AutomationControlPtr get_actrl (const Evoral::Parameter& param) const;
+	AutomationControlPtr get_actl (const Evoral::Parameter& param);
+	const AutomationControlPtr get_actl (const Evoral::Parameter& param) const;
 
 	// Return the number of values within the same row. If undefined return 0.
 	size_t control_events_count (int rowi, const Evoral::Parameter& param) const;
@@ -177,13 +189,13 @@ public:
 	// Map parameters to maps of row to automation range.  Note that
 	// Evoral::parameter do not uniquely identify parameters across
 	// plugins, so such mapping is only valid within single processor,
-	// route or midi parameter set.
+	// main or midi parameter set.
 	typedef std::map<Evoral::Parameter, RowToControlEvents> ParamToRowToControlEvents;
 	ParamToRowToControlEvents param_to_row_to_ces;
 
-	// Map parameters to actrl. See comment about the non-uniqueness of
+	// Map parameters to actl. See comment about the non-uniqueness of
 	// Evoral::parameter above.
-	ParamAutomationControlMap param_to_actrl;
+	ParamAutomationControlMap param_to_actl;
 
 	// Map parameters to name. See comment about the non-uniqueness of
 	// Evoral::parameter above.

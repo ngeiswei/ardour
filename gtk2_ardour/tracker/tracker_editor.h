@@ -80,7 +80,7 @@ public:
 
 	void connect_track (TrackPtr track);
 	void connect_midi_region (MidiRegionPtr midi_region);
-	void connect_automation (AutomationControlPtr actrl);
+	void connect_automation (AutomationControlPtr actl);
 
 	void connect_midi_event ();
 	void disconnect_midi_event ();
