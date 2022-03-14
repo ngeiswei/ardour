@@ -32,7 +32,7 @@ namespace Tracker {
  * given track, with possibly multiple regions, possibly overlapping, as long
  * as they all come from the same track.
  */
-class MidiTrackPattern : public TrackAutomationPattern {
+class MidiTrackPattern : public TrackPattern /* NEXT: used to inherit from TrackAutomationPattern */ {
 public:
 	MidiTrackPattern (TrackerEditor& te,
 	                  TrackPtr track,
