@@ -107,19 +107,7 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	// NEXT.5: find out how track->automation_control and
-	// track->describe_parameter are able to retrieve processor
-	// automation control.
-	//
-	// NEXT.6: study Automatable::automation_control (PBD::ID const &
-	// id) const, maybe PBD::ID is what we want?  Answer PBD::ID is a
-	// unique ID inside AutomationControl (coming from Stateful::id())
-	//
-	// NEXT.7: study Automatable::automation_control (const
-	// Evoral::Parameter& id) const.  Answer: it is a map from
-	// Parameter to Control.  The question remains, how plugin
-	// processors come in?  Try to enumerate the content of
-	// Automatable::_controls to see what it contains.
+	
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 

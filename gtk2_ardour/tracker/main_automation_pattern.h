@@ -51,7 +51,10 @@ public:
 	// Overload AutomationPattern::automatable_parameters ()
 	const ParameterSet& automatable_parameters () const;
 
-	// NEXT.10: overload AutomationPattern::insert.  Take a look at the former TrackAutomationPattern for an example.
+	// Insert the automation control corresponding to param in
+	// AutomationPattern::_automation_controls, and possibly connect it to the
+	// grid for connect changes.
+	void insert (const Evoral::Parameter& param);
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
