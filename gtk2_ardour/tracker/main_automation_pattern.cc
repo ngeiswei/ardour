@@ -68,6 +68,13 @@ MainAutomationPattern::automatable_parameters () const
 	return _automatable_parameters;
 }
 
+void
+MainAutomationPattern::insert (const Evoral::Parameter& param)
+{
+	// NEXT.10
+	// AutomationPattern::insert (track->automation_control (param, true), track->describe_parameter (param));
+}
+
 std::string
 MainAutomationPattern::self_to_string () const
 {
