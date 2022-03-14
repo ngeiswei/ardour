@@ -38,7 +38,7 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     Temporal::samplepos_t first_sample,
                                     Temporal::samplepos_t last_sample,
                                     bool connect)
-	: TrackAutomationPattern (te, trk, position, length, first_sample, last_sample, connect)
+	: TrackPattern (te, trk, position, length, first_sample, last_sample, connect)
 	, midi_track (boost::static_pointer_cast<ARDOUR::MidiTrack> (trk))
 	, rvs (region_views)
 	, row_offset (regions.size (), 0)
@@ -86,7 +86,7 @@ MidiTrackPattern::operator= (const MidiTrackPattern& other)
 		return *this;
 	}
 
-	TrackAutomationPattern::operator= (other);
+	TrackPattern::operator= (other);
 	midi_track = other.midi_track;
 	assert (mrps.size () == other.mrps.size ());
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
@@ -169,6 +169,11 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 AutomationListPtr
 MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 {
+	// NEXT.11: have TrackAutomationPattern be composed of MainAutomationPattern
+	// and ProcessorAutomationPattern (unlike TrackPattern), and have
+	// TrackPattern hold TrackAutomationPattern as attribute.  Then have
+	// TrackAutomationPattern::get_alist (param) replaced by such attribute
+	// call.
 	if (TrackerUtils::is_region_automation (param)) {
 		return mrps[mri]->rap.get_alist (param);
 	} else {

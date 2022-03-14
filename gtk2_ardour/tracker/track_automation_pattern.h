@@ -29,6 +29,12 @@ namespace Tracker {
  * Data structure holding the automation list pattern of a track (as
  * opposed to a region).
  */
+// NOTE: it looks like this class will no longer be useful, as TrackPattern
+// would bypass it.  An alternative though would be to have it inherit from
+// BasePattern and hold MainAutomationPattern and ProcessorAutomationPattern as
+// attributes.  Then TrackPattern would hold TrackAutomationPattern as
+// attribute.
+//
 // NEXT.1: understand how that class is gonna play with
 // ProcessorPattern.  Answer: AudioTrackPattern and MidiTrackPattern
 // inherit from TrackAutomationPattern.
