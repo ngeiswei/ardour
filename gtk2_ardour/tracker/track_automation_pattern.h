@@ -21,7 +21,7 @@
 
 #include "ardour/track.h"
 
-#include "track_pattern.h"
+#include "automation_pattern.h"
 
 namespace Tracker {
 
@@ -29,30 +29,11 @@ namespace Tracker {
  * Data structure holding the automation list pattern of a track (as
  * opposed to a region).
  */
-// NOTE: it looks like this class will no longer be useful, as TrackPattern
-// would bypass it.  An alternative though would be to have it inherit from
-// BasePattern and hold MainAutomationPattern and ProcessorAutomationPattern as
-// attributes.  Then TrackPattern would hold TrackAutomationPattern as
-// attribute.
-//
-// NEXT.1: understand how that class is gonna play with
-// ProcessorPattern.  Answer: AudioTrackPattern and MidiTrackPattern
-// inherit from TrackAutomationPattern.
-//
-// NEXT.1: maybe this should be replaced by MainAutomationPattern
-// (fader, etc) and ProcessorAutomationPattern.  Maybe move all that
-// directly inside TrackPattern (since they all use these
-// automations).
-//
-// NEXT.1: maybe MainAutomationPattern and ProcessorAutomationPattern should
-// inherit from TrackAutomationPattern?  But then I don't think it should
-// itself inherit from TrackPattern, rather it should inherit from
-// AutomationPattern.
-class TrackAutomationPattern : public TrackPattern {
+class TrackAutomationPattern : public AutomationPattern {
 public:
 	TrackAutomationPattern (TrackerEditor& te,
 	                        TrackPtr track,
-	                        const RegionSeq& regions,
+	                        const RegionSeq& regions, // NEXT: do we need that ctor?
 	                        bool connect);
 	TrackAutomationPattern (TrackerEditor& te,
 	                        TrackPtr track,
@@ -64,6 +45,11 @@ public:
 
 	// Fill _automation_controls
 	void setup_automation_controls ();
+	// NEXT.12: maybe before having MainAutomationPattern and
+	// ProcessorAutomationPattern inherit from TrackAutomationPattern, let's try
+	// to simply use TrackAutomationPattern as attibute of TrackPattern (instead
+	// of MainAutomationPattern and ProcessorAutomationPattern), that might be
+	// simpler and better.
 	void setup_main_automation_controls ();
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p);
@@ -74,6 +60,8 @@ public:
 
 	// Assign a control event to a row
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+
+	TrackPtr track;
 };
 
 } // ~namespace tracker
