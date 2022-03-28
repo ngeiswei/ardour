@@ -71,6 +71,7 @@ void TrackAutomationPattern::setup_automation_controls ()
 
 void TrackAutomationPattern::setup_main_automation_controls ()
 {
+	// NEXT.13: fix error on AutomationPattern::insert
 	// Gain
 	AutomationPattern::insert (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
 
@@ -128,4 +129,11 @@ TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral:
 		row = row_at_sample_min_delay (Temporal::timepos_t (when).samples ());
 	}
 	return row;
+}
+
+const ParameterSet&
+TrackAutomationPattern::automatable_parameters () const
+{
+	// NEXT.12
+	return ParameterSet();
 }

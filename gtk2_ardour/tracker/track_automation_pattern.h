@@ -61,6 +61,8 @@ public:
 	// Assign a control event to a row
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
+	virtual const ParameterSet& automatable_parameters () const;
+
 	TrackPtr track;
 };
 
