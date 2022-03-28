@@ -30,6 +30,7 @@ namespace Tracker {
  * Data structure holding the automation list pattern for standard
  * main processings (fade, pan, etc).
  */
+// NEXT.11: inherit from TrackAutomationPattern
 class MainAutomationPattern : public AutomationPattern {
 public:
 	MainAutomationPattern (TrackerEditor& te,
