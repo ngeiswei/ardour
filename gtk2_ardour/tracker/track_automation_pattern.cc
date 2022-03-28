@@ -38,12 +38,14 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
                                                 TrackPtr trk,
                                                 const RegionSeq& regions,
                                                 bool connect)
-	: TrackPattern (te, trk,
-	                TrackerUtils::get_position_sample (regions),
-	                TrackerUtils::get_length_sample (regions),
-	                TrackerUtils::get_first_sample (regions),
-	                TrackerUtils::get_last_sample (regions),
-	                connect)
+	: AutomationPattern (te,
+	                     TrackerUtils::get_position_sample (regions),
+	                     0,
+	                     TrackerUtils::get_length_sample (regions),
+	                     TrackerUtils::get_first_sample (regions),
+	                     TrackerUtils::get_last_sample (regions),
+	                     connect)
+	, track(trk)
 {
 	setup_automation_controls ();
 }
@@ -55,7 +57,8 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
                                                 Temporal::samplepos_t fst,
                                                 Temporal::samplepos_t lst,
                                                 bool connect)
-	: TrackPattern (te, trk, pos, len, fst, lst, connect)
+	: AutomationPattern (te, pos, 0, len, fst, lst, connect)
+	, track(trk)
 {
 	setup_automation_controls ();
 }

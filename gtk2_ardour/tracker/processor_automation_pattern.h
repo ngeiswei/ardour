@@ -28,6 +28,7 @@ namespace Tracker {
  * Data structure holding the automation list pattern for a processor
  * (plugin and such).
  */
+// NEXT.11: inherit from TrackAutomationPattern
 class ProcessorAutomationPattern : public AutomationPattern {
 public:
 	ProcessorAutomationPattern (TrackerEditor& te,

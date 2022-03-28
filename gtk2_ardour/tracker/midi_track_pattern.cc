@@ -169,11 +169,12 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 AutomationListPtr
 MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 {
-	// NEXT.11: have TrackAutomationPattern be composed of MainAutomationPattern
-	// and ProcessorAutomationPattern (unlike TrackPattern), and have
-	// TrackPattern hold TrackAutomationPattern as attribute.  Then have
-	// TrackAutomationPattern::get_alist (param) replaced by such attribute
-	// call.
+	// NEXT.11: have both MainAutomationPattern and ProcessorAutomationPattern
+	// inherit from TrackAutomationPattern and then have them be attributes of
+	// TrackPattern as it is today.  If so, it is unclear what to do with
+	// methods such as get_alist.  Should they be in TrackPattern, or hiden
+	// inside MainAutomationPattern and ProcessorAutomationPattern?  Probably
+	// the latter, and in this case some may even go to TrackAutomationPattern.
 	if (TrackerUtils::is_region_automation (param)) {
 		return mrps[mri]->rap.get_alist (param);
 	} else {
