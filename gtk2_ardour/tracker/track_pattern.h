@@ -26,8 +26,9 @@
 
 #include "base_pattern.h"
 #include "automation_pattern.h"
-#include "main_automation_pattern.h"
-#include "processor_automation_pattern.h"
+#include "track_automation_pattern.h"
+// #include "main_automation_pattern.h"
+// #include "processor_automation_pattern.h"
 #include "track_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
 
@@ -163,7 +164,11 @@ public:
 	// MainAutomationPattern instead.
 	// AutomationPattern automation_pattern;
 
-	MainAutomationPattern main_automation_pattern;
+	// NEXT.12: use TrackAutomationPattern before trying MainAutomationPattern
+	// and ProcessorAutomationPattern (let see if we can compile)
+	TrackAutomationPattern track_automation_pattern;
+
+	// MainAutomationPattern main_automation_pattern;
 	// std::vector<ProcessorAutomationPattern> processor_automation_patterns; // NEXT.2:
 	// 																							  // likewise
 	// 																							  // ProcessorAutomationPattern
