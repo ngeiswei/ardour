@@ -22,7 +22,8 @@
 #include "ardour/audio_track.h"
 #include "ardour/audioregion.h"
 
-#include "track_automation_pattern.h"
+#include "track_pattern.h"
+#include "audio_track_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
