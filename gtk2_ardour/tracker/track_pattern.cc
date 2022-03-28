@@ -71,12 +71,12 @@ TrackPattern::TrackPattern (TrackerEditor& te,
 	               TrackerUtils::get_first_sample (regions),
 	               TrackerUtils::get_last_sample (regions))
 	, track (trk)
-	, main_automation_pattern (te, TrackerUtils::get_position_sample (regions),
-	                           0,
-	                           TrackerUtils::get_length_sample (regions),
-	                           TrackerUtils::get_first_sample (regions),
-	                           TrackerUtils::get_last_sample (regions),
-	                           connect)
+	, track_automation_pattern (te, TrackerUtils::get_position_sample (regions),
+	                            0,
+	                            TrackerUtils::get_length_sample (regions),
+	                            TrackerUtils::get_first_sample (regions),
+	                            TrackerUtils::get_last_sample (regions),
+	                            connect)
 {
 	if (connect)
 		tracker_editor.connect_track (track);
@@ -91,7 +91,7 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             bool connect)
 	: BasePattern (te, pos, 0, len, fst, lst)
 	, track (trk)
-	, main_automation_pattern (te, pos, 0, len, fst, lst, connect)
+	, track_automation_pattern (te, pos, 0, len, fst, lst, connect)
 {
 	if (connect)
 		tracker_editor.connect_track (track);
