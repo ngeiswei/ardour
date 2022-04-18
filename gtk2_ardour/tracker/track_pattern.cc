@@ -71,8 +71,9 @@ TrackPattern::TrackPattern (TrackerEditor& te,
 	               TrackerUtils::get_first_sample (regions),
 	               TrackerUtils::get_last_sample (regions))
 	, track (trk)
-	, track_automation_pattern (te, TrackerUtils::get_position_sample (regions),
-	                            0,
+	, track_automation_pattern (te,
+	                            track,
+	                            TrackerUtils::get_position_sample (regions),
 	                            TrackerUtils::get_length_sample (regions),
 	                            TrackerUtils::get_first_sample (regions),
 	                            TrackerUtils::get_last_sample (regions),
