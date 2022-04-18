@@ -71,7 +71,7 @@ void TrackAutomationPattern::setup_automation_controls ()
 
 void TrackAutomationPattern::setup_main_automation_controls ()
 {
-	// NEXT.13: fix error on AutomationPattern::insert
+	// NEXT.16: fix error on AutomationPattern::insert
 	// Gain
 	AutomationPattern::insert (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
 
