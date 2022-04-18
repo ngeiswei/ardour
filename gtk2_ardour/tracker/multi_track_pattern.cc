@@ -166,18 +166,19 @@ MultiTrackPattern::setup_track_patterns ()
 void
 MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
-	MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
-	if (midi_track) {
-		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
-		                                              position_sample, length_sample, first_sample, last_sample, _connect);
-		tps.push_back (mtp);
-	}
-	AudioTrackPtr audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
-	if (audio_track) {
-		AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
-		                                                position_sample, length_sample, first_sample, last_sample, _connect);
-		tps.push_back (atp);
-	}
+	// NEXT.14: re-enable
+	// MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
+	// if (midi_track) {
+	// 	MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
+	// 	                                              position_sample, length_sample, first_sample, last_sample, _connect);
+	// 	tps.push_back (mtp);
+	// }
+	// AudioTrackPtr audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
+	// if (audio_track) {
+	// 	AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
+	// 	                                                position_sample, length_sample, first_sample, last_sample, _connect);
+	// 	tps.push_back (atp);
+	// }
 }
 
 void
@@ -521,7 +522,8 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 {
 	if (TrackerUtils::is_region_automation (param))
 		return &midi_region_pattern (mti, mri).rap;
-	return tps[mti];
+	// NEXT.15: need MultiTrackPattern::track_pattern() or such (except there is main and processor)
+	return tps[mti]->track_automation_pattern;
 }
 
 const AutomationPattern*
@@ -529,7 +531,8 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 {
 	if (TrackerUtils::is_region_automation (param))
 		return &midi_region_pattern (mti, mri).rap;
-	return tps[mti];
+	// NEXT.15: need MultiTrackPattern::track_pattern() or such (except there is main and processor)
+	return tps[mti]->track_automation_pattern;
 }
 
 void
