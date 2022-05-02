@@ -470,7 +470,7 @@ void
 TrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = !track_pattern->is_empty (Evoral::Parameter (GainAutomation));
+	bool gain_visible = !track_pattern->track_automation_pattern.is_empty (Evoral::Parameter (GainAutomation));
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
 

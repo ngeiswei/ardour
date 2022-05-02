@@ -31,7 +31,7 @@ AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
                                       Temporal::samplepos_t first_sample,
                                       Temporal::samplepos_t last_sample,
                                       bool connect)
-	: TrackAutomationPattern (te, trk, position, length, first_sample, last_sample, connect)
+	: TrackPattern (te, trk, position, length, first_sample, last_sample, connect)
 {
 }
 
