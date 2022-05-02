@@ -478,6 +478,7 @@ MultiTrackPattern::to_mri (int rowi, int mti) const
 void
 MultiTrackPattern::insert (int mti, const Evoral::Parameter& param)
 {
+	// NEXT.17: ‘class Tracker::TrackPattern’ has no member named ‘insert’
 	tps[mti]->insert (param);
 }
 
