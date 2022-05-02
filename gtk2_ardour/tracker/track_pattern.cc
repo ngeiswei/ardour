@@ -92,7 +92,7 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             bool connect)
 	: BasePattern (te, pos, 0, len, fst, lst)
 	, track (trk)
-	, track_automation_pattern (te, pos, 0, len, fst, lst, connect)
+	, track_automation_pattern (te, trk, pos, len, fst, lst, connect)
 {
 	if (connect)
 		tracker_editor.connect_track (track);
