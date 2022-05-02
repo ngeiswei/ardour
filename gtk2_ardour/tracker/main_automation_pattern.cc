@@ -29,7 +29,7 @@ MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
                                               bool connect)
 	: AutomationPattern (te, region, connect)
 {
-	\\ VERY VERY NEXT: fill _automatable_parameters
+	// NEXT.3: fill _automatable_parameters
 }
 
 MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
