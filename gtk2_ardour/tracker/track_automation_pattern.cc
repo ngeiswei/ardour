@@ -71,20 +71,19 @@ void TrackAutomationPattern::setup_automation_controls ()
 
 void TrackAutomationPattern::setup_main_automation_controls ()
 {
-	// NEXT.16: fix error on AutomationPattern::insert
 	// Gain
-	AutomationPattern::insert (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
+	AutomationPattern::insert_actl (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
 
 	// Trim
-	AutomationPattern::insert (track->trim_control (), track->describe_parameter (Evoral::Parameter (TrimAutomation)));
+	AutomationPattern::insert_actl (track->trim_control (), track->describe_parameter (Evoral::Parameter (TrimAutomation)));
 
 	// Mute
-	AutomationPattern::insert (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
+	AutomationPattern::insert_actl (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
 
 	// Pan
 	set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
-		AutomationPattern::insert (track->pannable ()->automation_control (*p), track->describe_parameter (*p));
+		AutomationPattern::insert_actl (track->pannable ()->automation_control (*p), track->describe_parameter (*p));
 	}
 }
 
@@ -102,16 +101,15 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 		return;
 	}
 
-// VERY NEXT: move to processor_pattern
+	// NEXT.2: move to processor_pattern, maybe
 	const ParameterSet& automatable = processor->what_can_be_automated ();
 	for (ParameterSetConstIt ait = automatable.begin (); ait != automatable.end (); ++ait) {
-		AutomationPattern::insert (boost::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
+		AutomationPattern::insert_actl (boost::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
 	}
 }
 
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
