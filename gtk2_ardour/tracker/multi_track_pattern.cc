@@ -478,8 +478,7 @@ MultiTrackPattern::to_mri (int rowi, int mti) const
 void
 MultiTrackPattern::insert (int mti, const Evoral::Parameter& param)
 {
-	// NEXT.17: ‘class Tracker::TrackPattern’ has no member named ‘insert’
-	tps[mti]->insert (param);
+	tps[mti]->track_automation_pattern.insert (param);
 }
 
 MidiModelPtr
@@ -523,8 +522,7 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 {
 	if (TrackerUtils::is_region_automation (param))
 		return &midi_region_pattern (mti, mri).rap;
-	// NEXT.15: need MultiTrackPattern::track_pattern() or such (except there is main and processor)
-	return tps[mti]->track_automation_pattern;
+	return &tps[mti]->track_automation_pattern;
 }
 
 const AutomationPattern*
@@ -532,8 +530,7 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 {
 	if (TrackerUtils::is_region_automation (param))
 		return &midi_region_pattern (mti, mri).rap;
-	// NEXT.15: need MultiTrackPattern::track_pattern() or such (except there is main and processor)
-	return tps[mti]->track_automation_pattern;
+	return &tps[mti]->track_automation_pattern;
 }
 
 void
