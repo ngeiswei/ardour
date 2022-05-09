@@ -116,7 +116,7 @@ TrackPattern::operator= (const TrackPattern& other)
 		return *this;
 	}
 
-	AutomationPattern::operator= (other);
+	track_automation_pattern.operator= (other.track_automation_pattern);
 	track = other.track;
 
 	return *this;
@@ -206,9 +206,9 @@ TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, in
 bool
 TrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	// VERY VERY NEXT: look for main or processors with such param and
-	// call its corresponding is_displayable method.  Maybe using
-	// what_can_be_automated ().
+	// NEXT.16: look for main or processors (actually track_automation_pattern
+	// for now) with such param and call its corresponding is_displayable
+	// method.  Maybe using what_can_be_automated ().
 	return is_displayable (rowi, param);
 }
 
