@@ -1,6 +1,6 @@
 # Next
 
-NEXT.16 (compile to understand)
+NEXT.16 (fill up TrackPattern::to_string)
 
 # Tracker Editor
 
