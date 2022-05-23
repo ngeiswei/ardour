@@ -1415,7 +1415,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
-		redisplay_track_automations (mti, mtp);
+		redisplay_track_automations (mti, mtp.track_automation_pattern);
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
 		redisplay_inter_midi_regions (mti);
@@ -1423,7 +1423,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
 		}
-		redisplay_track_automations (mti, mtp, &mtp_diff->auto_diff);
+		redisplay_track_automations (mti, mtp.track_automation_pattern, &mtp_diff->auto_diff);
 	}
 }
 
@@ -2115,7 +2115,7 @@ Grid::get_track_separator_width () const
 std::string
 Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
 {
-	std::string long_name = pattern.tps[mti]->get_name (param);
+	std::string long_name = pattern.tps[mti]->track_automation_pattern.get_name (param);
 	size_t tl = 7;               // target length
 	return shorten ? PBD::short_version(long_name, tl) : long_name;
 }
@@ -2123,13 +2123,13 @@ Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
 void
 Grid::set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled)
 {
-	pattern.tps[mti]->set_param_enabled (param, enabled);
+	pattern.tps[mti]->track_automation_pattern.set_param_enabled (param, enabled);
 }
 
 bool
 Grid::is_param_enabled (int mti, const Evoral::Parameter& param) const
 {
-	return pattern.tps[mti]->is_param_enabled (param);
+	return pattern.tps[mti]->track_automation_pattern.is_param_enabled (param);
 }
 
 Pango::AttrList
