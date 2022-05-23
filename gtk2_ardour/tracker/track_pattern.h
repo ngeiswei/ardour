@@ -121,48 +121,6 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	TrackPtr track;
-	// NEXT.8
-// 	../gtk2_ardour/tracker/track_pattern.h:120:31: error: cannot declare field ‘Tracker::TrackPattern::main_automation_pattern’ to be of abstract type ‘Tracker::MainAutomationPattern’
-//   120 |         MainAutomationPattern main_automation_pattern;
-//       |                               ^~~~~~~~~~~~~~~~~~~~~~~
-// In file included from ../gtk2_ardour/tracker/track_pattern.h:29,
-//                  from ../gtk2_ardour/tracker/track_automation_pattern.h:24,
-//                  from ../gtk2_ardour/tracker/audio_track_pattern.h:25,
-//                  from ../gtk2_ardour/tracker/audio_track_toolbar.h:22,
-//                  from ../gtk2_ardour/tracker/tracker_editor.h:40,
-//                  from ../gtk2_ardour/editor.h:80,
-//                  from ../gtk2_ardour/editor_audiotrack.cc:25:
-// ../gtk2_ardour/tracker/main_automation_pattern.h:33:7: note:   because the following virtual functions are pure within ‘Tracker::MainAutomationPattern’:
-//    33 | class MainAutomationPattern : public AutomationPattern {
-//       |       ^~~~~~~~~~~~~~~~~~~~~
-// In file included from ../gtk2_ardour/tracker/track_pattern.h:28,
-//                  from ../gtk2_ardour/tracker/track_automation_pattern.h:24,
-//                  from ../gtk2_ardour/tracker/audio_track_pattern.h:25,
-//                  from ../gtk2_ardour/tracker/audio_track_toolbar.h:22,
-//                  from ../gtk2_ardour/tracker/tracker_editor.h:40,
-//                  from ../gtk2_ardour/editor.h:80,
-//                  from ../gtk2_ardour/editor_audiotrack.cc:25:
-// ../gtk2_ardour/tracker/automation_pattern.h:91:22: note:     ‘virtual void Tracker::AutomationPattern::insert(const Evoral::Parameter&)’
-//    91 |         virtual void insert (const Evoral::Parameter& param) = 0;
-//       |                      ^~~~~~
-// In file included from /usr/include/glib-2.0/glib/gthread.h:32,
-//                  from /usr/include/glib-2.0/glib/gasyncqueue.h:32,
-//                  from /usr/include/glib-2.0/glib.h:32,
-//                  from /usr/include/glibmm-2.4/glibmm/threads.h:30,
-//                  from ../libs/pbd/pbd/id.h:28,
-//                  from ../libs/ardour/ardour/types.h:52,
-//                  from ../libs/ardour/ardour/rc_configuration.h:30,
-//                  from ../gtk2_ardour/editor_audiotrack.cc:21:
-// ../libs/ardour/ardour/pannable.h: In member function ‘bool ARDOUR::Pannable::touching() const’:
-
-	// NEXT.9: For now we use AutomationPattern for a smooth transition between
-	// the old way when TrackPattern inherited from AutomationPattern and the
-	// new way using MainAutomationPattern and vector of
-	// ProcessorAutomationPattern as attributes.
-	//
-	// ARGGGGG: AutomationPattern is abstract, so I suppose we should use
-	// MainAutomationPattern instead.
-	// AutomationPattern automation_pattern;
 
 	// NEXT.12: use TrackAutomationPattern before trying MainAutomationPattern
 	// and ProcessorAutomationPattern (let see if we can compile)
