@@ -1,6 +1,6 @@
 # Next
 
-NEXT.16 (fill up TrackPattern::to_string)
+NEXT.15 (TBD)
 
 # Tracker Editor
 

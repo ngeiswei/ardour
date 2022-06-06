@@ -135,3 +135,25 @@ TrackAutomationPattern::automatable_parameters () const
 	// NEXT.12
 	return ParameterSet();
 }
+
+std::string
+TrackAutomationPattern::self_to_string () const
+{
+	std::stringstream ss;
+	ss << "TrackAutomationPattern[" << this << "]";
+	return ss.str ();
+}
+
+std::string
+TrackAutomationPattern::to_string (const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << AutomationPattern::to_string (indent);
+
+	std::string header = indent + self_to_string () + " ";
+
+	// Print track pointer address
+	ss << std::endl << header << "track = " << track;
+
+	return ss.str ();
+}
