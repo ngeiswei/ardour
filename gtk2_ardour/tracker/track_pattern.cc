@@ -322,6 +322,18 @@ TrackPattern::self_to_string () const
 std::string
 TrackPattern::to_string (const std::string& indent) const
 {
-	// NEXT.16
-	return std::string();
+	std::stringstream ss;
+	ss << BasePattern::to_string (indent);
+
+	std::string header = indent + self_to_string () + " ";
+	std::string indent_l1 = indent + "  ";
+
+	// Print track pointer address
+	ss << std::endl << header << "track = " << track;
+
+	// Print track automation pattern
+	ss << std::endl << header << "track_automation_pattern:";
+	ss << std::endl << indent_l1 << track_automation_pattern.to_string(indent_l1);
+
+	return ss.str ();
 }

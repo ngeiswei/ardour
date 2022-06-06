@@ -116,7 +116,6 @@ public:
 	// NEXT.9: add insert(param) method
 
 	// For displaying pattern data. Mostly for debugging
-	// NEXT.2: implement
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
