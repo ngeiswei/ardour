@@ -536,7 +536,7 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 void
 MultiTrackPattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
-	midi_model (mti, mri)->apply_command (tracker_editor.session, cmd);
+	midi_model (mti, mri)->apply_diff_command_as_commit (tracker_editor.session, cmd);
 }
 
 AutomationListPtr
