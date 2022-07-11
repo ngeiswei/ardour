@@ -1,6 +1,6 @@
 # Next
 
-NEXT.15 (TBD)
+Fix segmentation fault when launching tracker editor.
 
 # Tracker Editor
 
