@@ -938,44 +938,68 @@ Grid::redisplay_grid ()
 		return;
 	}
 
+	std::cout << "Grid::redisplay_grid () - 1 -" << std::endl;
+
 	if (!tracker_editor.session) {
 		return;
 	}
 
+	std::cout << "Grid::redisplay_grid () - 2 -" << std::endl;
+
 	// In case the resolution (lines per beat) has changed
+	// NEXT.16: the following instruction crashes.
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_lower (pattern.tps.front ()->delay_ticks_min ());
+	std::cout << "Grid::redisplay_grid () - 3 -" << std::endl;
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_upper (pattern.tps.front ()->delay_ticks_max ());
+	std::cout << "Grid::redisplay_grid () - 4 -" << std::endl;
 
 	// Update pattern settings and content
 	pattern.update ();
+	std::cout << "Grid::redisplay_grid () - 5 -" << std::endl;
 
 	// After update, compare pattern and prev_pattern to come up with a list of
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
+	std::cout << "Grid::redisplay_grid () - 6 -" << std::endl;
 
 	// Redisplay the grid
 	redisplay_global_columns ();
+	std::cout << "Grid::redisplay_grid () - 7 -" << std::endl;
 	redisplay_pattern ();
+	std::cout << "Grid::redisplay_grid () - 8 -" << std::endl;
 	redisplay_current_row ();
+	std::cout << "Grid::redisplay_grid () - 9 -" << std::endl;
 	remove_unused_rows ();
+	std::cout << "Grid::redisplay_grid () - 10 -" << std::endl;
 
 	set_model (model);
+	std::cout << "Grid::redisplay_grid () - 11 -" << std::endl;
 
 	// In case tracks have been added or removed
 	redisplay_visible_note ();
+	std::cout << "Grid::redisplay_grid () - 12 -" << std::endl;
 	redisplay_visible_channel ();
+	std::cout << "Grid::redisplay_grid () - 13 -" << std::endl;
 	redisplay_visible_velocity ();
+	std::cout << "Grid::redisplay_grid () - 14 -" << std::endl;
 	redisplay_visible_delay ();
+	std::cout << "Grid::redisplay_grid () - 15 -" << std::endl;
 	redisplay_visible_note_separator ();
+	std::cout << "Grid::redisplay_grid () - 16 -" << std::endl;
 	redisplay_visible_automation ();
+	std::cout << "Grid::redisplay_grid () - 17 -" << std::endl;
 	redisplay_visible_automation_separator ();
+	std::cout << "Grid::redisplay_grid () - 18 -" << std::endl;
 
 	redisplay_left_right_separator_columns ();
+	std::cout << "Grid::redisplay_grid () - 19 -" << std::endl;
 	tracker_editor.grid_header->align ();
+	std::cout << "Grid::redisplay_grid () - 20 -" << std::endl;
 
 	// Save pattern to prev_pattern for subsequent phenomenal diff calculation
 	prev_pattern = pattern;
+	std::cout << "Grid::redisplay_grid () - 21 -" << std::endl;
 }
 
 void
