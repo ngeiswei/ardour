@@ -120,11 +120,17 @@ MultiTrackPattern::setup ()
 void
 MultiTrackPattern::setup_region_views_per_track ()
 {
+	// NEXT.16: remove std::cout (4 next functions)
+	std::cout << "MultiTrackPattern::setup_region_views_per_track ()" << std::endl;
 	// Associate track to its region selections
+	int i = 0;
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
+		std::cout << "MultiTrackPattern::setup_region_views_per_track () i = " << i++ << std::endl;
 		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
+		std::cout << "MultiTrackPattern::setup_region_views_per_track () track = " << track << std::endl;
 		std::vector<RegionView*>& region_views = region_views_per_track[track];
 		if (std::find (region_views.begin (), region_views.end (), *it) == region_views.end ()) {
+			std::cout << "MultiTrackPattern::setup_region_views_per_track () *it = " << *it << std::endl;
 			region_views.push_back (*it);
 		}
 	}
@@ -133,18 +139,21 @@ MultiTrackPattern::setup_region_views_per_track ()
 void
 MultiTrackPattern::setup_regions_per_track ()
 {
+	std::cout << "MultiTrackPattern::setup_regions_per_track ()" << std::endl;
 	regions_per_track.clear ();
 	// Associate track to its regions
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
 		RegionPtr region = (*it)->region ();
 		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
 		regions_per_track[track].push_back (region);
+		std::cout << "MultiTrackPattern::setup_regions_per_track () *it = " << *it << ", region = " << region << ", track = " << track << std::endl;
 	}
 }
 
 void
 MultiTrackPattern::setup_track_patterns ()
 {
+	std::cout << "MultiTrackPattern::setup_track_patterns ()" << std::endl;
 	// Disable and deselect all existing tracks
 	set_enabled (false);
 	set_selected (false);
@@ -158,6 +167,7 @@ MultiTrackPattern::setup_track_patterns ()
 		} else {
 			add_track_pattern (track, it->second);
 		}
+		std::cout << "MultiTrackPattern::setup_track_patterns () track = " << track << ", tp = " << tp << std::endl;
 	}
 
 	enabled = !regions_per_track.empty();
@@ -166,7 +176,8 @@ MultiTrackPattern::setup_track_patterns ()
 void
 MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
-	// NEXT.14: re-enable
+	std::cout << "MultiTrackPattern::add_track_pattern (track=" << track << ", regions)" << std::endl;
+	// NEXT.17: re-enable
 	// MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	// if (midi_track) {
 	// 	MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
