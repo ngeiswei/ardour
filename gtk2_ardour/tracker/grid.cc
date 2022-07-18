@@ -938,6 +938,7 @@ Grid::redisplay_grid ()
 		return;
 	}
 
+	// NEXT.16: remove std::cout
 	std::cout << "Grid::redisplay_grid () - 1 -" << std::endl;
 
 	if (!tracker_editor.session) {
@@ -947,7 +948,7 @@ Grid::redisplay_grid ()
 	std::cout << "Grid::redisplay_grid () - 2 -" << std::endl;
 
 	// In case the resolution (lines per beat) has changed
-	// NEXT.16: the following instruction crashes.
+	std::cout << "Grid::redisplay_grid () - 2.1 - pattern.tps.size () = " << pattern.tps.size () << std::endl;
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_lower (pattern.tps.front ()->delay_ticks_min ());
 	std::cout << "Grid::redisplay_grid () - 3 -" << std::endl;
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_upper (pattern.tps.front ()->delay_ticks_max ());
