@@ -86,7 +86,7 @@ public:
 	void disconnect_midi_event ();
 
 	sigc::connection midi_event_connection;
-	
+
 	ARDOUR::Session* session;
 
 	// Reference to the unique editor
