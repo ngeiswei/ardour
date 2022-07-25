@@ -1,6 +1,7 @@
 # Next
 
-NEXT.17
+- [ ] rebase
+- [ ] fix processor automation (perhaps NEXT.15)
 
 # Tracker Editor
 
