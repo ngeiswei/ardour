@@ -1,7 +1,7 @@
 # Next
 
-- [ ] rebase
-- [ ] fix processor automation (perhaps NEXT.15)
+- [ ] NEXT.16: Find out how _controls works, see libs/evoral/ControlSet.cc and
+      libs/ardour/automatable.cc
 
 # Tracker Editor
 
@@ -72,3 +72,4 @@ the flag `--with-tracker-editor`, such as
 - [ ] Use signals whenever possible (instead of for instance calling
       Grid::redisplay_grid) to not block. This can make ardour crash when jack
       buffer size is too short.
+- [ ] Add play a line by pressing enter or so
