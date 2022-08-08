@@ -164,6 +164,8 @@ bad:
 void
 Automatable::add_control(std::shared_ptr<Evoral::Control> ac)
 {
+	// NEXT.16
+	std::cout << "Automatable[" << this << "]::add_control (ac[" << ac << "]=" << ac->parameter() << ")" << std::endl;
 	Evoral::Parameter param = ac->parameter();
 
 	std::shared_ptr<AutomationList> al = std::dynamic_pointer_cast<AutomationList> (ac->list ());
