@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.16: Find out how _controls works, see libs/evoral/ControlSet.cc and
-      libs/ardour/automatable.cc
+- [ ] NEXT.17: Find out how _controls works, see libs/evoral/ControlSet.cc and
+      libs/ardour/automatable.cc (print backtrace).
 
 # Tracker Editor
 
