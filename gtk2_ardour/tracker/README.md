@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.17: Find out how _controls works, see libs/evoral/ControlSet.cc and
-      libs/ardour/automatable.cc (print backtrace).
+- [ ] NEXT.19: See if we can use parameter_is_midi instead of
+      TrackerUtils::is_region_automation.
 
 # Tracker Editor
 
