@@ -553,6 +553,7 @@ Automatable::automation_list_automation_state_changed (Evoral::Parameter const& 
 	_automated_controls.flush();
 }
 
+// NEXT.18: is it obsolete?
 std::shared_ptr<Evoral::Control>
 Automatable::control_factory(const Evoral::Parameter& param)
 {
