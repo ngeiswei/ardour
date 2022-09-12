@@ -1,7 +1,6 @@
 # Next
 
-- [ ] NEXT.19: See if we can use parameter_is_midi instead of
-      TrackerUtils::is_region_automation.
+- [ ] NEXT.18: remove get_control
 
 # Tracker Editor
 
