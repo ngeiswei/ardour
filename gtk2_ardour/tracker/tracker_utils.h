@@ -92,7 +92,6 @@ public:
 	 * Return true iff the given param is for region automation (as opposed to
 	 * track automation).
 	 */
-	// NEXT.19: use parameter_is_midi
 	static bool is_region_automation (const Evoral::Parameter& param);
 
 	/**
