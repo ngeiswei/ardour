@@ -1,7 +1,6 @@
 # Next
 
 - [ ] NEXT.18: remove get_control
-- [ ] Set up rtags
 
 # Tracker Editor
 
