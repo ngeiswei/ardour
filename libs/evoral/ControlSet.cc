@@ -61,8 +61,8 @@ ControlSet::add_control(std::shared_ptr<Control> ac)
 	// it's not used by any body!!!
 	//
 	// Ask: Could anyone tell me why `Route::get_control (const Evoral::Parameter& param)` is not called anywhere?  Is it dead code?
-	std::cout << "ControlSet[" << this << "]::add_control (ac[" << ac << "]=" << ac->parameter() << ")" << std::endl;
-	PBD::stacktrace(std::cout);
+	// std::cout << "ControlSet[" << this << "]::add_control (ac[" << ac << "]=" << ac->parameter() << ")" << std::endl;
+	// PBD::stacktrace(std::cout);
 
 	_controls[ac->parameter()] = ac;
 

@@ -242,8 +242,8 @@ void
 AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& name)
 {
 	Evoral::Parameter param = actl->parameter ();
-	std::cout << boost::stacktrace::stacktrace() << std::endl;
-	std::cout << "AutomationPattern[" << this << "]::insert (actl=" << actl << ", name=" << name << ") param = " << param << std::endl;
+	// std::cout << boost::stacktrace::stacktrace() << std::endl;
+	std::cout << "AutomationPattern[" << this << "]::insert_actl (actl=" << actl << ", name=" << name << ") param = " << param << std::endl;
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
 	if (actl_result.second && _connect) {
