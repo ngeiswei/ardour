@@ -370,7 +370,7 @@ MainToolbar::setup_beats_per_row_menu ()
 	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv28 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv28)));
 	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv32 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv32)));
 
-	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings, COMBO_TRIANGLE_WIDTH, 2);
+	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings.back(), COMBO_TRIANGLE_WIDTH, 2);
 }
 
 void
