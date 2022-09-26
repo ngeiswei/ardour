@@ -19,7 +19,7 @@
 #ifndef __ardour_tracker_main_automation_pattern_h_
 #define __ardour_tracker_main_automation_pattern_h_
 
-#include "automation_pattern.h"
+#include "track_automation_pattern.h"
 // #include "main_automation_pattern_phenomenal_diff.h" // VERY VERY NEXT: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
 
 namespace Tracker {
@@ -31,12 +31,14 @@ namespace Tracker {
  * main processings (fade, pan, etc).
  */
 // NEXT.11: inherit from TrackAutomationPattern
-class MainAutomationPattern : public AutomationPattern {
+class MainAutomationPattern : public TrackAutomationPattern {
 public:
 	MainAutomationPattern (TrackerEditor& te,
-	                       RegionPtr region, // NEXT.2: do we need this?
+	                       TrackPtr track,
+	                       RegionSeq regions,
 	                       bool connect);
 	MainAutomationPattern (TrackerEditor& te,
+	                       TrackPtr track,
 	                       Temporal::samplepos_t position,
 	                       Temporal::samplepos_t start,
 	                       Temporal::samplecnt_t length,
@@ -44,18 +46,8 @@ public:
 	                       Temporal::samplepos_t last_sample,
 	                       bool connect);
 
-	// Make a deep copy of the automation controls
-	MainAutomationPattern& operator= (const MainAutomationPattern& other);
-
-	AutomationPatternPhenomenalDiff phenomenal_diff (const MainAutomationPattern& prev) const;
-
 	// Overload AutomationPattern::automatable_parameters ()
 	const ParameterSet& automatable_parameters () const;
-
-	// Insert the automation control corresponding to param in
-	// AutomationPattern::_automation_controls, and possibly connect it to the
-	// grid for connect changes.
-	void insert (const Evoral::Parameter& param);
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
