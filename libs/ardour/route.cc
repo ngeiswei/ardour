@@ -4932,7 +4932,6 @@ Route::set_volume_applies_to_output (bool en)
 	_session.set_dirty ();
 }
 
-// NEXT.18: remove get_control
 std::shared_ptr<AutomationControl>
 Route::get_control (const Evoral::Parameter& param)
 {

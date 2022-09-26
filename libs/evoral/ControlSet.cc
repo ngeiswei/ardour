@@ -45,25 +45,6 @@ ControlSet::ControlSet (ControlSet const & other)
 void
 ControlSet::add_control(std::shared_ptr<Control> ac)
 {
-	// NEXT.16: test to understand what _controls contains.
-	//
-	// Answers:
-	//
-	// 1. Every control added by Route::init (), such as solo, etc.  Note: it is
-	//    not clear how gain and pan controls are added, via Amp and such
-	//    classes.  Do they belong to the same ControlSet::_controls object?
-	//
-	// 2. Every control added by
-	//    ARDOUR::PluginInsert::create_automatable_parameters (), one
-	//    ControlSet::controls object for each plugin.
-	//
-	// NEXT.17: study Route::get_control (const Evoral::Parameter& param), only
-	// it's not used by any body!!!
-	//
-	// Ask: Could anyone tell me why `Route::get_control (const Evoral::Parameter& param)` is not called anywhere?  Is it dead code?
-	// std::cout << "ControlSet[" << this << "]::add_control (ac[" << ac << "]=" << ac->parameter() << ")" << std::endl;
-	// PBD::stacktrace(std::cout);
-
 	_controls[ac->parameter()] = ac;
 
 	ac->ListMarkedDirty.connect_same_thread (_control_connections, boost::bind (&ControlSet::control_list_marked_dirty, this));
