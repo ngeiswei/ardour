@@ -1,6 +1,9 @@
 # Next
 
-- [ ] NEXT.18: remove get_control
+- [ ] NEXT.13: create TrackAutomationSetPattern that holds all track
+      automations (region automation patterns excluded).
+- [ ] NEXT.12: replace track_automation_pattern by track_automation_set_pattern
+      in TrackPattern.
 
 # Tracker Editor
 
@@ -38,6 +41,7 @@ the flag `--with-tracker-editor`, such as
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] Avoid using `get_<something> ()` just use `<something> ()`
+- [ ] Remove Route::get_control
 - [ ] Create PR
 - [ ] Set position when clicking on the digit position (if the cell is already selected)
 - [ ] Add row index column (very first one)

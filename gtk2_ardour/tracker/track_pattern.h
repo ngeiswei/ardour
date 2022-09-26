@@ -87,7 +87,7 @@ public:
 	AudioTrackPattern* audio_track_pattern ();
 
 	// Default implementation is for tracks not supporting regions
-	// VERY VERY NEXT:
+	// NEXT.2:
 	// 1. Do not change that API, just make it work buggy like before
 	// 2. Then change the API to make it work
 	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
