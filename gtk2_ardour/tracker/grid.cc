@@ -1330,7 +1330,7 @@ Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx,
 	}
 
 	// Set automation background color of the enabled track automations
-	// NEXT.15: probably needs pointers to, ultimately main_automation_pattern and processor_automation_pattern.
+	// NEXT.12: probably needs pointers to, ultimately main_automation_pattern and processor_automation_pattern.
 	AutomationPattern& ap = pattern.tps[mti]->track_automation_pattern;
 	redisplay_row_mti_automations_background_color (row, row_idx, mti, ap, color);
 }

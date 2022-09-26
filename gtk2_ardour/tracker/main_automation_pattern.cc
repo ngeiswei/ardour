@@ -25,54 +25,31 @@ using namespace Tracker;
 ///////////////////////////
 
 MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
-                                              RegionPtr region,
+                                              TrackPtr trk,
+                                              RegionSeq regions,
                                               bool connect)
-	: AutomationPattern (te, region, connect)
+	: TrackAutomationPattern (te, trk, regions, connect)
 {
 	// NEXT.3: fill _automatable_parameters
 }
 
 MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
+                                              TrackPtr trk,
                                               Temporal::samplepos_t pos,
                                               Temporal::samplepos_t sta,
                                               Temporal::samplecnt_t len,
                                               Temporal::samplepos_t fir,
                                               Temporal::samplepos_t las,
                                               bool connect)
-	: AutomationPattern (te, pos, sta, len, fir, las, connect)
+	: TrackAutomationPattern (te, trk, pos, sta, len, fir, las, connect)
 {
 	// NEXT.3: fill _automatable_parameters
-}
-
-MainAutomationPattern&
-MainAutomationPattern::operator= (const MainAutomationPattern& other)
-{
-	AutomationPattern::operator= (other);
-	return *this;
-}
-
-AutomationPatternPhenomenalDiff
-MainAutomationPattern::phenomenal_diff (const MainAutomationPattern& prev) const
-{
-	// NEXT: fix compile error:
-	//
-	// could not convert ‘Tracker::AutomationPattern::phenomenal_diff(const Tracker::AutomationPattern&) const(prev.Tracker::MainAutomationPattern::<anonymous>)’ from ‘Tracker::AutomationPatternPhenomenalDiff’ to ‘Tracker::MainAutomationPatternPhenomenalDiff’
-	//
-	// return AutomationPattern::phenomenal_diff (prev);
-	return AutomationPatternPhenomenalDiff();
 }
 
 const ParameterSet&
 MainAutomationPattern::automatable_parameters () const
 {
 	return _automatable_parameters;
-}
-
-void
-MainAutomationPattern::insert (const Evoral::Parameter& param)
-{
-	// NEXT.10
-	// AutomationPattern::insert (track->automation_control (param, true), track->describe_parameter (param));
 }
 
 std::string
@@ -87,9 +64,9 @@ std::string
 MainAutomationPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << AutomationPattern::to_string (indent) << std::endl;
+	ss << TrackAutomationPattern::to_string (indent) << std::endl;
 	std::string header = indent + self_to_string () + " ";
 	ss << header << "_automatable_parameters:";
-	// VERY VERY NEXT: print _automatable_parameters
+	// NEXT.11: print _automatable_parameters
 	return ss.str ();
 }
