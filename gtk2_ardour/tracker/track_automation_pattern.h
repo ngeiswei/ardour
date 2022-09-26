@@ -26,14 +26,18 @@
 namespace Tracker {
 
 /**
- * Data structure holding the automation list pattern of a track (as
- * opposed to a region).
+ * Data structure holding the pattern for an automation list of a track (as
+ * opposed to a region).  Such automation list typically belong to a processor,
+ * though it may also belong to route for fader, pan, etc.
+ *
+ * For the pattern holding all the track automations, see
+ * TrackAutomationSetPattern class.
  */
 class TrackAutomationPattern : public AutomationPattern {
 public:
-	TrackAutomationPattern (TrackerEditor& te,
+	TrackAutomationPattern (TrackerEditor& te, // NEXT: do we need that ctor?
 	                        TrackPtr track,
-	                        const RegionSeq& regions, // NEXT: do we need that ctor?
+	                        const RegionSeq& regions,
 	                        bool connect);
 	TrackAutomationPattern (TrackerEditor& te,
 	                        TrackPtr track,
@@ -43,13 +47,10 @@ public:
 	                        Temporal::samplepos_t last_sample,
 	                        bool connect);
 
+	// NEXT.13: move the following 4 methods under TrackAutomationSetPattern.
+
 	// Fill _automation_controls
 	void setup_automation_controls ();
-	// NEXT.12: maybe before having MainAutomationPattern and
-	// ProcessorAutomationPattern inherit from TrackAutomationPattern, let's try
-	// to simply use TrackAutomationPattern as attibute of TrackPattern (instead
-	// of MainAutomationPattern and ProcessorAutomationPattern), that might be
-	// simpler and better.
 	void setup_main_automation_controls ();
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p);
