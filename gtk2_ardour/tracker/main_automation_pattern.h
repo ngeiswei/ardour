@@ -30,7 +30,6 @@ namespace Tracker {
  * Data structure holding the automation list pattern for standard
  * main processings (fade, pan, etc).
  */
-// NEXT.11: inherit from TrackAutomationPattern
 class MainAutomationPattern : public TrackAutomationPattern {
 public:
 	MainAutomationPattern (TrackerEditor& te,
@@ -40,7 +39,6 @@ public:
 	MainAutomationPattern (TrackerEditor& te,
 	                       TrackPtr track,
 	                       Temporal::samplepos_t position,
-	                       Temporal::samplepos_t start,
 	                       Temporal::samplecnt_t length,
 	                       Temporal::samplepos_t first_sample,
 	                       Temporal::samplepos_t last_sample,

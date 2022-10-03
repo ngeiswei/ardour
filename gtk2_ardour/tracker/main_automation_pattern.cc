@@ -36,12 +36,11 @@ MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
 MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
                                               TrackPtr trk,
                                               Temporal::samplepos_t pos,
-                                              Temporal::samplepos_t sta,
                                               Temporal::samplecnt_t len,
                                               Temporal::samplepos_t fir,
                                               Temporal::samplepos_t las,
                                               bool connect)
-	: TrackAutomationPattern (te, trk, pos, sta, len, fir, las, connect)
+	: TrackAutomationPattern (te, trk, pos, len, fir, las, connect)
 {
 	// NEXT.3: fill _automatable_parameters
 }
