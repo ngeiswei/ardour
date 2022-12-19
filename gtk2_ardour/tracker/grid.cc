@@ -3898,7 +3898,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 	TreeModel::Path init_path = path;
 	TreeModel::Path last_def_path = path;
 	int init_steps = steps;
-	
+
 	// Move up
 	while ((jump && init_steps < 0) || steps < 0) {
 		--path[0];
