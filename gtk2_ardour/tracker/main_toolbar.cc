@@ -62,6 +62,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, beats_per_row_strings (I18N (_beats_per_row_strings))
 	, rows_per_beat (4)
 	, step_edit (false)
+	, chord_mode (false)
 	, overwrite_default (true)
 	, overwrite_existing (false)
 	, overwrite_star (false)
@@ -202,6 +203,16 @@ MainToolbar::setup_layout ()
 	beats_per_row_selector.show ();
 	mr->pack_start (beats_per_row_selector, false, false);
 
+	// Chord mode buttom
+	chord_mode_separator.show ();
+	mr->pack_start (chord_mode_separator, false, false);
+	chord_mode_button.set_name ("chord mode button");
+	chord_mode_button.set_text (S_("Chord Mode"));
+	chord_mode_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::chord_mode_press), false);
+	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	chord_mode_button.show ();
+	mr->pack_start (chord_mode_button, false, false);
+
 	// Overwrite default button
 	overwrite_default_separator.show ();
 	mr->pack_start (overwrite_default_separator, false, false);
@@ -330,6 +341,7 @@ MainToolbar::setup_tooltips ()
 {
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
 	step_edit_button.set_tooltip_text (_("Toggle step editing"));
+	chord_mode_button.set_tooltip_text (_("Any note entered while a note is still pressed gets entered at the same row"));
 	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
 	overwrite_existing_button.set_tooltip_text (_("Input events overwrite existing channel, velocity and delay"));
 	overwrite_star_button.set_tooltip_text (_("Cell containing more than one event, i.e. displayed as ***, can be overwriten. Otherwise, they are read only, and only zooming in, till there is at most one event per cell, make them writable."));
@@ -578,6 +590,20 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 		tracker_editor.disconnect_midi_event ();
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
 	}
+	return false;
+}
+
+bool
+MainToolbar::chord_mode_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
+		return true;
+	}
+
+	chord_mode = !chord_mode;
+	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
 	return false;
 }
 

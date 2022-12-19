@@ -65,6 +65,11 @@ public:
 	bool step_edit_press (GdkEventButton* ev);
 
 	/**
+	 * Triggered upon chord mode button press event.
+	 */
+	bool chord_mode_press (GdkEventButton* ev);
+
+	/**
 	 * Triggered upon overwrite default button press event.
 	 */
 	bool overwrite_default_press (GdkEventButton* ev);
@@ -151,6 +156,10 @@ public:
 	// Buttons
 	ArdourWidgets::ArdourButton  step_edit_button;
 	bool                         step_edit;
+
+	Gtk::VSeparator              chord_mode_separator;
+	ArdourWidgets::ArdourButton  chord_mode_button;
+	bool                         chord_mode;
 
 	Gtk::VSeparator              overwrite_default_separator;
 	ArdourWidgets::ArdourButton  overwrite_default_button;
