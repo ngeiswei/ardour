@@ -504,6 +504,9 @@ private:
 	// Properties //
 	////////////////
 
+	// Check if chord mode is enabled
+	bool chord_mode () const;
+
 	// Check whether a given column is editable. Note, due to technical reasons
 	// outside of our control col cannot be const.
 public:
@@ -516,7 +519,6 @@ public:
 
 	// Check if the cell is defined and editable
 	// Warning: can't be const because of to_col_index
-public:
 	bool is_cell_defined (int row_idx, int col_idx); // Accessed by SubgridSelector
 private:
 	bool is_cell_defined (int row_idx, const Gtk::TreeViewColumn* col);
