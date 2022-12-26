@@ -4028,6 +4028,12 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 }
 
 bool
+Grid::chord_mode () const
+{
+	return main_toolbar.chord_mode;
+}
+
+bool
 Grid::is_editable (int col_idx) const
 {
 	return is_editable (const_cast<TreeViewColumn*>(to_col (col_idx)));
@@ -4434,8 +4440,13 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
 	// std::cout << "Grid::step_editing_set_on_note (pitch=" << pitch << ", play=" << play << ")" << std::endl;
 
+	// NEXT.14: See how it behaves so far.  For starter it is OK if
+	// last note release is replaced by toggling off the chord mode.
+	
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
+	// In chord mode, vertical move is differed once the notes have been released.
+	if (!chord_mode ())
+		vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
@@ -4445,7 +4456,9 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
-	vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
+	// In chord mode, vertical move is differed once the notes have been released.
+	if (!chord_mode ())
+		vertical_move_current_cursor_default_steps (tracker_editor.main_toolbar.wrap, tracker_editor.main_toolbar.jump);
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
