@@ -344,6 +344,10 @@ public:
 	// redisplay_grid_connect_call immediately return when such lock is taken.
 	bool                         redisplay_grid_connect_call_enabled;
 
+	// Set of current on notes.  For now each note is identified by its
+	// pitch
+	std::set<uint8_t> current_on_notes;
+
 private:
 	void init_columns ();
 	void init_model ();
@@ -505,7 +509,13 @@ private:
 	////////////////
 
 	// Check if chord mode is enabled
-	bool chord_mode () const;
+	bool chord_mode() const;
+
+	// Check if wrap is enabled
+	bool wrap() const;
+
+	// Check if jump is enabled
+	bool jump() const;
 
 	// Check whether a given column is editable. Note, due to technical reasons
 	// outside of our control col cannot be const.
