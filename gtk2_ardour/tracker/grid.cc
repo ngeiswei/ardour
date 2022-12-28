@@ -93,8 +93,8 @@ Grid::Grid (TrackerEditor& te)
 	, current_col_idx (0)
 	, current_col (0)
 	, current_mti (-1)
-	, previous_mtp (0)
-	, current_mtp (0)
+	, previous_tp (0)
+	, current_tp (0)
 	, current_mri (-1)
 	, current_cgi (-1)
 	, current_pos (0)
@@ -2932,9 +2932,9 @@ Grid::set_current_cursor_undefined ()
 {
 	// Remember the current mtp to update the current track and the
 	// step editor
-	previous_mtp = current_mtp;
+	previous_tp = current_tp;
 
-	current_mtp = 0;
+	current_tp = 0;
 	current_col_idx = -1;
 	current_col = 0;
 	current_mti = -1;
@@ -3007,7 +3007,7 @@ Grid::set_current_col (TreeViewColumn* col)
 {
 	// Remember the current mtp to update the current track and the
 	// step editor
-	previous_mtp = current_mtp;
+	previous_tp = current_tp;
 
 	// Update current col
 	current_col = col;
@@ -3015,7 +3015,7 @@ Grid::set_current_col (TreeViewColumn* col)
 
 	// Update current mti, mtp, cgi and types
 	current_mti = to_mti (col);
-	current_mtp = pattern.tps[current_mti];
+	current_tp = pattern.tps[current_mti];
 	current_mri = pattern.to_mri (current_row_idx, current_mti);
 	current_cgi = to_cgi (col);
 	current_note_type = get_note_type (col);
@@ -3023,7 +3023,7 @@ Grid::set_current_col (TreeViewColumn* col)
 	current_is_note_type = is_note_type (col);
 
 	// Update selected track and step editor
-	if (previous_mtp != current_mtp) {
+	if (previous_tp != current_tp) {
 		select_current_track();
 		unset_step_editing_previous_track ();
 		set_step_editing_current_track ();
@@ -4217,31 +4217,31 @@ Grid::is_auto_type (const Gtk::TreeViewColumn* col) const
 void
 Grid::select_current_track ()
 {
-	TimeAxisView* tav = tracker_editor.public_editor.time_axis_view_from_stripable (current_mtp->track);
+	TimeAxisView* tav = tracker_editor.public_editor.time_axis_view_from_stripable (current_tp->track);
 	tracker_editor.public_editor.get_selection ().set (tav);
 }
 
 void
 Grid::set_step_editing_current_track ()
 {
-	if (tracker_editor.main_toolbar.step_edit && current_mtp && current_mtp->is_midi_track_pattern ()) {
-		current_mtp->midi_track ()->set_step_editing (true, false);
+	if (tracker_editor.main_toolbar.step_edit && current_tp && current_tp->is_midi_track_pattern ()) {
+		current_tp->midi_track ()->set_step_editing (true, false);
 	}
 }
 
 void
 Grid::unset_step_editing_current_track ()
 {
-	if (current_mtp && current_mtp->is_midi_track_pattern ()) {
-		current_mtp->midi_track ()->set_step_editing (false, false);
+	if (current_tp && current_tp->is_midi_track_pattern ()) {
+		current_tp->midi_track ()->set_step_editing (false, false);
 	}
 }
 
 void
 Grid::unset_step_editing_previous_track ()
 {
-	if (previous_mtp && previous_mtp->is_midi_track_pattern ()) {
-		previous_mtp->midi_track ()->set_step_editing (false, false);
+	if (previous_tp && previous_tp->is_midi_track_pattern ()) {
+		previous_tp->midi_track ()->set_step_editing (false, false);
 	}
 }
 
@@ -4322,7 +4322,7 @@ Grid::step_editing_check_midi_event ()
 	if (!is_current_cursor_defined ())
 		return true;
 
-	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_mtp->midi_track ()->step_edit_ring_buffer());
+	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_tp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
 	uint32_t bufsize = 32;       // Only 32???
 
@@ -4463,7 +4463,12 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 	// If there is a chord being formed, then move the current cursor
 	// to leave room for that chord
 	if (chord_mode() and !current_on_notes.empty()) {
-		// NEXT.14: move current cursor to the right, adding column if necessarily
+		MidiTrackPattern* mtp = current_tp->midi_track_pattern();
+		// NEXT.14: add column if needed Get current midi track pattern
+		// via current_tp and TrackPattern::midi_track_pattern().
+		// Compare current_cgi with MidiTrackPattern::get_ntracks() and
+		// use MidiTrackPattern::inc_ntracks() if needed.
+		horizontal_move_current_cursor (1, true);
 	}
 
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
@@ -4478,6 +4483,8 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
+	// NEXT.14: copy code above
+
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
 	// In chord mode, vertical move is differed once the notes have been released.
 	if (!chord_mode())
@@ -5401,12 +5408,12 @@ bool
 Grid::non_editing_key_release (GdkEventKey* ev)
 {
 	// Make sure there is a current track
-	if (!current_mtp) {
+	if (!current_tp) {
 		return false;
 	}
 
 	// Make sure it is a midi track
-	if (!current_mtp->is_midi_track_pattern ()) {
+	if (!current_tp->is_midi_track_pattern ()) {
 		return false;
 	}
 
