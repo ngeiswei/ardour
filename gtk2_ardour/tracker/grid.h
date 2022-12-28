@@ -312,8 +312,8 @@ public:
 	int current_col_idx;
 	Gtk::TreeViewColumn* current_col;
 	int current_mti; // multi track index
-	TrackPattern* previous_mtp;
-	TrackPattern* current_mtp;
+	TrackPattern* previous_tp;
+	TrackPattern* current_tp;
 	int current_mri; // midi region index
 	int current_cgi; // column group index
 	int current_pos; // toolbar position, once adjusted
