@@ -4464,10 +4464,9 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 	// to leave room for that chord
 	if (chord_mode() and !current_on_notes.empty()) {
 		MidiTrackPattern* mtp = current_tp->midi_track_pattern();
-		// NEXT.14: add column if needed Get current midi track pattern
-		// via current_tp and TrackPattern::midi_track_pattern().
-		// Compare current_cgi with MidiTrackPattern::get_ntracks() and
-		// use MidiTrackPattern::inc_ntracks() if needed.
+		// Make sure there is enough room for the next note
+		if (mtp && mtp->get_ntracks() < current_cgi + 1)
+			mtp->inc_ntracks();
 		horizontal_move_current_cursor (1, true);
 	}
 
@@ -4483,7 +4482,15 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
-	// NEXT.14: copy code above
+	// If there is a chord being formed, then move the current cursor
+	// to leave room for that chord
+	if (chord_mode() and !current_on_notes.empty()) {
+		MidiTrackPattern* mtp = current_tp->midi_track_pattern();
+		// Make sure there is enough room for the next note
+		if (mtp && mtp->get_ntracks() < current_cgi + 1)
+			mtp->inc_ntracks();
+		horizontal_move_current_cursor (1, true);
+	}
 
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
 	// In chord mode, vertical move is differed once the notes have been released.
