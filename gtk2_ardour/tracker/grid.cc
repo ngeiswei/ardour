@@ -3969,8 +3969,10 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 
 // TODO: support jump, maybe
 void
-Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool track, bool jump)
+Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool group, bool track, bool jump)
 {
+	// NEXT.14: implement group
+
 	// Keep track of the init column type to support tab and detect infinit loops
 	TreeViewColumn* init_col = to_col (colnum);
 	int pre_mti = to_mti (init_col);
@@ -5176,11 +5178,11 @@ Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playh
 }
 
 void
-Grid::horizontal_move_current_cursor (int steps, bool track)
+Grid::horizontal_move_current_cursor (int steps, bool group, bool track)
 {
 	int colnum = current_col_idx;
 	TreeModel::Path path = current_path;
-	horizontal_move (colnum, current_path, steps, track);
+	horizontal_move (colnum, current_path, steps, group, track);
 	TreeViewColumn* col = to_col (colnum);
 	set_current_cursor (path, col);
 }
@@ -5216,7 +5218,9 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 		{
 			// TODO: unfortunately Shift-Tab makes the focus go away
 			bool is_shift = ev->state & GDK_SHIFT_MASK;
-			horizontal_move_current_cursor (is_shift ? -1 : 1, true);
+			bool group = false;
+			bool track = true;
+			horizontal_move_current_cursor (is_shift ? -1 : 1, group, track);
 			ret = true;
 			break;
 		}
