@@ -3969,7 +3969,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 
 // TODO: support jump, maybe
 void
-Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool tab, bool jump)
+Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool track, bool jump)
 {
 	// Keep track of the init column type to support tab and detect infinit loops
 	TreeViewColumn* init_col = to_col (colnum);
@@ -3986,7 +3986,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		}
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
-			if (tab) {
+			if (track) {
 				int col_mti = to_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
@@ -4010,7 +4010,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		}
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
-			if (tab) {
+			if (track) {
 				int col_mti = to_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
@@ -5176,11 +5176,11 @@ Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playh
 }
 
 void
-Grid::horizontal_move_current_cursor (int steps, bool tab)
+Grid::horizontal_move_current_cursor (int steps, bool track)
 {
 	int colnum = current_col_idx;
 	TreeModel::Path path = current_path;
-	horizontal_move (colnum, current_path, steps, tab);
+	horizontal_move (colnum, current_path, steps, track);
 	TreeViewColumn* col = to_col (colnum);
 	set_current_cursor (path, col);
 }
