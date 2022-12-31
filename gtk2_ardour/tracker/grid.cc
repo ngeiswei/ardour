@@ -3922,7 +3922,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 			steps++;
 		}
 
-		// Avoid infinit loops
+		// Avoid infinite loops
 		if (path == init_path) {
 			break;
 		}
@@ -3951,7 +3951,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 			steps--;
 		}
 
-		// Avoid infinit loops
+		// Avoid infinite loops
 		if (path == init_path) {
 			break;
 		}
@@ -3973,7 +3973,7 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 {
 	// NEXT.14: implement group
 
-	// Keep track of the init column type to support tab and detect infinit loops
+	// Keep track of the init column type to support tab and detect infinite loops
 	TreeViewColumn* init_col = to_col (colnum);
 	int pre_mti = to_mti (init_col);
 
