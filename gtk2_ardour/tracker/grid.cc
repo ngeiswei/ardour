@@ -3971,7 +3971,7 @@ Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps
 void
 Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps, bool group, bool track, bool jump)
 {
-	// NEXT.14: implement group
+	// NEXT.14: cycle group within the same track
 
 	// Keep track of the init column type to support tab and detect infinite loops
 	TreeViewColumn* init_col = to_col (colnum);
@@ -4339,6 +4339,9 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
+	// NEXT.14: find out why off note is not detected
+	std::cout << "Grid::step_editing_check_midi_event ()" << std::endl;
+
 	// Make sure some current cursor is defined
 	if (!is_current_cursor_defined ())
 		return true;
@@ -4368,7 +4371,10 @@ Grid::step_editing_check_midi_event ()
 			break;
 		}
 
+		std::cout << "size = " << size << ", type = " << type << std::endl;
+
 		if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_OFF && size == 3) {
+			std::cout << "Off note" << std::endl;
 			uint8_t pitch = buf[1];
 			current_on_notes.erase(pitch);
 			if (chord_mode() and current_on_notes.empty()) {
@@ -4376,6 +4382,7 @@ Grid::step_editing_check_midi_event ()
 			}
 		}
 		else if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_ON && size == 3) {
+			std::cout << "On note" << std::endl;
 			uint8_t pitch = buf[1];
 			uint8_t ch = buf[0] & 0xf;
 			uint8_t vel = buf[2];
@@ -4481,42 +4488,37 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
 	// std::cout << "Grid::step_editing_set_on_note (pitch=" << pitch << ", play=" << play << ")" << std::endl;
 
-	// If there is a chord being formed, then move the current cursor
-	// to leave room for that chord
-	if (chord_mode() and !current_on_notes.empty()) {
-		MidiTrackPattern* mtp = current_tp->midi_track_pattern();
-		// Make sure there is enough room for the next note
-		if (mtp && mtp->get_ntracks() < current_cgi + 1)
-			mtp->inc_ntracks();
+	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
+
+	// In chord mode, move the cursor to the right to form a chord and differ
+	// vertical move once the notes have been released.
+	if (chord_mode()) {
 		horizontal_move_current_cursor (1, true);
+	} else {
+		vertical_move_current_cursor_default_steps (wrap(), jump());
 	}
 
-	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
-	// In chord mode, vertical move is differed once the notes have been released.
-	if (!chord_mode())
-		vertical_move_current_cursor_default_steps (wrap(), jump());
-	if (play)
+	if (play) {
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
+	}
 	return true;
 }
 
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
-	// If there is a chord being formed, then move the current cursor
-	// to leave room for that chord
-	if (chord_mode() and !current_on_notes.empty()) {
-		MidiTrackPattern* mtp = current_tp->midi_track_pattern();
-		// Make sure there is enough room for the next note
-		if (mtp && mtp->get_ntracks() < current_cgi + 1)
-			mtp->inc_ntracks();
-		horizontal_move_current_cursor (1, true);
-	}
+	// std::cout << "Grid::step_editing_set_on_note (pitch=" << (int)pitch << ", ch=" << (int)ch << ", vel=" << (int)vel << ", play=" << play << ")" << std::endl;
 
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
-	// In chord mode, vertical move is differed once the notes have been released.
-	if (!chord_mode())
+
+	// In chord mode, move the cursor to the right to form a chord and differ
+	// vertical move once the notes have been released.
+	if (chord_mode()) {
+		horizontal_move_current_cursor (1, true);
+	} else {
 		vertical_move_current_cursor_default_steps (wrap(), jump());
+	}
+
 	if (play)
 		play_note (current_mti, pitch, ch_vel.first, ch_vel.second);
 	return true;
@@ -5199,6 +5201,8 @@ Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playh
 void
 Grid::horizontal_move_current_cursor (int steps, bool group, bool track)
 {
+	std::cout << "Grid::horizontal_move_current_cursor (steps=" << steps << ", group=" << group << ", track=" << track << ")" << std::endl;
+
 	int colnum = current_col_idx;
 	TreeModel::Path path = current_path;
 	horizontal_move (colnum, current_path, steps, group, track);
