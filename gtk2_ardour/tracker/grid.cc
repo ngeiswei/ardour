@@ -3976,6 +3976,9 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 	// Keep track of the init column type to support tab and detect infinite loops
 	TreeViewColumn* init_col = to_col (colnum);
 	int pre_mti = to_mti (init_col);
+	int pre_cgi = to_cgi (init_col);
+	TrackerColumn::midi_note_type pre_note_type = get_note_type (init_col);
+	TrackerColumn::automation_type pre_auto_type = get_auto_type (init_col);
 
 	const int n_col = get_columns ().size ();
 	TreeViewColumn* col;
@@ -3988,7 +3991,15 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		}
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
-			if (track) {
+			if (group) {
+				int col_cgi = to_cgi (col);
+				TrackerColumn::midi_note_type col_note_type = get_note_type (col);
+				TrackerColumn::automation_type col_auto_type = get_auto_type (col);
+				if (pre_cgi != col_cgi && pre_note_type == col_note_type && pre_auto_type == col_auto_type) {
+					pre_cgi = col_cgi;
+					++steps;
+				}
+			} else if (track) {
 				int col_mti = to_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
@@ -4012,7 +4023,15 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 		}
 		col = to_col (colnum);
 		if (col->get_visible () && is_editable (col) && is_cell_defined (path, col)) {
-			if (track) {
+			if (group) {
+				int col_cgi = to_cgi (col);
+				TrackerColumn::midi_note_type col_note_type = get_note_type (col);
+				TrackerColumn::automation_type col_auto_type = get_auto_type (col);
+				if (pre_cgi != col_cgi && pre_note_type == col_note_type && pre_auto_type == col_auto_type) {
+					pre_cgi = col_cgi;
+					--steps;
+				}
+			} else if (track) {
 				int col_mti = to_mti (col);
 				if (pre_mti != col_mti) {
 					pre_mti = col_mti;
