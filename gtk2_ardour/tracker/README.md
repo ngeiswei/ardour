@@ -47,6 +47,8 @@ the flag `--with-tracker-editor`, such as
 - [ ] Try to get to the bottom of `foo ()` vs `foo()`
 - [ ] Remove `Route::get_control`
 - [ ] Create PR
+- [ ] Create shortcut key to move to automation vs note
+- [ ] Add shortcut key to cycle through group index
 - [ ] Set position when clicking on the digit position (if the cell is already selected)
 - [ ] Add row index column (very first one)
 - [ ] Fix situation when the cursor on the current track is different than the
