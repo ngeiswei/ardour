@@ -4339,9 +4339,6 @@ Grid::pitch_key (GdkEventKey* ev)
 bool
 Grid::step_editing_check_midi_event ()
 {
-	// NEXT.14: find out why off note is not detected
-	std::cout << "Grid::step_editing_check_midi_event ()" << std::endl;
-
 	// Make sure some current cursor is defined
 	if (!is_current_cursor_defined ())
 		return true;
@@ -4371,10 +4368,7 @@ Grid::step_editing_check_midi_event ()
 			break;
 		}
 
-		std::cout << "size = " << size << ", type = " << type << std::endl;
-
 		if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_OFF && size == 3) {
-			std::cout << "Off note" << std::endl;
 			uint8_t pitch = buf[1];
 			current_on_notes.erase(pitch);
 			if (chord_mode() and current_on_notes.empty()) {
@@ -4382,7 +4376,6 @@ Grid::step_editing_check_midi_event ()
 			}
 		}
 		else if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_ON && size == 3) {
-			std::cout << "On note" << std::endl;
 			uint8_t pitch = buf[1];
 			uint8_t ch = buf[0] & 0xf;
 			uint8_t vel = buf[2];
@@ -5201,7 +5194,7 @@ Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playh
 void
 Grid::horizontal_move_current_cursor (int steps, bool group, bool track)
 {
-	std::cout << "Grid::horizontal_move_current_cursor (steps=" << steps << ", group=" << group << ", track=" << track << ")" << std::endl;
+	// std::cout << "Grid::horizontal_move_current_cursor (steps=" << steps << ", group=" << group << ", track=" << track << ")" << std::endl;
 
 	int colnum = current_col_idx;
 	TreeModel::Path path = current_path;
