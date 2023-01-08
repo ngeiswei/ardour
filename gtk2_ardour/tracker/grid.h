@@ -395,8 +395,9 @@ private:
 
 	// Move a colnum by s steps, wrapping around so that is remains in the
 	// visible columns.  If group is true, then jump directly the next note
-	// group (a note group is a note, channel, velocity and delay columns).  If
-	// track is true, then jump directly to the next track.
+	// group (a note group is a note, channel, velocity and delay columns),
+	// cycling through the same track.  If track is true, then jump directly to
+	// the next track.
 	void horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int s, bool group, bool track, bool jump=false);
 
 	int digit_key_press (GdkEventKey* ev);
@@ -421,8 +422,9 @@ private:
 
 	// Move the current cursor steps columns rightwards, or leftwards if steps
 	// is negative.  If group is true, then jump directly the next note group (a
-	// note group is a note, channel, velocity and delay columns).  If track is
-	// true, then jump directly to the next track.
+	// note group is a note, channel, velocity and delay columns), cycling
+	// through the same track.  If track is true, then jump directly to the next
+	// track.
 	void horizontal_move_current_cursor (int steps, bool group=false, bool track=false);
 
 	bool move_current_cursor_key_press (GdkEventKey*);
