@@ -1,6 +1,8 @@
 # Next
 
-- [ ] NEXT.14: Test chord mode + support non midi keyboard (see Grid::release_note as a starting point)
+- [ ] NEXT.14: Test chord mode + support non midi keyboard.  The ultimate
+      function called on key release event is Grid::key_release, start from
+      there.
 - [ ] NEXT.13: create TrackAutomationSetPattern that holds all track
       automations (region automation patterns excluded).
 - [ ] NEXT.12: replace track_automation_pattern by track_automation_set_pattern
