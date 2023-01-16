@@ -5457,7 +5457,7 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 bool
 Grid::key_press (GdkEventKey* ev)
 {
-	// TODO: disable repeating for anything but cursor move, or make editing, really, really, really snappy
+	// NEXT.15: disable repeating for on notes when chord mode is enabled
 
 	bool ret = false;
 	if (tracker_editor.main_toolbar.step_edit) {
@@ -5513,6 +5513,9 @@ Grid::key_release (GdkEventKey* ev)
 	}
 
 	ret = non_editing_key_release (ev);
+
+	// NEXT.14: if editing and chord mode is enabled, it could call
+	// editing_key_release (to be implemented)
 
 	// Reset last keyval
 	if (last_keyval == ev->keyval) {
