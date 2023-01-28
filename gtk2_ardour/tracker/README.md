@@ -1,6 +1,5 @@
 # Next
 
-- [ ] NEXT.15: Repeat only on note when chord mode is disable
 - [ ] NEXT.14: Support non midi keyboard, see Grid::key_release.
 - [ ] NEXT.13: create TrackAutomationSetPattern that holds all track
       automations (region automation patterns excluded).
