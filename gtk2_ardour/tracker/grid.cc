@@ -5495,7 +5495,7 @@ Grid::step_editing_key_release (GdkEventKey* ev)
 	if (pitch < 128) {
 		release_note (current_mti, pitch);
 		current_on_notes.erase(pitch);
-		if (chord_mode() and current_on_notes.empty()) {
+		if (current_note_type == TrackerColumn::NOTE && chord_mode() && current_on_notes.empty()) {
 			vertical_move_current_cursor_default_steps (wrap(), jump());
 		}
 
