@@ -4508,10 +4508,11 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 
 	default: {
 		// On notes
-		uint8_t ptc = pitch_key (ev);
-		if (is_current_cursor_defined () && ptc < 128) {
+		uint8_t pitch = pitch_key (ev);
+		if (is_current_cursor_defined () && pitch < 128) {
 			if (!chord_mode() || last_keyval != ev->keyval) { // Avoid key repeat in chord mode
-				ret = step_editing_set_on_note (ptc);
+				current_on_notes.insert(pitch);
+				ret = step_editing_set_on_note (pitch);
 			}
 		}
 		break;
@@ -5454,10 +5455,10 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 
 	default: {
 		// On notes
-		uint8_t ptc = pitch_key (ev);
-		if (is_current_cursor_defined () && ptc < 128) {
+		uint8_t pitch = pitch_key (ev);
+		if (is_current_cursor_defined () && pitch < 128) {
 			if (last_keyval != ev->keyval) { // Avoid key repeat
-				play_note (current_mti, ptc);
+				play_note (current_mti, pitch);
 			}
 			ret = true;
 		}
@@ -5477,6 +5478,34 @@ Grid::on_key_press_event (GdkEventKey* event)
 }
 
 bool
+Grid::step_editing_key_release (GdkEventKey* ev)
+{
+	// Make sure there is a current track
+	if (!current_tp) {
+		return false;
+	}
+
+	// Make sure it is a midi track
+	if (!current_tp->is_midi_track_pattern ()) {
+		return false;
+	}
+
+	// Release a possible on note and move cursor if in chord mode
+	uint8_t pitch = pitch_key (ev);
+	if (pitch < 128) {
+		release_note (current_mti, pitch);
+		current_on_notes.erase(pitch);
+		if (chord_mode() and current_on_notes.empty()) {
+			vertical_move_current_cursor_default_steps (wrap(), jump());
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool
 Grid::non_editing_key_release (GdkEventKey* ev)
 {
 	// Make sure there is a current track
@@ -5490,9 +5519,9 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 	}
 
 	// Release a possible on note
-	uint8_t ptc = pitch_key (ev);
-	if (ptc < 128) {
-		release_note (current_mti, ptc);
+	uint8_t pitch = pitch_key (ev);
+	if (pitch < 128) {
+		release_note (current_mti, pitch);
 		return true;
 	}
 
@@ -5502,13 +5531,7 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 bool
 Grid::key_press (GdkEventKey* ev)
 {
-	bool ret = false;
-	if (step_edit()) {
-		ret = step_editing_key_press (ev);
-	}
-	else {
-		ret = non_editing_key_press (ev);
-	}
+	bool ret = step_edit() ? step_editing_key_press (ev) : non_editing_key_press (ev);
 
 	// Store last keyval to avoid repeating note during key repeat
 	last_keyval = ev->keyval;
@@ -5519,20 +5542,13 @@ Grid::key_press (GdkEventKey* ev)
 bool
 Grid::key_release (GdkEventKey* ev)
 {
-	bool ret = false;
-
 	// Hack to handle shift modifer
 	switch (ev->keyval) {
 	case GDK_Shift_L:
-	case GDK_Shift_R:
-		ret = shift_key_release ();
-		return ret;
+	case GDK_Shift_R: return shift_key_release ();
 	}
 
-	ret = non_editing_key_release (ev);
-
-	// NEXT.14: if editing and chord mode is enabled, it could call
-	// editing_key_release (to be implemented)
+	bool ret = step_edit() ? step_editing_key_release (ev) : non_editing_key_release (ev);
 
 	// Reset last keyval
 	if (last_keyval == ev->keyval) {
