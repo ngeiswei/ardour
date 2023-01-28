@@ -121,7 +121,6 @@ void
 MultiTrackPattern::setup_region_views_per_track ()
 {
 	// Associate track to its region selections
-	int i = 0;
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
 		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
 		std::vector<RegionView*>& region_views = region_views_per_track[track];

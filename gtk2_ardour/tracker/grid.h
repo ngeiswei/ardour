@@ -596,6 +596,7 @@ public:
 
 private:
 	bool step_editing_key_press (GdkEventKey*);
+	bool step_editing_key_release (GdkEventKey*);
 	bool step_editing_note_key_press (GdkEventKey*);
 	bool step_editing_set_on_note (uint8_t pitch, bool play=true);
 	bool step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play=true);
