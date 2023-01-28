@@ -4467,7 +4467,9 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 		// On notes
 		uint8_t ptc = pitch_key (ev);
 		if (is_current_cursor_defined () && ptc < 128) {
-			ret = step_editing_set_on_note (ptc);
+			if (!chord_mode() || last_keyval != ev->keyval) { // Avoid key repeat in chord mode
+				ret = step_editing_set_on_note (ptc);
+			}
 		}
 		break;
 	}
@@ -5411,7 +5413,7 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		// On notes
 		uint8_t ptc = pitch_key (ev);
 		if (is_current_cursor_defined () && ptc < 128) {
-			if (last_keyval != ev->keyval) {
+			if (last_keyval != ev->keyval) { // Avoid key repeat
 				play_note (current_mti, ptc);
 			}
 			ret = true;
@@ -5457,8 +5459,6 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 bool
 Grid::key_press (GdkEventKey* ev)
 {
-	// NEXT.15: disable repeating for on notes when chord mode is enabled
-
 	bool ret = false;
 	if (tracker_editor.main_toolbar.step_edit) {
 		switch (current_auto_type) {
