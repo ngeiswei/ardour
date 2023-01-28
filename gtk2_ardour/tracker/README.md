@@ -1,6 +1,5 @@
 # Next
 
-- [ ] NEXT.14: Support non midi keyboard, see Grid::key_release.
 - [ ] NEXT.13: create TrackAutomationSetPattern that holds all track
       automations (region automation patterns excluded).
 - [ ] NEXT.12: replace track_automation_pattern by track_automation_set_pattern
