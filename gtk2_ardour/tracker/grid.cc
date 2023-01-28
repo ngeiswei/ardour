@@ -2958,7 +2958,7 @@ Grid::is_current_col_defined () const
 bool
 Grid::is_current_cursor_defined ()
 {
-	return is_current_col_defined () and is_cell_defined (current_path, current_col);
+	return is_current_col_defined () && is_cell_defined (current_path, current_col);
 }
 
 void
@@ -2991,7 +2991,7 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 	scroll_to_current_row ();
 
 	// Update playhead accordingly
-	if (set_playhead and tracker_editor.main_toolbar.sync_playhead) {
+	if (set_playhead && tracker_editor.main_toolbar.sync_playhead) {
 		clock_pos = Temporal::timepos_t (pattern.sample_at_row (current_row_idx));
 		skip_follow_playhead.push (current_row_idx);
 		tracker_editor.session->request_locate (clock_pos.samples ());
@@ -4377,7 +4377,7 @@ Grid::step_editing_check_midi_event ()
 		if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_OFF && size == 3) {
 			uint8_t pitch = buf[1];
 			current_on_notes.erase(pitch);
-			if (chord_mode() and current_on_notes.empty()) {
+			if (chord_mode() && current_on_notes.empty()) {
 				vertical_move_current_cursor_default_steps (wrap(), jump());
 			}
 		}
