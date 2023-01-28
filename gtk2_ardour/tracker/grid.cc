@@ -1122,7 +1122,7 @@ Grid::redisplay_current_row_background ()
 {
 	if (current_row_idx < 0)
 		return;
-	string color = tracker_editor.main_toolbar.step_edit ? current_edit_row_color : current_row_color;
+	string color = step_edit() ? current_edit_row_color : current_row_color;
 	redisplay_row_background_color (current_row, current_row_idx, color);
 }
 
@@ -1810,7 +1810,7 @@ Grid::unset_underline_current_step_edit_auto_cell ()
 void
 Grid::set_underline_current_step_edit_cell ()
 {
-	if (tracker_editor.main_toolbar.step_edit) {
+	if (step_edit()) {
 		if (current_is_note_type) {
 			set_underline_current_step_edit_note_cell ();
 		} else {
@@ -4049,6 +4049,12 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 }
 
 bool
+Grid::step_edit() const
+{
+	return tracker_editor.main_toolbar.step_edit;
+}
+
+bool
 Grid::chord_mode() const
 {
 	return tracker_editor.main_toolbar.chord_mode;
@@ -4245,7 +4251,7 @@ Grid::select_current_track ()
 void
 Grid::set_step_editing_current_track ()
 {
-	if (tracker_editor.main_toolbar.step_edit && current_tp && current_tp->is_midi_track_pattern ()) {
+	if (step_edit() && current_tp && current_tp->is_midi_track_pattern ()) {
 		current_tp->midi_track ()->set_step_editing (true, false);
 	}
 }
@@ -4410,6 +4416,43 @@ Grid::step_editing_check_midi_event ()
 	delete [] buf;
 
 	return true; // do it again, till we stop
+}
+
+bool
+Grid::step_editing_key_press (GdkEventKey* ev)
+{
+	bool ret = false;
+
+	switch (current_auto_type) {
+	case TrackerColumn::AUTOMATION_SEPARATOR:
+		switch (current_note_type) {
+		case TrackerColumn::NOTE:
+			ret = step_editing_note_key_press (ev);
+			break;
+		case TrackerColumn::CHANNEL:
+			ret = step_editing_note_channel_key_press (ev);
+			break;
+		case TrackerColumn::VELOCITY:
+			ret = step_editing_note_velocity_key_press (ev);
+			break;
+		case TrackerColumn::DELAY:
+			ret = step_editing_note_delay_key_press (ev);
+			break;
+		default:
+			cerr << "Grid::key_press: Implementation Error!" << endl;
+		}
+		break;
+	case TrackerColumn::AUTOMATION:
+		ret = step_editing_automation_key_press (ev);
+		break;
+	case TrackerColumn::AUTOMATION_DELAY:
+		ret = step_editing_automation_delay_key_press (ev);
+		break;
+	default:
+		cerr << "Grid::key_press: Implementation Error!" << endl;
+	}
+
+	return ret;
 }
 
 bool
@@ -5460,40 +5503,14 @@ bool
 Grid::key_press (GdkEventKey* ev)
 {
 	bool ret = false;
-	if (tracker_editor.main_toolbar.step_edit) {
-		switch (current_auto_type) {
-		case TrackerColumn::AUTOMATION_SEPARATOR:
-			switch (current_note_type) {
-			case TrackerColumn::NOTE:
-				ret = step_editing_note_key_press (ev);
-				break;
-			case TrackerColumn::CHANNEL:
-				ret = step_editing_note_channel_key_press (ev);
-				break;
-			case TrackerColumn::VELOCITY:
-				ret = step_editing_note_velocity_key_press (ev);
-				break;
-			case TrackerColumn::DELAY:
-				ret = step_editing_note_delay_key_press (ev);
-				break;
-			default:
-				cerr << "Grid::key_press: Implementation Error!" << endl;
-			}
-			break;
-		case TrackerColumn::AUTOMATION:
-			ret = step_editing_automation_key_press (ev);
-			break;
-		case TrackerColumn::AUTOMATION_DELAY:
-			ret = step_editing_automation_delay_key_press (ev);
-			break;
-		default:
-			cerr << "Grid::key_press: Implementation Error!" << endl;
-		}
+	if (step_edit()) {
+		ret = step_editing_key_press (ev);
 	}
-	else
+	else {
 		ret = non_editing_key_press (ev);
+	}
 
-	// Store last keyval to avoid repeating note
+	// Store last keyval to avoid repeating note during key repeat
 	last_keyval = ev->keyval;
 
 	return ret;
