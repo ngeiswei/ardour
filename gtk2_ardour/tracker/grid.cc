@@ -4460,8 +4460,6 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 {
 	// std::cout << "Grid::step_editing_note_key_press (ev=" << ev << ")" << std::endl;
 
-	// NEXT.14: find out why the key is passed to ardour in chord mode
-
 	bool ret = false;
 
 	switch (ev->keyval) {
