@@ -4460,6 +4460,8 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 {
 	// std::cout << "Grid::step_editing_note_key_press (ev=" << ev << ")" << std::endl;
 
+	// NEXT.14: find out why the key is passed to ardour in chord mode
+
 	bool ret = false;
 
 	switch (ev->keyval) {
@@ -4513,6 +4515,8 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 			if (!chord_mode() || last_keyval != ev->keyval) { // Avoid key repeat in chord mode
 				current_on_notes.insert(pitch);
 				ret = step_editing_set_on_note (pitch);
+			} else {
+				ret = true;
 			}
 		}
 		break;
