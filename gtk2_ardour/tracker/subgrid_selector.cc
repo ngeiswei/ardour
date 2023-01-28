@@ -92,13 +92,13 @@ SubgridSelector::unset ()
 bool
 SubgridSelector::has_source () const
 {
-	return 0 <= src_row_idx and 0 <= src_col_idx;
+	return 0 <= src_row_idx && 0 <= src_col_idx;
 }
 
 bool
 SubgridSelector::has_destination () const
 {
-	return 0 <= dst_row_idx and 0 <= dst_col_idx;
+	return 0 <= dst_row_idx && 0 <= dst_col_idx;
 }
 
 void
