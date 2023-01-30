@@ -16,34 +16,34 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_region_automation_pattern_h_
-#define __ardour_tracker_region_automation_pattern_h_
+#ifndef __ardour_tracker_midi_region_automation_pattern_h_
+#define __ardour_tracker_midi_region_automation_pattern_h_
 
 #include "ardour/midi_model.h"
 #include "ardour/midi_track.h"
 #include "ardour/region.h"
 
 #include "automation_pattern.h"
-#include "region_automation_pattern_phenomenal_diff.h"
+#include "midi_region_automation_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
 /**
- * Data structure holding the automation list pattern held by a
- * region.  TODO: for now it is overspecialized for midi region, later
- * it should probably be abstracted to support (be the base of) audio
- * and midi region patterns.
+ * Data structure holding the automation list pattern held by a region.  For
+ * now it is overspecialized for midi region, later it should probably be
+ * inherited from a more abstract RegionAutomationPattern class to support (be
+ * the base of) audio and midi region patterns.
  */
-class RegionAutomationPattern : public AutomationPattern {
+class MidiRegionAutomationPattern : public AutomationPattern {
 public:
-	RegionAutomationPattern (TrackerEditor& te,
-	                         MidiTrackPtr midi_track,
-	                         MidiRegionPtr region,
-	                         bool connect);
+	MidiRegionAutomationPattern (TrackerEditor& te,
+                                MidiTrackPtr midi_track,
+                                MidiRegionPtr region,
+                                bool connect);
 
-	RegionAutomationPattern& operator= (const RegionAutomationPattern& other);
+	MidiRegionAutomationPattern& operator= (const MidiRegionAutomationPattern& other);
 
-	RegionAutomationPatternPhenomenalDiff phenomenal_diff (const RegionAutomationPattern& prev) const;
+	MidiRegionAutomationPatternPhenomenalDiff phenomenal_diff (const MidiRegionAutomationPattern& prev) const;
 
 	// Insert all existing region (midi) automation controls in
 	// _automation_controls and connect then to the grid
@@ -64,8 +64,11 @@ public:
 
 	MidiTrackPtr midi_track;
 	MidiModelPtr midi_model;
+
+private:
+	RegionPtr _region;
 };
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_region_automation_pattern_h_ */
+#endif /* __ardour_tracker_midi_region_automation_pattern_h_ */

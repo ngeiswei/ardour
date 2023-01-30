@@ -232,9 +232,9 @@ public:
 	void redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 	void redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff = 0);
 	void redisplay_region_notes (int mti, int mri, const NotesPattern& np, const NotesPatternPhenomenalDiff* np_diff = 0);
-	void redisplay_region_automations (int mti, int mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* np_diff = 0);
-	void redisplay_region_automation_param (int mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param);
+	void redisplay_region_automations (int mti, int mri, const MidiRegionAutomationPattern& mrap, const MidiRegionAutomationPatternPhenomenalDiff* np_diff = 0);
+	void redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param);
 	void redisplay_note_column (int mti, int mri, int cgi, const NotesPattern& np, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_note (int mti, int mri, int cgi, int row_idx, const NotesPattern& np);
 	void redisplay_selection ();

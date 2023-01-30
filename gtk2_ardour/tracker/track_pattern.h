@@ -43,14 +43,13 @@ class AudioTrackPattern;
 /**
  * Abstract class to represent track patterns (midi, audio, etc).
  */
-// NEXT.2: do we really want to inherit from AutomationPattern?
-// Probably not, would be better to have main (fader, etc) and
-// processor automation patterns.  BTW, we might want to have
-// RegionAutomationPattern and TrackAutomationPattern, wait a minute!
-// Is that what TrackAutomationPattern for?  Answer: Yes!
-// TrackAutomationPattern is track automation, as opposed to region
-// automation.  Except that now TrackAutomationPattern should actually
-// be a vector of ProcessorAutomationPattern.  Need to rethink that
+// NEXT.2: do we really want to inherit from AutomationPattern?  Probably not,
+// would be better to have main (fader, etc) and processor automation patterns.
+// BTW, we might want to have MidiRegionAutomationPattern and
+// TrackAutomationPattern, wait a minute!  Is that what TrackAutomationPattern
+// for?  Answer: Yes!  TrackAutomationPattern is track automation, as opposed
+// to region automation.  Except that now TrackAutomationPattern should
+// actually be a vector of ProcessorAutomationPattern.  Need to rethink that
 // carefully.
 class TrackPattern : public BasePattern /* NEXT: used to inherit from AutomationPattern, but I believe it should NOT, instead BasePattern seems reasonable */ {
 public:

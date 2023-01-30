@@ -21,7 +21,7 @@
 
 #include "base_pattern_phenomenal_diff.h"
 #include "notes_pattern_phenomenal_diff.h"
-#include "region_automation_pattern_phenomenal_diff.h"
+#include "midi_region_automation_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -29,7 +29,7 @@ namespace Tracker {
 struct MidiRegionPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
 	NotesPatternPhenomenalDiff np_diff;
-	RegionAutomationPatternPhenomenalDiff rap_diff;
+	MidiRegionAutomationPatternPhenomenalDiff mrap_diff;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
