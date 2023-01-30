@@ -351,7 +351,7 @@ gtk2_ardour_sources = [
         'tracker/midi_region_pattern.cc',
         'tracker/midi_track_pattern.cc',
         'tracker/audio_track_pattern.cc',
-        'tracker/multi_track_pattern.cc',
+        'tracker/pattern.cc',
         'tracker/main_toolbar.cc',
         'tracker/track_toolbar.cc',
         'tracker/audio_track_toolbar.cc',
@@ -374,7 +374,7 @@ gtk2_ardour_sources = [
         'tracker/track_pattern_phenomenal_diff.cc',
         'tracker/midi_track_pattern_phenomenal_diff.cc',
         'tracker/audio_track_pattern_phenomenal_diff.cc',
-        'tracker/multi_track_pattern_phenomenal_diff.cc',
+        'tracker/pattern_phenomenal_diff.cc',
         'tracker/subgrid_selector.cc'
 ]
 

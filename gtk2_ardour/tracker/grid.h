@@ -30,7 +30,7 @@
 
 #include "main_toolbar.h"
 #include "midi_region_pattern.h"
-#include "multi_track_pattern.h"
+#include "pattern.h"
 #include "track_automation_pattern.h"
 #include "tracker_column.h"
 #include "tracker_utils.h"
@@ -289,11 +289,11 @@ public:
 	std::set<int> visible_automation_columns;
 
 	// Represent patterns across all tracks
-	MultiTrackPattern pattern;
+	Pattern pattern;
 
 	// Store previous pattern to optimize redisplay_grid by only redisplaying
 	// difference
-	MultiTrackPattern prev_pattern;
+	Pattern prev_pattern;
 
 	static const std::string note_off_str;
 
@@ -790,7 +790,7 @@ private:
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
-	MultiTrackPatternPhenomenalDiff _phenomenal_diff;
+	PatternPhenomenalDiff _phenomenal_diff;
 
 	// Stack keeping track of when to skip follow_playhead to avoid
 	// inconsistencies due to the delays between calling set_current_cursor with

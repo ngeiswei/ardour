@@ -39,8 +39,8 @@ using namespace Tracker;
 //
 // Note: the problem has been raised by the following compile error:
 //
-// ../gtk2_ardour/tracker/multi_track_pattern.cc: In member function ‘void Tracker::MultiTrackPattern::insert(int, const Evoral::Parameter&)’:
-// ../gtk2_ardour/tracker/multi_track_pattern.cc:480:19: error: ‘class Tracker::TrackPattern’ has no member named ‘insert’
+// ../gtk2_ardour/tracker/pattern.cc: In member function ‘void Tracker::Pattern::insert(int, const Evoral::Parameter&)’:
+// ../gtk2_ardour/tracker/pattern.cc:480:19: error: ‘class Tracker::TrackPattern’ has no member named ‘insert’
 //   480 |         tps[mti]->insert (param);
 //       |                   ^~~~~~
 //
