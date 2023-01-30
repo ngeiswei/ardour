@@ -522,7 +522,7 @@ AutomationPattern*
 MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param)
 {
 	if (TrackerUtils::is_region_automation (param))
-		return &midi_region_pattern (mti, mri).rap;
+		return &midi_region_pattern (mti, mri).mrap;
 	return &tps[mti]->track_automation_pattern;
 }
 
@@ -530,7 +530,7 @@ const AutomationPattern*
 MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param) const
 {
 	if (TrackerUtils::is_region_automation (param))
-		return &midi_region_pattern (mti, mri).rap;
+		return &midi_region_pattern (mti, mri).mrap;
 	return &tps[mti]->track_automation_pattern;
 }
 

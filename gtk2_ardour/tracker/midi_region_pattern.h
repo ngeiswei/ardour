@@ -24,7 +24,7 @@
 
 #include "midi_region_pattern_phenomenal_diff.h"
 #include "notes_pattern.h"
-#include "region_automation_pattern.h"
+#include "midi_region_automation_pattern.h"
 
 namespace Tracker {
 
@@ -51,7 +51,7 @@ public:
 	// Update enabled
 	void update_enabled ();
 
-	// Update position, etc, of this, np and rap, based on midi_region
+	// Update position, etc, of this, np and mrap, based on midi_region
 	void update_position_etc ();
 
 	// Set position_row_beats, end_row_beats and nrows
@@ -73,10 +73,10 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	NotesPattern np;
-	RegionAutomationPattern rap; // TODO: another option would be to have
-										  // MidiRegionPattern inherits from
-										  // RegionAutomationPattern, but maybe it's an
-										  // evil one.
+	MidiRegionAutomationPattern mrap; // TODO: another option would be to have
+	                                  // MidiRegionPattern inherits from
+	                                  // MidiRegionAutomationPattern, but maybe it's an
+	                                  // evil one.
 	MidiTrackPtr midi_track;
 	MidiModelPtr midi_model;
 	MidiRegionPtr midi_region;
