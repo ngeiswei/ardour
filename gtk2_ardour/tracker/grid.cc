@@ -1380,7 +1380,7 @@ Grid::redisplay_pattern ()
 			redisplay_track (mti);
 		}
 	} else {
-		for (MultiTrackPatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.begin ();
+		for (PatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.begin ();
 		     it != _phenomenal_diff.mti2tp_diff.end (); ++it)
 		{
 			redisplay_track (it->first, it->second);
@@ -1536,7 +1536,7 @@ Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomation
 			//
 			// TODO: An alternate way to deal with that would be to enable such
 			// region during TrackerEditor::setup, Grid::setup or
-			// MultiTrackPattern::setup.
+			// Pattern::setup.
 			pattern.midi_region_pattern (mti, mri).mrap.set_param_enabled (param, true);
 			redisplay_region_automation_param (mti, mri, mrap, param);
 		}

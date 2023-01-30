@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_multi_track_pattern_h_
-#define __ardour_tracker_multi_track_pattern_h_
+#ifndef __ardour_tracker_pattern_h_
+#define __ardour_tracker_pattern_h_
 
 #include "ardour/automation_list.h"
 #include "ardour/midi_model.h"
@@ -27,7 +27,7 @@
 #include "region_view.h"
 
 #include "midi_region_pattern.h"
-#include "multi_track_pattern_phenomenal_diff.h"
+#include "pattern_phenomenal_diff.h"
 #include "midi_notes_pattern.h"
 #include "track_pattern.h"
 #include "tracker_utils.h"
@@ -37,21 +37,21 @@ namespace Tracker {
 class TrackerEditor;
 
 /**
- * Represent patterns of multiple tracks.
+ * Uber pattern representing all musical data in scope.
  */
-class MultiTrackPattern : public BasePattern
+class Pattern : public BasePattern
 {
 public:
 	// Create patterns for selected regions. If connect is true then connect
 	// them to various signals to trigger grid redisplay.
-	MultiTrackPattern (TrackerEditor& te, bool connect);
-	~MultiTrackPattern ();
+	Pattern (TrackerEditor& te, bool connect);
+	~Pattern ();
 
 	// Phenomenal overload of operator= (), only need to copy what is necessary
 	// for phenomenal_diff to correctly operate.
-	MultiTrackPattern& operator= (const MultiTrackPattern& other);
+	Pattern& operator= (const Pattern& other);
 
-	MultiTrackPatternPhenomenalDiff phenomenal_diff (const MultiTrackPattern& prev) const;
+	PatternPhenomenalDiff phenomenal_diff (const Pattern& prev) const;
 
 	void setup ();
 	void setup_positions ();
@@ -205,4 +205,4 @@ private:
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_multi_track_pattern_h_ */
+#endif /* __ardour_tracker_pattern_h_ */
