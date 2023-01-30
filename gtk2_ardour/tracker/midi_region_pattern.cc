@@ -30,7 +30,7 @@ MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
                                       MidiRegionPtr region,
                                       bool connect)
 	: BasePattern (te, region)
-	, np (te, region)
+	, mnp (te, region)
 	, mrap (te, mt, region, connect)
 	, midi_track (mt)
 	, midi_model (region->midi_source (0)->model ())
@@ -53,7 +53,7 @@ MidiRegionPattern::operator= (const MidiRegionPattern& other)
 	}
 
 	BasePattern::operator= (other);
-	np = other.np;
+	mnp = other.mnp;
 	mrap = other.mrap;
 	midi_model = other.midi_model;
 	midi_region = other.midi_region;
@@ -70,7 +70,7 @@ MidiRegionPattern::phenomenal_diff (const MidiRegionPattern& prev) const
 		return diff;
 	}
 
-	diff.np_diff = np.phenomenal_diff (prev.np);
+	diff.mnp_diff = mnp.phenomenal_diff (prev.mnp);
 	diff.mrap_diff = mrap.phenomenal_diff (prev.mrap);
 
 	return diff;
@@ -80,7 +80,7 @@ void
 MidiRegionPattern::set_rows_per_beat (uint16_t rpb)
 {
 	BasePattern::set_rows_per_beat (rpb);
-	np.set_rows_per_beat (rpb);
+	mnp.set_rows_per_beat (rpb);
 	mrap.set_rows_per_beat (rpb);
 }
 
@@ -98,11 +98,11 @@ MidiRegionPattern::update_position_etc ()
 	length_sample = midi_region->length_samples ();
 	first_sample = midi_region->first_sample ();
 	last_sample = midi_region->last_sample ();
-	np.position_sample = position_sample;
-	np.start_sample = start_sample;
-	np.length_sample = length_sample;
-	np.first_sample = first_sample;
-	np.last_sample = last_sample;
+	mnp.position_sample = position_sample;
+	mnp.start_sample = start_sample;
+	mnp.length_sample = length_sample;
+	mnp.first_sample = first_sample;
+	mnp.last_sample = last_sample;
 	mrap.position_sample = position_sample;
 	mrap.start_sample = start_sample;
 	mrap.length_sample = length_sample;
@@ -114,15 +114,15 @@ void
 MidiRegionPattern::set_row_range ()
 {
 	BasePattern::set_row_range ();
-	np.set_row_range ();
+	mnp.set_row_range ();
 	mrap.set_row_range ();
 
 	// Make sure that midi and automation regions start at the same sample
-	assert (sample_at_row (0) == np.sample_at_row (0));
+	assert (sample_at_row (0) == mnp.sample_at_row (0));
 	assert (sample_at_row (0) == mrap.sample_at_row (0));
 
 	// Make sure all patterns have the same number of rows
-	assert (nrows == np.nrows);
+	assert (nrows == mnp.nrows);
 	assert (nrows == mrap.nrows);
 }
 
@@ -132,7 +132,7 @@ MidiRegionPattern::update ()
 	update_enabled ();
 	update_position_etc ();
 	set_row_range ();
-	np.update ();
+	mnp.update ();
 	mrap.update ();
 }
 
@@ -152,7 +152,7 @@ void
 MidiRegionPattern::set_enabled (bool e)
 {
 	enabled = e;
-	np.set_enabled(e);
+	mnp.set_enabled(e);
 	mrap.set_enabled(e);
 }
 
@@ -171,7 +171,7 @@ MidiRegionPattern::to_string (const std::string& indent) const
 	ss << BasePattern::to_string (indent) << std::endl;
 
 	std::string header = indent + self_to_string () + " ";
-	ss << header << "np:" << std::endl << np.to_string (indent + "  ") << std::endl;
+	ss << header << "mnp:" << std::endl << mnp.to_string (indent + "  ") << std::endl;
 	ss << header << "mrap:" << std::endl << mrap.to_string (indent + "  ") << std::endl;
 	ss << header << "midi_model = " << midi_model.get () << std::endl;
 	ss << header << "midi_region = " << midi_region.get ();

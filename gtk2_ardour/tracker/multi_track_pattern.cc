@@ -313,7 +313,7 @@ MultiTrackPattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
 		return 0;
 
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
-	return mtp->mrps[mri]->np.off_notes[cgi].count (to_rrri (rowi, mti, mri));
+	return mtp->mrps[mri]->mnp.off_notes[cgi].count (to_rrri (rowi, mti, mri));
 }
 
 size_t
@@ -323,7 +323,7 @@ MultiTrackPattern::on_notes_count (int rowi, int mti, int mri, int cgi) const
 		return 0;
 
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
-	return mtp->mrps[mri]->np.on_notes[cgi].count (to_rrri (rowi, mti, mri));
+	return mtp->mrps[mri]->mnp.on_notes[cgi].count (to_rrri (rowi, mti, mri));
 }
 
 bool
@@ -333,7 +333,7 @@ MultiTrackPattern::is_note_displayable (int rowi, int mti, int mri, int cgi) con
 		return 0;
 
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
-	return mtp->mrps[mri]->np.is_displayable (to_rrri (rowi, mti, mri), cgi);
+	return mtp->mrps[mri]->mnp.is_displayable (to_rrri (rowi, mti, mri), cgi);
 }
 
 NotePtr
@@ -345,9 +345,9 @@ MultiTrackPattern::off_note (int rowi, int mti, int mri, int cgi) const
 	if (!mtp or (int)mtp->mrps.size () <= mri)
 		return 0;
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
-	if ((int)mrp.np.off_notes.size () <= cgi)
+	if ((int)mrp.mnp.off_notes.size () <= cgi)
 		return 0;
-	const RowToNotes& rtn = mrp.np.off_notes[cgi];
+	const RowToNotes& rtn = mrp.mnp.off_notes[cgi];
 	RowToNotes::const_iterator i_off = rtn.find (to_rrri (rowi, mti, mri));
 	if (i_off != rtn.end ()) {
 		return i_off->second;
@@ -364,9 +364,9 @@ MultiTrackPattern::on_note (int rowi, int mti, int mri, int cgi) const
 	if (!mtp or (int)mtp->mrps.size () <= mri)
 		return 0;
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
-	if ((int)mrp.np.on_notes.size () <= cgi)
+	if ((int)mrp.mnp.on_notes.size () <= cgi)
 		return 0;
-	const RowToNotes& rtn = mrp.np.on_notes[cgi];
+	const RowToNotes& rtn = mrp.mnp.on_notes[cgi];
 	RowToNotes::const_iterator i_on = rtn.find (to_rrri (rowi, mti, mri));
 	if (i_on != rtn.end ()) {
 		return i_on->second;
@@ -383,9 +383,9 @@ MultiTrackPattern::off_notes_range (int row_idx, int mti, int mri, int cgi) cons
 	if (!mtp or (int)mtp->mrps.size () <= mri)
 		return RowToNotesRange ();
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
-	if ((int)mrp.np.off_notes.size () <= cgi)
+	if ((int)mrp.mnp.off_notes.size () <= cgi)
 		return RowToNotesRange ();
-	const RowToNotes& rtn = mrp.np.off_notes[cgi];
+	const RowToNotes& rtn = mrp.mnp.off_notes[cgi];
 	return rtn.equal_range (to_rrri (row_idx, mti, mri));
 }
 
@@ -398,9 +398,9 @@ MultiTrackPattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
 	if (!mtp or (int)mtp->mrps.size () <= mri)
 		return RowToNotesRange ();
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
-	if ((int)mrp.np.on_notes.size () <= cgi)
+	if ((int)mrp.mnp.on_notes.size () <= cgi)
 		return RowToNotesRange ();
-	const RowToNotes& rtn = mrp.np.on_notes[cgi];
+	const RowToNotes& rtn = mrp.mnp.on_notes[cgi];
 	return rtn.equal_range (to_rrri (row_idx, mti, mri));
 }
 
@@ -431,25 +431,25 @@ MultiTrackPattern::get_automation_control_event (int rowi, int mti, int mri, con
 NotePtr
 MultiTrackPattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
 {
-	return midi_region_pattern (mti, mri).np.find_prev_on (to_rrri (rowi, mti, mri), cgi);
+	return midi_region_pattern (mti, mri).mnp.find_prev_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 NotePtr
 MultiTrackPattern::find_next_on_note (int rowi, int mti, int mri, int cgi) const
 {
-	return midi_region_pattern (mti, mri).np.find_next_on (to_rrri (rowi, mti, mri), cgi);
+	return midi_region_pattern (mti, mri).mnp.find_next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
 MultiTrackPattern::next_on_note (int rowi, int mti, int mri, int cgi) const
 {
-	return midi_region_pattern (mti, mri).np.next_on (to_rrri (rowi, mti, mri), cgi);
+	return midi_region_pattern (mti, mri).mnp.next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
 MultiTrackPattern::next_off_note (int rowi, int mti, int mri, int cgi) const
 {
-	return midi_region_pattern (mti, mri).np.next_off (to_rrri (rowi, mti, mri), cgi);
+	return midi_region_pattern (mti, mri).mnp.next_off (to_rrri (rowi, mti, mri), cgi);
 }
 
 int
@@ -494,16 +494,16 @@ MultiTrackPattern::midi_region (int mti, int mri)
 	return midi_region_pattern (mti, mri).midi_region;
 }
 
-NotesPattern&
-MultiTrackPattern::notes_pattern (int mti, int mri)
+MidiNotesPattern&
+MultiTrackPattern::midi_notes_pattern (int mti, int mri)
 {
-	return midi_region_pattern (mti, mri).np;
+	return midi_region_pattern (mti, mri).mnp;
 }
 
-const NotesPattern&
-MultiTrackPattern::notes_pattern (int mti, int mri) const
+const MidiNotesPattern&
+MultiTrackPattern::midi_notes_pattern (int mti, int mri) const
 {
-	return midi_region_pattern (mti, mri).np;
+	return midi_region_pattern (mti, mri).mnp;
 }
 
 MidiRegionPattern&

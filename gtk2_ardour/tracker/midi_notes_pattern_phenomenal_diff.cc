@@ -18,18 +18,18 @@
 
 #include <sstream>
 
-#include "notes_pattern_phenomenal_diff.h"
+#include "midi_notes_pattern_phenomenal_diff.h"
 
 using namespace Tracker;
 
 bool
-NotesPatternPhenomenalDiff::empty () const
+MidiNotesPatternPhenomenalDiff::empty () const
 {
 	return !full && cgi2rows_diff.empty ();
 }
 
 std::string
-NotesPatternPhenomenalDiff::to_string (const std::string& indent) const
+MidiNotesPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl

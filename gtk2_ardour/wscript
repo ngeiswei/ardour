@@ -344,7 +344,7 @@ gtk2_ardour_sources = [
         # tracker interface related sources:
         'tracker/base_pattern.cc',
         'tracker/track_pattern.cc',
-        'tracker/notes_pattern.cc',
+        'tracker/midi_notes_pattern.cc',
         'tracker/automation_pattern.cc',
         'tracker/main_automation_pattern.cc',
         'tracker/processor_automation_pattern.cc',
@@ -366,7 +366,7 @@ gtk2_ardour_sources = [
         'tracker/grid.cc',
         'tracker/tracker_column.cc',
         'tracker/base_pattern_phenomenal_diff.cc',
-        'tracker/notes_pattern_phenomenal_diff.cc',
+        'tracker/midi_notes_pattern_phenomenal_diff.cc',
         'tracker/rows_phenomenal_diff.cc',
         'tracker/midi_region_automation_pattern_phenomenal_diff.cc',
         'tracker/automation_pattern_phenomenal_diff.cc',

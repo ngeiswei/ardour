@@ -28,17 +28,17 @@
 #include "ardour/session.h"
 #include "ardour/tempo.h"
 
-#include "notes_pattern.h"
+#include "midi_notes_pattern.h"
 
 using namespace ARDOUR;
 using namespace Tracker;
 
 //////////////////
-// NotesPattern //
+// MidiNotesPattern //
 //////////////////
 
-NotesPattern::NotesPattern (TrackerEditor& te,
-                            MidiRegionPtr region)
+MidiNotesPattern::MidiNotesPattern (TrackerEditor& te,
+                                    MidiRegionPtr region)
 	: BasePattern (te, region)
 	, ntracks (0)
 	, nreqtracks (0)
@@ -46,8 +46,8 @@ NotesPattern::NotesPattern (TrackerEditor& te,
 {
 }
 
-NotesPattern&
-NotesPattern::operator= (const NotesPattern& other)
+MidiNotesPattern&
+MidiNotesPattern::operator= (const MidiNotesPattern& other)
 {
 	if (!other.enabled) {
 		enabled = false;
@@ -94,28 +94,28 @@ NotesPattern::operator= (const NotesPattern& other)
 }
 
 NotePtr
-NotesPattern::clone_note (NotePtr note) const
+MidiNotesPattern::clone_note (NotePtr note) const
 {
 	// Recreate the note instead of copying it to avoid calling next_event_id
 	return NotePtr (new NoteType (note->channel (), note->time (), note->length (), note->note (), note->velocity ()));
 }
 
 void
-NotesPattern::rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& rnp, std::set<int>& rd)
+MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd)
 {
 	// Compare left on notes with right on notes
-	for (RowToNotes::const_iterator it = lnp.on_notes[cgi].begin (); it != lnp.on_notes[cgi].end ();) {
+	for (RowToNotes::const_iterator it = mnp_l.on_notes[cgi].begin (); it != mnp_l.on_notes[cgi].end ();) {
 		int row = it->first;
 
 		// First, look at the difference in displayability
-		bool is_cell_displayable = lnp.is_displayable (row, cgi);
-		bool cell_diff = is_cell_displayable != rnp.is_displayable (row, cgi);
+		bool is_cell_displayable = mnp_l.is_displayable (row, cgi);
+		bool cell_diff = is_cell_displayable != mnp_r.is_displayable (row, cgi);
 		if (cell_diff) {
 			rd.insert (row);
 		}
 		if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
-			it = lnp.on_notes[cgi].upper_bound (row);
+			it = mnp_l.on_notes[cgi].upper_bound (row);
 			continue;
 		}
 		if (cell_diff) {
@@ -124,8 +124,8 @@ NotesPattern::rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& r
 		}
 
 		// Second, see if that single on note is present in other, and if it is, check if it is different
-		RowToNotes::const_iterator rit = rnp.on_notes[cgi].find (row);
-		if (rit == rnp.on_notes[cgi].end () || !TrackerUtils::is_on_equal (it->second, rit->second)) {
+		RowToNotes::const_iterator rit = mnp_r.on_notes[cgi].find (row);
+		if (rit == mnp_r.on_notes[cgi].end () || !TrackerUtils::is_on_equal (it->second, rit->second)) {
 			rd.insert (row);
 		}
 
@@ -133,17 +133,17 @@ NotesPattern::rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& r
 	}
 
 	// Compare left off notes with right off notes
-	for (RowToNotes::const_iterator it = lnp.off_notes[cgi].begin (); it != lnp.off_notes[cgi].end ();) {
+	for (RowToNotes::const_iterator it = mnp_l.off_notes[cgi].begin (); it != mnp_l.off_notes[cgi].end ();) {
 		int row = it->first;
 
 		// First, look at the difference in displayability
-		bool is_cell_displayable = lnp.is_displayable (row, cgi);
-		bool cell_diff = is_cell_displayable != rnp.is_displayable (row, cgi);
+		bool is_cell_displayable = mnp_l.is_displayable (row, cgi);
+		bool cell_diff = is_cell_displayable != mnp_r.is_displayable (row, cgi);
 		if (cell_diff) {
 			rd.insert (row);
 		} if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
-			it = lnp.off_notes[cgi].upper_bound (row);
+			it = mnp_l.off_notes[cgi].upper_bound (row);
 			continue;
 		}
 		if (cell_diff) {
@@ -154,13 +154,13 @@ NotesPattern::rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& r
 		// Second, see if that single off note is present in other, and if it
 		// is, check if it is different, and it is not make sure no on note is
 		// present as on note can hide off note.
-		RowToNotes::const_iterator rit = rnp.off_notes[cgi].find (row);
-		if (rit == rnp.off_notes[cgi].end ()
+		RowToNotes::const_iterator rit = mnp_r.off_notes[cgi].find (row);
+		if (rit == mnp_r.off_notes[cgi].end ()
 		    || !TrackerUtils::is_off_equal (it->second, rit->second)
-		    || (rnp.on_notes[cgi].find (row) == rnp.on_notes[cgi].end ()
-		        && lnp.on_notes[cgi].find (row) != lnp.on_notes[cgi].end ())
-		    || (lnp.on_notes[cgi].find (row) == lnp.on_notes[cgi].end ()
-		        && rnp.on_notes[cgi].find (row) != rnp.on_notes[cgi].end ())) {
+		    || (mnp_r.on_notes[cgi].find (row) == mnp_r.on_notes[cgi].end ()
+		        && mnp_l.on_notes[cgi].find (row) != mnp_l.on_notes[cgi].end ())
+		    || (mnp_l.on_notes[cgi].find (row) == mnp_l.on_notes[cgi].end ()
+		        && mnp_r.on_notes[cgi].find (row) != mnp_r.on_notes[cgi].end ())) {
 			rd.insert (row);
 		}
 
@@ -168,10 +168,10 @@ NotesPattern::rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& r
 	}
 }
 
-NotesPatternPhenomenalDiff
-NotesPattern::phenomenal_diff (const NotesPattern& prev) const
+MidiNotesPatternPhenomenalDiff
+MidiNotesPattern::phenomenal_diff (const MidiNotesPattern& prev) const
 {
-	NotesPatternPhenomenalDiff diff;
+	MidiNotesPatternPhenomenalDiff diff;
 	if (!prev.enabled && !enabled) {
 		return diff;
 	}
@@ -199,7 +199,7 @@ NotesPattern::phenomenal_diff (const NotesPattern& prev) const
 }
 
 void
-NotesPattern::update ()
+MidiNotesPattern::update ()
 {
 	set_row_range ();
 	update_track_to_notes ();
@@ -207,7 +207,7 @@ NotesPattern::update ()
 }
 
 void
-NotesPattern::update_track_to_notes ()
+MidiNotesPattern::update_track_to_notes ()
 {
 	// Select visible notes within the region, and sort them with the
 	// StrictNotes order so that simulatenous notes can be dispatched according
@@ -266,7 +266,7 @@ NotesPattern::update_track_to_notes ()
 }
 
 void
-NotesPattern::update_row_to_notes ()
+MidiNotesPattern::update_row_to_notes ()
 {
 	on_notes.clear ();
 	on_notes.resize (ntracks);
@@ -305,7 +305,7 @@ NotesPattern::update_row_to_notes ()
 }
 
 void
-NotesPattern::set_ntracks (uint16_t n)
+MidiNotesPattern::set_ntracks (uint16_t n)
 {
 	if (nreqtracks <= n) {
 		ntracks = n;
@@ -313,13 +313,13 @@ NotesPattern::set_ntracks (uint16_t n)
 }
 
 void
-NotesPattern::inc_ntracks ()
+MidiNotesPattern::inc_ntracks ()
 {
 	ntracks++;
 }
 
 void
-NotesPattern::dec_ntracks ()
+MidiNotesPattern::dec_ntracks ()
 {
 	if (nreqtracks < ntracks) {
 		ntracks--;
@@ -327,7 +327,7 @@ NotesPattern::dec_ntracks ()
 }
 
 NotePtr
-NotesPattern::find_prev_on (int row, int cgi) const
+MidiNotesPattern::find_prev_on (int row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_reverse_iterator rit =
@@ -337,7 +337,7 @@ NotesPattern::find_prev_on (int row, int cgi) const
 }
 
 NotePtr
-NotesPattern::find_next_on (int row, int cgi) const
+MidiNotesPattern::find_next_on (int row, int cgi) const
 {
 	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound (row);
@@ -346,7 +346,7 @@ NotesPattern::find_next_on (int row, int cgi) const
 }
 
 NotePtr
-NotesPattern::find_prev_off (int row, int cgi) const
+MidiNotesPattern::find_prev_off (int row, int cgi) const
 {
 	// TODO: implementation could simplified with a template of something
 	const RowToNotes& r2n = off_notes[cgi];
@@ -357,7 +357,7 @@ NotesPattern::find_prev_off (int row, int cgi) const
 }
 
 NotePtr
-NotesPattern::find_next_off (int row, int cgi) const
+MidiNotesPattern::find_next_off (int row, int cgi) const
 {
 	const RowToNotes& r2n = off_notes[cgi];
 	RowToNotes::const_iterator it = r2n.upper_bound (row);
@@ -366,21 +366,21 @@ NotesPattern::find_next_off (int row, int cgi) const
 }
 
 Temporal::Beats
-NotesPattern::next_on (int row, int cgi) const
+MidiNotesPattern::next_on (int row, int cgi) const
 {
 	NotePtr next_note = find_next_on (row, cgi);
 	return next_note ? next_note->time () : end_beats;
 }
 
 Temporal::Beats
-NotesPattern::next_off (int row, int cgi) const
+MidiNotesPattern::next_off (int row, int cgi) const
 {
 	NotePtr next_note = find_next_off (row, cgi);
 	return next_note ? next_note->end_time () : end_beats;
 }
 
 bool
-NotesPattern::is_displayable (int row, int cgi) const
+MidiNotesPattern::is_displayable (int row, int cgi) const
 {
 	size_t off_notes_count = off_notes[cgi].count (row);
 	size_t on_notes_count = on_notes[cgi].count (row);
@@ -392,7 +392,7 @@ NotesPattern::is_displayable (int row, int cgi) const
 }
 
 void
-NotesPattern::add (int cgi, NotePtr note)
+MidiNotesPattern::add (int cgi, NotePtr note)
 {
 	// Resize track_to_notes if necessary
 	if (nreqtracks <= cgi) {
@@ -405,29 +405,29 @@ NotesPattern::add (int cgi, NotePtr note)
 }
 
 Temporal::BBT_Time
-NotesPattern::on_note_bbt (NotePtr note) const
+MidiNotesPattern::on_note_bbt (NotePtr note) const
 {
 	Temporal::Beats note_time = position_beats - start_beats + note->time ();
 	return Temporal::TempoMap::use()->bbt_at (note_time);
 }
 
 Temporal::BBT_Time
-NotesPattern::off_note_bbt (NotePtr note) const
+MidiNotesPattern::off_note_bbt (NotePtr note) const
 {
 	Temporal::Beats end_note_time = position_beats - start_beats + note->end_time ();
 	return Temporal::TempoMap::use()->bbt_at (end_note_time);
 }
 
 std::string
-NotesPattern::self_to_string () const
+MidiNotesPattern::self_to_string () const
 {
 	std::stringstream ss;
-	ss << "NotesPattern[" << this << "]";
+	ss << "MidiNotesPattern[" << this << "]";
 	return ss.str ();
 }
 
 std::string
-NotesPattern::to_string (const std::string& indent) const
+MidiNotesPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePattern::to_string (indent) << std::endl;
@@ -460,7 +460,7 @@ NotesPattern::to_string (const std::string& indent) const
 }
 
 NotePtr
-NotesPattern::earliest (const RowToNotesRange& rng) const
+MidiNotesPattern::earliest (const RowToNotesRange& rng) const
 {
 	NotePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
@@ -472,7 +472,7 @@ NotesPattern::earliest (const RowToNotesRange& rng) const
 }
 
 NotePtr
-NotesPattern::lattest (const RowToNotesRange& rng) const
+MidiNotesPattern::lattest (const RowToNotesRange& rng) const
 {
 	NotePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
@@ -484,7 +484,7 @@ NotesPattern::lattest (const RowToNotesRange& rng) const
 }
 
 int
-NotesPattern::find_eq_id (NotePtr note) const
+MidiNotesPattern::find_eq_id (NotePtr note) const
 {
 	for (int i = 0; i < (int)track_to_notes.size (); i++) {
 		if (find_eq_id (i, note) != track_to_notes[i].end ()) {
@@ -495,31 +495,31 @@ NotesPattern::find_eq_id (NotePtr note) const
 }
 
 MidiModel::Notes::const_iterator
-NotesPattern::find_eq_id (int cgi, NotePtr note) const
+MidiNotesPattern::find_eq_id (int cgi, NotePtr note) const
 {
 	return find_eq_id (track_to_notes[cgi], note);
 }
 
 MidiModel::Notes::iterator
-NotesPattern::find_eq_id (int cgi, NotePtr note)
+MidiNotesPattern::find_eq_id (int cgi, NotePtr note)
 {
 	return find_eq_id (track_to_notes[cgi], note);
 }
 
 void
-NotesPattern::erase_eq_id (int cgi, NotePtr note)
+MidiNotesPattern::erase_eq_id (int cgi, NotePtr note)
 {
 	erase_eq_id (track_to_notes[cgi], note);
 }
 
 void
-NotesPattern::erase_eq_id (MidiModel::Notes& notes, NotePtr note)
+MidiNotesPattern::erase_eq_id (MidiModel::Notes& notes, NotePtr note)
 {
 	notes.erase (find_eq_id (notes, note));
 }
 
 bool
-NotesPattern::is_free (int cgi, NotePtr note) const
+MidiNotesPattern::is_free (int cgi, NotePtr note) const
 {
 	const MidiModel::Notes& notes = track_to_notes[cgi];
 	MidiModel::Notes::iterator it = notes.begin ();
@@ -532,7 +532,7 @@ NotesPattern::is_free (int cgi, NotePtr note) const
 }
 
 int
-NotesPattern::find_free_track (NotePtr note) const
+MidiNotesPattern::find_free_track (NotePtr note) const
 {
 	for (int i = 0; i < (int)track_to_notes.size (); i++) {
 		if (is_free (i, note)) {
@@ -543,7 +543,7 @@ NotesPattern::find_free_track (NotePtr note) const
 }
 
 bool
-NotesPattern::overlap (NotePtr a, NotePtr b)
+MidiNotesPattern::overlap (NotePtr a, NotePtr b)
 {
 	Temporal::Beats sa = a->time ();
 	Temporal::Beats ea  = a->end_time ();
