@@ -18,18 +18,18 @@
 
 #include <sstream>
 
-#include "multi_track_pattern_phenomenal_diff.h"
+#include "pattern_phenomenal_diff.h"
 
 using namespace Tracker;
 
 bool
-MultiTrackPatternPhenomenalDiff::empty () const
+PatternPhenomenalDiff::empty () const
 {
 	return !full && mti2tp_diff.empty ();
 }
 
 std::string
-MultiTrackPatternPhenomenalDiff::to_string (const std::string& indent) const
+PatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl;
