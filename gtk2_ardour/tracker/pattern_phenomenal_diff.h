@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_multi_track_pattern_phenomenal_diff_h_
-#define __ardour_tracker_multi_track_pattern_phenomenal_diff_h_
+#ifndef __ardour_tracker_pattern_phenomenal_diff_h_
+#define __ardour_tracker_pattern_phenomenal_diff_h_
 
 #include <map>
 
@@ -27,7 +27,7 @@ namespace Tracker {
 
 // Represent the differences that may impact grid rendition. For now only a
 // set of mti that have changed.
-struct MultiTrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff {
+struct PatternPhenomenalDiff : public BasePatternPhenomenalDiff {
 	typedef std::map<int, TrackPatternPhenomenalDiff*> Mti2TrackPatternDiff;
 	Mti2TrackPatternDiff mti2tp_diff;
 
@@ -37,4 +37,4 @@ struct MultiTrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff {
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_multi_track_pattern_phenomenal_diff_h_ */
+#endif /* __ardour_tracker_pattern_phenomenal_diff_h_ */

@@ -21,12 +21,12 @@
 
 #include "audio_track_pattern_phenomenal_diff.h"
 #include "midi_track_pattern_phenomenal_diff.h"
-#include "multi_track_pattern.h"
+#include "pattern.h"
 #include "tracker_editor.h"
 
 using namespace Tracker;
 
-MultiTrackPattern::MultiTrackPattern (TrackerEditor& te, bool connect)
+Pattern::Pattern (TrackerEditor& te, bool connect)
 	: BasePattern (te,
 	               TrackerUtils::get_position_sample (te.region_selection),
 	               0,
@@ -40,15 +40,15 @@ MultiTrackPattern::MultiTrackPattern (TrackerEditor& te, bool connect)
 {
 }
 
-MultiTrackPattern::~MultiTrackPattern ()
+Pattern::~Pattern ()
 {
 	for (std::vector<TrackPattern*>::iterator it = tps.begin (); it != tps.end (); ++it) {
 		delete *it;
 	}
 }
 
-MultiTrackPattern&
-MultiTrackPattern::operator= (const MultiTrackPattern& other)
+Pattern&
+Pattern::operator= (const Pattern& other)
 {
 	if (!other.enabled) {
 		enabled = false;
@@ -58,7 +58,7 @@ MultiTrackPattern::operator= (const MultiTrackPattern& other)
 	// BasePattern
 	BasePattern::operator= (other);
 
-	// MultiTrackPattern
+	// Pattern
 	assert (tps.size () == other.tps.size ());
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		if (tps[mti]->is_midi_track_pattern ()) {
@@ -80,10 +80,10 @@ MultiTrackPattern::operator= (const MultiTrackPattern& other)
 	return *this;
 }
 
-MultiTrackPatternPhenomenalDiff
-MultiTrackPattern::phenomenal_diff (const MultiTrackPattern& prev) const
+PatternPhenomenalDiff
+Pattern::phenomenal_diff (const Pattern& prev) const
 {
-	MultiTrackPatternPhenomenalDiff diff;
+	PatternPhenomenalDiff diff;
 	if (!prev.enabled && !enabled) {
 		return diff;
 	}
@@ -109,7 +109,7 @@ MultiTrackPattern::phenomenal_diff (const MultiTrackPattern& prev) const
 }
 
 void
-MultiTrackPattern::setup ()
+Pattern::setup ()
 {
 	setup_region_views_per_track ();
 	setup_regions_per_track ();
@@ -118,7 +118,7 @@ MultiTrackPattern::setup ()
 }
 
 void
-MultiTrackPattern::setup_region_views_per_track ()
+Pattern::setup_region_views_per_track ()
 {
 	// Associate track to its region selections
 	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
@@ -131,7 +131,7 @@ MultiTrackPattern::setup_region_views_per_track ()
 }
 
 void
-MultiTrackPattern::setup_regions_per_track ()
+Pattern::setup_regions_per_track ()
 {
 	regions_per_track.clear ();
 	// Associate track to its regions
@@ -143,7 +143,7 @@ MultiTrackPattern::setup_regions_per_track ()
 }
 
 void
-MultiTrackPattern::setup_track_patterns ()
+Pattern::setup_track_patterns ()
 {
 	// Disable and deselect all existing tracks
 	set_enabled (false);
@@ -164,7 +164,7 @@ MultiTrackPattern::setup_track_patterns ()
 }
 
 void
-MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
+Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
 	MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
@@ -183,14 +183,14 @@ MultiTrackPattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 }
 
 void
-MultiTrackPattern::setup_row_offset ()
+Pattern::setup_row_offset ()
 {
 	row_offset.resize (tps.size ());
 	tracks_nrows.resize (tps.size ());
 }
 
 void
-MultiTrackPattern::update ()
+Pattern::update ()
 {
 	update_position_etc ();
 	update_rows_per_beat ();
@@ -201,7 +201,7 @@ MultiTrackPattern::update ()
 }
 
 void
-MultiTrackPattern::update_position_etc ()
+Pattern::update_position_etc ()
 {
 	position_sample = TrackerUtils::get_position_sample (regions_per_track);
 	length_sample = TrackerUtils::get_length_sample (regions_per_track);
@@ -217,7 +217,7 @@ MultiTrackPattern::update_position_etc ()
 }
 
 void
-MultiTrackPattern::update_rows_per_beat ()
+Pattern::update_rows_per_beat ()
 {
 	uint16_t rpb = tracker_editor.main_toolbar.rows_per_beat;
 	BasePattern::set_rows_per_beat (rpb);
@@ -228,7 +228,7 @@ MultiTrackPattern::update_rows_per_beat ()
 }
 
 void
-MultiTrackPattern::update_content ()
+Pattern::update_content ()
 {
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
@@ -243,7 +243,7 @@ MultiTrackPattern::update_content ()
 }
 
 void
-MultiTrackPattern::update_earliest_mtp ()
+Pattern::update_earliest_mtp ()
 {
 	Temporal::Beats min_position_beats = std::numeric_limits<Temporal::Beats>::max ();
 	for (size_t mti = 0; mti < tps.size (); mti++) {
@@ -259,7 +259,7 @@ MultiTrackPattern::update_earliest_mtp ()
 }
 
 void
-MultiTrackPattern::update_global_nrows ()
+Pattern::update_global_nrows ()
 {
 	global_nrows = 0;
 	for (size_t mti = 0; mti < tps.size (); mti++) {
@@ -271,43 +271,43 @@ MultiTrackPattern::update_global_nrows ()
 }
 
 bool
-MultiTrackPattern::is_region_defined (int rowi, int mti) const
+Pattern::is_region_defined (int rowi, int mti) const
 {
 	return tps[mti]->is_region_defined (to_rri (rowi, mti));
 }
 
 bool
-MultiTrackPattern::is_automation_defined (int rowi, int mti, const Evoral::Parameter& param) const
+Pattern::is_automation_defined (int rowi, int mti, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ? is_region_defined (rowi, mti) : tps[mti]->is_defined (to_rri (rowi, mti));
 }
 
 Temporal::Beats
-MultiTrackPattern::region_relative_beats (int rowi, int mti, int mri, int delay) const
+Pattern::region_relative_beats (int rowi, int mti, int mri, int delay) const
 {
 	return tps[mti]->region_relative_beats (to_rri (rowi, mti), mri, delay);
 }
 
 int64_t
-MultiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mti, int mri) const
+Pattern::region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mti, int mri) const
 {
 	return tps[mti]->region_relative_delay_ticks (event_time, to_rri (rowi, mti), mri);
 }
 
 int64_t
-MultiTrackPattern::delay_ticks (samplepos_t when, int rowi, int mti) const
+Pattern::delay_ticks (samplepos_t when, int rowi, int mti) const
 {
 	return tps[mti]->delay_ticks_at_row (when, to_rri (rowi, mti));
 }
 
 int
-MultiTrackPattern::sample_at_row_at_mti (int rowi, int mti, int delay) const
+Pattern::sample_at_row_at_mti (int rowi, int mti, int delay) const
 {
 	return tps[mti]->sample_at_row (to_rri (rowi, mti), delay);
 }
 
 size_t
-MultiTrackPattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
+Pattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
 {
 	if (rowi < 0 or mti < 0 or mri < 0 or cgi < 0)
 		return 0;
@@ -317,7 +317,7 @@ MultiTrackPattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
 }
 
 size_t
-MultiTrackPattern::on_notes_count (int rowi, int mti, int mri, int cgi) const
+Pattern::on_notes_count (int rowi, int mti, int mri, int cgi) const
 {
 	if (rowi < 0 or mti < 0 or mri < 0 or cgi < 0)
 		return 0;
@@ -327,7 +327,7 @@ MultiTrackPattern::on_notes_count (int rowi, int mti, int mri, int cgi) const
 }
 
 bool
-MultiTrackPattern::is_note_displayable (int rowi, int mti, int mri, int cgi) const
+Pattern::is_note_displayable (int rowi, int mti, int mri, int cgi) const
 {
 	if (rowi < 0 or mti < 0 or mri < 0 or cgi < 0)
 		return 0;
@@ -337,7 +337,7 @@ MultiTrackPattern::is_note_displayable (int rowi, int mti, int mri, int cgi) con
 }
 
 NotePtr
-MultiTrackPattern::off_note (int rowi, int mti, int mri, int cgi) const
+Pattern::off_note (int rowi, int mti, int mri, int cgi) const
 {
 	if ((int)tps.size () <= mti)
 		return 0;
@@ -356,7 +356,7 @@ MultiTrackPattern::off_note (int rowi, int mti, int mri, int cgi) const
 }
 
 NotePtr
-MultiTrackPattern::on_note (int rowi, int mti, int mri, int cgi) const
+Pattern::on_note (int rowi, int mti, int mri, int cgi) const
 {
 	if (mti < 0 && (int)tps.size () <= mti)
 		return 0;
@@ -375,7 +375,7 @@ MultiTrackPattern::on_note (int rowi, int mti, int mri, int cgi) const
 }
 
 RowToNotesRange
-MultiTrackPattern::off_notes_range (int row_idx, int mti, int mri, int cgi) const
+Pattern::off_notes_range (int row_idx, int mti, int mri, int cgi) const
 {
 	if (mti < 0 && (int)tps.size () <= mti)
 		return RowToNotesRange ();
@@ -390,7 +390,7 @@ MultiTrackPattern::off_notes_range (int row_idx, int mti, int mri, int cgi) cons
 }
 
 RowToNotesRange
-MultiTrackPattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
+Pattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
 {
 	if (mti < 0 && (int)tps.size () <= mti)
 		return RowToNotesRange ();
@@ -405,121 +405,121 @@ MultiTrackPattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
 }
 
 bool
-MultiTrackPattern::is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->is_auto_displayable (to_rri (rowi, mti), mri, param);
 }
 
 size_t
-MultiTrackPattern::control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, param);
 }
 
 RowToControlEventsRange
-MultiTrackPattern::control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->control_events_range (to_rri (rowi, mti), mri, param);
 }
 
 Evoral::ControlEvent*
-MultiTrackPattern::get_automation_control_event (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::get_automation_control_event (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_control_event (to_rri (rowi, mti), mri, param);
 }
 
 NotePtr
-MultiTrackPattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
+Pattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).mnp.find_prev_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 NotePtr
-MultiTrackPattern::find_next_on_note (int rowi, int mti, int mri, int cgi) const
+Pattern::find_next_on_note (int rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).mnp.find_next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
-MultiTrackPattern::next_on_note (int rowi, int mti, int mri, int cgi) const
+Pattern::next_on_note (int rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).mnp.next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
-MultiTrackPattern::next_off_note (int rowi, int mti, int mri, int cgi) const
+Pattern::next_off_note (int rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).mnp.next_off (to_rrri (rowi, mti, mri), cgi);
 }
 
 int
-MultiTrackPattern::to_rri (int rowi, int mti) const
+Pattern::to_rri (int rowi, int mti) const
 {
 	return rowi - row_offset[mti];
 }
 
 int
-MultiTrackPattern::to_rrri (int rowi, int mti, int mri) const
+Pattern::to_rrri (int rowi, int mti, int mri) const
 {
 	return tps[mti]->to_rrri (to_rri (rowi, mti), mri);
 }
 
 int
-MultiTrackPattern::to_rrri (int rowi, int mti) const
+Pattern::to_rrri (int rowi, int mti) const
 {
 	return tps[mti]->to_rrri (to_rri (rowi, mti));
 }
 
 int
-MultiTrackPattern::to_mri (int rowi, int mti) const
+Pattern::to_mri (int rowi, int mti) const
 {
 	return tps[mti]->to_mri (to_rri (rowi, mti));
 }
 
 void
-MultiTrackPattern::insert (int mti, const Evoral::Parameter& param)
+Pattern::insert (int mti, const Evoral::Parameter& param)
 {
 	tps[mti]->track_automation_pattern.insert (param);
 }
 
 MidiModelPtr
-MultiTrackPattern::midi_model (int mti, int mri)
+Pattern::midi_model (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).midi_model;
 }
 
 MidiRegionPtr
-MultiTrackPattern::midi_region (int mti, int mri)
+Pattern::midi_region (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).midi_region;
 }
 
 MidiNotesPattern&
-MultiTrackPattern::midi_notes_pattern (int mti, int mri)
+Pattern::midi_notes_pattern (int mti, int mri)
 {
 	return midi_region_pattern (mti, mri).mnp;
 }
 
 const MidiNotesPattern&
-MultiTrackPattern::midi_notes_pattern (int mti, int mri) const
+Pattern::midi_notes_pattern (int mti, int mri) const
 {
 	return midi_region_pattern (mti, mri).mnp;
 }
 
 MidiRegionPattern&
-MultiTrackPattern::midi_region_pattern (int mti, int mri)
+Pattern::midi_region_pattern (int mti, int mri)
 {
 	return *tps[mti]->midi_track_pattern ()->mrps[mri];
 }
 
 const MidiRegionPattern&
-MultiTrackPattern::midi_region_pattern (int mti, int mri) const
+Pattern::midi_region_pattern (int mti, int mri) const
 {
 	return *tps[mti]->midi_track_pattern ()->mrps[mri];
 }
 
 AutomationPattern*
-MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param)
+Pattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param)
 {
 	if (TrackerUtils::is_region_automation (param))
 		return &midi_region_pattern (mti, mri).mrap;
@@ -527,7 +527,7 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 }
 
 const AutomationPattern*
-MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param) const
+Pattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param) const
 {
 	if (TrackerUtils::is_region_automation (param))
 		return &midi_region_pattern (mti, mri).mrap;
@@ -535,55 +535,55 @@ MultiTrackPattern::automation_pattern (int mti, int mri, const Evoral::Parameter
 }
 
 void
-MultiTrackPattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
+Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
 	midi_model (mti, mri)->apply_diff_command_as_commit (tracker_editor.session, cmd);
 }
 
 AutomationListPtr
-MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
+Pattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->get_alist_at_mri (mri, param);
 }
 
 const AutomationListPtr
-MultiTrackPattern::get_alist (int mti, int mri, const Evoral::Parameter& param) const
+Pattern::get_alist (int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_alist_at_mri (mri, param);
 }
 
 std::pair<double, bool>
-MultiTrackPattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_value (to_rri (rowi, mti), mri, param);
 }
 
 void
-MultiTrackPattern::set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay)
+Pattern::set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay)
 {
 	return tps[mti]->set_automation_value (val, to_rri (rowi, mti), mri, param, delay);
 }
 
 void
-MultiTrackPattern::delete_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param)
+Pattern::delete_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->delete_automation_value (to_rri (rowi, mti), mri, param);
 }
 
 std::pair<int, bool>
-MultiTrackPattern::get_automation_delay (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::get_automation_delay (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_delay (to_rri (rowi, mti), mri, param);
 }
 
 void
-MultiTrackPattern::set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param)
+Pattern::set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri (rowi, mti), mri, param);
 }
 
 TrackPattern*
-MultiTrackPattern::find_track_pattern (TrackPtr track)
+Pattern::find_track_pattern (TrackPtr track)
 {
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		if (tps[mti]->track == track) {
@@ -594,7 +594,7 @@ MultiTrackPattern::find_track_pattern (TrackPtr track)
 }
 
 void
-MultiTrackPattern::set_enabled (bool e)
+Pattern::set_enabled (bool e)
 {
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		tps[mti]->set_enabled (e);
@@ -603,7 +603,7 @@ MultiTrackPattern::set_enabled (bool e)
 }
 
 void
-MultiTrackPattern::set_selected (bool s)
+Pattern::set_selected (bool s)
 {
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		tps[mti]->set_selected (s);
@@ -611,15 +611,15 @@ MultiTrackPattern::set_selected (bool s)
 }
 
 std::string
-MultiTrackPattern::self_to_string () const
+Pattern::self_to_string () const
 {
 	std::stringstream ss;
-	ss << "MultiTrackPattern[" << this << "]";
+	ss << "Pattern[" << this << "]";
 	return ss.str ();
 }
 
 std::string
-MultiTrackPattern::to_string (const std::string& indent) const
+Pattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePattern::to_string (indent) << std::endl;
