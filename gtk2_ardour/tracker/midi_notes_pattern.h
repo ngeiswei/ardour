@@ -16,14 +16,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_notes_pattern_h_
-#define __ardour_tracker_notes_pattern_h_
+#ifndef __ardour_tracker_midi_notes_pattern_h_
+#define __ardour_tracker_midi_notes_pattern_h_
 
 #include "ardour/midi_model.h"
 #include "ardour/session_handle.h"
 
 #include "base_pattern.h"
-#include "notes_pattern_phenomenal_diff.h"
+#include "midi_notes_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
 
 namespace ARDOUR {
@@ -43,18 +43,17 @@ namespace Tracker {
  * automations. The term track should not be confused with the term
  * track of the horizontal editor view.
  */
-// NEXT: should be renamed NotesPattern.
-class NotesPattern : public BasePattern {
+class MidiNotesPattern : public BasePattern {
 public:
-	NotesPattern (TrackerEditor& te,
+	MidiNotesPattern (TrackerEditor& te,
 	              MidiRegionPtr region);
 
-	NotesPattern& operator= (const NotesPattern& other);
+	MidiNotesPattern& operator= (const MidiNotesPattern& other);
 	NotePtr clone_note (NotePtr note) const;
 
-	static void rows_diff (int cgi, const NotesPattern& lnp, const NotesPattern& rnp, std::set<int>& rd);
+	static void rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd);
 
-	NotesPatternPhenomenalDiff phenomenal_diff (const NotesPattern& prev) const;
+	MidiNotesPatternPhenomenalDiff phenomenal_diff (const MidiNotesPattern& prev) const;
 
 	// Build or rebuild the pattern (implement BasePattern::update)
 	void update ();
@@ -167,7 +166,7 @@ private:
 };
 
 template<typename NoteContainer>
-typename NoteContainer::const_iterator NotesPattern::find_eq_id (const NoteContainer& notes, NotePtr note) const
+typename NoteContainer::const_iterator MidiNotesPattern::find_eq_id (const NoteContainer& notes, NotePtr note) const
 {
 	Evoral::event_id_t id = note->id ();
 	typename NoteContainer::const_iterator it = notes.begin ();
@@ -180,7 +179,7 @@ typename NoteContainer::const_iterator NotesPattern::find_eq_id (const NoteConta
 }
 
 template <typename NoteContainer>
-typename NoteContainer::iterator NotesPattern::find_eq_id (NoteContainer& notes, NotePtr note)
+typename NoteContainer::iterator MidiNotesPattern::find_eq_id (NoteContainer& notes, NotePtr note)
 {
 	Evoral::event_id_t id = note->id ();
 	typename NoteContainer::iterator it = notes.begin ();
@@ -194,4 +193,4 @@ typename NoteContainer::iterator NotesPattern::find_eq_id (NoteContainer& notes,
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_notes_pattern_h_ */
+#endif /* __ardour_tracker_midi_notes_pattern_h_ */
