@@ -33,9 +33,9 @@
 using namespace ARDOUR;
 using namespace Tracker;
 
-//////////////////
+//////////////////////
 // MidiNotesPattern //
-//////////////////
+//////////////////////
 
 MidiNotesPattern::MidiNotesPattern (TrackerEditor& te,
                                     MidiRegionPtr region)
