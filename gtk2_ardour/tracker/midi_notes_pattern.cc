@@ -277,6 +277,7 @@ MidiNotesPattern::update_row_to_notes ()
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
 		     inote != track_to_notes[itrack].end (); ++inote) {
 			// On and off times are absolute, not relative to the region
+			// NEXT.14: use Region::region_beats_to_absolute_time and such instead
 			Temporal::Beats on_time = (*inote)->time () + position_beats - start_beats;
 			Temporal::Beats off_time = (*inote)->end_time () + position_beats - start_beats;
 			int on_max_delay_row = row_at_beats_max_delay (on_time);

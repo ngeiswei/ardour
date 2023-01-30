@@ -1,5 +1,8 @@
 # Next
 
+- [ ] NEXT.15: fix crash when creating midi automation column
+- [ ] NEXT.14: use Region::region_beats_to_absolute_time and such instead of
+      calculating at hand
 - [ ] NEXT.13: create TrackAutomationSetPattern that holds all track
       automations (region automation patterns excluded).
 - [ ] NEXT.12: replace track_automation_pattern by track_automation_set_pattern

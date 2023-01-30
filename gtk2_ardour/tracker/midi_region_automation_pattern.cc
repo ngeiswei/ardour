@@ -96,6 +96,7 @@ MidiRegionAutomationPattern::event2row (const Evoral::Parameter& param, const Ev
 
 	// NEXT.14: use Region::region_beats_to_absolute_time and such instead
 	Temporal::Beats beats (relative_beats + position_beats - start_beats);
+	// Temporal::Beats beats = _region->source_beats_to_absolute_beats(relative_beats);
 	int row = row_at_beats (beats);
 	if (control_events_count (row, param) != 0) {
 		row = row_at_beats_min_delay (beats);
