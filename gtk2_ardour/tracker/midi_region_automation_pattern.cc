@@ -29,9 +29,9 @@ using namespace std;
 using namespace ARDOUR;
 using namespace Tracker;
 
-/////////////////////////////
+/////////////////////////////////
 // MidiRegionAutomationPattern //
-/////////////////////////////
+/////////////////////////////////
 
 MidiRegionAutomationPattern::MidiRegionAutomationPattern (TrackerEditor& te,
                                                           MidiTrackPtr mt,
