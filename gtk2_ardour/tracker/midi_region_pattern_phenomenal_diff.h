@@ -20,7 +20,7 @@
 #define __ardour_tracker_midi_region_pattern_phenomenal_diff_h_
 
 #include "base_pattern_phenomenal_diff.h"
-#include "notes_pattern_phenomenal_diff.h"
+#include "midi_notes_pattern_phenomenal_diff.h"
 #include "midi_region_automation_pattern_phenomenal_diff.h"
 
 namespace Tracker {
@@ -28,7 +28,7 @@ namespace Tracker {
 // Represent the differences that may impact grid rendition.
 struct MidiRegionPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	NotesPatternPhenomenalDiff np_diff;
+	MidiNotesPatternPhenomenalDiff mnp_diff;
 	MidiRegionAutomationPatternPhenomenalDiff mrap_diff;
 
 	bool empty () const;

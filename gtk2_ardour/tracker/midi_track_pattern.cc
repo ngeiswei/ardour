@@ -314,7 +314,7 @@ MidiTrackPattern::get_ntracks () const
 {
 	uint16_t ntracks = 0;
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		ntracks = std::max (ntracks, mrps[mri]->np.ntracks);
+		ntracks = std::max (ntracks, mrps[mri]->mnp.ntracks);
 	}
 
 	if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK) {
@@ -332,7 +332,7 @@ void
 MidiTrackPattern::set_ntracks (uint16_t n)
 {
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		mrps[mri]->np.set_ntracks (n);
+		mrps[mri]->mnp.set_ntracks (n);
 	}
 }
 
@@ -340,7 +340,7 @@ void
 MidiTrackPattern::inc_ntracks ()
 {
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		mrps[mri]->np.inc_ntracks ();
+		mrps[mri]->mnp.inc_ntracks ();
 	}
 }
 
@@ -348,7 +348,7 @@ void
 MidiTrackPattern::dec_ntracks ()
 {
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		mrps[mri]->np.dec_ntracks ();
+		mrps[mri]->mnp.dec_ntracks ();
 	}
 }
 
@@ -357,7 +357,7 @@ MidiTrackPattern::get_nreqtracks () const
 {
 	uint16_t nreqtracks = 0;
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		nreqtracks = std::max (nreqtracks, mrps[mri]->np.nreqtracks);
+		nreqtracks = std::max (nreqtracks, mrps[mri]->mnp.nreqtracks);
 	}
 	return nreqtracks;
 }
