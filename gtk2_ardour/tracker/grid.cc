@@ -1032,7 +1032,7 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, int mti
 	int mri = 0;              // consider the first one, all parameters
 										  // should be the same in all other regions
 	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
-	AutomationPattern& ap = mrp.rap;
+	AutomationPattern& ap = mrp.mrap;
 	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
@@ -1326,7 +1326,7 @@ Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx,
 		// Set current region automations background color
 		int mri = pattern.to_mri (row_idx, mti);
 		MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
-		redisplay_row_mti_automations_background_color (row, row_idx, mti, mrp.rap, color);
+		redisplay_row_mti_automations_background_color (row, row_idx, mti, mrp.mrap, color);
 	}
 
 	// Set automation background color of the enabled track automations
@@ -1504,7 +1504,7 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 		return;
 
 	redisplay_region_notes (mti, mri, mrp.np, mrp_diff ? &mrp_diff->np_diff : 0);
-	redisplay_region_automations (mti, mri, mrp.rap, mrp_diff ? &mrp_diff->rap_diff : 0);
+	redisplay_region_automations (mti, mri, mrp.mrap, mrp_diff ? &mrp_diff->mrap_diff : 0);
 }
 
 void
@@ -1523,9 +1523,9 @@ Grid::redisplay_region_notes (int mti, int mri, const NotesPattern& np, const No
 }
 
 void
-Grid::redisplay_region_automations (int mti, int mri, const RegionAutomationPattern& rap, const RegionAutomationPatternPhenomenalDiff* rap_diff)
+Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomationPattern& mrap, const MidiRegionAutomationPatternPhenomenalDiff* mrap_diff)
 {
-	if (rap_diff == 0 || rap_diff->full || rap_diff->ap_diff.full) {
+	if (mrap_diff == 0 || mrap_diff->full || mrap_diff->ap_diff.full) {
 		const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
 		for (ParameterSetConstIt it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
 		{
@@ -1537,20 +1537,20 @@ Grid::redisplay_region_automations (int mti, int mri, const RegionAutomationPatt
 			// TODO: An alternate way to deal with that would be to enable such
 			// region during TrackerEditor::setup, Grid::setup or
 			// MultiTrackPattern::setup.
-			pattern.midi_region_pattern (mti, mri).rap.set_param_enabled (param, true);
-			redisplay_region_automation_param (mti, mri, rap, param);
+			pattern.midi_region_pattern (mti, mri).mrap.set_param_enabled (param, true);
+			redisplay_region_automation_param (mti, mri, mrap, param);
 		}
 	} else {
-		const AutomationPatternPhenomenalDiff& ap_diff = rap_diff->ap_diff;
+		const AutomationPatternPhenomenalDiff& ap_diff = mrap_diff->ap_diff;
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = ap_diff.param2rows_diff.begin (); it != ap_diff.param2rows_diff.end (); ++it)
 		{
-			redisplay_region_automation_param (mti, mri, rap, it->first, &it->second);
+			redisplay_region_automation_param (mti, mri, mrap, it->first, &it->second);
 		}
 	}
 }
 
 void
-Grid::redisplay_region_automation_param (int mti, int mri, const RegionAutomationPattern& rap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
 	int cgi = to_cgi (mti, param);
 
@@ -1560,18 +1560,18 @@ Grid::redisplay_region_automation_param (int mti, int mri, const RegionAutomatio
 
 	int row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
-		for (int row_idx = 0; row_idx < rap.nrows; row_idx++) {
-			redisplay_region_automation_param_row (mti, mri, cgi, row_idx + row_offset, rap, param);
+		for (int row_idx = 0; row_idx < mrap.nrows; row_idx++) {
+			redisplay_region_automation_param_row (mti, mri, cgi, row_idx + row_offset, mrap, param);
 		}
 	} else {
 		for (std::set<int>::const_iterator it = rows_diff->rows.begin (); it != rows_diff->rows.end (); ++it) {
-			redisplay_region_automation_param_row (mti, mri, cgi, *it + row_offset, rap, param);
+			redisplay_region_automation_param_row (mti, mri, cgi, *it + row_offset, mrap, param);
 		}
 	}
 }
 
 void
-Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const RegionAutomationPattern& rap, const Evoral::Parameter& param)
+Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);

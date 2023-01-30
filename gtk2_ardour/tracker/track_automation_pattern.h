@@ -48,6 +48,9 @@ public:
 	                        bool connect);
 
 	// NEXT.13: move the following 4 methods under TrackAutomationSetPattern.
+	//          The alternative would be to rename TrackAutomationPattern to
+	//          ProcessorAutomationPattern, and TrackAutomationSetPattern to
+	//          TrackAutomationPattern.
 
 	// Fill _automation_controls
 	void setup_automation_controls ();

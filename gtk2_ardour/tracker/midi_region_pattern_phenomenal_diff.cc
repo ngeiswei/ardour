@@ -25,7 +25,7 @@ using namespace Tracker;
 bool
 MidiRegionPatternPhenomenalDiff::empty () const
 {
-	return !full && np_diff.empty () && rap_diff.empty ();
+	return !full && np_diff.empty () && mrap_diff.empty ();
 }
 
 std::string
@@ -35,7 +35,7 @@ MidiRegionPatternPhenomenalDiff::to_string (const std::string& indent) const
 	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl
 	   << indent << "np_diff:" << std::endl
 	   << np_diff.to_string (indent + "  ") << std::endl
-	   << indent << "rap_diff:" << std::endl
-	   << rap_diff.to_string (indent + "  ");
+	   << indent << "mrap_diff:" << std::endl
+	   << mrap_diff.to_string (indent + "  ");
 	return ss.str ();
 }
