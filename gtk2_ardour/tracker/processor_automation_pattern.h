@@ -20,7 +20,7 @@
 #define __ardour_tracker_processor_automation_pattern_h_
 
 #include "automation_pattern.h"
-#include "processor_automation_pattern_phenomenal_diff.h" // VERY VERY NEXT: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
+#include "processor_automation_pattern_phenomenal_diff.h" // NEXT.2: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
 
 namespace Tracker {
 
@@ -28,7 +28,9 @@ namespace Tracker {
  * Data structure holding the automation list pattern for a processor
  * (plugin and such).
  */
-// NEXT.11: inherit from TrackAutomationPattern
+// NEXT.11: inherit from TrackAutomationPattern.  Really?  Why?  Answer:
+// because TrackAutomationPattern::event2row is using event->when while
+// MidiRegionAutomationPattern::event2row is using event->when.beats ().
 class ProcessorAutomationPattern : public AutomationPattern {
 public:
 	ProcessorAutomationPattern (TrackerEditor& te,

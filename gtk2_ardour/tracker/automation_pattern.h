@@ -86,7 +86,7 @@ public:
 	// the given parameter, and insert it.
 	//
 	// Purely virtual because the modality of insertion depends on the
-	// automation pattern.  RegionAutomationPattern requires a
+	// automation pattern.  MidiRegionAutomationPattern requires a
 	// midi_model, while TrackAutomationPattern requires a track.
 	virtual void insert (const Evoral::Parameter& param) = 0;
 

@@ -16,28 +16,24 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_region_automation_pattern_phenomenal_diff_h_
-#define __ardour_tracker_region_automation_pattern_phenomenal_diff_h_
+#include <sstream>
 
-#include <map>
+#include "midi_region_automation_pattern_phenomenal_diff.h"
 
-#include "evoral/Parameter.h"
+using namespace Tracker;
 
-#include "automation_pattern_phenomenal_diff.h"
-#include "base_pattern_phenomenal_diff.h"
-#include "rows_phenomenal_diff.h"
-
-namespace Tracker {
-
-// Represent the differences that may impact grid rendition.
-struct RegionAutomationPatternPhenomenalDiff : public BasePatternPhenomenalDiff
+bool
+MidiRegionAutomationPatternPhenomenalDiff::empty () const
 {
-	AutomationPatternPhenomenalDiff ap_diff;
+	return !full && ap_diff.empty ();
+}
 
-	bool empty () const;
-	std::string to_string (const std::string& indent = std::string ()) const;
-};
-
-} // ~namespace Tracker
-
-#endif /* __ardour_tracker_region_automation_pattern_phenomenal_diff_h_ */
+std::string
+MidiRegionAutomationPatternPhenomenalDiff::to_string (const std::string& indent) const
+{
+	std::stringstream ss;
+	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl
+		<< indent << "ap_diff:" << std::endl
+	   << ap_diff.to_string (indent + "  ");
+	return ss.str ();
+}
