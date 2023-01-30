@@ -1503,21 +1503,21 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 	if (!pattern.midi_region_pattern (mti, mri).enabled)
 		return;
 
-	redisplay_region_notes (mti, mri, mrp.np, mrp_diff ? &mrp_diff->np_diff : 0);
+	redisplay_region_notes (mti, mri, mrp.mnp, mrp_diff ? &mrp_diff->mnp_diff : 0);
 	redisplay_region_automations (mti, mri, mrp.mrap, mrp_diff ? &mrp_diff->mrap_diff : 0);
 }
 
 void
-Grid::redisplay_region_notes (int mti, int mri, const NotesPattern& np, const NotesPatternPhenomenalDiff* np_diff)
+Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, const MidiNotesPatternPhenomenalDiff* mnp_diff)
 {
-	if (np_diff == 0 || np_diff->full) {
-		for (size_t cgi = 0; cgi < np.ntracks; cgi++) {
-			redisplay_note_column (mti, mri, cgi, np);
+	if (mnp_diff == 0 || mnp_diff->full) {
+		for (size_t cgi = 0; cgi < mnp.ntracks; cgi++) {
+			redisplay_note_column (mti, mri, cgi, mnp);
 		}
 	} else {
-		const NotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = np_diff->cgi2rows_diff;
-		for (NotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin (); it != cgi2rows_diff.end (); ++it) {
-			redisplay_note_column (mti, mri, it->first, np, &it->second);
+		const MidiNotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = mnp_diff->cgi2rows_diff;
+		for (MidiNotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin (); it != cgi2rows_diff.end (); ++it) {
+			redisplay_note_column (mti, mri, it->first, mnp, &it->second);
 		}
 	}
 }
@@ -1591,22 +1591,22 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 }
 
 void
-Grid::redisplay_note_column (int mti, int mri, int cgi, const NotesPattern& np, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_note_column (int mti, int mri, int cgi, const MidiNotesPattern& mnp, const RowsPhenomenalDiff* rows_diff)
 {
 	int row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
 		for (int rrrow_idx = 0; rrrow_idx < get_row_size (mti, mri); rrrow_idx++) {
-			redisplay_note (mti, mri, cgi, row_offset + rrrow_idx, np);
+			redisplay_note (mti, mri, cgi, row_offset + rrrow_idx, mnp);
 		}
 	} else {
 		for (std::set<int>::const_iterator row_it = rows_diff->rows.begin (); row_it != rows_diff->rows.end (); ++row_it) {
-			redisplay_note (mti, mri, cgi, row_offset + *row_it, np);
+			redisplay_note (mti, mri, cgi, row_offset + *row_it, mnp);
 		}
 	}
 }
 
 void
-Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const NotesPattern& np)
+Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
@@ -2535,7 +2535,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		cmd->add (new_note);
 		// Pre-emptively add the note in the pattern so that it knows in which
 		// track it is supposed to be.
-		pattern.notes_pattern (mti, mri).add (cgi, new_note);
+		pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
@@ -2570,9 +2570,9 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		Temporal::Beats length = end - here;
 		NotePtr new_note (new NoteType (ch, here, length, pitch, vel));
 		cmd->add (new_note);
-		// Pre-emptively add the note in np so that it knows in which track it is
+		// Pre-emptively add the note in mnp so that it knows in which track it is
 		// supposed to be.
-		pattern.notes_pattern (mti, mri).add (cgi, new_note);
+		pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
 	}
 
 	// Apply note changes
@@ -3435,12 +3435,12 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << TrackerUtils::underline("Region") << ": "
 		   << "<b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
 		ss << TrackerUtils::underline("Notes") << ":";
-		const NotesPattern& notes_pattern = pattern.notes_pattern (mti, mri);
+		const MidiNotesPattern& midi_notes_pattern = pattern.midi_notes_pattern (mti, mri);
 		if (0 < off_count) {
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
 				NotePtr off_note = off_rng.first->second;
-				Temporal::BBT_Time bbt = notes_pattern.off_note_bbt (off_note);
+				Temporal::BBT_Time bbt = midi_notes_pattern.off_note_bbt (off_note);
 				int ch = off_note->channel ();
 				int delay = get_off_note_delay (off_note, row_idx, mti, mri);
 				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
@@ -3457,7 +3457,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
-				Temporal::BBT_Time bbt = notes_pattern.on_note_bbt (on_note);
+				Temporal::BBT_Time bbt = midi_notes_pattern.on_note_bbt (on_note);
 				std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
 				int ch = on_note->channel ();
 				int vel = on_note->velocity ();
