@@ -71,7 +71,8 @@ public:
 	// Plugins are wrapped inside a PluginInsert class, which is-a Processor
 	virtual const ParameterSet& automatable_parameters () const = 0;
 
-	// Assign a control event to a row
+	// Assign a control event to a row.
+	// Return its row index if successful or INVALID_ROW otherwise.
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// Build or rebuild the pattern (implement BasePattern::update ())
@@ -155,6 +156,7 @@ public:
 	Temporal::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
 
 	// Add, modidy or erase automation point, and record undo history
+	// NEXT.15: these 3 methods probably need to be replicated for ControlList in case of MIDI region
 	void add_automation_point (AutomationListPtr alist, Temporal::timepos_t when, double val);
 	void modify_automation_point (AutomationListPtr alist, AutomationListIt it, Temporal::timepos_t when, double val);
 	void erase_automation_point (AutomationListPtr alist, AutomationListIt it);

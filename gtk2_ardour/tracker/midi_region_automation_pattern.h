@@ -53,8 +53,12 @@ public:
 	// (and connect it to the grid for changes)
 	void insert (const Evoral::Parameter& param);
 
-	// Assign a control event to a row
+	// Assign a control event to a row.
+	// Return its row index if successful or INVALID_ROW otherwise.
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+
+	// NEXT.15: maybe AutomationPattern::update should be overloaded to use
+	// ControlList instead of AutomationList
 
 	virtual const ParameterSet& automatable_parameters () const;
 

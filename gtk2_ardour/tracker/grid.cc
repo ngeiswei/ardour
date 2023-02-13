@@ -349,6 +349,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	assert (mitem);
 	const bool showit = mitem->get_active ();
 
+	// NEXT.15
 	// Find the column associated to this parameter, assign one if necessary
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
@@ -1415,6 +1416,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
+		// NEXT.15
 		redisplay_track_automations (mti, mtp.track_automation_pattern);
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
@@ -1423,6 +1425,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
 		}
+		// NEXT.15
 		redisplay_track_automations (mti, mtp.track_automation_pattern, &mtp_diff->auto_diff);
 	}
 }
@@ -3149,6 +3152,8 @@ double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
 {
 	double inter_auto_val = 0;
+	// NEXT.15: it might be better to move this to AutomationPattern and
+	// MidiRegionAutomationPattern, as to not need alist for Grid at all.
 	if (const AutomationListPtr alist = get_alist (mti, mri, param)) {
 		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
 		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
