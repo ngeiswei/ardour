@@ -27,11 +27,11 @@ namespace Tracker {
 
 /**
  * Data structure holding the pattern for an automation list of a track (as
- * opposed to a region).  Such automation list typically belong to a processor,
- * though it may also belong to route for fader, pan, etc.
+ * opposed to a region).  Such automation list typically belongs to a
+ * processor, though it may also belong to the main route for fader, pan, etc.
  *
  * For the pattern holding all the track automations, see
- * TrackAutomationSetPattern class.
+ * TrackAutomationSetPattern.
  */
 class TrackAutomationPattern : public AutomationPattern {
 public:
@@ -47,10 +47,10 @@ public:
 	                        Temporal::samplepos_t last_sample,
 	                        bool connect);
 
-	// NEXT.13: move the following 4 methods under TrackAutomationSetPattern.
-	//          The alternative would be to rename TrackAutomationPattern to
-	//          ProcessorAutomationPattern, and TrackAutomationSetPattern to
-	//          TrackAutomationPattern.
+	// NEXT.13: move the following 4 methods under TrackAutomationSetPattern
+	// (yes, I am confident about that).  It may mean that we ditch
+	// ProcessorAutomationPattern, not sure about that.  At most maybe it could
+	// contain a ProcessorPtr, which isn't so bad.
 
 	// Fill _automation_controls
 	void setup_automation_controls ();

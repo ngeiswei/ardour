@@ -166,6 +166,8 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 	return track_automation_pattern.is_param_enabled (param);
 }
 
+// NEXT.15: the problem is that for MIDI automation it is a ControlList, not an
+// AutomationList.
 AutomationListPtr
 MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
 {

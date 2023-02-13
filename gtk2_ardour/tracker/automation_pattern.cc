@@ -216,20 +216,32 @@ AutomationPattern::update ()
 void
 AutomationPattern::update_automations ()
 {
+	std::cout << "AutomationPattern::update_automations ()" << std::endl;
 	param_to_row_to_ces.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
 		AutomationControlPtr actl = param_actl->second;
 		AutomationListPtr al = actl->alist ();
 		const Evoral::Parameter& param = actl->parameter ();
+		std::cout << "param = " << param << std::endl;
 
 		// Save CPU resources
 		if (!param_to_enabled[param]) {
 			continue;
 		}
 
+		// For MIDI automations al is null (NEXT.15: probably overload
+		// MidiRegionAutomationPattern::update or so).
+		if (!al) {
+			continue;
+		}
+
 		// Build automation pattern
+			std::cout << "WUT? -1-" << std::endl;
 		for (ARDOUR::AutomationList::iterator it = al->begin (); it != al->end (); ++it) {
 			Evoral::ControlEvent* event = *it;
+			std::cout << "WUT? -2-" << std::endl;
+			std::cout << "event = " << event << std::endl;
+			std::cout << "event->value = " << event->value << std::endl;
 			int row = event2row (param, event);
 			if (row != INVALID_ROW) {
 				param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
@@ -241,9 +253,12 @@ AutomationPattern::update_automations ()
 void
 AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& name)
 {
+	std::cout << "AutomationPattern::insert_actl (actl=" << actl << ", name=" << name << ")" << std::endl;
+	// NEXT.15: the alist from actl is null but why???  Creating the control
+	// before hand with ardour does not fix the problem!!!
 	Evoral::Parameter param = actl->parameter ();
-	// std::cout << boost::stacktrace::stacktrace() << std::endl;
-	std::cout << "AutomationPattern[" << this << "]::insert_actl (actl=" << actl << ", name=" << name << ") param = " << param << std::endl;
+	std::cout << boost::stacktrace::stacktrace() << std::endl;
+	std::cout << "AutomationPattern[" << this << "]::insert_actl (actl=" << actl << ", name=" << name << ") param = " << param << ", alist = " << actl->alist () << std::endl;
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
 	if (actl_result.second && _connect) {
