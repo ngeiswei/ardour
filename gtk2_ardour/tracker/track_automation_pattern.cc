@@ -110,6 +110,7 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
+	// NEXT.15: that is what is called for MIDI automation, is that normal?
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
