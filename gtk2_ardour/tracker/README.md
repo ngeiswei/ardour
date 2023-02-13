@@ -1,6 +1,8 @@
 # Next
 
-- [ ] NEXT.15: fix crash when creating midi automation column
+- [ ] NEXT.15: fix crash when creating midi automation column.  Clue:
+      AutomationList should be replaced by ControlList for MIDI automations.
+      Look all over the code for NEXT.15 to get more clues.
 - [ ] NEXT.14: use Region::region_beats_to_absolute_time and such instead of
       calculating at hand
 - [ ] NEXT.13: create TrackAutomationSetPattern that holds all track

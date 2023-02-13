@@ -689,6 +689,9 @@ private:
 	// Return cgi associated to param at mti. If undefined for param return -1.
 	int to_cgi (int mti, const Evoral::Parameter& param) const;
 
+	// NEXT.15: do I really need alist given that Grid::redisplay_automation
+	// does not need it, as it is abstracted away by
+	// Pattern::get_automation_value?
 	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
 	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 
