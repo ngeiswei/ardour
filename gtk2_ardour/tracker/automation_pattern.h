@@ -164,6 +164,8 @@ public:
 	void modify_automation_point (AutomationListPtr alist, AutomationListIt it, Temporal::timepos_t when, double val);
 	void erase_automation_point (AutomationListPtr alist, AutomationListIt it);
 
+	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
+
 	// Return RowToAutomationListIt corresponding to the previous (resp. next)
 	// event. If there is no such previous or next event then return end ()
 	// iterator.
