@@ -255,7 +255,9 @@ AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& na
 {
 	std::cout << "AutomationPattern::insert_actl (actl=" << actl << ", name=" << name << ")" << std::endl;
 	// NEXT.15: the alist from actl is null but why???  Creating the control
-	// before hand with ardour does not fix the problem!!!
+	// before hand with ardour does not fix the problem!!!  ANSWER: because midi
+	// control use ControlList not AutomationList.  We need to found where this
+	// ControlList.
 	Evoral::Parameter param = actl->parameter ();
 	std::cout << boost::stacktrace::stacktrace() << std::endl;
 	std::cout << "AutomationPattern[" << this << "]::insert_actl (actl=" << actl << ", name=" << name << ") param = " << param << ", alist = " << actl->alist () << std::endl;

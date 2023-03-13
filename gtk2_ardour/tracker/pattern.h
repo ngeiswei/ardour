@@ -151,7 +151,7 @@ public:
 
 	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
 	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
-	
+
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
