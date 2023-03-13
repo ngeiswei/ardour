@@ -426,6 +426,30 @@ AutomationPattern::get_automation_value (RowToControlEvents::const_iterator it) 
 	return it->second.value;
 }
 
+double
+AutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
+{
+	double inter_auto_val = 0;
+	if (const AutomationListPtr alist = get_alist (param)) {
+		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
+		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
+		// of the WriteLock in ControlList::erase and such, then eval can be used.
+		// Get corresponding beats and samples
+		Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ?
+			Temporal::timepos_t(region_relative_beats_at_row (rowi))
+			: Temporal::timepos_t(sample_at_row (rowi)); // NEXT.15: surely there
+																		// must be a way to
+																		// simplify that,
+																		// including overloading
+																		// it for
+																		// MidiRegionAutomationPattern
+		// Get interpolation
+		bool ok;
+		inter_auto_val = alist->rt_safe_eval (awhen, ok);
+	}
+	return inter_auto_val;
+}
+
 void
 AutomationPattern::set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay)
 {
@@ -538,7 +562,7 @@ AutomationPattern::add_automation_point (AutomationListPtr alist, Temporal::time
 	XMLNode& before = alist->get_state ();
 	if (alist->editor_add (when, val, false)) {
 		XMLNode& after = alist->get_state ();
-		tracker_editor.grid.register_automation_undo (alist, _("add automation event"), before, after);
+		register_automation_undo (alist, _("add automation event"), before, after);
 	}
 }
 
@@ -549,7 +573,7 @@ AutomationPattern::modify_automation_point (AutomationListPtr alist, AutomationL
 	XMLNode& before = alist->get_state ();
 	alist->modify (it, when, val);
 	XMLNode& after = alist->get_state ();
-	tracker_editor.grid.register_automation_undo (alist, _("change automation event"), before, after);
+	register_automation_undo (alist, _("change automation event"), before, after);
 }
 
 void
@@ -559,7 +583,16 @@ AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationLi
 	XMLNode& before = alist->get_state ();
 	alist->erase (it);
 	XMLNode& after = alist->get_state ();
-	tracker_editor.grid.register_automation_undo (alist, _("delete automation event"), before, after);
+	register_automation_undo (alist, _("delete automation event"), before, after);
+}
+
+void
+AutomationPattern::register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after)
+{
+	tracker_editor.public_editor.begin_reversible_command (opname);
+	tracker_editor.session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
+	tracker_editor.public_editor.commit_reversible_command ();
+	tracker_editor.session->set_dirty ();
 }
 
 RowToControlEvents::const_iterator

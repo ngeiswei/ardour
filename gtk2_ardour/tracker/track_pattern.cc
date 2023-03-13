@@ -272,7 +272,13 @@ TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
 std::pair<double, bool>
 TrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param)
 {
-	return track_automation_pattern.get_automation_value (rowi, param);
+	return track_automation_pattern.get_automation_value (rowi, param); // NEXT.12: replace track_automation_pattern by track_automation_set_pattern
+}
+
+double
+TrackPattern::get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param)
+{
+	return track_automation_pattern.get_automation_interpolation_value (rowi, param); // NEXT.12: replace track_automation_pattern by track_automation_set_pattern
 }
 
 void
