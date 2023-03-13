@@ -48,7 +48,8 @@ public:
 	                        bool connect);
 
 	// NEXT.13: move the following 4 methods under TrackAutomationSetPattern
-	// (yes, I am confident about that).  It may mean that we ditch
+	// (yes, I am confident about that, though the name could be different like
+	// TrackAllAutomationsPattern).  It may mean that we ditch
 	// ProcessorAutomationPattern, not sure about that.  At most maybe it could
 	// contain a ProcessorPtr, which isn't so bad.
 
