@@ -689,12 +689,6 @@ private:
 	// Return cgi associated to param at mti. If undefined for param return -1.
 	int to_cgi (int mti, const Evoral::Parameter& param) const;
 
-	// NEXT.15: do I really need alist given that Grid::redisplay_automation
-	// does not need it, as it is abstracted away by
-	// Pattern::get_automation_value?
-	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
-	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
-
 	void automation_edited (const std::string& path, const std::string& text);
 	// Return automation value at given coordinates. The flag is true iff such
 	// value exists.
@@ -719,9 +713,6 @@ private:
 	// Return lower and upper bounds of the given parameter
 	double lower (int row_idx, int mti, const Evoral::Parameter& param) const;
 	double upper (int row_idx, int mti, const Evoral::Parameter& param) const;
-
-public:
-	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
 
 private:
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);

@@ -3110,18 +3110,6 @@ Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 	return cac_it->second;
 }
 
-AutomationListPtr
-Grid::get_alist (int mti, int mri, const Evoral::Parameter& param)
-{
-	return pattern.get_alist (mti, mri, param);
-}
-
-const AutomationListPtr
-Grid::get_alist (int mti, int mri, const Evoral::Parameter& param) const
-{
-	return pattern.get_alist (mti, mri, param);
-}
-
 void
 Grid::automation_edited (const string& path, const string& text)
 {
@@ -3151,22 +3139,7 @@ Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi
 double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
 {
-	double inter_auto_val = 0;
-	// NEXT.15: it might be better to move this to AutomationPattern and
-	// MidiRegionAutomationPattern, as to not need alist for Grid at all.
-	if (const AutomationListPtr alist = get_alist (mti, mri, param)) {
-		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
-		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
-		// of the WriteLock in ControlList::erase and such, then eval can be used.
-		// Get corresponding beats and samples
-		Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ?
-			Temporal::timepos_t(pattern.region_relative_beats (row_idx, mti, mri))
-			: Temporal::timepos_t(pattern.sample_at_row_at_mti (row_idx, mti));
-		// Get interpolation
-		bool ok;
-		inter_auto_val = alist->rt_safe_eval (awhen, ok);
-	}
-	return inter_auto_val;
+	return pattern.get_automation_interpolation_value (row_idx, mti, mri, param);
 }
 
 void
@@ -3284,15 +3257,6 @@ double
 Grid::upper (int row_idx, int mti, const Evoral::Parameter& param) const
 {
 	return pattern.tps[mti]->upper (row_idx, param);
-}
-
-void
-Grid::register_automation_undo (AutomationListPtr alist, const string& opname, XMLNode& before, XMLNode& after)
-{
-	tracker_editor.public_editor.begin_reversible_command (opname);
-	tracker_editor.session->add_command (new MementoCommand<AutomationList> (*alist.get (), &before, &after));
-	tracker_editor.public_editor.commit_reversible_command ();
-	tracker_editor.session->set_dirty ();
 }
 
 void
