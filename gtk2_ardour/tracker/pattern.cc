@@ -558,6 +558,12 @@ Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Paramet
 	return tps[mti]->get_automation_value (to_rri (rowi, mti), mri, param);
 }
 
+double
+Pattern::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return tps[mti]->get_automation_interpolation_value (to_rri (rowi, mti), mri, param);
+}
+
 void
 Pattern::set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay)
 {
