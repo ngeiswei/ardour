@@ -136,6 +136,9 @@ public:
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
 	double get_automation_value (RowToControlEvents::const_iterator it) const;
 
+	// Return the automation interpolation value of a given param at a given row index
+	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
+
 	// Set the automation value val at rowi for param
 	void set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay);
 

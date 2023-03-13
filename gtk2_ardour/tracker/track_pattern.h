@@ -104,6 +104,7 @@ public:
 	virtual AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
 	virtual const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
+	virtual double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
 	virtual void delete_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
