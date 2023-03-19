@@ -5,10 +5,11 @@
       Look all over the code for NEXT.15 to get more clues.
 - [ ] NEXT.14: use Region::region_beats_to_absolute_time and such instead of
       calculating at hand
-- [ ] NEXT.13: create TrackAutomationSetPattern that holds all track
-      automations (region automation patterns excluded).
-- [ ] NEXT.12: replace track_automation_pattern by track_automation_set_pattern
-      in TrackPattern.  It could be named as well track_all_automations_pattern.
+- [ ] NEXT.13: create AllTrackAutomationsPattern that holds all track
+      automations (region automation patterns excluded as they are only in
+      MidiTrackPattern via MidiRegionPattern).
+- [ ] NEXT.12: replace track_automation_pattern by
+      all_track_automations_pattern in TrackPattern.
 
 # Tracker Editor
 
