@@ -39,17 +39,17 @@
 
 namespace Tracker {
 
-typedef boost::shared_ptr<ARDOUR::Track> TrackPtr;
-typedef boost::shared_ptr<ARDOUR::MidiTrack> MidiTrackPtr;
-typedef boost::shared_ptr<ARDOUR::AudioTrack> AudioTrackPtr;
-typedef boost::shared_ptr<ARDOUR::Region> RegionPtr;
-typedef boost::shared_ptr<ARDOUR::MidiRegion> MidiRegionPtr;
-typedef boost::shared_ptr<ARDOUR::MidiModel> MidiModelPtr;
+typedef std::shared_ptr<ARDOUR::Track> TrackPtr;
+typedef std::shared_ptr<ARDOUR::MidiTrack> MidiTrackPtr;
+typedef std::shared_ptr<ARDOUR::AudioTrack> AudioTrackPtr;
+typedef std::shared_ptr<ARDOUR::Region> RegionPtr;
+typedef std::shared_ptr<ARDOUR::MidiRegion> MidiRegionPtr;
+typedef std::shared_ptr<ARDOUR::MidiModel> MidiModelPtr;
 typedef Evoral::Note<Temporal::Beats> NoteType;
-typedef boost::shared_ptr<NoteType> NotePtr;
-typedef boost::shared_ptr<ARDOUR::AutomationControl> AutomationControlPtr;
-typedef boost::shared_ptr<ARDOUR::AutomationList> AutomationListPtr;
-typedef boost::shared_ptr<ARDOUR::Processor> ProcessorPtr;
+typedef std::shared_ptr<NoteType> NotePtr;
+typedef std::shared_ptr<ARDOUR::AutomationControl> AutomationControlPtr;
+typedef std::shared_ptr<ARDOUR::AutomationList> AutomationListPtr;
+typedef std::shared_ptr<ARDOUR::Processor> ProcessorPtr;
 
 typedef std::vector<RegionPtr> RegionSeq;
 typedef std::vector<MidiRegionPtr> MidiRegionSeq;

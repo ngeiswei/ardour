@@ -343,7 +343,7 @@ MidiTrackToolbar::build_controller_menu ()
 	}
 
 	using namespace MIDI::Name;
-	boost::shared_ptr<MasterDeviceNames> device_names = get_device_names ();
+	std::shared_ptr<MasterDeviceNames> device_names = get_device_names ();
 
 	if (device_names && !device_names->controls ().empty ()) {
 		/* Controllers names available in midnam file, generate fancy menu */
@@ -354,8 +354,8 @@ MidiTrackToolbar::build_controller_menu ()
 		   and only build a menu for that one. */
 		for (MasterDeviceNames::ControlNameLists::const_iterator l = device_names->controls ().begin ();
 		     l != device_names->controls ().end (); ++l) {
-			boost::shared_ptr<ControlNameList> name_list = l->second;
-			Menu*                              ctl_menu  = 0;
+			std::shared_ptr<ControlNameList> name_list = l->second;
+			Menu*                            ctl_menu  = 0;
 
 			for (ControlNameList::Controls::const_iterator c = name_list->controls ().begin ();
 			     c != name_list->controls ().end ();) {
@@ -746,7 +746,7 @@ MidiTrackToolbar::get_min_width () const
 	return width;
 }
 
-boost::shared_ptr<MIDI::Name::MasterDeviceNames>
+std::shared_ptr<MIDI::Name::MasterDeviceNames>
 MidiTrackToolbar::get_device_names ()
 {
 	return midi_track_pattern.get_device_names ();

@@ -101,7 +101,7 @@ public:
 	void build_main_automation_menu (Gtk::Menu_Helpers::MenuList& items);
 	virtual void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void setup_processor_menu_and_curves ();
-	void add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor>);
+	void add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor>);
 	void processor_menu_item_toggled (ProcessorAutomationInfo*, ProcessorAutomationNode*);
 	ProcessorAutomationInfoSeqIt find_processor_automation_info (ProcessorPtr processor);
 	ProcessorAutomationInfoSeqConstIt find_processor_automation_info (ProcessorPtr processor) const;

@@ -148,7 +148,7 @@ public:
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
 
-	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
+	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
 	double lower (int rowi, const Evoral::Parameter& param) const;
 	double upper (int rowi, const Evoral::Parameter& param) const;
