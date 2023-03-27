@@ -165,10 +165,10 @@ TrackerEditor::connect_automation (AutomationControlPtr actl)
 	std::cout << "TrackerEditor::connect_automation (actl=" << actl << ") alist = " << alist << std::endl;
 	// NEXT.15: is the case of MIDI automation, alist is null, so how to connect?
 	alist->StateChanged.connect (content_connections, invalidator (*this),
-	                             boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
 	                             gui_context ());
 	alist->InterpolationChanged.connect (content_connections, invalidator (*this),
-	                                     boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                                     std::bind (&Grid::redisplay_grid_connect_call, &grid),
 	                                     gui_context ());
 }
 

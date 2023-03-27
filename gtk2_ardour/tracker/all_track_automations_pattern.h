@@ -54,7 +54,7 @@ public:
 	void setup_automation_controls ();
 	void setup_main_automation_controls ();
 	void setup_processors_automation_controls ();
-	void setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p);
+	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
 
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
