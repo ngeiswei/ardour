@@ -60,9 +60,6 @@ public:
 	void enable ();
 	void disable ();
 
-	AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
-	const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
-
 	// Insert the automation control (s) corresponding to param (and connect it
 	// to the grid for changes)
 	void insert (const Evoral::Parameter& param);
