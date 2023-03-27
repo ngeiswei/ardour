@@ -166,7 +166,7 @@ Pattern::setup_track_patterns ()
 void
 Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
-	MidiTrackPtr midi_track = boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
+	MidiTrackPtr midi_track = std::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
 		// TODO: fix memory leak
 		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
@@ -174,7 +174,7 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 		tps.push_back (mtp);
 	}
 	// NEXT.2: re-enable
-	// AudioTrackPtr audio_track = boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
+	// AudioTrackPtr audio_track = std::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 	// if (audio_track) {
 	// 	AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
 	// 	                                                position_sample, length_sample, first_sample, last_sample, _connect);

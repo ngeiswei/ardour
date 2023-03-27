@@ -93,7 +93,7 @@ void TrackAutomationPattern::setup_processors_automation_controls ()
 }
 
 void
-TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDOUR::Processor> p)
+TrackAutomationPattern::setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p)
 {
 	ProcessorPtr processor (p.lock ());
 
@@ -104,7 +104,7 @@ TrackAutomationPattern::setup_processor_automation_control (boost::weak_ptr<ARDO
 	// NEXT.2: move to processor_pattern, maybe
 	const ParameterSet& automatable = processor->what_can_be_automated ();
 	for (ParameterSetConstIt ait = automatable.begin (); ait != automatable.end (); ++ait) {
-		AutomationPattern::insert_actl (boost::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
+		AutomationPattern::insert_actl (std::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
 	}
 }
 

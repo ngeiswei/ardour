@@ -39,7 +39,7 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     Temporal::samplepos_t last_sample,
                                     bool connect)
 	: TrackPattern (te, trk, position, length, first_sample, last_sample, connect)
-	, midi_track (boost::static_pointer_cast<ARDOUR::MidiTrack> (trk))
+	, midi_track (std::static_pointer_cast<ARDOUR::MidiTrack> (trk))
 	, rvs (region_views)
 	, row_offset (regions.size (), 0)
 {
@@ -59,7 +59,7 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 	
 	// Add new regions or re-enable existing ones
 	for (size_t mri = 0; mri < regions.size (); mri++) {
-		MidiRegionPtr midi_region = boost::static_pointer_cast<ARDOUR::MidiRegion> (regions[mri]);
+		MidiRegionPtr midi_region = std::static_pointer_cast<ARDOUR::MidiRegion> (regions[mri]);
 		MidiRegionPattern* mrp = find_midi_region_pattern (midi_region);
 		if (mrp) {
 			mrp->set_selected(true);
@@ -482,7 +482,7 @@ MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 	return 0;
 }
 
-boost::shared_ptr<MIDI::Name::MasterDeviceNames>
+std::shared_ptr<MIDI::Name::MasterDeviceNames>
 MidiTrackPattern::get_device_names ()
 {
 	return midi_track->instrument_info ().master_device_names ();
