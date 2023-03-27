@@ -108,7 +108,7 @@ public:
 	void print_widths () const;
 	int get_min_width () const;
 
-	boost::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
+	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
 	MidiTrackPtr midi_track;
 	MidiTrackPattern& midi_track_pattern;
