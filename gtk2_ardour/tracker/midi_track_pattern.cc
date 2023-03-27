@@ -166,34 +166,6 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 	return track_automation_pattern.is_param_enabled (param);
 }
 
-// NEXT.15: the problem is that for MIDI automation it is a ControlList, not an
-// AutomationList.
-AutomationListPtr
-MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
-{
-	// NEXT.11: have both MainAutomationPattern and ProcessorAutomationPattern
-	// inherit from TrackAutomationPattern and then have them be attributes of
-	// TrackPattern as it is today.  If so, it is unclear what to do with
-	// methods such as get_alist.  Should they be in TrackPattern, or hiden
-	// inside MainAutomationPattern and ProcessorAutomationPattern?  Probably
-	// the latter, and in this case some may even go to TrackAutomationPattern.
-	if (TrackerUtils::is_region_automation (param)) {
-		return mrps[mri]->mrap.get_alist (param);
-	} else {
-		return track_automation_pattern.get_alist (param);
-	}
-}
-
-const AutomationListPtr
-MidiTrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
-{
-	if (TrackerUtils::is_region_automation (param)) {
-		return mrps[mri]->mrap.get_alist (param);
-	} else {
-		return track_automation_pattern.get_alist (param);
-	}
-}
-
 void
 MidiTrackPattern::insert (const Evoral::Parameter& param)
 {
