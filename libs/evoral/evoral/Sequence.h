@@ -147,8 +147,8 @@ public:
 	 * region if these 2 attributes are equal.
 	 */
 	struct EarlierNoteStrictComparator {
-		inline bool operator()(const boost::shared_ptr< const Note<Time> > a,
-		                       const boost::shared_ptr< const Note<Time> > b) const {
+		inline bool operator()(const std::shared_ptr< const Note<Time> > a,
+		                       const std::shared_ptr< const Note<Time> > b) const {
 			return a->time() < b->time()
 				|| (a->time() == b->time()
 				    && (a->channel() < b->channel()

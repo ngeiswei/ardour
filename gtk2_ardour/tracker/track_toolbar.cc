@@ -267,7 +267,7 @@ TrackToolbar::setup_processor_menu_and_curves ()
 }
 
 void
-TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor> p)
+TrackToolbar::add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor> p)
 {
 	using namespace Menu_Helpers;
 
@@ -282,7 +282,7 @@ TrackToolbar::add_processor_to_subplugin_menu (boost::weak_ptr<ARDOUR::Processor
 	//    option
 	// */
 
-	if (boost::dynamic_pointer_cast<Amp> (processor) != 0) {
+	if (std::dynamic_pointer_cast<Amp> (processor) != 0) {
 		return;
 	}
 

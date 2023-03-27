@@ -146,13 +146,13 @@ TrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 MidiTrackPtr
 TrackPattern::midi_track ()
 {
-	return boost::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
+	return std::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 }
 
 AudioTrackPtr
 TrackPattern::audio_track ()
 {
-	return boost::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
+	return std::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 }
 
 bool
