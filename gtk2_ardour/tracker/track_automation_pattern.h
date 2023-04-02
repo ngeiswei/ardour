@@ -31,7 +31,7 @@ namespace Tracker {
  * processor, though it may also belong to the main route for fader, pan, etc.
  *
  * For the pattern holding all the track automations of a particular, see
- * AllTrackAutomationsPattern.
+ * TrackAllAutomationsPattern.
  */
 class TrackAutomationPattern : public AutomationPattern {
 public:
@@ -47,7 +47,7 @@ public:
 	                        Temporal::samplepos_t last_sample,
 	                        bool connect);
 
-	// NEXT.13: move the following 4 methods under AllTrackAutomationsPattern
+	// NEXT.13: move the following 4 methods under TrackAllAutomationsPattern
 	// (yes, I am confident about that).  It may mean that we ditch
 	// ProcessorAutomationPattern, not sure about that.  At most maybe it could
 	// contain a ProcessorPtr, which isn't so bad.
