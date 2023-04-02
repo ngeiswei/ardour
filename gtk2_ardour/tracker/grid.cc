@@ -1271,11 +1271,11 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 void
 Grid::redisplay_auto_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
-	double inter_auto_val = get_automation_interpolation_value (row_idx, mti, mri, param);
+	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, param);
 	if (is_int_param (param)) {
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_auto_val), base (), precision ());
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
 	} else {
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_auto_val, base (), precision ());
+		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
 	}
 	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
 }
