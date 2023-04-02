@@ -439,7 +439,7 @@ AutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::P
 		// Get corresponding beats and samples
 		Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ?
 			Temporal::timepos_t(region_relative_beats_at_row (rowi))
-			: Temporal::timepos_t(sample_at_row (rowi)); // NEXT.15: surely there
+			: Temporal::timepos_t(sample_at_row (rowi)); // NEXT.16: surely there
 																		// must be a way to
 																		// simplify that,
 																		// including overloading
