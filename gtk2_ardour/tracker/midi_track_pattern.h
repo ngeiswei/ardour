@@ -118,6 +118,9 @@ public:
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 
+	// Return the automation interpolation value of param at given location
+	double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param);
+
 	// Set the automation value val at rowi and mri for param
 	void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
 
