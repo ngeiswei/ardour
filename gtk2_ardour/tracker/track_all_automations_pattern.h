@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_all_track_automations_pattern_h_
-#define __ardour_tracker_all_track_automations_pattern_h_
+#ifndef __ardour_tracker_track_all_automations_pattern_h_
+#define __ardour_tracker_track_all_automations_pattern_h_
 
 #include "ardour/track.h"
 
@@ -31,13 +31,13 @@ namespace Tracker {
  * processor automations.  It does not however include region automations which
  * are hold in MidiRegionAutomationPattern.
  */
-class AllTrackAutomationsPattern : public AutomationPattern { // NEXT.13: what should it inherit?
+class TrackAllAutomationsPattern : public AutomationPattern { // NEXT.13: what should it inherit?
 public:
-	AllTrackAutomationsPattern (TrackerEditor& te, // NEXT: do we need that ctor?
+	TrackAllAutomationsPattern (TrackerEditor& te, // NEXT: do we need that ctor?
 	                            TrackPtr track,
 	                            const RegionSeq& regions,
 	                            bool connect);
-	AllTrackAutomationsPattern (TrackerEditor& te,
+	TrackAllAutomationsPattern (TrackerEditor& te,
 	                            TrackPtr track,
 	                            Temporal::samplepos_t position,
 	                            Temporal::samplecnt_t length,
@@ -74,4 +74,4 @@ public:
 
 } // ~namespace tracker
 
-#endif /* __ardour_tracker_all_track_automations_pattern_h_ */
+#endif /* __ardour_tracker_track_all_automations_pattern_h_ */
