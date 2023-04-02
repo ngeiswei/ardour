@@ -467,7 +467,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
-					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility), // NEXT.15: compare with RouteTimeAxisView::toggle_automation_track
+					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
 					                           track_index, fully_qualified_param)));
 
 				bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
