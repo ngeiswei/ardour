@@ -361,10 +361,9 @@ MidiTrackPattern::get_automation_value (int rowi, int mri, const Evoral::Paramet
 double
 MidiTrackPattern::get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param)
 {
-	// NEXT.17: implement, see MidiTrackPattern::get_automation_value as wel as
-	// AutomationPattern::get_automation_interpolation_value.  Maybe do NEXT.16
-	// in the same time.
-	return 0.0;
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[mri]->mrap.get_automation_interpolation_value (to_rrri (rowi, mri), param)
+		: track_automation_pattern.get_automation_interpolation_value (rowi, param);
 }
 
 void
