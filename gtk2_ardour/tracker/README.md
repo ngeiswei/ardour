@@ -1,5 +1,7 @@
 # Next
 
+- [ ] NEXT.16: overload AutomationPattern::get_automation_interpolation_value
+      for MidiRegionAutomationPattern.
 - [ ] NEXT.15: fix crash when creating midi automation column.  Clue:
       AutomationList should be replaced by ControlList for MIDI automations.
       Look all over the code for NEXT.15 to get more clues.
