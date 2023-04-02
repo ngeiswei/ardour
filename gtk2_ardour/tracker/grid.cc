@@ -349,7 +349,6 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	assert (mitem);
 	const bool showit = mitem->get_active ();
 
-	// NEXT.15: ?
 	// Find the column associated to this parameter, assign one if necessary
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
@@ -1416,7 +1415,6 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
-		// NEXT.15: ?
 		redisplay_track_automations (mti, mtp.track_automation_pattern);
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
@@ -1425,7 +1423,6 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
 		}
-		// NEXT.15: ?
 		redisplay_track_automations (mti, mtp.track_automation_pattern, &mtp_diff->auto_diff);
 	}
 }
