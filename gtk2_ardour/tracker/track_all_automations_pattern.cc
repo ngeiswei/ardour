@@ -23,7 +23,7 @@
 #include "ardour/panner.h"
 #include "ardour/region.h"
 
-#include "all_track_automations_pattern.h"
+#include "track_all_automations_pattern.h"
 #include "tracker_utils.h"
 
 using namespace std;
@@ -31,12 +31,12 @@ using namespace ARDOUR;
 using namespace Tracker;
 
 ////////////////////////////////
-// AllTrackAutomationsPattern //
+// TrackAllAutomationsPattern //
 ////////////////////////////////
 
 // NEXT.13: understand what to keep or not.
 
-AllTrackAutomationsPattern::AllTrackAutomationsPattern (TrackerEditor& te,
+TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         TrackPtr trk,
                                                         const RegionSeq& regions,
                                                         bool connect)
@@ -52,7 +52,7 @@ AllTrackAutomationsPattern::AllTrackAutomationsPattern (TrackerEditor& te,
 	setup_automation_controls ();
 }
 
-AllTrackAutomationsPattern::AllTrackAutomationsPattern (TrackerEditor& te,
+TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         TrackPtr trk,
                                                         Temporal::samplepos_t pos,
                                                         Temporal::samplecnt_t len,
@@ -65,13 +65,13 @@ AllTrackAutomationsPattern::AllTrackAutomationsPattern (TrackerEditor& te,
 	setup_automation_controls ();
 }
 
-void AllTrackAutomationsPattern::setup_automation_controls ()
+void TrackAllAutomationsPattern::setup_automation_controls ()
 {
 	setup_main_automation_controls ();
 	setup_processors_automation_controls ();
 }
 
-void AllTrackAutomationsPattern::setup_main_automation_controls ()
+void TrackAllAutomationsPattern::setup_main_automation_controls ()
 {
 	// Gain
 	AutomationPattern::insert_actl (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
@@ -89,13 +89,13 @@ void AllTrackAutomationsPattern::setup_main_automation_controls ()
 	}
 }
 
-void AllTrackAutomationsPattern::setup_processors_automation_controls ()
+void TrackAllAutomationsPattern::setup_processors_automation_controls ()
 {
-	track->foreach_processor (sigc::mem_fun (*this, &AllTrackAutomationsPattern::setup_processor_automation_control));
+	track->foreach_processor (sigc::mem_fun (*this, &TrackAllAutomationsPattern::setup_processor_automation_control));
 }
 
 void
-AllTrackAutomationsPattern::setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p)
+TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p)
 {
 	ProcessorPtr processor (p.lock ());
 
@@ -110,14 +110,14 @@ AllTrackAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 	}
 }
 
-void AllTrackAutomationsPattern::insert (const Evoral::Parameter& param)
+void TrackAllAutomationsPattern::insert (const Evoral::Parameter& param)
 {
 	// NEXT.15: that is what is called for MIDI automation, is that normal?
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
 int
-AllTrackAutomationsPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+TrackAllAutomationsPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	timepos_t when = event->when;
 
@@ -133,22 +133,22 @@ AllTrackAutomationsPattern::event2row (const Evoral::Parameter& param, const Evo
 }
 
 const ParameterSet&
-AllTrackAutomationsPattern::automatable_parameters () const
+TrackAllAutomationsPattern::automatable_parameters () const
 {
 	// NEXT.12
 	return ParameterSet();
 }
 
 std::string
-AllTrackAutomationsPattern::self_to_string () const
+TrackAllAutomationsPattern::self_to_string () const
 {
 	std::stringstream ss;
-	ss << "AllTrackAutomationsPattern[" << this << "]";
+	ss << "TrackAllAutomationsPattern[" << this << "]";
 	return ss.str ();
 }
 
 std::string
-AllTrackAutomationsPattern::to_string (const std::string& indent) const
+TrackAllAutomationsPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << AutomationPattern::to_string (indent);
