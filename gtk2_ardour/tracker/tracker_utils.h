@@ -374,6 +374,14 @@ public:
 	// rendered in decimal or hexadecimal.
 	static std::string bbt_to_string (const Temporal::BBT_Time& bbt, int base=10);
 
+	// Convert channel to string, taking into account the base, starting from 0
+	// if hex, and from 1 otherwise.
+	static std::string channel_to_string (uint8_t ch, int base=10);
+
+	// Convert channel string representation to channel value, taking into
+	// account the base, starting from 0 if hex, and from 1 otherwise.
+	static uint8_t string_to_channel (std::string str, int base=10);
+
 	// Wrap <u> </u> around the givem string
 	static std::string underline (const std::string& str);
 
