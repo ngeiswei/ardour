@@ -488,6 +488,18 @@ TrackerUtils::bbt_to_string (const Temporal::BBT_Time& bbt, int base)
 }
 
 std::string
+TrackerUtils::channel_to_string (uint8_t ch, int base)
+{
+	return num_to_string (ch + (base == 16 ? 0 : 1), base);
+}
+
+uint8_t
+TrackerUtils::string_to_channel (std::string str, int base)
+{
+	return string_to_num<int> (str, base) - (base == 16 ? 0 : 1);
+}
+
+std::string
 TrackerUtils::underline (const std::string& str)
 {
 	return std::string("<u>") + str + "</u>";

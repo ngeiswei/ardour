@@ -1194,7 +1194,7 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		if (note) {
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note ());
 			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
-			row[columns.channel[mti][cgi]] = TrackerUtils::num_to_string (note->channel () + 1, base (), precision ());
+			row[columns.channel[mti][cgi]] = TrackerUtils::channel_to_string (note->channel (), base ());
 			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
 			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity (), base (), precision ());
 			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1966,6 +1966,8 @@ Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 	}
 }
 
+// TODO: this somewhat duplicates Grid::redisplay_note_foreground.  Is there a
+// way to refactorize that?
 std::string
 Grid::get_cell_content (int row_idx, int col_idx) const
 {
@@ -1997,7 +1999,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			break;
 		case TrackerColumn::CHANNEL:
 			if (on_note) {
-				return TrackerUtils::num_to_string (on_note->channel () + 1, base (), precision ());
+				return TrackerUtils::channel_to_string (on_note->channel (), base ());
 			} else {
 				return "";
 			}
@@ -2035,7 +2037,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 		switch (get_auto_type (col)) {
 		case TrackerColumn::AUTOMATION: {
 			double value = get_automation_value (row_idx, mti, mri, cgi).first;
-			return TrackerUtils::num_to_string(value, base (), precision ());
+			return TrackerUtils::num_to_string (value, base (), precision ());
 			break;
 		}
 		case TrackerColumn::AUTOMATION_DELAY: {
@@ -2700,9 +2702,7 @@ Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const strin
 	}
 
 	if (TrackerUtils::is_number<int> (text, base ())) {
-		int ch = TrackerUtils::string_to_num<int> (text, base ());
-		ch--;  // Adjust for zero-based counting
-		set_note_channel (mti, mri, note, ch);
+		set_note_channel (mti, mri, note, TrackerUtils::string_to_channel (text, base ()));
 	}
 }
 
@@ -3414,9 +3414,9 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 				   << TrackerUtils::underline("Note") << ": "
 				   << TrackerUtils::bold("Off") << ", "
 				   << TrackerUtils::underline("Channel") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string (ch + 1, base ())) << ", "
+				   << TrackerUtils::bold(TrackerUtils::channel_to_string (ch, base ())) << ", "
 				   << TrackerUtils::underline("Delay") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string(delay, base ()));
+				   << TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
 			}
 		}
 		if (0 < on_count) {
@@ -3433,11 +3433,11 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 				   << TrackerUtils::underline("Note") << ": "
 				   << TrackerUtils::bold(note_name) << ", "
 				   << TrackerUtils::underline("Channel") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string (ch + 1, base ())) << ", "
+				   << TrackerUtils::bold(TrackerUtils::channel_to_string (ch, base ())) << ", "
 				   << TrackerUtils::underline("Velocity") << ": "
 				   << TrackerUtils::bold(TrackerUtils::num_to_string (vel, base ())) << ", "
 				   << TrackerUtils::underline("Delay") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string(delay, base ()));
+				   << TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
 			}
 		}
 		return ss.str ();
@@ -3471,9 +3471,9 @@ Grid::auto_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
 			   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
 			   << TrackerUtils::underline("Value") << ": "
-			   << TrackerUtils::bold(TrackerUtils::num_to_string(value, base (), precision)) << ", "
+			   << TrackerUtils::bold(TrackerUtils::num_to_string (value, base (), precision)) << ", "
 			   << TrackerUtils::underline("Delay") << ": "
-			   << TrackerUtils::bold(TrackerUtils::num_to_string(delay, base ()));
+			   << TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
 		}
 		return ss.str ();
 	} else {
@@ -4632,8 +4632,8 @@ Grid::step_editing_set_note_channel_digit (int digit)
 	NotePtr note = get_on_note (current_row_idx, current_mti, current_cgi);
 	if (note) {
 		int ch = note->channel ();
-		int new_ch = TrackerUtils::change_digit (ch + 1, digit, current_pos, base (), precision ());
-		set_note_channel (current_mti, current_mri, note, new_ch - 1);
+		int new_ch = TrackerUtils::change_digit (ch + (is_hex () ? 0 : 1), digit, current_pos, base (), precision ());
+		set_note_channel (current_mti, current_mri, note, new_ch - (is_hex () ? 0 : 1));
 	}
 	vertical_move_current_cursor_default_steps (wrap(), jump());
 	return true;
