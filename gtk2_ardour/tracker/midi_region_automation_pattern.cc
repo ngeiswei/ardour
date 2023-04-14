@@ -111,6 +111,12 @@ MidiRegionAutomationPattern::automatable_parameters () const
 	return ParameterSet();
 }
 
+double
+MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
+{
+	// NEXT.16: implement, this requires to discover how to get ControlList from midi region, and the equivalent of rt_safe_eval.
+}
+
 std::string
 MidiRegionAutomationPattern::self_to_string () const
 {
