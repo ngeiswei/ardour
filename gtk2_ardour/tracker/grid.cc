@@ -2512,6 +2512,8 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 	if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
+		// TODO: move the following outside of Grid.  Maybe within Pattern or
+		// such.  That way the ardour/midi_model.h include can be removed.
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
 		if (tracker_editor.main_toolbar.overwrite_existing) {
