@@ -17,7 +17,6 @@
  */
 
 #include "ardour/midi_region.h"
-#include "ardour/midi_source.h"
 #include "ardour/session_playlists.h"
 
 #include "midi_region_pattern.h"
@@ -33,7 +32,7 @@ MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
 	, mnp (te, region)
 	, mrap (te, mt, region, connect)
 	, midi_track (mt)
-	, midi_model (region->midi_source (0)->model ())
+	, midi_model (region->model ())
 	, midi_region (region)
 {
 	if (connect)
