@@ -73,7 +73,7 @@ public:
 	MidiModelPtr midi_model;
 
 private:
-	RegionPtr _region;
+	RegionPtr _region;			  // NEXT.16: why not use MidiRegionPtr instead?
 };
 
 } // ~namespace Tracker
