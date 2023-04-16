@@ -24,7 +24,6 @@
 
 #include "ardour/midi_model.h"
 #include "ardour/midi_region.h"
-#include "ardour/midi_source.h"
 #include "ardour/session.h"
 #include "ardour/tempo.h"
 
@@ -42,7 +41,7 @@ MidiNotesPattern::MidiNotesPattern (TrackerEditor& te,
 	: BasePattern (te, region)
 	, ntracks (0)
 	, nreqtracks (0)
-	, _midi_model (region->midi_source (0)->model ())
+	, _midi_model (region->model ())
 {
 }
 

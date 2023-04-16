@@ -21,7 +21,6 @@
 
 #include "ardour/midi_playlist.h"
 #include "ardour/midi_region.h"
-#include "ardour/midi_source.h"
 
 #include "midi_region_automation_pattern.h"
 
@@ -39,7 +38,7 @@ MidiRegionAutomationPattern::MidiRegionAutomationPattern (TrackerEditor& te,
                                                           bool connect)
 	: AutomationPattern (te, region, connect)
 	, midi_track (mt)
-	, midi_model (region->midi_source (0)->model ())
+	, midi_model (region->model ())
 	, _region(region)
 {
 	setup_automation_controls ();
@@ -114,7 +113,9 @@ MidiRegionAutomationPattern::automatable_parameters () const
 double
 MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
 {
-	// NEXT.16: implement, this requires to discover how to get ControlList from midi region, and the equivalent of rt_safe_eval.
+	// NEXT.16: implement, this requires to discover how to get
+	// ControlList from midi region, and likely use
+	// ControlList::rt_safe_eval.
 }
 
 std::string
