@@ -125,12 +125,6 @@ void TrackerEditor::setup (RegionSelection& rs)
 	_first = false;
 }
 
-MidiModelPtr
-TrackerEditor::to_model (MidiRegionPtr midi_region)
-{
-	return midi_region->model ();
-}
-
 void
 TrackerEditor::connect_track (TrackPtr track)
 {
@@ -146,9 +140,9 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 	// redisplay_grid_connect_call.
 
 	// Changing midi content re-render the grid
-	to_model (midi_region)->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                                 boost::bind (&Grid::redisplay_grid_connect_call, &grid),
-	                                                 gui_context ());
+	midi_region->model ()->ContentsChanged.connect (content_connections, invalidator (*this),
+	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
+	                                                gui_context ());
 
 	// Changing the region time zone re-render the grid
 	midi_region->PropertyChanged.connect (content_connections, invalidator (*this),
