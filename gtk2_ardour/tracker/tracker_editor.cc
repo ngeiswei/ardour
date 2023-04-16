@@ -43,7 +43,6 @@
 #include "ardour/midi_patch_manager.h"
 #include "ardour/midi_playlist.h"
 #include "ardour/midi_region.h"
-#include "ardour/midi_source.h"
 #include "ardour/midi_track.h"
 #include "ardour/pannable.h"
 #include "ardour/panner.h"
@@ -129,7 +128,7 @@ void TrackerEditor::setup (RegionSelection& rs)
 MidiModelPtr
 TrackerEditor::to_model (MidiRegionPtr midi_region)
 {
-	return midi_region->midi_source (0)->model ();
+	return midi_region->model ();
 }
 
 void
