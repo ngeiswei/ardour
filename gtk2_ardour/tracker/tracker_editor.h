@@ -74,8 +74,6 @@ public:
 
 	void setup (RegionSelection& rs);
 
-	MidiModelPtr to_model (MidiRegionPtr midi_region);
-
 	void resize_width ();
 
 	void connect_track (TrackPtr track);
