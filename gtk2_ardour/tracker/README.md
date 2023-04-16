@@ -52,6 +52,9 @@ the flag `--with-tracker-editor`, such as
 - [ ] Try to get to the bottom of `foo ()` vs `foo()`
 - [ ] Remove `Route::get_control`
 - [ ] Create PR
+- [ ] All the code for modifying notes and such should be moved outside of
+      Grid.  See "TODO: move the following outside of Grid" in grid.cc for
+      example.
 - [ ] Create shortcut key to move to automation vs note
 - [ ] Add shortcut key to cycle through group index
 - [ ] Set position when clicking on the digit position (if the cell is already selected)
