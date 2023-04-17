@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.17: Run till it does not crash to answer THE question.
 - [ ] NEXT.16: overload AutomationPattern::get_automation_interpolation_value
       for MidiRegionAutomationPattern.
 - [ ] NEXT.15: fix crash when creating midi automation column.  Clue:
