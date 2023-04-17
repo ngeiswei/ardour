@@ -36,9 +36,9 @@ namespace Tracker {
  */
 class MidiRegionAutomationPattern : public AutomationPattern {
 public:
-	MidiRegionAutomationPattern (TrackerEditor& te,
+	MidiRegionAutomationPattern (TrackerEditor& track_editor,
                                 MidiTrackPtr midi_track,
-                                MidiRegionPtr region,
+                                MidiRegionPtr midi_region,
                                 bool connect);
 
 	MidiRegionAutomationPattern& operator= (const MidiRegionAutomationPattern& other);
@@ -71,9 +71,7 @@ public:
 
 	MidiTrackPtr midi_track;
 	MidiModelPtr midi_model;
-
-private:
-	RegionPtr _region;			  // NEXT.16: why not use MidiRegionPtr instead?  It is used at all?
+	MidiRegionPtr midi_region;
 };
 
 } // ~namespace Tracker
