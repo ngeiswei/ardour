@@ -123,7 +123,7 @@ MidiTrackPattern::phenomenal_diff (const MidiTrackPattern& prev) const
 			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
 	}
-	diff.auto_diff = track_automation_pattern.phenomenal_diff (prev.track_automation_pattern);
+	diff.automation_diff = track_automation_pattern.phenomenal_diff (prev.track_automation_pattern);
 
 	return diff;
 }
@@ -411,7 +411,7 @@ MidiTrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time
 }
 
 bool
-MidiTrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const
+MidiTrackPattern::is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.is_displayable (to_rrri (rowi, mri), param)

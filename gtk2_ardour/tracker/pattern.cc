@@ -405,9 +405,9 @@ Pattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
 }
 
 bool
-Pattern::is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Pattern::is_automation_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	return tps[mti]->is_auto_displayable (to_rri (rowi, mti), mri, param);
+	return tps[mti]->is_automation_displayable (to_rri (rowi, mti), mri, param);
 }
 
 size_t
