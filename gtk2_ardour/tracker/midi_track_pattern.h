@@ -139,7 +139,7 @@ public:
 	Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
-	bool is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
+	bool is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
 	RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
 	Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param);

@@ -97,7 +97,7 @@ public:
 	RowToNotesRange off_notes_range (int rowi, int mti, int mri, int cgi) const;
 	RowToNotesRange on_notes_range (int rowi, int mti, int mri, int cgi) const;
 
-	bool is_auto_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	bool is_automation_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	size_t control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 	RowToControlEventsRange control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
