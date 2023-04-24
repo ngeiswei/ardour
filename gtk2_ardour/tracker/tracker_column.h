@@ -32,17 +32,17 @@ public:
 
 	// Type of data the midi note column is holding. It also serve to calculate
 	// the column index as well.
-	enum midi_note_type {
+	enum class NoteType {
 		NOTE,
 		CHANNEL,
 		VELOCITY,
 		DELAY,
 		SEPARATOR
-	}; 
+	};
 
 	// Type of data the automation column is hold. It also serve to calculate
 	// the column index as well.
-	enum automation_type {
+	enum class AutomationType {
 		AUTOMATION,
 		AUTOMATION_DELAY,
 		AUTOMATION_SEPARATOR
@@ -51,15 +51,15 @@ public:
 	TrackerColumn (const Glib::ustring& title,
 	              const Gtk::TreeModelColumn<std::string>& column,
 	              int mti, int cgi,
-	              midi_note_type mnt, automation_type at);
+	              NoteType mnt, AutomationType at);
 
 	int mti; // midi track index
 	int cgi; // either note or automation column group index
-	const enum midi_note_type note_type; // NOTE_SEPARATOR means inactive
-	const enum automation_type auto_type; // AUTOMATION_SEPARATOR means inactive
+	const NoteType note_type; // NOTE_SEPARATOR means inactive
+	const AutomationType automation_type; // AUTOMATION_SEPARATOR means inactive
 
 	bool is_note_type () const;
-	bool is_auto_type () const;
+	bool is_automation_type () const;
 };
 
 class NoteColumn : public TrackerColumn
