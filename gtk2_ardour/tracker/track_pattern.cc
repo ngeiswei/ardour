@@ -204,7 +204,7 @@ TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, in
 }
 
 bool
-TrackPattern::is_auto_displayable (int rowi, int mri, const Evoral::Parameter& param) const
+TrackPattern::is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return track_automation_pattern.is_displayable (rowi, param);
 }

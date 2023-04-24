@@ -29,7 +29,7 @@ struct MidiTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
 {
 	typedef std::map<int, MidiRegionPatternPhenomenalDiff> Mri2MidiRegionPatternDiff;
 	Mri2MidiRegionPatternDiff mri2mrp_diff;
-	AutomationPatternPhenomenalDiff auto_diff;
+	AutomationPatternPhenomenalDiff automation_diff;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;

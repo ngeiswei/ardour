@@ -206,14 +206,14 @@ public:
 	void redisplay_note_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_blank_note_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
-	void redisplay_auto_background (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_automation_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi);
-	void redisplay_current_auto_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_current_automation_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
-	void redisplay_blank_auto_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
+	void redisplay_blank_automation_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
-	void redisplay_auto_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
+	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
 	void redisplay_cell_background (int row_idx, int col_idx);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
@@ -226,7 +226,7 @@ public:
 	void redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff = 0);
 	void redisplay_inter_midi_regions (int mti);
 	void redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff = 0);
-	void redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* auto_diff = 0);
+	void redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff = 0);
 	void redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
 	void redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
@@ -240,14 +240,14 @@ public:
 	void redisplay_selection ();
 	void redisplay_cell_selection (int row_idx, int col_idx);
 	void redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
-	void redisplay_auto_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
+	void redisplay_automation_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
 	void remove_unused_rows ();
 	void unset_underline_current_step_edit_cell ();
 	void unset_underline_current_step_edit_note_cell ();
-	void unset_underline_current_step_edit_auto_cell ();
+	void unset_underline_current_step_edit_automation_cell ();
 	void set_underline_current_step_edit_cell ();
 	void set_underline_current_step_edit_note_cell ();
-	void set_underline_current_step_edit_auto_cell ();
+	void set_underline_current_step_edit_automation_cell ();
 
 	// Modifier/Accessor.
 	void set_cell_content (int row_idx, int col_idx, const std::string& text);
@@ -318,8 +318,8 @@ public:
 	int current_cgi; // column group index
 	int current_pos; // toolbar position, once adjusted
 
-	enum TrackerColumn::midi_note_type current_note_type; // NOTE_SEPARATOR means inactive
-	enum TrackerColumn::automation_type current_auto_type; // AUTOMATION_SEPARATOR means inactive
+	TrackerColumn::NoteType current_note_type; // NOTE_SEPARATOR means inactive
+	TrackerColumn::AutomationType current_automation_type; // AUTOMATION_SEPARATOR means inactive
 	bool current_is_note_type;
 
 	// Clock position
@@ -355,7 +355,7 @@ private:
 	bool set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 	std::string time_tooltip_msg (int row_idx) const;
 	std::string note_tooltip_msg (int row_idx, int mti, int mri, int cgi);
-	std::string auto_tooltip_msg (int row_idx, int mti, int mri, int cgi);
+	std::string automation_tooltip_msg (int row_idx, int mti, int mri, int cgi);
 	void connect_events ();
 	void setup_tree_view ();
 	void setup_time_column ();
@@ -562,8 +562,8 @@ private:
 	int to_mri (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col) const;
 
 	// Return respectively note or auto type of the given col
-	TrackerColumn::midi_note_type get_note_type (const Gtk::TreeViewColumn* col) const;
-	TrackerColumn::automation_type get_auto_type (const Gtk::TreeViewColumn* col) const;
+	TrackerColumn::NoteType get_note_type (const Gtk::TreeViewColumn* col) const;
+	TrackerColumn::AutomationType get_automation_type (const Gtk::TreeViewColumn* col) const;
 
 	// Return true iff the given col corresponds to a note name, channel,
 	// velocity or delay.
@@ -571,7 +571,7 @@ private:
 
 	// Return true iff the given col corresponds to an automation, or automation
 	// delay.
-	bool is_auto_type (const Gtk::TreeViewColumn* col) const;
+	bool is_automation_type (const Gtk::TreeViewColumn* col) const;
 
 	/**
 	 * Select the current track on the public editor
@@ -623,8 +623,8 @@ private:
 	// Whether a note or automation is dispayable, if not then it's
 	// content is replaced by ***
 	bool is_note_displayable (int row_idx, int mti, int mri, int cgi) const;
-	bool is_auto_displayable (int row_idx, int mti, int mri, int cgi) const;
-	bool is_auto_displayable (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
+	bool is_automation_displayable (int row_idx, int mti, int mri, int cgi) const;
+	bool is_automation_displayable (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Get note from path, mti and cgi
 	NotePtr get_on_note (const std::string& path, int mti, int cgi) const;
@@ -736,7 +736,7 @@ private:
 	std::string mk_ch_blank () const;
 	std::string mk_vel_blank () const;
 	std::string mk_delay_blank () const;
-	std::string mk_auto_blank () const;
+	std::string mk_automation_blank () const;
 
 	const std::string cellfont;
 
