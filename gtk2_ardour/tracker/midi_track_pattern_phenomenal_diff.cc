@@ -25,7 +25,7 @@ using namespace Tracker;
 bool
 MidiTrackPatternPhenomenalDiff::empty () const
 {
-	return !full && mri2mrp_diff.empty () && auto_diff.empty ();
+	return !full && mri2mrp_diff.empty () && automation_diff.empty ();
 }
 
 std::string
@@ -37,7 +37,7 @@ MidiTrackPatternPhenomenalDiff::to_string (const std::string& indent) const
 		ss << indent + "  " << "midi_region_pattern_diff[" << it->first << "]:" << std::endl
 		   << it->second.to_string (indent + "    ") << std::endl;
 	}
-	ss << indent << "auto_diff:" << std::endl;
-	ss << auto_diff.to_string (indent + "  ");
+	ss << indent << "automation_diff:" << std::endl;
+	ss << automation_diff.to_string (indent + "  ");
 	return ss.str ();
 }

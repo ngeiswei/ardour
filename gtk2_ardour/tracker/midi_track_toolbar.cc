@@ -420,7 +420,7 @@ MidiTrackToolbar::build_controller_menu ()
 void
 MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
                                                  const std::string&      label,
-                                                 AutomationType          auto_type,
+                                                 AutomationType          automation_type,
                                                  uint8_t                 cmd)
 {
 	using namespace Menu_Helpers;
@@ -446,7 +446,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 		Menu* chn_menu = Gtk::manage (new Menu);
 		Menu_Helpers::MenuList& chn_items (chn_menu->items ());
-		Evoral::Parameter param_without_channel (auto_type, 0, cmd);
+		Evoral::Parameter param_without_channel (automation_type, 0, cmd);
 
 		/* add a couple of items to hide/show all of them */
 
@@ -464,7 +464,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 
 				/* for each selected channel, add a menu item for this controller */
 
-				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
+				Evoral::Parameter fully_qualified_param (automation_type, chn, cmd);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
 					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
@@ -489,7 +489,7 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 		for (uint8_t chn = 0; chn < 16; chn++) {
 			if (selected_channels & (0x0001 << chn)) {
 
-				Evoral::Parameter fully_qualified_param (auto_type, chn, cmd);
+				Evoral::Parameter fully_qualified_param (automation_type, chn, cmd);
 				items.push_back (
 					CheckMenuElem (label,
 					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
