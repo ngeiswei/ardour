@@ -413,6 +413,7 @@ Pattern::is_automation_displayable (int rowi, int mti, int mri, const Evoral::Pa
 size_t
 Pattern::control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
+	std::cout << "FUCK YOU: Pattern::control_events_count (rowi=" << rowi << ", mti=" << mti << ", mri = " << mri << ", param = " << param << ")" << std::endl;
 	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, param);
 }
 
@@ -561,6 +562,7 @@ Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Paramet
 double
 Pattern::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
+	std::cout << "FUCK YOU: Pattern::get_automation_interpolation_value" << std::endl;
 	return tps[mti]->get_automation_interpolation_value (to_rri (rowi, mti), mri, param);
 }
 

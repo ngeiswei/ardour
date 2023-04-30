@@ -113,6 +113,7 @@ MidiRegionAutomationPattern::automatable_parameters () const
 double
 MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
 {
+	std::cout << "FUCK YOU!!!!" << std::endl;
 	std::cout << "MidiRegionAutomationPattern::get_automation_interpolation_value (rowi=" << rowi << ", param=" << param << ")" << std::endl;
 	// NEXT.16: implement, this requires to discover how to get ControlList from
 	// midi region, and likely use ControlList::rt_safe_eval.
