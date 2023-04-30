@@ -306,10 +306,14 @@ AutomationPattern::get_actl (const Evoral::Parameter& param) const
 size_t
 AutomationPattern::control_events_count (int rowi, const Evoral::Parameter& param) const
 {
+	std::cout << "FUCK YOU: AutomationPattern::control_events_count (rowi=" << rowi << ", param=" << param << ")" << std::endl;
 	ParamToRowToControlEvents::const_iterator it = param_to_row_to_ces.find (param);
+	std::cout << "FUCK YOU: AutomationPattern::control_events_count (rowi=" << rowi << ", param=" << param << ") -1-" << std::endl;
 	if (it != param_to_row_to_ces.end ()) {
+		std::cout << "FUCK YOU: AutomationPattern::control_events_count (rowi=" << rowi << ", param=" << param << ") -2-" << std::endl;
 		return it->second.count (rowi);
 	}
+	std::cout << "FUCK YOU: AutomationPattern::control_events_count (rowi=" << rowi << ", param=" << param << ") -3-" << std::endl;
 	return 0;
 }
 
