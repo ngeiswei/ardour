@@ -933,6 +933,7 @@ Grid::redisplay_global_columns ()
 void
 Grid::redisplay_grid ()
 {
+	std::cout << "FUCK YOU: Grid::redisplay_grid" << std::endl;
 	if (editing_editable) {
 		return;
 	}
@@ -1270,6 +1271,7 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 void
 Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_automation_interpolation" << std::endl;
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, param);
 	if (is_int_param (param)) {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
@@ -1372,6 +1374,7 @@ Grid::redisplay_current_row ()
 void
 Grid::redisplay_pattern ()
 {
+	std::cout << "FUCK YOU: Grid::redisplay_pattern" << std::endl;
 	if (_phenomenal_diff.full)
 	{
 		for (size_t mti = 0; mti < pattern.tps.size (); mti++)
@@ -1390,6 +1393,7 @@ Grid::redisplay_pattern ()
 void
 Grid::redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_track" << std::endl;
 	if (!pattern.tps[mti]->enabled)
 		return;
 
@@ -1409,26 +1413,41 @@ Grid::redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_midi_track" << std::endl;
 	if (mtp_diff == 0 || mtp_diff->full) {
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -1-" << std::endl;
 		redisplay_inter_midi_regions (mti);
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -2-" << std::endl;
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
+			std::cout << "FUCK YOU: Grid::redisplay_midi_track -3-" << std::endl;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
+			std::cout << "FUCK YOU: Grid::redisplay_midi_track -4-" << std::endl;
 		}
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -5-" << std::endl;
 		redisplay_track_automations (mti, mtp.track_automation_pattern);
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -6-" << std::endl;
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -7-" << std::endl;
 		redisplay_inter_midi_regions (mti);
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -8-" << std::endl;
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
+			std::cout << "FUCK YOU: Grid::redisplay_midi_track -9-" << std::endl;
 			size_t mri = it->first;
+			std::cout << "FUCK YOU: Grid::redisplay_midi_track -10-" << std::endl;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
+			std::cout << "FUCK YOU: Grid::redisplay_midi_track -11-" << std::endl;
 		}
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -12-" << std::endl;
 		redisplay_track_automations (mti, mtp.track_automation_pattern, &mtp_diff->automation_diff);
+		std::cout << "FUCK YOU: Grid::redisplay_midi_track -13-" << std::endl;
 	}
 }
 
 void
 Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_track_automations" << std::endl;
 	if (automation_diff == 0 || automation_diff->full) {
 		for (AutomationPattern::ParamEnabledMap::const_iterator it = tap.param_to_enabled.begin (); it != tap.param_to_enabled.end (); ++it) {
 			if (it->second) {
@@ -1445,6 +1464,7 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_track_automation_param" << std::endl;
 	int cgi = to_cgi (mti, param);
 	if (cgi < 0) {
 		return;
@@ -1464,21 +1484,32 @@ Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& t
 void
 Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param)
 {
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row" << std::endl;
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -1-" << std::endl;
 	int mri = -1;
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -2-" << std::endl;
 	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -3-" << std::endl;
 
 	// Fill background colors
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -4-" << std::endl;
 	redisplay_automation_background (row, mti, cgi);
 
 	// Fill default blank foreground text and color
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -5-" << std::endl;
 	redisplay_blank_automation_foreground (row, mti, cgi);
 
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -6-" << std::endl;
 	if (automation_count > 0) {
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -7-" << std::endl;
 		redisplay_automation (row, row_idx, mti, mri, cgi, param);
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -8-" << std::endl;
 	} else {
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -9-" << std::endl;
 		redisplay_automation_interpolation (row, row_idx, mti, mri, cgi, param);
+	std::cout << "FUCK YOU: redisplay_track_automation_param_row -10-" << std::endl;
 	}
 }
 
@@ -1499,6 +1530,7 @@ Grid::redisplay_inter_midi_regions (int mti)
 void
 Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_midi_region" << std::endl;
 	if (!pattern.midi_region_pattern (mti, mri).enabled)
 		return;
 
@@ -1524,6 +1556,7 @@ Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, con
 void
 Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomationPattern& mrap, const MidiRegionAutomationPatternPhenomenalDiff* mrap_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_region_automations" << std::endl;
 	if (mrap_diff == 0 || mrap_diff->full || mrap_diff->ap_diff.full) {
 		const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
 		for (ParameterSetConstIt it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
@@ -1551,6 +1584,8 @@ Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomation
 void
 Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_region_automation_param" << std::endl;
+
 	int cgi = to_cgi (mti, param);
 
 	if (cgi < 0) {
@@ -1572,6 +1607,7 @@ Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutom
 void
 Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param)
 {
+	std::cout << "FUCK YOU: Grid::redisplay_region_automation_param_row" << std::endl;
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
@@ -3137,6 +3173,7 @@ Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi
 double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
 {
+	std::cout << "FUCK YOU: Grid::get_automation_interpolation_value" << std::endl;
 	return pattern.get_automation_interpolation_value (row_idx, mti, mri, param);
 }
 

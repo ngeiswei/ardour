@@ -212,6 +212,7 @@ TrackPattern::is_automation_displayable (int rowi, int mri, const Evoral::Parame
 size_t
 TrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
+	std::cout << "FUCK YOU: TrackPattern::control_events_count (rowi=" << rowi << ", mri = " << mri << ", param = " << param << ")" << std::endl;
 	return track_automation_pattern.control_events_count (rowi, param);
 }
 
