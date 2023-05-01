@@ -1418,6 +1418,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -1-" << std::endl;
 		redisplay_inter_midi_regions (mti);
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -2-" << std::endl;
+		// NEXT.18: why it does not take this path?
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			std::cout << "FUCK YOU: Grid::redisplay_midi_track -3-" << std::endl;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
@@ -1431,6 +1432,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -7-" << std::endl;
 		redisplay_inter_midi_regions (mti);
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -8-" << std::endl;
+		// NEXT.18: why it does not take this path?
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
 			std::cout << "FUCK YOU: Grid::redisplay_midi_track -9-" << std::endl;
 			size_t mri = it->first;
