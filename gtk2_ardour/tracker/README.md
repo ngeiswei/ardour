@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.19: Understand why `Grid::_phenomenal_diff` is wrong.
 - [ ] NEXT.18: Why it does not take the redisplay_midi_region path?
 - [ ] NEXT.17: Run till it does not crash to answer THE question.
 - [ ] NEXT.16: overload AutomationPattern::get_automation_interpolation_value

@@ -952,7 +952,26 @@ Grid::redisplay_grid ()
 	// After update, compare pattern and prev_pattern to come up with a list of
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
+	//
+	// NEXT.19: there's something wrong with that update.  We could print it and
+	// see.
+	std::cout << "[BEFORE] _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
+	std::cout << "[AFTER] _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
+
+	// NEXT.19: indeed printing _phenomenal_diff reveales something wrong.  The
+	// diff should be on mri2mrp_diff, not automation_diff.
+	//
+	// [AFTER] _phenomenal_diff:
+	// full = 0
+	// mti2tp_diff:
+	//   track_pattern_diff[0]:
+	//     mri2mrp_diff:   <- THERE'S NOTHING, IT'S NOT NORMAL
+	//     automation_diff:
+	//       full = 0
+	//       param2rows_diff:
+	//       size = 1      <- THERE'S SOMETHING, IT'S NOT NORMAL
+	//          (param=15-0-0, full=1, rows={})
 
 	// Redisplay the grid
 	redisplay_global_columns ();
@@ -1418,7 +1437,10 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -1-" << std::endl;
 		redisplay_inter_midi_regions (mti);
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -2-" << std::endl;
-		// NEXT.18: why it does not take this path?
+		// NEXT.18: why it does not take this path?  Answer: because it has a
+		// mtp_diff, which is weird.  Actually, the first time it does take that
+		// path.
+		std::cout << "mtp.mrps.size () = " << mtp.mrps.size () << std::endl;
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			std::cout << "FUCK YOU: Grid::redisplay_midi_track -3-" << std::endl;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
@@ -1432,7 +1454,9 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -7-" << std::endl;
 		redisplay_inter_midi_regions (mti);
 		std::cout << "FUCK YOU: Grid::redisplay_midi_track -8-" << std::endl;
-		// NEXT.18: why it does not take this path?
+		// NEXT.18: why it does not take this path?  Because apparently adding
+		// the automation did not build the proper mtp_diff.
+		std::cout << "mtp.mrps.size () = " << mtp.mrps.size () << std::endl;
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
 			std::cout << "FUCK YOU: Grid::redisplay_midi_track -9-" << std::endl;
 			size_t mri = it->first;
