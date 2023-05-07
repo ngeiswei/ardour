@@ -946,8 +946,15 @@ Grid::redisplay_grid ()
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_lower (pattern.tps.front ()->delay_ticks_min ());
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_upper (pattern.tps.front ()->delay_ticks_max ());
 
+	// NEXT.19: study pattern before and after update to understand what went
+	// wrong.  Hint: enabling the MIDI automation should affect the MIDI region
+	// automation, not the track automation.
+	std::cout << "[BEFORE] pattern:" << std::endl << pattern.to_string() << std::endl;
+
 	// Update pattern settings and content
 	pattern.update ();
+
+	std::cout << "[AFTER] pattern:" << std::endl << pattern.to_string() << std::endl;
 
 	// After update, compare pattern and prev_pattern to come up with a list of
 	// differences to display. For now only worry about redisplaying the
@@ -972,6 +979,9 @@ Grid::redisplay_grid ()
 	//       param2rows_diff:
 	//       size = 1      <- THERE'S SOMETHING, IT'S NOT NORMAL
 	//          (param=15-0-0, full=1, rows={})
+	//
+	// We want to print pattern before and after update, to see if the MIDI
+	// automation is properly placed.
 
 	// Redisplay the grid
 	redisplay_global_columns ();
