@@ -949,6 +949,10 @@ Grid::redisplay_grid ()
 	// NEXT.19: study pattern before and after update to understand what went
 	// wrong.  Hint: enabling the MIDI automation should affect the MIDI region
 	// automation, not the track automation.
+	//
+	// ANSWER: the problem comes from the fact that enabling a MIDI automation
+	// does not trickle down to the MIDI region automation pattern.  Instead it
+	// trickles down to the track automation pattern, which is wrong.
 	std::cout << "[BEFORE] pattern:" << std::endl << pattern.to_string() << std::endl;
 
 	// Update pattern settings and content
