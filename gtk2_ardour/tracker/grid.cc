@@ -249,6 +249,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	return column;
 }
 
+// NEXT.20: study the following function to understand what is going on with MIDI automation
 int
 Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
@@ -339,7 +340,13 @@ Grid::change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Para
 void
 Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& param)
 {
-	if (!pattern.tps[mti]->is_midi_track_pattern ()) {
+	if (!pattern.tps[mti]->is_midi_track_pattern ()) { // TODO: Why?  Shouldn't
+	                                                   // that apply to audio
+	                                                   // track as well?  If it
+	                                                   // is specialized for
+	                                                   // MIDI, that least it
+	                                                   // should be clear in the
+	                                                   // method name.
 		return;
 	}
 
