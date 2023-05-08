@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.20: Study Grid::add_midi_automation_column to understand why it does
-      not insert in MIDI Region Automation Patterns.
+- [ ] NEXT.20: Study and fix Pattern::insert so that midi automations are
+      trickled down to all midi region automation patterns.
 - [ ] NEXT.19: Understand why `Grid::_phenomenal_diff` is wrong.
 - [ ] NEXT.18: Why it does not take the redisplay_midi_region path?
 - [ ] NEXT.17: Run till it does not crash to answer THE question.
