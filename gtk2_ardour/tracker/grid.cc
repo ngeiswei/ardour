@@ -249,13 +249,12 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	return column;
 }
 
-// NEXT.20: study the following function to understand what is going on with MIDI automation
 int
 Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
 	// Insert the corresponding automation control (and connect to the grid if
 	// not already there)
-	pattern.insert (mti, param);
+	pattern.insert (mti, param); // NEXT.12: should take the processor as well
 
 	// Select the next available column
 	int column = select_available_automation_column (mti);
