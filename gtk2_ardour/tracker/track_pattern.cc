@@ -212,7 +212,6 @@ TrackPattern::is_automation_displayable (int rowi, int mri, const Evoral::Parame
 size_t
 TrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	std::cout << "FUCK YOU: TrackPattern::control_events_count (rowi=" << rowi << ", mri = " << mri << ", param = " << param << ")" << std::endl;
 	return track_automation_pattern.control_events_count (rowi, param);
 }
 
@@ -286,6 +285,24 @@ void
 TrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param)
 {
 	track_automation_pattern.set_automation_delay (delay, rowi, param);
+}
+
+std::string
+TrackPattern::get_name (const Evoral::Parameter& param) const
+{
+	track_automation_pattern.get_name (param);
+}
+
+void
+TrackPattern::set_param_enabled (const Evoral::Parameter& param, bool enabled)
+{
+	track_automation_pattern.set_param_enabled (param, enabled);
+}
+
+bool
+TrackPattern::is_param_enabled (const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.is_param_enabled (param);
 }
 
 double

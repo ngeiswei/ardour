@@ -149,6 +149,10 @@ public:
 	// Apply given command at mti
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
+	std::string get_name (int mti, const Evoral::Parameter& param) const;
+	void set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled);
+	bool is_param_enabled (int mti, const Evoral::Parameter& param) const;
+
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
@@ -184,7 +188,7 @@ public:
 	// Mapping track to region views
 	typedef std::map<TrackPtr, std::vector<RegionView*>, ARDOUR::Stripable::Sorter> TrackRegionViewsMap;
 	TrackRegionViewsMap region_views_per_track;
-	
+
 	// Mapping track to regions
 	typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 	TrackRegionsMap regions_per_track;
