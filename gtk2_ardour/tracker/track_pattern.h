@@ -107,6 +107,9 @@ public:
 	virtual void delete_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
 	virtual void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
+	virtual std::string get_name (const Evoral::Parameter& param) const;
+	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
+	virtual bool is_param_enabled (const Evoral::Parameter& param) const;
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 

@@ -939,7 +939,6 @@ Grid::redisplay_global_columns ()
 void
 Grid::redisplay_grid ()
 {
-	std::cout << "FUCK YOU: Grid::redisplay_grid" << std::endl;
 	if (editing_editable) {
 		return;
 	}
@@ -952,46 +951,13 @@ Grid::redisplay_grid ()
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_lower (pattern.tps.front ()->delay_ticks_min ());
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_upper (pattern.tps.front ()->delay_ticks_max ());
 
-	// NEXT.19: study pattern before and after update to understand what went
-	// wrong.  Hint: enabling the MIDI automation should affect the MIDI region
-	// automation, not the track automation.
-	//
-	// ANSWER: the problem comes from the fact that enabling a MIDI automation
-	// does not trickle down to the MIDI region automation pattern.  Instead it
-	// trickles down to the track automation pattern, which is wrong.
-	std::cout << "[BEFORE] pattern:" << std::endl << pattern.to_string() << std::endl;
-
 	// Update pattern settings and content
 	pattern.update ();
-
-	std::cout << "[AFTER] pattern:" << std::endl << pattern.to_string() << std::endl;
 
 	// After update, compare pattern and prev_pattern to come up with a list of
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
-	//
-	// NEXT.19: there's something wrong with that update.  We could print it and
-	// see.
-	std::cout << "[BEFORE] _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
-	std::cout << "[AFTER] _phenomenal_diff:" << std::endl << _phenomenal_diff.to_string() << std::endl;
-
-	// NEXT.19: indeed printing _phenomenal_diff reveales something wrong.  The
-	// diff should be on mri2mrp_diff, not automation_diff.
-	//
-	// [AFTER] _phenomenal_diff:
-	// full = 0
-	// mti2tp_diff:
-	//   track_pattern_diff[0]:
-	//     mri2mrp_diff:   <- THERE'S NOTHING, IT'S NOT NORMAL
-	//     automation_diff:
-	//       full = 0
-	//       param2rows_diff:
-	//       size = 1      <- THERE'S SOMETHING, IT'S NOT NORMAL
-	//          (param=15-0-0, full=1, rows={})
-	//
-	// We want to print pattern before and after update, to see if the MIDI
-	// automation is properly placed.
 
 	// Redisplay the grid
 	redisplay_global_columns ();
@@ -1310,7 +1276,6 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 void
 Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_automation_interpolation" << std::endl;
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, param);
 	if (is_int_param (param)) {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
@@ -1413,7 +1378,6 @@ Grid::redisplay_current_row ()
 void
 Grid::redisplay_pattern ()
 {
-	std::cout << "FUCK YOU: Grid::redisplay_pattern" << std::endl;
 	if (_phenomenal_diff.full)
 	{
 		for (size_t mti = 0; mti < pattern.tps.size (); mti++)
@@ -1432,7 +1396,6 @@ Grid::redisplay_pattern ()
 void
 Grid::redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_track" << std::endl;
 	if (!pattern.tps[mti]->enabled)
 		return;
 
@@ -1452,48 +1415,26 @@ Grid::redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_midi_track" << std::endl;
 	if (mtp_diff == 0 || mtp_diff->full) {
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -1-" << std::endl;
 		redisplay_inter_midi_regions (mti);
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -2-" << std::endl;
-		// NEXT.18: why it does not take this path?  Answer: because it has a
-		// mtp_diff, which is weird.  Actually, the first time it does take that
-		// path.
-		std::cout << "mtp.mrps.size () = " << mtp.mrps.size () << std::endl;
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
-			std::cout << "FUCK YOU: Grid::redisplay_midi_track -3-" << std::endl;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
-			std::cout << "FUCK YOU: Grid::redisplay_midi_track -4-" << std::endl;
 		}
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -5-" << std::endl;
 		redisplay_track_automations (mti, mtp.track_automation_pattern);
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -6-" << std::endl;
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -7-" << std::endl;
 		redisplay_inter_midi_regions (mti);
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -8-" << std::endl;
-		// NEXT.18: why it does not take this path?  Because apparently adding
-		// the automation did not build the proper mtp_diff.
-		std::cout << "mtp.mrps.size () = " << mtp.mrps.size () << std::endl;
 		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
-			std::cout << "FUCK YOU: Grid::redisplay_midi_track -9-" << std::endl;
 			size_t mri = it->first;
-			std::cout << "FUCK YOU: Grid::redisplay_midi_track -10-" << std::endl;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
-			std::cout << "FUCK YOU: Grid::redisplay_midi_track -11-" << std::endl;
 		}
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -12-" << std::endl;
 		redisplay_track_automations (mti, mtp.track_automation_pattern, &mtp_diff->automation_diff);
-		std::cout << "FUCK YOU: Grid::redisplay_midi_track -13-" << std::endl;
 	}
 }
 
 void
 Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_track_automations" << std::endl;
 	if (automation_diff == 0 || automation_diff->full) {
 		for (AutomationPattern::ParamEnabledMap::const_iterator it = tap.param_to_enabled.begin (); it != tap.param_to_enabled.end (); ++it) {
 			if (it->second) {
@@ -1510,7 +1451,6 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_track_automation_param" << std::endl;
 	int cgi = to_cgi (mti, param);
 	if (cgi < 0) {
 		return;
@@ -1530,32 +1470,21 @@ Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& t
 void
 Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param)
 {
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row" << std::endl;
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -1-" << std::endl;
 	int mri = -1;
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -2-" << std::endl;
 	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -3-" << std::endl;
 
 	// Fill background colors
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -4-" << std::endl;
 	redisplay_automation_background (row, mti, cgi);
 
 	// Fill default blank foreground text and color
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -5-" << std::endl;
 	redisplay_blank_automation_foreground (row, mti, cgi);
 
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -6-" << std::endl;
 	if (automation_count > 0) {
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -7-" << std::endl;
 		redisplay_automation (row, row_idx, mti, mri, cgi, param);
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -8-" << std::endl;
 	} else {
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -9-" << std::endl;
 		redisplay_automation_interpolation (row, row_idx, mti, mri, cgi, param);
-	std::cout << "FUCK YOU: redisplay_track_automation_param_row -10-" << std::endl;
 	}
 }
 
@@ -1576,7 +1505,6 @@ Grid::redisplay_inter_midi_regions (int mti)
 void
 Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, const MidiRegionPatternPhenomenalDiff* mrp_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_midi_region" << std::endl;
 	if (!pattern.midi_region_pattern (mti, mri).enabled)
 		return;
 
@@ -1602,7 +1530,6 @@ Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, con
 void
 Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomationPattern& mrap, const MidiRegionAutomationPatternPhenomenalDiff* mrap_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_region_automations" << std::endl;
 	if (mrap_diff == 0 || mrap_diff->full || mrap_diff->ap_diff.full) {
 		const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
 		for (ParameterSetConstIt it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
@@ -1630,8 +1557,6 @@ Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomation
 void
 Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_region_automation_param" << std::endl;
-
 	int cgi = to_cgi (mti, param);
 
 	if (cgi < 0) {
@@ -1653,7 +1578,6 @@ Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutom
 void
 Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param)
 {
-	std::cout << "FUCK YOU: Grid::redisplay_region_automation_param_row" << std::endl;
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
@@ -2198,7 +2122,7 @@ Grid::get_track_separator_width () const
 std::string
 Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
 {
-	std::string long_name = pattern.tps[mti]->track_automation_pattern.get_name (param);
+	std::string long_name = pattern.get_name (mti, param);
 	size_t tl = 7;               // target length
 	return shorten ? PBD::short_version(long_name, tl) : long_name;
 }
@@ -2206,13 +2130,13 @@ Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
 void
 Grid::set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled)
 {
-	pattern.tps[mti]->track_automation_pattern.set_param_enabled (param, enabled);
+	pattern.set_param_enabled (mti, param, enabled);
 }
 
 bool
 Grid::is_param_enabled (int mti, const Evoral::Parameter& param) const
 {
-	return pattern.tps[mti]->track_automation_pattern.is_param_enabled (param);
+	return pattern.is_param_enabled (mti, param);
 }
 
 Pango::AttrList
@@ -3219,7 +3143,6 @@ Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi
 double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
 {
-	std::cout << "FUCK YOU: Grid::get_automation_interpolation_value" << std::endl;
 	return pattern.get_automation_interpolation_value (row_idx, mti, mri, param);
 }
 
@@ -4508,8 +4431,6 @@ Grid::step_editing_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_note_key_press (GdkEventKey* ev)
 {
-	// std::cout << "Grid::step_editing_note_key_press (ev=" << ev << ")" << std::endl;
-
 	bool ret = false;
 
 	switch (ev->keyval) {
@@ -4577,8 +4498,6 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
-	// std::cout << "Grid::step_editing_set_on_note (pitch=" << pitch << ", play=" << play << ")" << std::endl;
-
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
 
 	// In chord mode, move the cursor to the right to form a chord and differ
@@ -4598,8 +4517,6 @@ Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
-	// std::cout << "Grid::step_editing_set_on_note (pitch=" << (int)pitch << ", ch=" << (int)ch << ", vel=" << (int)vel << ", play=" << play << ")" << std::endl;
-
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
 
 	// In chord mode, move the cursor to the right to form a chord and differ
@@ -5292,8 +5209,6 @@ Grid::vertical_move_current_row (int steps, bool wrap, bool jump, bool set_playh
 void
 Grid::horizontal_move_current_cursor (int steps, bool group, bool track)
 {
-	// std::cout << "Grid::horizontal_move_current_cursor (steps=" << steps << ", group=" << group << ", track=" << track << ")" << std::endl;
-
 	int colnum = current_col_idx;
 	TreeModel::Path path = current_path;
 	horizontal_move (colnum, current_path, steps, group, track);
@@ -5401,8 +5316,6 @@ Grid::move_current_cursor_key_press (GdkEventKey* ev)
 bool
 Grid::non_editing_key_press (GdkEventKey* ev)
 {
-	// std::cout << "Grid::non_editing_key_press (ev=" << ev << ")" << std::endl;
-
 	bool ret = false;
 
 	switch (ev->keyval) {
