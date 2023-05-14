@@ -91,18 +91,15 @@ public:
 	// 2. Then change the API to make it work
 	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
-	// VERY VERY NEXT:
+	// NEXT.2:
 	virtual bool is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
+	// NEXT: replace the method below, we don't want such a low level structure to leak out to the Grid.
 	virtual RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
-	virtual Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param);
-	virtual const Evoral::ControlEvent* get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
 	virtual int to_rrri (int rowi, int mri) const;
 	virtual int to_rrri (int rowi) const;
 	virtual int to_mri (int rowi) const;
-	virtual AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param);
-	virtual const AutomationListPtr get_alist_at_mri (int mri, const Evoral::Parameter& param) const;
 	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
