@@ -84,7 +84,7 @@ public:
 
 	// Return an event's delay in a certain row and mti in ticks
 	int64_t delay_ticks (samplepos_t when, int rowi, int mti) const;
-	
+
 	// Return the sample at the corresponding row index and delay in relative
 	// ticks
 	int sample_at_row_at_mti (int rowi, int mti, int delay=0) const;
@@ -94,6 +94,7 @@ public:
 	bool is_note_displayable (int rowi, int mti, int mri, int cgi) const;
 	NotePtr off_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr on_note (int rowi, int mti, int mri, int cgi) const;
+	// NEXT: replace the methods below, we don't want such a low level structure to leak out to the Grid.
 	RowToNotesRange off_notes_range (int rowi, int mti, int mri, int cgi) const;
 	RowToNotesRange on_notes_range (int rowi, int mti, int mri, int cgi) const;
 
@@ -101,7 +102,6 @@ public:
 
 	size_t control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 	RowToControlEventsRange control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
-	Evoral::ControlEvent* get_automation_control_event (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	NotePtr find_prev_on_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr find_next_on_note (int rowi, int mti, int mri, int cgi) const;
@@ -132,7 +132,7 @@ public:
 
 	// Return the midi region at mti and mri
 	MidiRegionPtr midi_region (int mti, int mri);
-	
+
 	// Return the note pattern at mti and mri.  TODO: maybe return a pointer as
 	// to return 0 if undefined.
 	MidiNotesPattern& midi_notes_pattern (int mti, int mri);
@@ -148,9 +148,6 @@ public:
 
 	// Apply given command at mti
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
-
-	AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param);
-	const AutomationListPtr get_alist (int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;

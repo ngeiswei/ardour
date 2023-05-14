@@ -222,18 +222,6 @@ TrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& 
 	return track_automation_pattern.control_events_range (rowi, param);
 }
 
-Evoral::ControlEvent*
-TrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param)
-{
-	return track_automation_pattern.get_control_event (rowi, param);
-}
-
-const Evoral::ControlEvent*
-TrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const
-{
-	return track_automation_pattern.get_control_event (rowi, param);
-}
-
 bool
 TrackPattern::is_region_defined (int rowi) const
 {
@@ -256,18 +244,6 @@ int
 TrackPattern::to_mri (int rowi) const
 {
 	return -1;
-}
-
-AutomationListPtr
-TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param)
-{
-	return track_automation_pattern.get_alist (param);
-}
-
-const AutomationListPtr
-TrackPattern::get_alist_at_mri (int mri, const Evoral::Parameter& param) const
-{
-	return track_automation_pattern.get_alist (param);
 }
 
 std::pair<double, bool>
