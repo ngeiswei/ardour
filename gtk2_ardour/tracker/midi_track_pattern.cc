@@ -435,22 +435,6 @@ MidiTrackPattern::control_events_range (int rowi, int mri, const Evoral::Paramet
 		: track_automation_pattern.control_events_range (rowi, param);
 }
 
-Evoral::ControlEvent*
-MidiTrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param)
-{
-	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri]->mrap.get_control_event (to_rrri (rowi, mri), param)
-		: track_automation_pattern.get_control_event (rowi, param);
-}
-
-const Evoral::ControlEvent*
-MidiTrackPattern::get_automation_control_event (int rowi, int mri, const Evoral::Parameter& param) const
-{
-	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri]->mrap.get_control_event (to_rrri (rowi, mri), param)
-		: track_automation_pattern.get_control_event (rowi, param);
-}
-
 MidiRegionPattern*
 MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 {
