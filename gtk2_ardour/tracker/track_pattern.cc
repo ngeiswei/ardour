@@ -246,6 +246,12 @@ TrackPattern::to_mri (int rowi) const
 	return -1;
 }
 
+void
+TrackPattern::insert (const Evoral::Parameter& param)
+{
+	track_automation_pattern.insert (param);
+}
+
 std::pair<double, bool>
 TrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param)
 {
