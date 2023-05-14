@@ -52,8 +52,6 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
-	// std::cout << "BasePattern::BasePattern (te, region):" << std::endl
-	// 			 << to_string ("  ") << std::endl;
 }
 
 BasePattern::BasePattern (TrackerEditor& te,
@@ -79,8 +77,6 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
-	// std::cout << "BasePattern::BasePattern (te, samplepos...):" << std::endl
-	// 			 << to_string ("  ") << std::endl;
 }
 
 BasePattern::BasePattern (TrackerEditor& te,
@@ -106,7 +102,6 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
-	// std::cout << "BasePattern::BasePattern (te, pos...)" << std::endl;
 }
 
 BasePattern::~BasePattern ()
