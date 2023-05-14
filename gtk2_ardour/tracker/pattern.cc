@@ -471,13 +471,10 @@ Pattern::to_mri (int rowi, int mti) const
 	return tps[mti]->to_mri (to_rri (rowi, mti));
 }
 
-// NEXT.20: study the following function to understand what is going on with
-// MIDI automation.  Hint, it should probably go through all instances of
-// MidiRegionAutomationPattern.
 void
 Pattern::insert (int mti, const Evoral::Parameter& param)
 {
-	tps[mti]->track_automation_pattern.insert (param);
+	tps[mti]->insert (param);
 }
 
 MidiModelPtr

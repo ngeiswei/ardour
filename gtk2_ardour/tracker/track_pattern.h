@@ -100,6 +100,7 @@ public:
 	virtual int to_rrri (int rowi, int mri) const;
 	virtual int to_rrri (int rowi) const;
 	virtual int to_mri (int rowi) const;
+	virtual void insert (const Evoral::Parameter& param);
 	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param);
 	virtual void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
@@ -109,8 +110,7 @@ public:
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
-	// NEXT: TEMPORARY METHODS FROM OLD API BEFORE TRANSITIONING TO NEW API
-	// NEXT.9: add insert(param) method
+	// NEXT.20: add insert(param) method
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
