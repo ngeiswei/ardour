@@ -423,12 +423,6 @@ Pattern::control_events_range (int rowi, int mti, int mri, const Evoral::Paramet
 	return tps[mti]->control_events_range (to_rri (rowi, mti), mri, param);
 }
 
-Evoral::ControlEvent*
-Pattern::get_automation_control_event (int rowi, int mti, int mri, const Evoral::Parameter& param) const
-{
-	return tps[mti]->get_automation_control_event (to_rri (rowi, mti), mri, param);
-}
-
 NotePtr
 Pattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
 {
@@ -542,18 +536,6 @@ void
 Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
 	midi_model (mti, mri)->apply_diff_command_as_commit (tracker_editor.session, cmd);
-}
-
-AutomationListPtr
-Pattern::get_alist (int mti, int mri, const Evoral::Parameter& param)
-{
-	return tps[mti]->get_alist_at_mri (mri, param);
-}
-
-const AutomationListPtr
-Pattern::get_alist (int mti, int mri, const Evoral::Parameter& param) const
-{
-	return tps[mti]->get_alist_at_mri (mri, param);
 }
 
 std::pair<double, bool>
