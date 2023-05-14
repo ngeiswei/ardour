@@ -113,9 +113,7 @@ MidiRegionAutomationPattern::automatable_parameters () const
 double
 MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
 {
-	std::cout << "FUCK YOU!!!!" << std::endl;
-	std::cout << "MidiRegionAutomationPattern::get_automation_interpolation_value (rowi=" << rowi << ", param=" << param << ")" << std::endl;
-	// NEXT.16: implement, this requires to discover how to get ControlList from
+	// NEXT.15: implement, this requires to discover how to get ControlList from
 	// midi region, and likely use ControlList::rt_safe_eval.
 	//
 	// Potential candidates:
@@ -127,11 +125,9 @@ MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const
 	//   Evoral::ControlSet::control which returns Control pointer (like
 	//   MidiRegion::control it seems).
 	//
-	// NEXT.17: thus the question is: how midi_model->automation_control and
+	// Thus the question is: how midi_model->automation_control and
 	// midi_region->control differ?  Run till it does not crash to answer that
 	// question.
-	std::cout << "midi_region->control = " << midi_region->control (param) << std::endl;
-	std::cout << "midi_model->automation_control = " << midi_model->automation_control (param) << std::endl;
 	return 0.0;
 }
 

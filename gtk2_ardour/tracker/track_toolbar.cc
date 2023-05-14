@@ -361,10 +361,6 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, Process
 	//
 	// TODO: Make ProcessorAutomationInfo::to_string() and
 	// ProcessorAutomationNode::to_string more informative.
-
-	std::cout << "TrackToolbar::processor_menu_item_toggled (pai=" << pai << ", pauno=" << pauno << ")" << std::endl;
-	std::cout << "*pai:" << std::endl << pai->to_string() << std::endl;
-	std::cout << "*pauno:" << std::endl << pauno->to_string() << std::endl;
 	const bool showit = pauno->menu_item->get_active ();
 
 	if (pauno->column == 0) {
@@ -524,7 +520,6 @@ TrackToolbar::hide_main_automations ()
 void
 TrackToolbar::show_all_processor_automations ()
 {
-	std::cout << "TrackToolbar::show_all_processor_automations ()" << std::endl;
 	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
@@ -547,7 +542,6 @@ TrackToolbar::show_all_processor_automations ()
 void
 TrackToolbar::show_existing_processor_automations ()
 {
-	std::cout << "TrackToolbar::show_existing_processor_automations ()" << std::endl;
 	// NEXT: understand the weirdness (other processor automation)
 	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
