@@ -110,8 +110,6 @@ public:
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
-	// NEXT.20: add insert(param) method
-
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
