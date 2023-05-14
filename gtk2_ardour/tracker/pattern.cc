@@ -413,7 +413,6 @@ Pattern::is_automation_displayable (int rowi, int mti, int mri, const Evoral::Pa
 size_t
 Pattern::control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	std::cout << "FUCK YOU: Pattern::control_events_count (rowi=" << rowi << ", mti=" << mti << ", mri = " << mri << ", param = " << param << ")" << std::endl;
 	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, param);
 }
 
@@ -535,6 +534,24 @@ Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cm
 	midi_model (mti, mri)->apply_diff_command_as_commit (tracker_editor.session, cmd);
 }
 
+std::string
+Pattern::get_name (int mti, const Evoral::Parameter& param) const
+{
+	return tps[mti]->get_name (param);
+}
+
+void
+Pattern::set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled)
+{
+	tps[mti]->set_param_enabled (param, enabled);
+}
+
+bool
+Pattern::is_param_enabled (int mti, const Evoral::Parameter& param) const
+{
+	return tps[mti]->is_param_enabled (param);
+}
+
 std::pair<double, bool>
 Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
@@ -544,7 +561,6 @@ Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Paramet
 double
 Pattern::get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	std::cout << "FUCK YOU: Pattern::get_automation_interpolation_value" << std::endl;
 	return tps[mti]->get_automation_interpolation_value (to_rri (rowi, mti), mri, param);
 }
 

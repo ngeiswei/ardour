@@ -1,13 +1,7 @@
 # Next
 
-- [ ] NEXT.19: Understand why `Grid::_phenomenal_diff` is wrong.
-- [ ] NEXT.18: Why it does not take the redisplay_midi_region path?
-- [ ] NEXT.17: Run till it does not crash to answer THE question.
-- [ ] NEXT.16: overload AutomationPattern::get_automation_interpolation_value
+- [ ] NEXT.15: overload AutomationPattern::get_automation_interpolation_value
       for MidiRegionAutomationPattern.
-- [ ] NEXT.15: fix crash when creating midi automation column.  Clue:
-      AutomationList should be replaced by ControlList for MIDI automations.
-      Look all over the code for NEXT.15 to get more clues.
 - [ ] NEXT.14: use Region::region_beats_to_absolute_time and such instead of
       calculating at hand
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track

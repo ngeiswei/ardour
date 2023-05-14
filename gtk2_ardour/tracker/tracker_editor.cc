@@ -155,8 +155,6 @@ TrackerEditor::connect_automation (AutomationControlPtr actl)
 {
 	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
 	AutomationListPtr alist = actl->alist ();
-	std::cout << "TrackerEditor::connect_automation (actl=" << actl << ") alist = " << alist << std::endl;
-	// NEXT.15: is the case of MIDI automation, alist is null, so how to connect?
 	if (alist) {
 		alist->StateChanged.connect (content_connections, invalidator (*this),
 		                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
