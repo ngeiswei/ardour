@@ -110,9 +110,6 @@ TrackAutomationPattern::setup_processor_automation_control (std::weak_ptr<ARDOUR
 
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	// NEXT.15: that is what is called for MIDI automation, is that normal?
-	// ANSWER: no, it's probably not normal, it should be handled at the level
-	// of MidiRegionAutomationPattern.
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
