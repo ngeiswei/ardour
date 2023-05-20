@@ -1,7 +1,5 @@
 # Next
 
-- [ ] NEXT.15: overload AutomationPattern::get_automation_interpolation_value
-      for MidiRegionAutomationPattern.
 - [ ] NEXT.14: use Region::region_beats_to_absolute_time and such instead of
       calculating at hand
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track

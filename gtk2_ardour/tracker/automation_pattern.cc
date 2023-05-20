@@ -227,8 +227,7 @@ AutomationPattern::update_automations ()
 			continue;
 		}
 
-		// For MIDI automations al is null (NEXT.15: probably overload
-		// MidiRegionAutomationPattern::update or so).
+		// Not sure that is needed, but better safe than sorry.
 		if (!al) {
 			continue;
 		}
@@ -420,19 +419,12 @@ AutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::P
 {
 	double inter_auto_val = 0;
 	if (const AutomationListPtr alist = get_alist (param)) {
-		// We need to use ControlList::rt_safe_eval instead of ControlList::eval, otherwise the lock inside eval
-		// interferes with the lock inside ControlList::erase. Though if mark_dirty is called outside of the scope
-		// of the WriteLock in ControlList::erase and such, then eval can be used.
-		// Get corresponding beats and samples
-		Temporal::timepos_t awhen = TrackerUtils::is_region_automation (param) ?
-			Temporal::timepos_t(region_relative_beats_at_row (rowi))
-			: Temporal::timepos_t(sample_at_row (rowi)); // NEXT.16: surely there
-																		// must be a way to
-																		// simplify that,
-																		// including overloading
-																		// it for
-																		// MidiRegionAutomationPattern
-		// Get interpolation
+		// We need to use ControlList::rt_safe_eval instead of ControlList::eval,
+		// otherwise the lock inside eval interferes with the lock inside
+		// ControlList::erase. Though if mark_dirty is called outside of the
+		// scope of the WriteLock in ControlList::erase and such, then eval can
+		// be used.  Get corresponding beats and samples
+		Temporal::timepos_t awhen = Temporal::timepos_t(sample_at_row (rowi));
 		bool ok;
 		inter_auto_val = alist->rt_safe_eval (awhen, ok);
 	}
