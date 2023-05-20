@@ -57,9 +57,6 @@ public:
 	// Return its row index if successful or INVALID_ROW otherwise.
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
-	// NEXT.15: maybe AutomationPattern::update should be overloaded to use
-	// ControlList instead of AutomationList
-
 	virtual const ParameterSet& automatable_parameters () const;
 
 	// Return the automation interpolation value of a given param at a given row index
