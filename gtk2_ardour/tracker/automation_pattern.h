@@ -159,7 +159,6 @@ public:
 	Temporal::BBT_Time get_automation_bbt (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
 
 	// Add, modidy or erase automation point, and record undo history
-	// NEXT.15: these 3 methods probably need to be replicated for ControlList in case of MIDI region
 	void add_automation_point (AutomationListPtr alist, Temporal::timepos_t when, double val);
 	void modify_automation_point (AutomationListPtr alist, AutomationListIt it, Temporal::timepos_t when, double val);
 	void erase_automation_point (AutomationListPtr alist, AutomationListIt it);
