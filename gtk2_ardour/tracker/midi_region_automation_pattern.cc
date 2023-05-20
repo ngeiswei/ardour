@@ -113,22 +113,18 @@ MidiRegionAutomationPattern::automatable_parameters () const
 double
 MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
 {
-	// NEXT.15: implement, this requires to discover how to get ControlList from
-	// midi region, and likely use ControlList::rt_safe_eval.
-	//
-	// Potential candidates:
-	//
-	// - MidiRegion::control, which actually returns model()->control().
-	//
-	// - midi_model->automation_control.  It comes from
-	//   Automatable::automation_control, which itself calls
-	//   Evoral::ControlSet::control which returns Control pointer (like
-	//   MidiRegion::control it seems).
-	//
-	// Thus the question is: how midi_model->automation_control and
-	// midi_region->control differ?  Run till it does not crash to answer that
-	// question.
-	return 0.0;
+	double inter_auto_val = 0;
+	if (const AutomationListPtr alist = get_alist (param)) {
+		// We need to use ControlList::rt_safe_eval instead of ControlList::eval,
+		// otherwise the lock inside eval interferes with the lock inside
+		// ControlList::erase. Though if mark_dirty is called outside of the
+		// scope of the WriteLock in ControlList::erase and such, then eval can
+		// be used.  Get corresponding beats and samples
+		Temporal::timepos_t awhen = Temporal::timepos_t(region_relative_beats_at_row (rowi));
+		bool ok;
+		inter_auto_val = alist->rt_safe_eval (awhen, ok);
+	}
+	return inter_auto_val;
 }
 
 std::string
