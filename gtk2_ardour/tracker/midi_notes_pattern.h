@@ -46,7 +46,7 @@ namespace Tracker {
 class MidiNotesPattern : public BasePattern {
 public:
 	MidiNotesPattern (TrackerEditor& te,
-	              MidiRegionPtr region);
+	                  MidiRegionPtr region);
 
 	MidiNotesPattern& operator= (const MidiNotesPattern& other);
 	NotePtr clone_note (NotePtr note) const;
@@ -162,6 +162,7 @@ private:
 
 	static bool overlap (NotePtr a, NotePtr b);
 
+	MidiRegionPtr _midi_region;
 	MidiModelPtr _midi_model;
 };
 
