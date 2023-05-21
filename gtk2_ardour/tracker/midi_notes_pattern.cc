@@ -41,6 +41,7 @@ MidiNotesPattern::MidiNotesPattern (TrackerEditor& te,
 	: BasePattern (te, region)
 	, ntracks (0)
 	, nreqtracks (0)
+	, _midi_region (region)
 	, _midi_model (region->model ())
 {
 }
@@ -275,10 +276,8 @@ MidiNotesPattern::update_row_to_notes ()
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
 		     inote != track_to_notes[itrack].end (); ++inote) {
-			// On and off times are absolute, not relative to the region
-			// NEXT.14: use Region::region_beats_to_absolute_time and such instead
-			Temporal::Beats on_time = (*inote)->time () + position_beats - start_beats;
-			Temporal::Beats off_time = (*inote)->end_time () + position_beats - start_beats;
+			Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats ((*inote)->time ());
+			Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats ((*inote)->end_time ());
 			int on_max_delay_row = row_at_beats_max_delay (on_time);
 			int on_row = row_at_beats (on_time);
 			int off_min_delay_row = row_at_beats_min_delay (off_time);
@@ -407,14 +406,14 @@ MidiNotesPattern::add (int cgi, NotePtr note)
 Temporal::BBT_Time
 MidiNotesPattern::on_note_bbt (NotePtr note) const
 {
-	Temporal::Beats note_time = position_beats - start_beats + note->time ();
+	Temporal::Beats note_time = _midi_region->source_beats_to_absolute_beats (note->time ());
 	return Temporal::TempoMap::use()->bbt_at (note_time);
 }
 
 Temporal::BBT_Time
 MidiNotesPattern::off_note_bbt (NotePtr note) const
 {
-	Temporal::Beats end_note_time = position_beats - start_beats + note->end_time ();
+	Temporal::Beats end_note_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
 	return Temporal::TempoMap::use()->bbt_at (end_note_time);
 }
 
@@ -454,6 +453,7 @@ MidiNotesPattern::to_string (const std::string& indent) const
 			ss << indent + "  " << "row[" << it->first << "] = " << "[" << it->second << "] " << *it->second << std::endl;
 		}
 	}
+	ss << header << "_midi_region = " << _midi_region;
 	ss << header << "_midi_model = " << _midi_model;
 
 	return ss.str ();
