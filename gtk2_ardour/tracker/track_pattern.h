@@ -26,9 +26,7 @@
 
 #include "base_pattern.h"
 #include "automation_pattern.h"
-#include "track_automation_pattern.h"
-// #include "main_automation_pattern.h"
-// #include "processor_automation_pattern.h"
+#include "track_all_automations_pattern.h"
 #include "track_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
 
@@ -37,21 +35,10 @@ namespace Tracker {
 class MidiTrackPattern;
 class AudioTrackPattern;
 
-// TODO: maybe implement some MultiRegionPattern class that deals with mri and
-// have TrackPattern inherits that one as well.
-
 /**
  * Abstract class to represent track patterns (midi, audio, etc).
  */
-// NEXT.2: do we really want to inherit from AutomationPattern?  Probably not,
-// would be better to have main (fader, etc) and processor automation patterns.
-// BTW, we might want to have MidiRegionAutomationPattern and
-// TrackAutomationPattern, wait a minute!  Is that what TrackAutomationPattern
-// for?  Answer: Yes!  TrackAutomationPattern is track automation, as opposed
-// to region automation.  Except that now TrackAutomationPattern should
-// actually be a vector of ProcessorAutomationPattern.  Need to rethink that
-// carefully.
-class TrackPattern : public BasePattern /* NEXT: used to inherit from AutomationPattern, but I believe it should NOT, instead BasePattern seems reasonable */ {
+class TrackPattern : public BasePattern {
 public:
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
@@ -119,19 +106,7 @@ public:
 
 	TrackPtr track;
 
-	// NEXT.12: use TrackAutomationPattern before trying MainAutomationPattern
-	// and ProcessorAutomationPattern (let see if we can compile)
-	TrackAutomationPattern track_automation_pattern;
-
-	// MainAutomationPattern main_automation_pattern;
-	// std::vector<ProcessorAutomationPattern> processor_automation_patterns; // NEXT.2:
-	// 																							  // likewise
-	// 																							  // ProcessorAutomationPattern
-	// 																							  // could
-	// 																							  // inherit
-	// 																							  // from
-	// 																							  // a
-	// 																							  // TrackAutomationPattern
+	TrackAllAutomationsPattern track_all_automations_pattern;
 };
 
 } // ~namespace Tracker

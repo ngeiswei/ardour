@@ -22,6 +22,7 @@
 #include "ardour/track.h"
 
 #include "automation_pattern.h"
+#include "track_automation_pattern.h"
 
 namespace Tracker {
 
@@ -31,7 +32,7 @@ namespace Tracker {
  * processor automations.  It does not however include region automations which
  * are hold in MidiRegionAutomationPattern.
  */
-class TrackAllAutomationsPattern : public AutomationPattern { // NEXT.13: what should it inherit?
+class TrackAllAutomationsPattern : public BasePattern {
 public:
 	TrackAllAutomationsPattern (TrackerEditor& te, // NEXT: do we need that ctor?
 	                            TrackPtr track,
@@ -56,11 +57,15 @@ public:
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
 
+	// Update the pattern to reflect the current state
+	void update ();
+
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
 
 	// Assign a control event to a row
+	// NEXT.13: do we really need that for TrackAllAutomationsPattern
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	virtual const ParameterSet& automatable_parameters () const;
@@ -70,6 +75,10 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	TrackPtr track;
+
+	// NEXT.12: replace by main automation pattern and vector of processor
+	// automation patterns.
+	TrackAutomationPattern track_automation_pattern;
 };
 
 } // ~namespace tracker

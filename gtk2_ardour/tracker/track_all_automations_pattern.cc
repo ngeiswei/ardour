@@ -74,18 +74,18 @@ void TrackAllAutomationsPattern::setup_automation_controls ()
 void TrackAllAutomationsPattern::setup_main_automation_controls ()
 {
 	// Gain
-	AutomationPattern::insert_actl (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
+	track_automation_pattern.insert_actl (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
 
 	// Trim
-	AutomationPattern::insert_actl (track->trim_control (), track->describe_parameter (Evoral::Parameter (TrimAutomation)));
+	track_automation_pattern.insert_actl (track->trim_control (), track->describe_parameter (Evoral::Parameter (TrimAutomation)));
 
 	// Mute
-	AutomationPattern::insert_actl (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
+	track_automation_pattern.insert_actl (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
 
 	// Pan
 	set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
-		AutomationPattern::insert_actl (track->pannable ()->automation_control (*p), track->describe_parameter (*p));
+		track_automation_pattern.insert_actl (track->pannable ()->automation_control (*p), track->describe_parameter (*p));
 	}
 }
 
@@ -106,13 +106,20 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 	// NEXT.2: move to processor_pattern, maybe
 	const ParameterSet& automatable = processor->what_can_be_automated ();
 	for (ParameterSetConstIt ait = automatable.begin (); ait != automatable.end (); ++ait) {
-		AutomationPattern::insert_actl (std::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
+		track_automation_pattern.insert_actl (std::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
 	}
 }
 
-void TrackAllAutomationsPattern::insert (const Evoral::Parameter& param)
+void
+TrackAllAutomationsPattern::update ()
 {
-	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
+	track_automation_pattern.update ();
+}
+
+void
+TrackAllAutomationsPattern::insert (const Evoral::Parameter& param)
+{
+	track_automation_pattern.insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
 int
@@ -125,7 +132,7 @@ TrackAllAutomationsPattern::event2row (const Evoral::Parameter& param, const Evo
 	}
 
 	int row = row_at_sample (Temporal::timepos_t (when).samples ());
-	if (AutomationPattern::control_events_count (row, param) != 0) {
+	if (track_automation_pattern.control_events_count (row, param) != 0) {
 		row = row_at_sample_min_delay (Temporal::timepos_t (when).samples ());
 	}
 	return row;
@@ -150,12 +157,16 @@ std::string
 TrackAllAutomationsPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << AutomationPattern::to_string (indent);
+	ss << BasePattern::to_string (indent);
 
 	std::string header = indent + self_to_string () + " ";
 
 	// Print track pointer address
 	ss << std::endl << header << "track = " << track;
+
+	// Print content of track_automation_pattern
+	ss << std::endl << header << "track_automation_pattern:" << std::endl
+	   << track_automation_pattern.to_string (header + " ");
 
 	return ss.str ();
 }
