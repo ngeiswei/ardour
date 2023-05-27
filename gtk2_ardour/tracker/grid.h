@@ -693,7 +693,7 @@ private:
 
 	void automation_edited (const std::string& path, const std::string& text);
 	// Return automation value at given coordinates. The flag is true iff such
-	// value exists.
+	// value exists.  NEXT.15: what if there are multiple such automation values?
 	std::pair<double, bool> get_automation_value (int row_idx, int mti, int mri, int cgi) const;
 	bool has_automation_value (int row_idx, int mti, int mri, int cgi) const;
 	// In case no such value exists, then return its interpolation (or default)

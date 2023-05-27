@@ -1,5 +1,10 @@
 # Next
 
+- [ ] NEXT.15: find out how `Grid::get_automation_value` and
+      `Pattern::get_automation_value` behaves when they are multiple automation
+      values at a given row.
+- [ ] NEXT.14: Find a way to replace Pattern::automation_pattern by something
+      cleaner.
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track
       automations (region automation patterns excluded as they are only in
       MidiTrackPattern via MidiRegionPattern).

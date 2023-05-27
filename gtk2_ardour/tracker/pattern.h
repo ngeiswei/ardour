@@ -153,7 +153,11 @@ public:
 	void set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (int mti, const Evoral::Parameter& param) const;
 
-	// Return a pair with the automation value and whether it is defined or not
+	// Return the BBT of au
+	Temporal::BBT_Time get_automation_bbt(NEXT.14) const;
+
+	// Return a pair with the automation value and whether it is defined or not.
+	// NEXT.15: what if there are multiple automation values at that row?
 	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	// Return the automation interpolation value of param at given location
