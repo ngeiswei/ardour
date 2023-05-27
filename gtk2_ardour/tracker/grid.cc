@@ -3468,7 +3468,7 @@ Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << TrackerUtils::underline("Parameter") << ": "
 		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl;
 		ss << TrackerUtils::underline("Values") << ":";
-		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param);
+		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param); // NEXT.14
 		RowToControlEventsRange rng = pattern.control_events_range (row_idx, mti, mri, param);
 		for (; rng.first != rng.second; rng.first++) {
 			Temporal::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);

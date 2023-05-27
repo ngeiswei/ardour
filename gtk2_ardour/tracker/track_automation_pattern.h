@@ -47,17 +47,6 @@ public:
 	                        Temporal::samplepos_t last_sample,
 	                        bool connect);
 
-	// NEXT.13: move the following 4 methods under TrackAllAutomationsPattern
-	// (yes, I am confident about that).  It may mean that we ditch
-	// ProcessorAutomationPattern, not sure about that.  At most maybe it could
-	// contain a ProcessorPtr, which isn't so bad.
-
-	// Fill _automation_controls
-	void setup_automation_controls ();
-	void setup_main_automation_controls ();
-	void setup_processors_automation_controls ();
-	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
-
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
