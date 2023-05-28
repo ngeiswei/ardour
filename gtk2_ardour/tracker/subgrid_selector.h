@@ -36,11 +36,11 @@ public:
 	unsigned width;
 	unsigned height;
 
-	// The first unsigned is the column index (relative to the left
-	// border of the selection only considering visible columns in the
-	// grid).  The second unsigned is the row index (relative to the
-	// top border of the selection).  The mapped string is the verbatim
-	// content of the cell at this relative coordinate.
+	// The first unsigned is the column index (relative to the left border of
+	// the selection only considering visible columns in the grid).  The second
+	// unsigned is the row index (relative to the top border of the selection).
+	// The mapped string is the verbatim content of the cell at this relative
+	// location.
 	typedef std::map<unsigned, std::string> ColumnData;
 	typedef std::map<unsigned, ColumnData> Data;
 	Data data;
@@ -61,7 +61,7 @@ public:
 	// CTor
 	SubgridSelector (TrackerEditor& te);
 
-	// Set/unset the selection coordinates
+	// Set/unset the selection location
 	void set_source (int row_idx, int col_idx);
 	void set_destination (int row_idx, int col_idx);
 	void unset ();
@@ -91,13 +91,11 @@ public:
 
 	TrackerEditor& tracker_editor;
 
-	// Source cell coordonates (first selected cell). Negative means
-	// undefined.
+	// Source cell location (first selected cell). Negative means undefined.
 	int src_row_idx;
 	int src_col_idx;
 
-	// Destination cell coordonates (last selected cell). Negative
-	// means undefined.
+	// Destination cell location (last selected cell). Negative means undefined.
 	int dst_row_idx;
 	int dst_col_idx;
 

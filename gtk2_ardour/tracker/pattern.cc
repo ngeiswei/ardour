@@ -559,16 +559,22 @@ Pattern::is_param_enabled (int mti, const Evoral::Parameter& param) const
 	return tps[mti]->is_param_enabled (param);
 }
 
-Temporal::BBT_Time
-Pattern::get_automation_bbt (NEXT.14) const
+std::vector<Temporal::BBT_Time>
+Pattern::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	NEXT.14
+	return tps[mti]->get_automation_bbt_seq (to_rri (rowi, mti), mri, param); // NEXT.14
 }
 
 std::pair<double, bool>
 Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_value (to_rri (rowi, mti), mri, param);
+}
+
+std::vector<double>
+Pattern::get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return tps[mti]->get_automation_value_seq (to_rri (rowi, mti), mri, param); // NEXT.14
 }
 
 double
@@ -593,6 +599,12 @@ std::pair<int, bool>
 Pattern::get_automation_delay (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
 	return tps[mti]->get_automation_delay (to_rri (rowi, mti), mri, param);
+}
+
+std::vector<int>
+Pattern::get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return tps[mti]->get_automation_delay_seq (to_rri (rowi, mti), mri, param);
 }
 
 void
