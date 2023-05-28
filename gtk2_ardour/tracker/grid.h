@@ -306,7 +306,7 @@ public:
 	GridModelColumns columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 
-	// Coordonates associated to current cursor
+	// Location associated to current cursor
 	Temporal::Beats current_beats;
 	Gtk::TreeModel::Path current_path;
 	int current_row_idx;
@@ -327,7 +327,7 @@ public:
 	// Clock position
 	Temporal::timepos_t                  clock_pos;
 
-	// Coordonates associated to edited note and value (this is *not* related to
+	// Position associated to edited note and value (this is *not* related to
 	// step edit).
 	Gtk::TreeModel::Path         edit_path;
 	int                          edit_row_idx;
@@ -645,7 +645,7 @@ private:
 	NotePtr get_note (const std::string& path, int mti, int cgi) const;
 	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 
-	// Return true iff there is a on or off note at this coordonate.
+	// Return true iff there is a on or off note at this position.
 	bool has_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
@@ -692,19 +692,45 @@ private:
 	int to_cgi (int mti, const Evoral::Parameter& param) const;
 
 	void automation_edited (const std::string& path, const std::string& text);
-	// Return automation value at given coordinates. The flag is true iff such
-	// value exists.  NEXT.15: what if there are multiple such automation values?
+
+	// Return the sequence in chronological order of BBTs of each value at the
+	// given location.
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq(int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+
+	// Return a pair with some automation value at the given location and
+	// whether it is defined or not.  If multiple automation values exist at
+	// this location, then return one of them, not necessarily the ealiest
+	// one.
 	std::pair<double, bool> get_automation_value (int row_idx, int mti, int mri, int cgi) const;
+
+	// Check if the given location has at aleast one automation value.
 	bool has_automation_value (int row_idx, int mti, int mri, int cgi) const;
-	// In case no such value exists, then return its interpolation (or default)
+
+	// Return a sequence in chronological order of automation values at the
+	// given location.
+	std::vector<double> get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+
+	// Return the interpolation value (or default) of an automation at the given
+	// location.
 	double get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const;
 	double get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
+
+	// Set the automation value at the given location.
 	void set_automation_value (int row_idx, int mti, int mri, int cgi, double val);
+
+	// Delete the automation value at a diven location.  TODO: what if there
+	// are multiple values?
 	void delete_automation_value (int row_idx, int mti, int mri, int automation_cgi);
+
+	// Get a sequence in chronological order of automation delays in tick at the
+	// given location.
+	std::vector<int> get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+
 	// Like set_automation_value but provide a text representating the
 	// value instead of value itself.  If empty then it deletes the
 	// value instead.
 	void set_automation_value_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
+
 	void automation_delay_edited (const std::string& path, const std::string& text);
 	std::pair<int, bool> get_automation_delay (int row_idx, int mti, int mri, int cgi) const; // return (0, false) if undefined
 	bool has_automation_delay (int row_idx, int mti, int mri, int cgi) const; // Whether automation is defined (regardless of whether it is null)

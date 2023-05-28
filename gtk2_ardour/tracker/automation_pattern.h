@@ -127,12 +127,18 @@ public:
 	// Warning: it assumes the iterator exists, otherwise it crashes or returns garbage!
 	AutomationListIt get_alist_iterator (int rowi, const Evoral::Parameter& param);
 
-	// Return the control event associated to param at rowi if exists or null
-	// pointer if it does not.
+	// Return some control event associated to param at rowi if exists or null
+	// pointer if it does not.  If more than one control event is present at
+	// that row, then return the first one according to the order specified by
+	// the RowToControlEvents multimap, which may not be the chronological
+	// order.
 	Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param);
 	const Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param) const;
 
-	// Return a pair with the automation value and whether it is defined or not
+	// Return a pair with some automation value at rowi and whether it exists or
+	// not.  If multiple automation values exist at that row, then return the
+	// first one according to some arbitrary order, not necessarily the
+	// chronological order.
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
 	double get_automation_value (RowToControlEvents::const_iterator it) const;
 
