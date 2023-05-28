@@ -3121,6 +3121,12 @@ Grid::automation_edited (const string& path, const string& text)
 	clear_editables ();
 }
 
+std::vector<Temporal::BBT_Time>
+Grid::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return pattern.get_automation_bbt_seq (rowi, mti, mri, param);
+}
+
 pair<double, bool>
 Grid::get_automation_value (int row_idx, int mti, int mri, int cgi) const
 {
@@ -3132,6 +3138,12 @@ bool
 Grid::has_automation_value (int row_idx, int mti, int mri, int cgi) const
 {
 	return get_automation_value (row_idx, mti, mri, cgi).second;
+}
+
+std::vector<double>
+Grid::get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return pattern.get_automation_value_seq (rowi, mti, mri, param);
 }
 
 double
@@ -3188,6 +3200,12 @@ Grid::delete_automation_value (int row_idx, int mti, int mri, int cgi)
 		Evoral::Parameter param = get_param (mti, cgi);
 		pattern.delete_automation_value (row_idx, mti, mri, param);
 	}
+}
+
+std::vector<int>
+Grid::get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+{
+	return pattern.get_automation_delay_seq (rowi, mti, mri, param);
 }
 
 void

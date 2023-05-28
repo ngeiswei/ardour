@@ -88,11 +88,14 @@ public:
 	virtual int to_rrri (int rowi) const;
 	virtual int to_mri (int rowi) const;
 	virtual void insert (const Evoral::Parameter& param);
-	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
-	virtual double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param);
+	virtual std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual std::vector<double> get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
 	virtual void delete_automation_value (int rowi, int mri, const Evoral::Parameter& param);
-	virtual std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
+	virtual std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param) const;
+	virtual std::vector<int> get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
