@@ -206,19 +206,19 @@ TrackPattern::region_relative_delay_ticks (const Temporal::Beats& event_time, in
 bool
 TrackPattern::is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.is_displayable (rowi, param);
+	return track_all_automations_pattern.is_displayable (rowi, param); // NEXT.13
 }
 
 size_t
 TrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.control_events_count (rowi, param);
+	return track_all_automations_pattern.control_events_count (rowi, param); // NEXT.13
 }
 
 RowToControlEventsRange
 TrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.control_events_range (rowi, param);
+	return track_all_automations_pattern.control_events_range (rowi, param); // NEXT.13
 }
 
 bool
@@ -254,85 +254,85 @@ TrackPattern::insert (const Evoral::Parameter& param)
 std::vector<Temporal::BBT_Time>
 TrackPattern::get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	// NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_bbt_seq (rowi, mri, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
 }
 
 std::pair<double, bool>
 TrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_value (rowi, param);
+	return track_all_automations_pattern.get_automation_value (rowi, param); // NEXT.13
 }
 
 std::vector<double>
 TrackPattern::get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	// NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_value_seq (rowi, mri, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
 }
 
 double
 TrackPattern::get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_interpolation_value (rowi, param);
+	return track_all_automations_pattern.get_automation_interpolation_value (rowi, param); // NEXT.13
 }
 
 void
 TrackPattern::set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay)
 {
-	track_all_automations_pattern.set_automation_value (val, rowi, param, delay);
+	track_all_automations_pattern.set_automation_value (val, rowi, param, delay); // NEXT.13
 }
 
 void
 TrackPattern::delete_automation_value (int rowi, int mri, const Evoral::Parameter& param)
 {
-	track_all_automations_pattern.delete_automation_value (rowi, param);
+	track_all_automations_pattern.delete_automation_value (rowi, param); // NEXT.13
 }
 
 std::pair<int, bool>
 TrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_delay (rowi, param);
+	return track_all_automations_pattern.get_automation_delay (rowi, param); // NEXT.13
 }
 
 std::vector<int>
 TrackPattern::get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	// NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_delay_seq (rowi, mri, param);// NEXT.14 (don't forget to implement for MidiTrackPattern)
 }
 
 void
 TrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param)
 {
-	track_all_automations_pattern.set_automation_delay (delay, rowi, param);
+	track_all_automations_pattern.set_automation_delay (delay, rowi, param); // NEXT.13
 }
 
 std::string
 TrackPattern::get_name (const Evoral::Parameter& param) const
 {
-	track_all_automations_pattern.get_name (param);
+	track_all_automations_pattern.get_name (param); // NEXT.13
 }
 
 void
 TrackPattern::set_param_enabled (const Evoral::Parameter& param, bool enabled)
 {
-	track_all_automations_pattern.set_param_enabled (param, enabled);
+	track_all_automations_pattern.set_param_enabled (param, enabled); // NEXT.13
 }
 
 bool
 TrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.is_param_enabled (param);
+	return track_all_automations_pattern.is_param_enabled (param); // NEXT.13
 }
 
 double
 TrackPattern::lower (int rowi, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.lower (param);
+	return track_all_automations_pattern.lower (param); // NEXT.13
 }
 
 double
 TrackPattern::upper (int rowi, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.upper (param);
+	return track_all_automations_pattern.upper (param); // NEXT.13
 }
 
 std::string
