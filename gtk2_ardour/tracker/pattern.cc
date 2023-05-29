@@ -562,7 +562,7 @@ Pattern::is_param_enabled (int mti, const Evoral::Parameter& param) const
 std::vector<Temporal::BBT_Time>
 Pattern::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	return tps[mti]->get_automation_bbt_seq (to_rri (rowi, mti), mri, param); // NEXT.14
+	return tps[mti]->get_automation_bbt_seq (to_rri (rowi, mti), mri, param);
 }
 
 std::pair<double, bool>
@@ -574,7 +574,7 @@ Pattern::get_automation_value (int rowi, int mti, int mri, const Evoral::Paramet
 std::vector<double>
 Pattern::get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
 {
-	return tps[mti]->get_automation_value_seq (to_rri (rowi, mti), mri, param); // NEXT.14
+	return tps[mti]->get_automation_value_seq (to_rri (rowi, mti), mri, param);
 }
 
 double
