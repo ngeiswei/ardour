@@ -215,11 +215,11 @@ TrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& 
 	return track_all_automations_pattern.control_events_count (rowi, param);
 }
 
-// NEXT.13: replace that shit by something better
+// NEXT.14: replace that shit by something better
 RowToControlEventsRange
 TrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.control_events_range (rowi, param); // NEXT.13
+	return track_all_automations_pattern.control_events_range (rowi, param); // NEXT.14
 }
 
 bool
