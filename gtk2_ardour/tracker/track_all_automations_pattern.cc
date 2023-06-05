@@ -133,22 +133,6 @@ TrackAllAutomationsPattern::insert (const Evoral::Parameter& param)
 	track_automation_pattern.insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
-int
-TrackAllAutomationsPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
-{
-	timepos_t when = event->when;
-
-	if (when < Temporal::timepos_t (first_sample) || Temporal::timepos_t (last_sample) < when) {
-		return INVALID_ROW;
-	}
-
-	int row = row_at_sample (Temporal::timepos_t (when).samples ());
-	if (track_automation_pattern.control_events_count (row, param) != 0) {
-		row = row_at_sample_min_delay (Temporal::timepos_t (when).samples ());
-	}
-	return row;
-}
-
 const ParameterSet&
 TrackAllAutomationsPattern::automatable_parameters () const
 {
