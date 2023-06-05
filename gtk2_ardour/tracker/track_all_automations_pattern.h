@@ -46,11 +46,6 @@ public:
 	                            Temporal::samplepos_t last_sample,
 	                            bool connect);
 
-	// NEXT.13: Go over the following methods to understand what to keep or not.
-	// Likely the following 4 methods should be kept.  It may mean that we ditch
-	// ProcessorAutomationPattern, not sure about that.  At most maybe it could
-	// contain a ProcessorPtr, which isn't so bad.
-
 	// Fill _automation_controls
 	void setup_automation_controls ();
 	void setup_main_automation_controls ();
@@ -65,10 +60,26 @@ public:
 	void insert (const Evoral::Parameter& param);
 
 	// Assign a control event to a row
-	// NEXT.13: do we really need that for TrackAllAutomationsPattern
+	// NEXT.13: do we really need that for TrackAllAutomationsPattern?
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	virtual const ParameterSet& automatable_parameters () const;
+
+	bool is_displayable (int rowi, const Evoral::Parameter& param) const;
+	size_t control_events_count (int rowi, const Evoral::Parameter& param) const;
+	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
+	std::vector<double> get_automation_value_seq (int rowi, const Evoral::Parameter& param) const;
+	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
+	void set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay);
+	void delete_automation_value (int rowi, const Evoral::Parameter& param);
+	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param) const;
+	std::vector<int> get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const;
+	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
+	std::string get_name (const Evoral::Parameter& param) const;
+	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
+	bool is_param_enabled (const Evoral::Parameter& param) const;
+	double lower (const Evoral::Parameter& param) const;
+	double upper (const Evoral::Parameter& param) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
