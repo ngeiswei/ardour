@@ -34,20 +34,24 @@ using namespace Tracker;
 // TrackAllAutomationsPattern //
 ////////////////////////////////
 
-// NEXT.13: understand what to keep or not.
-
 TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         TrackPtr trk,
                                                         const RegionSeq& regions,
                                                         bool connect)
-	: AutomationPattern (te,
-	                     TrackerUtils::get_position_sample (regions),
-	                     0,
-	                     TrackerUtils::get_length_sample (regions),
-	                     TrackerUtils::get_first_sample (regions),
-	                     TrackerUtils::get_last_sample (regions),
-	                     connect)
-	, track(trk)
+	: BasePattern (te,
+	               TrackerUtils::get_position_sample (regions),
+	               0,
+	               TrackerUtils::get_length_sample (regions),
+	               TrackerUtils::get_first_sample (regions),
+	               TrackerUtils::get_last_sample (regions))
+	, track (trk)
+	, track_automation_pattern (te,
+	                            track,
+	                            TrackerUtils::get_position_sample (regions),
+	                            TrackerUtils::get_length_sample (regions),
+	                            TrackerUtils::get_first_sample (regions),
+	                            TrackerUtils::get_last_sample (regions),
+	                            connect)
 {
 	setup_automation_controls ();
 }
@@ -59,8 +63,15 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         Temporal::samplepos_t fst,
                                                         Temporal::samplepos_t lst,
                                                         bool connect)
-	: AutomationPattern (te, pos, 0, len, fst, lst, connect)
+	: BasePattern (te, pos, 0, len, fst, lst)
 	, track(trk)
+	, track_automation_pattern (te,
+	                            track,
+	                            pos,
+	                            len,
+	                            fst,
+	                            lst,
+	                            connect)
 {
 	setup_automation_controls ();
 }
@@ -143,6 +154,96 @@ TrackAllAutomationsPattern::automatable_parameters () const
 {
 	// NEXT.12
 	return ParameterSet();
+}
+
+bool
+TrackAllAutomationsPattern::is_displayable (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.is_displayable (rowi, param);
+}
+
+size_t
+TrackAllAutomationsPattern::control_events_count (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.control_events_count (rowi, param);
+}
+
+std::pair<double, bool>
+TrackAllAutomationsPattern::get_automation_value (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_automation_value (rowi, param);
+}
+
+std::vector<double>
+TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_automation_value_seq (rowi, param); // NEXT.14
+}
+
+double
+TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_automation_interpolation_value (rowi, param);
+}
+
+void
+TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay)
+{
+	track_automation_pattern.set_automation_value (val, rowi, param, delay);
+}
+
+void
+TrackAllAutomationsPattern::delete_automation_value (int rowi, const Evoral::Parameter& param)
+{
+	track_automation_pattern.delete_automation_value (rowi, param);
+}
+
+std::pair<int, bool>
+TrackAllAutomationsPattern::get_automation_delay (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_automation_delay (rowi, param);
+}
+
+std::vector<int>
+TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_automation_delay_seq (rowi, param); // NEXT.14
+}
+
+void
+TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const Evoral::Parameter& param)
+{
+	track_automation_pattern.set_automation_delay (delay, rowi, param);
+}
+
+std::string
+TrackAllAutomationsPattern::get_name (const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_name (param);
+}
+
+void
+TrackAllAutomationsPattern::set_param_enabled (const Evoral::Parameter& param, bool enabled)
+{
+	track_automation_pattern.set_param_enabled (param, enabled);
+}
+
+bool
+TrackAllAutomationsPattern::is_param_enabled (const Evoral::Parameter& param) const
+{
+	track_automation_pattern.is_param_enabled (param);
+}
+
+double
+TrackAllAutomationsPattern::lower (const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.lower (param);
+}
+
+double
+TrackAllAutomationsPattern::upper (const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.upper (param);
 }
 
 std::string
