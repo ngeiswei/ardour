@@ -59,10 +59,6 @@ public:
 	// _automation_controls, and connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
 
-	// Assign a control event to a row
-	// NEXT.13: do we really need that for TrackAllAutomationsPattern?
-	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
-
 	virtual const ParameterSet& automatable_parameters () const;
 
 	bool is_displayable (int rowi, const Evoral::Parameter& param) const;
