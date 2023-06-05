@@ -415,7 +415,7 @@ MidiTrackPattern::is_automation_displayable (int rowi, int mri, const Evoral::Pa
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.is_displayable (to_rrri (rowi, mri), param)
-		: track_automation_pattern.is_displayable (rowi, param);
+		: TrackPattern::is_automation_displayable (rowi, mri, param);
 }
 
 size_t
@@ -423,7 +423,7 @@ MidiTrackPattern::control_events_count (int rowi, int mri, const Evoral::Paramet
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.control_events_count (to_rrri (rowi, mri), param)
-		: track_automation_pattern.control_events_count (rowi, param);
+		: TrackPattern::control_events_count (rowi, mri, param);
 }
 
 
