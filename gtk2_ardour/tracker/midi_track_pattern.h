@@ -116,10 +116,10 @@ public:
 	bool is_empty (const Evoral::Parameter& param) const;
 
 	// Return a pair with the automation value and whether it is defined or not
-	std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param);
+	std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Return the automation interpolation value of param at given location
-	double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param);
+	double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation value val at rowi and mri for param
 	void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
@@ -130,7 +130,7 @@ public:
 	// Return pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param);
+	std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
@@ -146,7 +146,7 @@ public:
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
 
-	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
+	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names () const;
 
 	double lower (int rowi, const Evoral::Parameter& param) const;
 	double upper (int rowi, const Evoral::Parameter& param) const;
