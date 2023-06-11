@@ -1336,7 +1336,7 @@ Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx,
 
 	// Set automation background color of the enabled track automations
 	// NEXT.12: probably needs pointers to, ultimately main_automation_pattern and processor_automation_pattern.
-	AutomationPattern& ap = pattern.tps[mti]->track_automation_pattern;
+	AutomationPattern& ap = pattern.tps[mti]->track_automation_pattern; // NEXT.14: get rid of that shit!
 	redisplay_row_mti_automations_background_color (row, row_idx, mti, ap, color);
 }
 
@@ -1420,7 +1420,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
-		redisplay_track_automations (mti, mtp.track_automation_pattern);
+		redisplay_track_automations (mti, mtp.track_automation_pattern); // NEXT.14: what?
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
 		redisplay_inter_midi_regions (mti);
@@ -3486,12 +3486,20 @@ Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << TrackerUtils::underline("Parameter") << ": "
 		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl;
 		ss << TrackerUtils::underline("Values") << ":";
-		const AutomationPattern* ap = pattern.automation_pattern (mti, mri, param); // NEXT.14
-		RowToControlEventsRange rng = pattern.control_events_range (row_idx, mti, mri, param);
-		for (; rng.first != rng.second; rng.first++) {
-			Temporal::BBT_Time bbt = ap->get_automation_bbt (param, rng.first);
-			double value = ap->get_automation_value (rng.first); // NEXT?
-			int delay = ap->get_automation_delay (param, rng.first);
+
+		std::vector<Temporal::BBT_Time> bbt_seq = pattern.get_automation_bbt_seq (row_idx, mti, mri, param);
+		std::vector<double> value_seq = pattern.get_automation_value_seq (row_idx, mti, mri, param);
+		std::vector<int>  delay_seq = pattern.get_automation_delay_seq (row_idx, mti, mri, param);
+		size_t seq_size = bbt_seq.size ();
+
+		// Make sure all sequences have the same size
+		assert (seq_size == value_seq.size());
+		assert (seq_size == delay_seq.size());
+
+		for (size_t i = 0; i < seq_size; i++) {
+			Temporal::BBT_Time bbt = bbt_seq[i];
+			double value = value_seq[i];
+			int delay = delay_seq[i];
 			const int precision = 6;
 			ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
 			   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "

@@ -134,7 +134,7 @@ MidiTrackPattern::get_name (const Evoral::Parameter& param) const
 	if (TrackerUtils::is_region_automation (param)) {
 		return midi_track->describe_parameter (param);
 	}
-	return track_automation_pattern.get_name (param);
+	return TrackPattern::get_name (param);
 }
 
 void
@@ -151,7 +151,7 @@ MidiTrackPattern::set_param_enabled (const Evoral::Parameter& param, bool enable
 		}
 	}
 	else {
-		track_automation_pattern.set_param_enabled (param, enabled);
+		TrackPattern::set_param_enabled (param, enabled);
 	}
 }
 
@@ -163,7 +163,7 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 		// region
 		return mrps[0]->mrap.is_param_enabled (param);
 	}
-	return track_automation_pattern.is_param_enabled (param);
+	return TrackPattern::is_param_enabled (param);
 }
 
 void
@@ -174,7 +174,7 @@ MidiTrackPattern::insert (const Evoral::Parameter& param)
 			mrps[mri]->insert (param);
 		}
 	} else {
-		track_automation_pattern.insert (param);
+		TrackPattern::insert (param);
 	}
 }
 
@@ -185,7 +185,7 @@ MidiTrackPattern::set_rows_per_beat (uint16_t rpb)
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		mrps[mri]->set_rows_per_beat (rpb);
 	}
-	track_automation_pattern.set_rows_per_beat (rpb);
+	TrackPattern::set_rows_per_beat (rpb);
 }
 
 void
@@ -213,7 +213,7 @@ MidiTrackPattern::update ()
 	update_midi_regions ();
 
 	// Update track automation pattern
-	track_automation_pattern.update ();
+	track_automation_pattern.update (); // NEXT.14: probably replace TrackPattern::update (), not sure though
 
 	update_row_offset ();
 }
@@ -347,23 +347,23 @@ MidiTrackPattern::is_empty (const Evoral::Parameter& param) const
 		}
 		return true;
 	}
-	return track_automation_pattern.is_empty (param);
+	return TrackPattern::is_empty (param);
 }
 
 std::pair<double, bool>
-MidiTrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.get_automation_value (to_rrri (rowi, mri), param)
-		: track_automation_pattern.get_automation_value (rowi, param);
+		: TrackPattern::get_automation_value (rowi, mri, param);
 }
 
 double
-MidiTrackPattern::get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.get_automation_interpolation_value (to_rrri (rowi, mri), param)
-		: track_automation_pattern.get_automation_interpolation_value (rowi, param);
+		: TrackPattern::get_automation_interpolation_value (rowi, mri, param);
 }
 
 void
@@ -371,7 +371,7 @@ MidiTrackPattern::set_automation_value (double val, int rowi, int mri, const Evo
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.set_automation_value (val, to_rrri (rowi, mri), param, delay)
-		: track_automation_pattern.set_automation_value (val, rowi, param, delay);
+		: TrackPattern::set_automation_value (val, rowi, mri, param, delay);
 }
 
 void
@@ -379,15 +379,15 @@ MidiTrackPattern::delete_automation_value (int rowi, int mri, const Evoral::Para
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.delete_automation_value (to_rrri (rowi, mri), param)
-		: track_automation_pattern.delete_automation_value (rowi, param);
+		: TrackPattern::delete_automation_value (rowi, mri, param);
 }
 
 std::pair<int, bool>
-MidiTrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Parameter& param)
+MidiTrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.get_automation_delay (to_rrri (rowi, mri), param)
-		: track_automation_pattern.get_automation_delay (rowi, param);
+		: TrackPattern::get_automation_delay (rowi, mri, param);
 }
 
 void
@@ -395,7 +395,7 @@ MidiTrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evor
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.set_automation_delay (delay, to_rrri (rowi, mri), param)
-		: track_automation_pattern.set_automation_delay (delay, rowi, param);
+		: TrackPattern::set_automation_delay (delay, rowi, mri, param);
 }
 
 Temporal::Beats
@@ -432,7 +432,7 @@ MidiTrackPattern::control_events_range (int rowi, int mri, const Evoral::Paramet
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.control_events_range (to_rrri (rowi, mri), param)
-		: track_automation_pattern.control_events_range (rowi, param);
+		: TrackPattern::control_events_range (rowi, mri, param);
 }
 
 MidiRegionPattern*
@@ -447,7 +447,7 @@ MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 }
 
 std::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiTrackPattern::get_device_names ()
+MidiTrackPattern::get_device_names () const
 {
 	return midi_track->instrument_info ().master_device_names ();
 }
@@ -457,7 +457,7 @@ MidiTrackPattern::lower (int rowi, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[to_mri (rowi)]->mrap.lower (param)
-		: track_automation_pattern.lower (param);
+		: TrackPattern::lower (rowi, param);
 }
 
 double
@@ -465,7 +465,7 @@ MidiTrackPattern::upper (int rowi, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[to_mri (rowi)]->mrap.upper (param)
-		: track_automation_pattern.upper (param);
+		: TrackPattern::upper (rowi, param);
 }
 
 void
@@ -498,7 +498,7 @@ std::string
 MidiTrackPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << track_automation_pattern.to_string (indent) << std::endl;
+	ss << TrackPattern::to_string (indent) << std::endl;
 
 	std::string header = indent + self_to_string () + " ";
 	ss << header << "midi_track = " << midi_track.get ();
