@@ -512,29 +512,6 @@ Pattern::midi_region_pattern (int mti, int mri) const
 	return *tps[mti]->midi_track_pattern ()->mrps[mri];
 }
 
-// NEXT.14: What do about that?  Answer [EDIT: incorrect!]: use
-// Pattern::get_automation_bbt, Pattern::get_automation_value and
-// Pattern::get_automation_delay in Grid::automation_tooltip_msg so that we
-// don't need it anymore.  ACTUALLY: this is incorrect because
-// Pattern::control_events_range is used, and then the AutomationPattern is
-// combined with that range to loop over RowToControlEvents::const_iterator.
-// That is very ugly and we need to find a way to avoid it.
-AutomationPattern*
-Pattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param)
-{
-	if (TrackerUtils::is_region_automation (param))
-		return &midi_region_pattern (mti, mri).mrap;
-	return &tps[mti]->track_automation_pattern;
-}
-
-const AutomationPattern*
-Pattern::automation_pattern (int mti, int mri, const Evoral::Parameter& param) const
-{
-	if (TrackerUtils::is_region_automation (param))
-		return &midi_region_pattern (mti, mri).mrap;
-	return &tps[mti]->track_automation_pattern;
-}
-
 void
 Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {

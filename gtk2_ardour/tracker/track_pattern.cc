@@ -255,7 +255,7 @@ TrackPattern::insert (const Evoral::Parameter& param)
 std::vector<Temporal::BBT_Time>
 TrackPattern::get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_bbt_seq (rowi, mri, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_bbt_seq (rowi, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
 }
 
 std::pair<double, bool>
@@ -267,7 +267,7 @@ TrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& 
 std::vector<double>
 TrackPattern::get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_value_seq (rowi, mri, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_value_seq (rowi, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
 }
 
 double
@@ -297,7 +297,7 @@ TrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Parameter& 
 std::vector<int>
 TrackPattern::get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_delay_seq (rowi, mri, param);// NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_delay_seq (rowi, param);// NEXT.14 (don't forget to implement for MidiTrackPattern)
 }
 
 void
