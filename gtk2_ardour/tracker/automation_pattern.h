@@ -135,12 +135,20 @@ public:
 	Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param);
 	const Evoral::ControlEvent* get_control_event (int rowi, const Evoral::Parameter& param) const;
 
+	// Return the sequence in chronological order of BBTs of each value of the
+	// given automation at the given row.
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const Evoral::Parameter& param) const;
+
 	// Return a pair with some automation value at rowi and whether it exists or
 	// not.  If multiple automation values exist at that row, then return the
 	// first one according to some arbitrary order, not necessarily the
 	// chronological order.
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
 	double get_automation_value (RowToControlEvents::const_iterator it) const;
+
+	// Return the sequence in chronological order of automation values at the
+	// given row.
+	std::vector<double> get_automation_value_seq (int rowi, const Evoral::Parameter& param) const;
 
 	// Return the automation interpolation value of a given param at a given row index
 	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
@@ -157,6 +165,10 @@ public:
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param) const;
 	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param, const Evoral::ControlEvent* ce) const;
 	int get_automation_delay (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const;
+
+	// Get a sequence in chronological order of automation delays in tick at the
+	// given row.
+	std::vector<int> get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);

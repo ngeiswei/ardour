@@ -398,6 +398,17 @@ AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param) 
 	return 0;
 }
 
+std::vector<Temporal::BBT_Time>
+AutomationPattern::get_automation_bbt_seq (int rowi, const Evoral::Parameter& param) const
+{
+	std::vector<Temporal::BBT_Time> bbt_seq;
+	RowToControlEventsRange rng = control_events_range (rowi, param);
+	for (; rng.first != rng.second; rng.first++) {
+		bbt_seq.push_back (get_automation_bbt (param, rng.first));
+	}
+	return bbt_seq;
+}
+
 std::pair<double, bool>
 AutomationPattern::get_automation_value (int rowi, const Evoral::Parameter& param) const
 {
@@ -412,6 +423,17 @@ double
 AutomationPattern::get_automation_value (RowToControlEvents::const_iterator it) const
 {
 	return it->second.value;
+}
+
+std::vector<double>
+AutomationPattern::get_automation_value_seq (int rowi, const Evoral::Parameter& param) const
+{
+	std::vector<double> value_seq;
+	RowToControlEventsRange rng = control_events_range (rowi, param);
+	for (; rng.first != rng.second; rng.first++) {
+		value_seq.push_back (get_automation_value (rng.first));
+	}
+	return value_seq;
 }
 
 double
@@ -482,6 +504,8 @@ AutomationPattern::get_automation_delay (int rowi, const Evoral::Parameter& para
 {
 	if (ce) {
 		Temporal::timepos_t awhen = ce->when;
+		// TODO: we may want to overload MidiRegionAutomationPattern instead of
+		// using TrackerUtils::is_region_automation.
 		int delay = TrackerUtils::is_region_automation (param) ?
 			region_relative_delay_ticks_at_row (awhen.beats (), rowi)
 			: delay_ticks_at_row (awhen.samples (), rowi);
@@ -496,6 +520,17 @@ AutomationPattern::get_automation_delay (const Evoral::Parameter& param, RowToCo
 	int row_idx = it->first;
 	const Evoral::ControlEvent* ce = &it->second;
 	return get_automation_delay (row_idx, param, ce).first;
+}
+
+std::vector<int>
+AutomationPattern::get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const
+{
+	std::vector<int> delay_seq;
+	RowToControlEventsRange rng = control_events_range (rowi, param);
+	for (; rng.first != rng.second; rng.first++) {
+		delay_seq.push_back (get_automation_delay (param, rng.first));
+	}
+	return delay_seq;
 }
 
 void

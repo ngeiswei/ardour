@@ -72,6 +72,8 @@ public:
 	MidiTrackPattern* midi_track_pattern ();
 	AudioTrackPattern* audio_track_pattern ();
 
+	// NEXT.14: implement update ()
+
 	// Default implementation is for tracks not supporting regions
 	// NEXT.2:
 	// 1. Do not change that API, just make it work buggy like before

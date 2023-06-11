@@ -63,6 +63,7 @@ public:
 
 	bool is_displayable (int rowi, const Evoral::Parameter& param) const;
 	size_t control_events_count (int rowi, const Evoral::Parameter& param) const;
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const Evoral::Parameter& param) const;
 	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
 	std::vector<double> get_automation_value_seq (int rowi, const Evoral::Parameter& param) const;
 	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
