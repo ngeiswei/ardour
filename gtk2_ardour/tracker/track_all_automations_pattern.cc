@@ -152,6 +152,12 @@ TrackAllAutomationsPattern::control_events_count (int rowi, const Evoral::Parame
 	return track_automation_pattern.control_events_count (rowi, param);
 }
 
+std::vector<Temporal::BBT_Time>
+TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.get_automation_bbt_seq (rowi, param);
+}
+
 std::pair<double, bool>
 TrackAllAutomationsPattern::get_automation_value (int rowi, const Evoral::Parameter& param) const
 {
@@ -161,7 +167,7 @@ TrackAllAutomationsPattern::get_automation_value (int rowi, const Evoral::Parame
 std::vector<double>
 TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const Evoral::Parameter& param) const
 {
-	return track_automation_pattern.get_automation_value_seq (rowi, param); // NEXT.14
+	return track_automation_pattern.get_automation_value_seq (rowi, param);
 }
 
 double
@@ -191,7 +197,7 @@ TrackAllAutomationsPattern::get_automation_delay (int rowi, const Evoral::Parame
 std::vector<int>
 TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const
 {
-	return track_automation_pattern.get_automation_delay_seq (rowi, param); // NEXT.14
+	return track_automation_pattern.get_automation_delay_seq (rowi, param);
 }
 
 void
@@ -215,7 +221,7 @@ TrackAllAutomationsPattern::set_param_enabled (const Evoral::Parameter& param, b
 bool
 TrackAllAutomationsPattern::is_param_enabled (const Evoral::Parameter& param) const
 {
-	track_automation_pattern.is_param_enabled (param);
+	return track_automation_pattern.is_param_enabled (param);
 }
 
 double
