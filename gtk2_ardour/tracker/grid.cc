@@ -1336,7 +1336,13 @@ Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx,
 
 	// Set automation background color of the enabled track automations
 	// NEXT.12: probably needs pointers to, ultimately main_automation_pattern and processor_automation_pattern.
-	AutomationPattern& ap = pattern.tps[mti]->track_automation_pattern; // NEXT.14: get rid of that shit!
+	//
+	// NEXT.15: get rid of that shit!  The problem is that we need go over all
+	// the automation patterns, from the different processors, not just one.  In
+	// the meantime create a AutomationPattern method that returns the set of
+	// all enabled parameters, and propagate that method till Pattern and
+	// TrackAllAutomationsPattern.
+	AutomationPattern& ap = pattern.tps[mti]->track_automation_pattern;
 	redisplay_row_mti_automations_background_color (row, row_idx, mti, ap, color);
 }
 
@@ -1351,9 +1357,11 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int ro
 	}
 }
 
+// NEXT.15: take a set of enabled parameters instead of AutomationPattern
 void
 Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const AutomationPattern& ap, const std::string& color)
 {
+	// NEXT.15: use method to return all enabled parameters
 	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
 		Evoral::Parameter param = it->first;
 		if (it->second) {
