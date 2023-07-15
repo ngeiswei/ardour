@@ -199,8 +199,13 @@ public:
 	RowToControlEvents::const_iterator earliest (const RowToControlEventsRange& rng) const;
 	RowToControlEvents::const_iterator lattest (const RowToControlEventsRange& rng) const;
 
+	// NEXT: probably does not need to be virtual, make sure before removing
 	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	virtual bool is_param_enabled (const Evoral::Parameter& param) const;
+
+	// Return the set of enabled parameters, that is any parameter p such that
+	// param_to_enabled[p] is true.
+	ParameterSet enabled_param_set () const;
 
 	// Return the lower and upper value bounds of the given parameter
 	double lower (const Evoral::Parameter& param) const;
