@@ -704,6 +704,18 @@ AutomationPattern::is_param_enabled (const Evoral::Parameter& param) const
 	return param_to_enabled[param];
 }
 
+ParameterSet
+AutomationPattern::enabled_param_set () const
+{
+	ParameterSet eps;
+	for (const auto& pte : param_to_enabled) {
+		if (pte.second) {
+			eps.insert(pte.first);
+		}
+	}
+	return eps;
+}
+
 double
 AutomationPattern::lower (const Evoral::Parameter& param) const
 {
