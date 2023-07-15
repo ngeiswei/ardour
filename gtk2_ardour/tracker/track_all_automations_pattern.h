@@ -75,6 +75,7 @@ public:
 	std::string get_name (const Evoral::Parameter& param) const;
 	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (const Evoral::Parameter& param) const;
+	ParameterSet enabled_param_set () const;
 	double lower (const Evoral::Parameter& param) const;
 	double upper (const Evoral::Parameter& param) const;
 

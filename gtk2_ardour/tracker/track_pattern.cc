@@ -324,6 +324,12 @@ TrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 	return track_all_automations_pattern.is_param_enabled (param);
 }
 
+ParameterSet
+TrackPattern::enabled_param_set (int mri) const
+{
+	return track_all_automations_pattern.enabled_param_set ();
+}
+
 double
 TrackPattern::lower (int rowi, const Evoral::Parameter& param) const
 {

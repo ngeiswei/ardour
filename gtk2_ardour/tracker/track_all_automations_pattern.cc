@@ -224,6 +224,12 @@ TrackAllAutomationsPattern::is_param_enabled (const Evoral::Parameter& param) co
 	return track_automation_pattern.is_param_enabled (param);
 }
 
+ParameterSet
+TrackAllAutomationsPattern::enabled_param_set () const
+{
+	return track_automation_pattern.enabled_param_set ();
+}
+
 double
 TrackAllAutomationsPattern::lower (const Evoral::Parameter& param) const
 {
