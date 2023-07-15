@@ -1324,6 +1324,10 @@ Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, con
 void
 Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color)
 {
+	// NEXT.15: use redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const ParameterSet& params, const std::string& color)
+
+	// NEXT.15: it could be that if we overload midi_track_pattern properly then
+	// we don't need this code block anymore.
 	if (is_region_defined (row_idx, mti)) {
 		// Set current notes row background color
 		redisplay_row_mti_notes_background_color (row, row_idx, mti, color);
@@ -1357,7 +1361,7 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int ro
 	}
 }
 
-// NEXT.15: take a set of enabled parameters instead of AutomationPattern
+// NEXT.15: delete
 void
 Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const AutomationPattern& ap, const std::string& color)
 {
@@ -1369,6 +1373,16 @@ Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, 
 			row[columns._automation_background_color[mti][cgi]] = color;
 			row[columns._automation_delay_background_color[mti][cgi]] = color;
 		}
+	}
+}
+
+void
+Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const ParameterSet& params, const std::string& color)
+{
+	for (const Evoral::Parameter& param : params) {
+		int cgi = to_cgi (mti, param);
+		row[columns._automation_background_color[mti][cgi]] = color;
+		row[columns._automation_delay_background_color[mti][cgi]] = color;
 	}
 }
 

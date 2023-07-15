@@ -150,6 +150,12 @@ public:
 	void set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (int mti, const Evoral::Parameter& param) const;
 
+	// Return the set of enabled parameters for the given mti, and possibly mri
+	// in the case of a region.  NEXT: once any processor automation is
+	// supported, the following should probably take an extra argument
+	// caracterizing the processor.
+	ParameterSet enabled_param_set (int mti, int mri) const;
+
 	// Return the sequence in chronological order of BBTs of each value at the
 	// given location.
 	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
