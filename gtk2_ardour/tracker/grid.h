@@ -220,7 +220,6 @@ public:
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color);
 	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color);
 	void redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color);
-	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const AutomationPattern& ap, const std::string& color); // NEXT.15: delete
 	void redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const ParameterSet& params, const std::string& color);
 	void redisplay_current_row ();
 	void redisplay_pattern ();

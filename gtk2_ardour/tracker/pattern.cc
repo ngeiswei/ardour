@@ -537,9 +537,9 @@ Pattern::is_param_enabled (int mti, const Evoral::Parameter& param) const
 }
 
 ParameterSet
-Pattern::enabled_param_set (int mti, int mri) const
+Pattern::get_enabled_param_set (int mti, int mri) const
 {
-	return tps[mti]->enabled_param_set (mri);
+	return tps[mti]->get_enabled_param_set (mri);
 }
 
 std::vector<Temporal::BBT_Time>

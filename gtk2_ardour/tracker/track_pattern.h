@@ -102,7 +102,7 @@ public:
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	virtual bool is_param_enabled (const Evoral::Parameter& param) const;
-	virtual ParameterSet enabled_param_set (int mri) const;
+	virtual ParameterSet get_enabled_param_set (int mri) const;
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 

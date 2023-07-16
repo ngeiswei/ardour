@@ -205,7 +205,7 @@ public:
 
 	// Return the set of enabled parameters, that is any parameter p such that
 	// param_to_enabled[p] is true.
-	ParameterSet enabled_param_set () const;
+	ParameterSet get_enabled_param_set () const;
 
 	// Return the lower and upper value bounds of the given parameter
 	double lower (const Evoral::Parameter& param) const;

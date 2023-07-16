@@ -1324,30 +1324,9 @@ Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, con
 void
 Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color)
 {
-	// NEXT.15: use redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const ParameterSet& params, const std::string& color)
-
-	// NEXT.15: it could be that if we overload midi_track_pattern properly then
-	// we don't need this code block anymore.
-	if (is_region_defined (row_idx, mti)) {
-		// Set current notes row background color
-		redisplay_row_mti_notes_background_color (row, row_idx, mti, color);
-
-		// Set current region automations background color
-		int mri = pattern.to_mri (row_idx, mti);
-		MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
-		redisplay_row_mti_automations_background_color (row, row_idx, mti, mrp.mrap, color);
-	}
-
-	// Set automation background color of the enabled track automations
-	// NEXT.12: probably needs pointers to, ultimately main_automation_pattern and processor_automation_pattern.
-	//
-	// NEXT.15: get rid of that shit!  The problem is that we need go over all
-	// the automation patterns, from the different processors, not just one.  In
-	// the meantime create a AutomationPattern method that returns the set of
-	// all enabled parameters, and propagate that method till Pattern and
-	// TrackAllAutomationsPattern.
-	AutomationPattern& ap = pattern.tps[mti]->track_automation_pattern;
-	redisplay_row_mti_automations_background_color (row, row_idx, mti, ap, color);
+	int mri = pattern.to_mri (row_idx, mti);
+	ParameterSet params = pattern.get_enabled_param_set (mti, mri);
+	redisplay_row_mti_automations_background_color (row, row_idx, mti, params, color);
 }
 
 void
@@ -1358,21 +1337,6 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int ro
 		row[columns._channel_background_color[mti][cgi]] = color;
 		row[columns._velocity_background_color[mti][cgi]] = color;
 		row[columns._delay_background_color[mti][cgi]] = color;
-	}
-}
-
-// NEXT.15: delete
-void
-Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const AutomationPattern& ap, const std::string& color)
-{
-	// NEXT.15: use method to return all enabled parameters
-	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
-		Evoral::Parameter param = it->first;
-		if (it->second) {
-			int cgi = to_cgi (mti, param);
-			row[columns._automation_background_color[mti][cgi]] = color;
-			row[columns._automation_delay_background_color[mti][cgi]] = color;
-		}
 	}
 }
 
