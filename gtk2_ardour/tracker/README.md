@@ -1,6 +1,5 @@
 # Next
 
-- [ ] NEXT.15: add method to return all enabled parameters
 - [ ] NEXT.14: find a way to replace Pattern::automation_pattern by something
       cleaner.
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track
