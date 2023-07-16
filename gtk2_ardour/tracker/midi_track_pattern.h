@@ -55,7 +55,7 @@ public:
 
 	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (const Evoral::Parameter& param) const;
-	ParameterSet enabled_param_set (int mri) const;
+	ParameterSet get_enabled_param_set (int mri) const;
 
 	// Enable/disable all tracks
 	void enable ();
