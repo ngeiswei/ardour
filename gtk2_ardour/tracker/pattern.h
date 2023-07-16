@@ -154,7 +154,7 @@ public:
 	// in the case of a region.  NEXT: once any processor automation is
 	// supported, the following should probably take an extra argument
 	// caracterizing the processor.
-	ParameterSet enabled_param_set (int mti, int mri) const;
+	ParameterSet get_enabled_param_set (int mti, int mri) const;
 
 	// Return the sequence in chronological order of BBTs of each value at the
 	// given location.

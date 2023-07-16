@@ -309,7 +309,7 @@ TrackPattern::set_automation_delay (int delay, int rowi, int mri, const Evoral::
 std::string
 TrackPattern::get_name (const Evoral::Parameter& param) const
 {
-	track_all_automations_pattern.get_name (param);
+	return track_all_automations_pattern.get_name (param);
 }
 
 void
@@ -325,9 +325,9 @@ TrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 }
 
 ParameterSet
-TrackPattern::enabled_param_set (int mri) const
+TrackPattern::get_enabled_param_set (int mri) const
 {
-	return track_all_automations_pattern.enabled_param_set ();
+	return track_all_automations_pattern.get_enabled_param_set ();
 }
 
 double
