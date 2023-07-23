@@ -123,7 +123,7 @@ MidiTrackPattern::phenomenal_diff (const MidiTrackPattern& prev) const
 			diff.mri2mrp_diff[mri] = mrp_diff;
 		}
 	}
-	diff.automation_diff = track_automation_pattern.phenomenal_diff (prev.track_automation_pattern);
+	diff.taap_diff = track_all_automations_pattern.phenomenal_diff (prev.track_all_automations_pattern);
 
 	return diff;
 }
@@ -167,10 +167,10 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 }
 
 ParameterSet
-MidiTrackPattern::get_enabled_param_set (int mri) const
+MidiTrackPattern::get_enabled_parameters (int mri) const
 {
-	ParameterSet midi_params = mrps[mri]->mrap.get_enabled_param_set();
-	ParameterSet track_params = TrackPattern::get_enabled_param_set(mri);
+	ParameterSet midi_params = mrps[mri]->mrap.get_enabled_parameters();
+	ParameterSet track_params = TrackPattern::get_enabled_parameters(mri);
 	midi_params.insert(track_params.begin(), track_params.end());
 	return midi_params;
 }
@@ -222,7 +222,7 @@ MidiTrackPattern::update ()
 	update_midi_regions ();
 
 	// Update track automation pattern
-	track_automation_pattern.update (); // NEXT.14: probably replace TrackPattern::update (), not sure though
+	TrackPattern::update ();
 
 	update_row_offset ();
 }
@@ -433,15 +433,6 @@ MidiTrackPattern::control_events_count (int rowi, int mri, const Evoral::Paramet
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.control_events_count (to_rrri (rowi, mri), param)
 		: TrackPattern::control_events_count (rowi, mri, param);
-}
-
-
-RowToControlEventsRange
-MidiTrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
-{
-	return TrackerUtils::is_region_automation (param) ?
-		mrps[mri]->mrap.control_events_range (to_rrri (rowi, mri), param)
-		: TrackPattern::control_events_range (rowi, mri, param);
 }
 
 MidiRegionPattern*

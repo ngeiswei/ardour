@@ -23,6 +23,7 @@
 
 #include "automation_pattern.h"
 #include "track_automation_pattern.h"
+#include "track_all_automations_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
@@ -46,6 +47,8 @@ public:
 	                            Temporal::samplepos_t last_sample,
 	                            bool connect);
 
+	TrackAllAutomationsPatternPhenomenalDiff phenomenal_diff (const TrackAllAutomationsPattern& prev) const;
+
 	// Fill _automation_controls
 	void setup_automation_controls ();
 	void setup_main_automation_controls ();
@@ -58,6 +61,10 @@ public:
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
+
+	// Return whether the automation associated to param is empty.  NEXT: this
+	// will probably need to take a pair (Processor, Parameter).
+	bool is_empty (const Evoral::Parameter& param) const;
 
 	virtual const ParameterSet& automatable_parameters () const;
 
@@ -75,7 +82,7 @@ public:
 	std::string get_name (const Evoral::Parameter& param) const;
 	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (const Evoral::Parameter& param) const;
-	ParameterSet get_enabled_param_set () const;
+	ParameterSet get_enabled_parameters () const;
 	double lower (const Evoral::Parameter& param) const;
 	double upper (const Evoral::Parameter& param) const;
 

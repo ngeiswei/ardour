@@ -76,6 +76,14 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
 	setup_automation_controls ();
 }
 
+TrackAllAutomationsPatternPhenomenalDiff
+TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& prev) const
+{
+	// NEXT
+	TrackAllAutomationsPatternPhenomenalDiff diff;
+	return diff;
+}
+
 void TrackAllAutomationsPattern::setup_automation_controls ()
 {
 	setup_main_automation_controls ();
@@ -131,6 +139,12 @@ void
 TrackAllAutomationsPattern::insert (const Evoral::Parameter& param)
 {
 	track_automation_pattern.insert_actl (track->automation_control (param, true), track->describe_parameter (param));
+}
+
+bool
+TrackAllAutomationsPattern::is_empty (const Evoral::Parameter& param) const
+{
+	return track_automation_pattern.is_empty (param);
 }
 
 const ParameterSet&
@@ -225,9 +239,9 @@ TrackAllAutomationsPattern::is_param_enabled (const Evoral::Parameter& param) co
 }
 
 ParameterSet
-TrackAllAutomationsPattern::get_enabled_param_set () const
+TrackAllAutomationsPattern::get_enabled_parameters () const
 {
-	return track_automation_pattern.get_enabled_param_set ();
+	return track_automation_pattern.get_enabled_parameters ();
 }
 
 double
