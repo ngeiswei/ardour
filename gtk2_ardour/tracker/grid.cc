@@ -66,11 +66,11 @@
 #include "ui_config.h"
 
 #include "midi_track_pattern_phenomenal_diff.h"
+#include "track_all_automations_pattern_phenomenal_diff.h"
 #include "track_toolbar.h"
 #include "tracker_editor.h"
 #include "tracker_utils.h"
 
-using namespace std;				  // TODO: remove, bad idea.
 using namespace Gtk;
 using namespace Gtkmm2ext;
 using namespace Glib;
@@ -80,8 +80,8 @@ using namespace PBD;
 using namespace Editing;
 using namespace Tracker;
 
-const string Grid::note_off_str = "===";
-const string Grid::undisplayable_str = "***";
+const std::string Grid::note_off_str = "===";
+const std::string Grid::undisplayable_str = "***";
 
 Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
@@ -219,10 +219,10 @@ Grid::select_available_automation_column (int mti)
 {
 	// Find the next available column
 	if (available_automation_columns[mti].empty()) {
-		cout << "Warning: no more available automation column" << endl;
+		std::cout << "Warning: no more available automation column" << std::endl;
 		return 0;
 	}
-	set<int>::iterator it = available_automation_columns[mti].begin ();
+	std::set<int>::iterator it = available_automation_columns[mti].begin ();
 	int column = *it;
 	available_automation_columns[mti].erase (it);
 
@@ -427,7 +427,7 @@ bool
 Grid::is_pan_visible (int mti) const
 {
 	bool visible = !pan_columns[mti].empty();
-	for (vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
+	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
 		visible = visible_automation_columns.find (*it) != visible_automation_columns.end ();
 		if (!visible) {
 			break;
@@ -502,8 +502,8 @@ Grid::update_pan_columns_visibility (int mti)
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->pan_automation_item->get_active ();
 
 	if (pan_columns[mti].empty()) {
-		set<Evoral::Parameter> const & params = pattern.tps[mti]->track->panner ()->what_can_be_automated ();
-		for (set<Evoral::Parameter>::const_iterator p = params.begin (); p != params.end (); ++p) {
+		std::set<Evoral::Parameter> const & params = pattern.tps[mti]->track->panner ()->what_can_be_automated ();
+		for (std::set<Evoral::Parameter>::const_iterator p = params.begin (); p != params.end (); ++p) {
 			pan_columns[mti].push_back (add_main_automation_column (mti, *p));
 		}
 	}
@@ -513,7 +513,7 @@ Grid::update_pan_columns_visibility (int mti)
 		return;
 	}
 
-	for (vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
+	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
 		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
@@ -846,7 +846,7 @@ Grid::init_model ()
 TreeViewColumn*
 Grid::first_defined_col ()
 {
-	vector<TreeViewColumn*> cols = (vector<TreeViewColumn*>)get_columns ();
+	std::vector<TreeViewColumn*> cols = (std::vector<TreeViewColumn*>)get_columns ();
 
 	for (int i = 0; i < (int)cols.size (); i++) {
 		if (cols[i]->get_visible () && is_editable (cols[i]) && is_cell_defined (current_path, cols[i])) {
@@ -926,7 +926,7 @@ Grid::redisplay_global_columns ()
 		Temporal::Beats row_beats = pattern.earliest_tp->beats_at_row (row_idx);
 		bool is_row_beat = row_beats == row_beats.round_up_to_beat ();
 		bool is_row_bar = row_bbt.beats == 1;
-		string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
+		std::string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
 		row[columns._background_color] = row_background_color;
 
 		// Set font family
@@ -1036,14 +1036,14 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, int mti
 
 	int mri = 0;              // consider the first one, all parameters
 	                          // should be the same in all other regions
+
+	// Get the AutomationPattern of the first region of the track
 	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
 	AutomationPattern& ap = mrp.mrap;
-	for (AutomationPattern::ParamEnabledMap::const_iterator it = ap.param_to_enabled.begin (); it != ap.param_to_enabled.end (); ++it) {
-		Evoral::Parameter param = it->first;
-		if (it->second) {
-			int cgi = to_cgi (mti, param);
-			redisplay_undefined_automation (row, mti, cgi);
-		}
+	for (const Evoral::Parameter& param : ap.get_enabled_parameters ())
+	{
+		int cgi = to_cgi (mti, param);
+		redisplay_undefined_automation (row, mti, cgi);
 	}
 }
 
@@ -1115,7 +1115,7 @@ Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi
 void
 Grid::redisplay_note_background (TreeModel::Row& row, int mti, int cgi)
 {
-	string row_background_color = row[columns._background_color];
+	std::string row_background_color = row[columns._background_color];
 	row[columns._note_background_color[mti][cgi]] = row_background_color;
 	row[columns._channel_background_color[mti][cgi]] = row_background_color;
 	row[columns._velocity_background_color[mti][cgi]] = row_background_color;
@@ -1127,14 +1127,14 @@ Grid::redisplay_current_row_background ()
 {
 	if (current_row_idx < 0)
 		return;
-	string color = step_edit() ? current_edit_row_color : current_row_color;
+	std::string color = step_edit() ? current_edit_row_color : current_row_color;
 	redisplay_row_background_color (current_row, current_row_idx, color);
 }
 
 void
 Grid::redisplay_current_note_cursor (TreeModel::Row& row, int mti, int cgi)
 {
-	string color = cursor_color;
+	std::string color = cursor_color;
 
 	switch (current_note_type) {
 	case TrackerColumn::NoteType::NOTE:
@@ -1150,7 +1150,7 @@ Grid::redisplay_current_note_cursor (TreeModel::Row& row, int mti, int cgi)
 		row[columns._delay_background_color[mti][cgi]] = color;
 		break;
 	default:
-		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1173,7 +1173,7 @@ Grid::redisplay_blank_note_foreground (TreeModel::Row& row, int mti, int cgi)
 void
 Grid::redisplay_automation_background (TreeModel::Row& row, int mti, int cgi)
 {
-	string row_background_color = row[columns._background_color];
+	std::string row_background_color = row[columns._background_color];
 	row[columns._automation_background_color[mti][cgi]] = row_background_color;
 	row[columns._automation_delay_background_color[mti][cgi]] = row_background_color;
 }
@@ -1231,7 +1231,7 @@ Grid::redisplay_current_automation_cursor (TreeModel::Row& row, int mti, int cgi
 		row[columns._automation_delay_background_color[mti][cgi]] = color;
 		break;
 	default:
-		cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1325,7 +1325,7 @@ void
 Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color)
 {
 	int mri = pattern.to_mri (row_idx, mti);
-	ParameterSet params = pattern.get_enabled_param_set (mti, mri);
+	ParameterSet params = pattern.get_enabled_parameters (mti, mri);
 	redisplay_row_mti_automations_background_color (row, row_idx, mti, params, color);
 }
 
@@ -1406,7 +1406,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
-		redisplay_track_automations (mti, mtp.track_automation_pattern); // NEXT.14: what?
+		redisplay_track_all_automations (mti, mtp.track_all_automations_pattern);
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
 		redisplay_inter_midi_regions (mti);
@@ -1414,8 +1414,16 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 			size_t mri = it->first;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
 		}
-		redisplay_track_automations (mti, mtp.track_automation_pattern, &mtp_diff->automation_diff);
+		redisplay_track_all_automations (mti, mtp.track_all_automations_pattern, &mtp_diff->taap_diff);
 	}
+}
+
+void
+Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
+{
+	// NEXT.14: maybe try to find out why param_to_enabled is used.  Ideal I
+	// suppose it should use get_enabled_parameter_set, or such (maybe that one
+	// should be renamed get_enabled_parameters, BTW).
 }
 
 void
@@ -1680,7 +1688,7 @@ Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col
 		row[columns._delay_background_color[mti][cgi]] = selection_color;
 		break;
 	default:
-		cerr << "Grid::redisplay_note_cell_selection: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_note_cell_selection: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1699,7 +1707,7 @@ Grid::redisplay_automation_cell_selection (int row_idx, const Gtk::TreeViewColum
 		row[columns._automation_delay_background_color[mti][cgi]] = selection_color;
 		break;
 	default:
-		cerr << "Grid::redisplay_automation_cell_selection: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_automation_cell_selection: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1763,7 +1771,7 @@ Grid::unset_underline_current_step_edit_note_cell ()
 		break;
 	}
 	default:
-		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1794,7 +1802,7 @@ Grid::unset_underline_current_step_edit_automation_cell ()
 		break;
 	}
 	default:
-		cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1858,7 +1866,7 @@ Grid::set_underline_current_step_edit_note_cell ()
 		break;
 	}
 	default:
-		cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1903,7 +1911,7 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		break;
 	}
 	default:
-		cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << endl;
+		std::cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << std::endl;
 	}
 }
 
@@ -1941,7 +1949,7 @@ Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 			set_note_delay_text (row_idx, mti, mri, cgi, text);
 			break;
 		default:
-			cerr << "Grid::set_cell_content: Implementation Error!" << endl;
+			std::cerr << "Grid::set_cell_content: Implementation Error!" << std::endl;
 		}
 	} else { // Auto type
 		switch (get_automation_type (col)) {
@@ -1952,7 +1960,7 @@ Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 			set_automation_delay_text (row_idx, mti, mri, cgi, text);
 			break;
 		default:
-			cerr << "Grid::set_cell_content: Implementation Error!" << endl;
+			std::cerr << "Grid::set_cell_content: Implementation Error!" << std::endl;
 		}
 	}
 }
@@ -2013,7 +2021,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			break;
 		}
 		default:
-			cerr << "Grid::get_cell_content: Implementation Error!" << endl;
+			std::cerr << "Grid::get_cell_content: Implementation Error!" << std::endl;
 		}
 	} else { // Auto type
 		if (!has_automation_value (row_idx, mti, mri, cgi)) {
@@ -2041,7 +2049,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			break;
 		}
 		default:
-			cerr << "Grid::get_cell_content: Implementation Error!" << endl;
+			std::cerr << "Grid::get_cell_content: Implementation Error!" << std::endl;
 		}
 	}
 	return "";
@@ -2188,7 +2196,7 @@ Grid::scroll_to_current_row ()
 /////////////////////
 
 int
-Grid::to_row_index (const string& path_str) const
+Grid::to_row_index (const std::string& path_str) const
 {
 	return to_row_index (to_path (path_str));
 }
@@ -2243,7 +2251,7 @@ Grid::to_row (int row_idx) const
 int
 Grid::to_col_index (const TreeViewColumn* col)
 {
-	const vector<TreeViewColumn*>& cols = (vector<TreeViewColumn*>)get_columns ();
+	const std::vector<TreeViewColumn*>& cols = (std::vector<TreeViewColumn*>)get_columns ();
 
 	for (int i = 0; i < (int)cols.size (); i++) {
 		if (cols[i] == col) {
@@ -2286,7 +2294,7 @@ Grid::is_automation_displayable (int row_idx, int mti, int mri, const Evoral::Pa
 }
 
 NotePtr
-Grid::get_on_note (const string& path, int mti, int cgi) const
+Grid::get_on_note (const std::string& path, int mti, int cgi) const
 {
 	return get_on_note (to_path (path), mti, cgi);
 }
@@ -2304,7 +2312,7 @@ Grid::get_on_note (int row_idx, int mti, int cgi) const
 }
 
 NotePtr
-Grid::get_off_note (const string& path_str, int mti, int cgi) const
+Grid::get_off_note (const std::string& path_str, int mti, int cgi) const
 {
 	return get_off_note (to_path (path_str), mti, cgi);
 }
@@ -2340,7 +2348,7 @@ Grid::get_note (int row_idx, int mti, int cgi) const
 }
 
 NotePtr
-Grid::get_note (const string& path_str, int mti, int cgi) const
+Grid::get_note (const std::string& path_str, int mti, int cgi) const
 {
 	return get_note (to_path (path_str), mti, cgi);
 }
@@ -2362,49 +2370,49 @@ Grid::has_note (const TreeModel::Path& path, int mti, int cgi) const
 }
 
 void
-Grid::editing_note_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_col = note_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-Grid::editing_note_channel_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_channel_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_col = note_channel_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-Grid::editing_note_velocity_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_velocity_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_col = note_velocity_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-Grid::editing_note_delay_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_note_delay_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_col = note_delay_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-Grid::editing_automation_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_automation_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_col = automation_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-Grid::editing_automation_delay_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_automation_delay_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_col = automation_delay_colnum (mti, cgi);
 	editing_started (ed, path, mti, cgi);
 }
 
 void
-Grid::editing_started (CellEditable* ed, const string& path, int mti, int cgi)
+Grid::editing_started (CellEditable* ed, const std::string& path, int mti, int cgi)
 {
 	edit_path = TreePath (path);
 	edit_row_idx = to_row_index (edit_path);
@@ -2440,22 +2448,22 @@ Grid::editing_canceled ()
 }
 
 uint8_t
-Grid::parse_pitch (const string& text) const
+Grid::parse_pitch (const std::string& text) const
 {
 	return TrackerUtils::parse_pitch (text, tracker_editor.main_toolbar.octave_spinner.get_value_as_int ());
 }
 
 void
-Grid::note_edited (const string& path, const string& text)
+Grid::note_edited (const std::string& path, const std::string& text)
 {
 	set_note_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
 }
 
 void
-Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const string& text)
+Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
-	string norm_text = boost::erase_all_copy (text, " ");
+	std::string norm_text = boost::erase_all_copy (text, " ");
 	bool is_del = norm_text.empty();
 	bool is_off = !is_del && (norm_text[0] == note_off_str[0]);
 	uint8_t pitch = parse_pitch (norm_text);
@@ -2675,14 +2683,14 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 }
 
 void
-Grid::note_channel_edited (const string& path, const string& text)
+Grid::note_channel_edited (const std::string& path, const std::string& text)
 {
 	set_note_channel_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
 }
 
 void
-Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const string& text)
+Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
 	NotePtr note = get_on_note (row_idx, mti, cgi);
 	if (text.empty() || !note) {
@@ -2719,7 +2727,7 @@ Grid::set_note_channel (int mti, int mri, NotePtr note, int ch)
 }
 
 void
-Grid::note_velocity_edited (const string& path, const string& text)
+Grid::note_velocity_edited (const std::string& path, const std::string& text)
 {
 	set_note_velocity_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
@@ -2767,14 +2775,14 @@ Grid::set_note_velocity (int mti, int mri, NotePtr note, int vel)
 }
 
 void
-Grid::note_delay_edited (const string& path, const string& text)
+Grid::note_delay_edited (const std::string& path, const std::string& text)
 {
 	set_note_delay_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
 }
 
 void
-Grid::set_note_delay_text (int row_idx, int mti, int mri, int cgi, const string& text)
+Grid::set_note_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
 	// Can't edit ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
@@ -3101,7 +3109,7 @@ Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 }
 
 void
-Grid::automation_edited (const string& path, const string& text)
+Grid::automation_edited (const std::string& path, const std::string& text)
 {
 	set_automation_value_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
@@ -3113,7 +3121,7 @@ Grid::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Paramete
 	return pattern.get_automation_bbt_seq (rowi, mti, mri, param);
 }
 
-pair<double, bool>
+std::pair<double, bool>
 Grid::get_automation_value (int row_idx, int mti, int mri, int cgi) const
 {
 	Evoral::Parameter param = get_param (mti, cgi);
@@ -3195,13 +3203,13 @@ Grid::get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parame
 }
 
 void
-Grid::automation_delay_edited (const string& path, const string& text)
+Grid::automation_delay_edited (const std::string& path, const std::string& text)
 {
 	set_automation_delay_text (edit_row_idx, edit_mti, edit_mri, edit_cgi, text);
 	clear_editables ();
 }
 
-pair<int, bool>
+std::pair<int, bool>
 Grid::get_automation_delay (int row_idx, int mti, int mri, int cgi) const
 {
 	// Find the parameter to automate
@@ -3570,8 +3578,8 @@ Grid::setup_data_columns ()
 		mute_columns.push_back (0);
 		col2params.push_back (IndexParamBimap ());
 		col2auto_cgi.push_back (IndexBimap ());
-		pan_columns.push_back (vector<int> ());
-		available_automation_columns.push_back (set<int> ());
+		pan_columns.push_back (std::vector<int> ());
+		available_automation_columns.push_back (std::set<int> ());
 
 		// Instantiate note tracks
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
@@ -3639,7 +3647,7 @@ Grid::setup_left_separator_column (int mti)
 void
 Grid::setup_region_name_column (int mti)
 {
-	string label ("");
+	std::string label ("");
 	region_name_columns[mti] = Gtk::manage (new TreeViewColumn (label, columns.region_name[mti]));
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
 
@@ -4394,7 +4402,7 @@ Grid::step_editing_check_midi_event ()
 			case TrackerColumn::NoteType::DELAY:
 				break;
 			default:
-				cerr << "Grid::step_editing_check_midi_event: Implementation Error!" << endl;
+				std::cerr << "Grid::step_editing_check_midi_event: Implementation Error!" << std::endl;
 			}
 		}
 	}
@@ -4424,7 +4432,7 @@ Grid::step_editing_key_press (GdkEventKey* ev)
 			ret = step_editing_note_delay_key_press (ev);
 			break;
 		default:
-			cerr << "Grid::key_press: Implementation Error!" << endl;
+			std::cerr << "Grid::key_press: Implementation Error!" << std::endl;
 		}
 		break;
 	case TrackerColumn::AutomationType::AUTOMATION:
@@ -4434,7 +4442,7 @@ Grid::step_editing_key_press (GdkEventKey* ev)
 		ret = step_editing_automation_delay_key_press (ev);
 		break;
 	default:
-		cerr << "Grid::key_press: Implementation Error!" << endl;
+		std::cerr << "Grid::key_press: Implementation Error!" << std::endl;
 	}
 
 	return ret;
@@ -4997,7 +5005,7 @@ Grid::step_editing_automation_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_automation_value (int digit)
 {
-	pair<double, bool> val_def = get_automation_value (current_row_idx, current_mti, current_mri, current_cgi);
+	std::pair<double, bool> val_def = get_automation_value (current_row_idx, current_mti, current_mri, current_cgi);
 	double oval = val_def.second ? val_def.first : get_automation_interpolation_value (current_row_idx, current_mti, current_mri, current_cgi);
 
 	// Set new value
@@ -5149,7 +5157,7 @@ Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 bool
 Grid::step_editing_set_automation_delay (int digit)
 {
-	pair<int, bool> val_def = get_automation_delay (current_row_idx, current_mti, current_mri, current_cgi);
+	std::pair<int, bool> val_def = get_automation_delay (current_row_idx, current_mti, current_mri, current_cgi);
 	int old_delay = val_def.first;
 
 	// For some unknown reason, changing the delay does not trigger a
