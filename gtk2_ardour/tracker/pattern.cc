@@ -416,11 +416,12 @@ Pattern::control_events_count (int rowi, int mti, int mri, const Evoral::Paramet
 	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, param);
 }
 
-RowToControlEventsRange
-Pattern::control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
-{
-	return tps[mti]->control_events_range (to_rri (rowi, mti), mri, param);
-}
+// NEXT.14: delete
+// RowToControlEventsRange
+// Pattern::control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+// {
+// 	return tps[mti]->control_events_range (to_rri (rowi, mti), mri, param);
+// }
 
 NotePtr
 Pattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
@@ -537,9 +538,9 @@ Pattern::is_param_enabled (int mti, const Evoral::Parameter& param) const
 }
 
 ParameterSet
-Pattern::get_enabled_param_set (int mti, int mri) const
+Pattern::get_enabled_parameters (int mti, int mri) const
 {
-	return tps[mti]->get_enabled_param_set (mri);
+	return tps[mti]->get_enabled_parameters (mri);
 }
 
 std::vector<Temporal::BBT_Time>
