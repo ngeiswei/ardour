@@ -705,7 +705,7 @@ AutomationPattern::is_param_enabled (const Evoral::Parameter& param) const
 }
 
 ParameterSet
-AutomationPattern::get_enabled_param_set () const
+AutomationPattern::get_enabled_parameters () const
 {
 	ParameterSet eps;
 	for (const auto& pte : param_to_enabled) {

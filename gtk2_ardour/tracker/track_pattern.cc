@@ -191,6 +191,12 @@ TrackPattern::audio_track_pattern ()
 	return dynamic_cast<AudioTrackPattern*> (this);
 }
 
+void
+TrackPattern::update ()
+{
+	track_all_automations_pattern.update ();
+}
+
 Temporal::Beats
 TrackPattern::region_relative_beats (int rowi, int mri, int delay) const
 {
@@ -215,12 +221,13 @@ TrackPattern::control_events_count (int rowi, int mri, const Evoral::Parameter& 
 	return track_all_automations_pattern.control_events_count (rowi, param);
 }
 
-// NEXT.14: replace that shit by something better
-RowToControlEventsRange
-TrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
-{
-	return track_all_automations_pattern.control_events_range (rowi, param); // NEXT.14
-}
+// NEXT.14: delete
+// // NEXT.14: replace that shit by something better
+// RowToControlEventsRange
+// TrackPattern::control_events_range (int rowi, int mri, const Evoral::Parameter& param) const
+// {
+// 	return track_all_automations_pattern.control_events_range (rowi, param); // NEXT.14
+// }
 
 bool
 TrackPattern::is_region_defined (int rowi) const
@@ -250,6 +257,12 @@ void
 TrackPattern::insert (const Evoral::Parameter& param)
 {
 	track_all_automations_pattern.insert (param);
+}
+
+bool
+TrackPattern::is_empty (const Evoral::Parameter& param) const
+{
+	return track_all_automations_pattern.is_empty (param);
 }
 
 std::vector<Temporal::BBT_Time>
@@ -325,9 +338,9 @@ TrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 }
 
 ParameterSet
-TrackPattern::get_enabled_param_set (int mri) const
+TrackPattern::get_enabled_parameters (int mri) const
 {
-	return track_all_automations_pattern.get_enabled_param_set ();
+	return track_all_automations_pattern.get_enabled_parameters ();
 }
 
 double
