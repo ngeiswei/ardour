@@ -55,7 +55,7 @@ public:
 
 	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (const Evoral::Parameter& param) const;
-	ParameterSet get_enabled_param_set (int mri) const;
+	ParameterSet get_enabled_parameters (int mri) const;
 
 	// Enable/disable all tracks
 	void enable ();
@@ -142,7 +142,6 @@ public:
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
 	bool is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
-	RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);

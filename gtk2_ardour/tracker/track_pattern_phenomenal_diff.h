@@ -22,12 +22,13 @@
 #include <string>
 
 #include "base_pattern_phenomenal_diff.h"
+#include "track_all_automations_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
 class MidiTrackPatternPhenomenalDiff;
 class AudioTrackPatternPhenomenalDiff;
-	
+
 struct TrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
 	virtual bool empty () const;
@@ -40,6 +41,8 @@ struct TrackPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 	const AudioTrackPatternPhenomenalDiff* audio_track_pattern_phenomenal_diff () const;
 	MidiTrackPatternPhenomenalDiff* midi_track_pattern_phenomenal_diff ();
 	AudioTrackPatternPhenomenalDiff* audio_track_pattern_phenomenal_diff ();
+
+	TrackAllAutomationsPatternPhenomenalDiff taap_diff;
 };
 
 } // ~namespace tracker

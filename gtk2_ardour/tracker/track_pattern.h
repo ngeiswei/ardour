@@ -72,7 +72,8 @@ public:
 	MidiTrackPattern* midi_track_pattern ();
 	AudioTrackPattern* audio_track_pattern ();
 
-	// NEXT.14: implement update ()
+	// Build or rebuild note and automation pattern
+	void update ();
 
 	// Default implementation is for tracks not supporting regions
 	// NEXT.2:
@@ -83,13 +84,18 @@ public:
 	// NEXT.2:
 	virtual bool is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
-	// NEXT: replace the method below, we don't want such a low level structure to leak out to the Grid.
-	virtual RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
+	// NEXT.14: delete
+	// virtual RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
 	virtual int to_rrri (int rowi, int mri) const;
 	virtual int to_rrri (int rowi) const;
 	virtual int to_mri (int rowi) const;
 	virtual void insert (const Evoral::Parameter& param);
+
+	// Return whether the automation associated to param is empty.  NEXT: this
+	// will probably need to take a pair (Processor, Parameter).
+	virtual bool is_empty (const Evoral::Parameter& param) const;
+
 	virtual std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual std::vector<double> get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const;
@@ -102,7 +108,7 @@ public:
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	virtual bool is_param_enabled (const Evoral::Parameter& param) const;
-	virtual ParameterSet get_enabled_param_set (int mri) const;
+	virtual ParameterSet get_enabled_parameters (int mri) const;
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 

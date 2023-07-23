@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019 Nil Geisweiller <ngeiswei@gmail.com>
+ * Copyright (C) 2023 Nil Geisweiller <ngeiswei@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,30 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __ardour_tracker_midi_track_pattern_phenomenal_diff_h_
-#define __ardour_tracker_midi_track_pattern_phenomenal_diff_h_
+#ifndef __ardour_tracker_track_all_automations_pattern_phenomenal_diff_h_
+#define __ardour_tracker_track_all_automations_pattern_phenomenal_diff_h_
 
-#include "midi_region_pattern_phenomenal_diff.h"
-#include "track_pattern_phenomenal_diff.h"
+#include <map>
+
+#include "evoral/Parameter.h"
+
+#include "base_pattern_phenomenal_diff.h"
+#include "rows_phenomenal_diff.h"
 
 namespace Tracker {
 
 // Represent the differences that may impact grid rendition.
-struct MidiTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
+struct TrackAllAutomationsPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
+	// NEXT: maybe use AutomationPatternPhenomenalDiff per processor.
+
+	typedef std::map<Evoral::Parameter, RowsPhenomenalDiff> Param2RowsPhenomenalDiff;
+	Param2RowsPhenomenalDiff param2rows_diff;
+
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
-
-	typedef std::map<int, MidiRegionPatternPhenomenalDiff> Mri2MidiRegionPatternDiff;
-	Mri2MidiRegionPatternDiff mri2mrp_diff;
 };
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_midi_track_pattern_phenomenal_diff_h_ */
+#endif /* __ardour_tracker_automation_pattern_phenomenal_diff_h_ */
