@@ -153,16 +153,18 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 void
 TrackerEditor::connect_automation (AutomationControlPtr actl)
 {
-	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
-	AutomationListPtr alist = actl->alist ();
-	if (alist) {
-		alist->StateChanged.connect (content_connections, invalidator (*this),
-		                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
-		                             gui_context ());
-		alist->InterpolationChanged.connect (content_connections, invalidator (*this),
-		                                     std::bind (&Grid::redisplay_grid_connect_call, &grid),
-		                                     gui_context ());
-	}
+	std::cout << "TrackerEditor::connect_automation (actl=" << actl << ")" << std::endl;
+	// NEXT.14
+	// // TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
+	// AutomationListPtr alist = actl->alist ();
+	// if (alist) {
+	// 	alist->StateChanged.connect (content_connections, invalidator (*this),
+	// 	                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
+	// 	                             gui_context ());
+	// 	alist->InterpolationChanged.connect (content_connections, invalidator (*this),
+	// 	                                     std::bind (&Grid::redisplay_grid_connect_call, &grid),
+	// 	                                     gui_context ());
+	// }
 }
 
 void

@@ -50,15 +50,9 @@ public:
 	BasePattern (TrackerEditor& te,
 	             RegionPtr region);
 	BasePattern (TrackerEditor& te,
-	             Temporal::samplepos_t position,
-	             Temporal::samplepos_t start,
-	             Temporal::samplecnt_t length,
-	             Temporal::samplepos_t first_sample,
-	             Temporal::samplepos_t last_sample);
-	BasePattern (TrackerEditor& te,
 	             Temporal::timepos_t position,
-	             Temporal::timepos_t start,
-	             Temporal::timepos_t length,
+	             Temporal::timepos_t start, // TODO: maybe should only be present for RegionPattern
+	             Temporal::timecnt_t length,
 	             Temporal::timepos_t end,
 	             Temporal::timepos_t nt_last);
 	virtual ~BasePattern ();
@@ -124,22 +118,22 @@ public:
 	// in case fraction of rows are used.
 	double row_distance (const Temporal::Beats& from, const Temporal::Beats& to) const;
 
-	// Like row_at_beats but use sample instead of beats
-	int row_at_sample (Temporal::samplepos_t sample) const;
+	// Like row_at_beats but use timepos_t instead of Beats
+	int row_at_time (Temporal::timepos_t pos) const;
 
 	// Return the row index assuming the beats is allowed to have the minimum
 	// negative delay (1 - _ticks_per_row).
 	int row_at_beats_min_delay (const Temporal::Beats& beats) const;
 
-	// Like row_at_beats_min_delay but use sample instead of beats
-	int row_at_sample_min_delay (Temporal::samplepos_t sample) const;
+	// Like row_at_beats_min_delay but use timepos_t instead of beats
+	int row_at_time_min_delay (Temporal::timepos_t pos) const;
 
 	// Return the row index assuming the beats is allowed to have the maximum
 	// positive delay (_ticks_per_row - 1).
 	int row_at_beats_max_delay (const Temporal::Beats& beats) const;
 
-	// Like row_at_beats_max_delay but use sample instead of beats
-	int row_at_sample_max_delay (Temporal::samplepos_t sample) const;
+	// Like row_at_beats_max_delay but use timepos_t instead of beats
+	int row_at_time_max_delay (Temporal::timepos_t pos) const;
 
 	// Return an event's delay in a certain row in ticks
 	int64_t delay_ticks_at_row (const Temporal::Beats& event_time, int rowi) const;
@@ -171,18 +165,10 @@ public:
 	// Reference to main tracker editor
 	TrackerEditor& tracker_editor;
 
-	// Samples corresponding to typical region
-	// NEXT: remove when no longer required
-	Temporal::samplepos_t position_sample;
-	Temporal::samplepos_t start_sample;
-	Temporal::samplecnt_t length_sample;
-	Temporal::samplepos_t first_sample;
-	Temporal::samplepos_t last_sample;
-
 	// Time position corresponding to typical region
 	Temporal::timepos_t position;
 	Temporal::timepos_t start;
-	Temporal::timepos_t length;
+	Temporal::timecnt_t length;
 	Temporal::timepos_t end;
 	Temporal::timepos_t nt_last;
 

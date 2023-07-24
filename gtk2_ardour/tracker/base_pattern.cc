@@ -35,11 +35,6 @@ using namespace Tracker;
 BasePattern::BasePattern (TrackerEditor& te,
                           RegionPtr region)
 	: tracker_editor (te)
-	, position_sample (region->position_sample ())
-	, start_sample (region->start_sample ())
-	, length_sample (region->length_samples ())
-	, first_sample (region->first_sample ())
-	, last_sample (region->last_sample ())
 	, position (region->position ())
 	, start (region->start ())
 	, length (region->length ())
@@ -52,45 +47,16 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
-}
-
-BasePattern::BasePattern (TrackerEditor& te,
-                          Temporal::samplepos_t pos,
-                          Temporal::samplepos_t sta,
-                          Temporal::samplecnt_t len,
-                          Temporal::samplepos_t fir,
-                          Temporal::samplepos_t las)
-	: tracker_editor (te)
-	, position_sample (pos)
-	, start_sample (sta)
-	, length_sample (len)
-	, first_sample (fir)
-	, last_sample (las)
-	, position (Temporal::timepos_t (position_sample))
-	, start (Temporal::timepos_t (start_sample))
-	, length (Temporal::timepos_t (length_sample))
-	, end (Temporal::timepos_t (first_sample + length_sample))
-	, nt_last (Temporal::timepos_t (last_sample))
-	, rows_per_beat (0)
-	, nrows (0)
-	, enabled (true)
-	, _ticks_per_row (0)
-	, _session (tracker_editor.session)
-{
+	std::cout << "BasePattern[" << this << "]::BasePattern (te=, region=" << region << ")" << std::endl;
 }
 
 BasePattern::BasePattern (TrackerEditor& te,
                           Temporal::timepos_t pos,
                           Temporal::timepos_t sta,
-                          Temporal::timepos_t len,
+                          Temporal::timecnt_t len,
                           Temporal::timepos_t ed,
                           Temporal::timepos_t ntl)
 	: tracker_editor (te)
-	, position_sample (pos.samples ())
-	, start_sample (sta.samples ())
-	, length_sample (len.samples ())
-	, first_sample (pos.samples ())
-	, last_sample (first_sample + length_sample)
 	, position (pos)
 	, start (sta)
 	, length (len)
@@ -102,6 +68,7 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
+	std::cout << "BasePattern[" << this << "]::BasePattern (te=, pos=" << pos << ", sta=" << sta << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ")" << std::endl;
 }
 
 BasePattern::~BasePattern ()
@@ -111,16 +78,11 @@ BasePattern::~BasePattern ()
 BasePattern&
 BasePattern::operator= (const BasePattern& other)
 {
+	std::cout << "BasePattern[" << this << "]::operator= (other=" << ")" << std::endl;
 	if (!other.enabled) {
 		enabled = false;
 		return *this;
 	}
-
-	position_sample = other.position_sample;
-	start_sample = other.start_sample;
-	length_sample = other.length_sample;
-	first_sample = other.first_sample;
-	last_sample = other.last_sample;
 
 	position = other.position;
 	start = other.position;
@@ -137,6 +99,7 @@ BasePattern::operator= (const BasePattern& other)
 	rows_per_beat = other.rows_per_beat;
 
 	beats_per_row = other.beats_per_row;
+	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 
 	position_row_beats = other.position_row_beats;
 	end_row_beats = other.end_row_beats;
@@ -159,16 +122,21 @@ BasePattern::operator< (const BasePattern& other) const
 void
 BasePattern::set_rows_per_beat (uint16_t rpb)
 {
+	std::cout << "BasePattern[" << this << "]::set_rows_per_beat (rpb=" << rpb << ")" << std::endl;
 	rows_per_beat = rpb;
 	// TODO: deal with rpb == 0 which would mean one row per bar
 	beats_per_row = Temporal::Beats::from_double (1.0 / rows_per_beat);
+	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 	_ticks_per_row = Temporal::ticks_per_beat / rows_per_beat;
 }
 
 Temporal::Beats
 BasePattern::find_position_row_beats () const
 {
+	std::cout << "BasePattern[" << this << "]::find_position_row_beats ()" << std::endl;
+	// NEXT.14: the problem is probably that beats_per_row is null
 	// TODO: it could be round_up_to_multiple or round_down_to_multiple
+	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 	return position_beats.round_to_multiple (beats_per_row);
 }
 
@@ -188,14 +156,22 @@ BasePattern::find_nrows () const
 void
 BasePattern::set_row_range ()
 {
-	position_beats = Temporal::timepos_t (position_sample).beats ();
-	global_end_beats = Temporal::timepos_t (last_sample + 1).beats ();
+	std::cout << "BasePattern[" << this << "]::set_row_range ()" << std::endl;
+	position_beats = position.beats ();
+	std::cout << "position_beats = " << position_beats << std::endl;
+	global_end_beats = end.beats ();
 	length_beats = global_end_beats - position_beats;
-	start_beats = Temporal::timepos_t (start_sample).beats ();
+	std::cout << "length_beats = " << length_beats << std::endl;
+	start_beats = start.beats ();
+	std::cout << "start_beats = " << start_beats << std::endl;
 	end_beats = start_beats + length_beats;
+	std::cout << "end_beats = " << end_beats << std::endl;
 	position_row_beats = find_position_row_beats ();
+	std::cout << "position_row_beats = " << position_row_beats << std::endl;
 	end_row_beats = find_end_row_beats ();
+	std::cout << "end_row_beats = " << end_row_beats << std::endl;
 	nrows = find_nrows ();
+	std::cout << "nrows = " << nrows << std::endl;
 }
 
 Temporal::samplepos_t
@@ -239,9 +215,9 @@ BasePattern::row_distance (const Temporal::Beats& from, const Temporal::Beats& t
 }
 
 int
-BasePattern::row_at_sample (Temporal::samplepos_t sample) const
+BasePattern::row_at_time (Temporal::timepos_t pos) const
 {
-	return row_at_beats (Temporal::timepos_t (sample).beats ());
+	return row_at_beats (pos.beats ());
 }
 
 int
@@ -252,9 +228,9 @@ BasePattern::row_at_beats_min_delay (const Temporal::Beats& beats) const
 }
 
 int
-BasePattern::row_at_sample_min_delay (Temporal::samplepos_t sample) const
+BasePattern::row_at_time_min_delay (Temporal::timepos_t pos) const
 {
-	return row_at_beats_min_delay (Temporal::timepos_t (sample).beats ());
+	return row_at_beats_min_delay (pos.beats ());
 }
 
 int
@@ -264,9 +240,9 @@ BasePattern::row_at_beats_max_delay (const Temporal::Beats& beats) const
 }
 
 int
-BasePattern::row_at_sample_max_delay (Temporal::samplepos_t sample) const
+BasePattern::row_at_time_max_delay (Temporal::timepos_t pos) const
 {
-	return row_at_beats_max_delay (Temporal::timepos_t (sample).beats ());
+	return row_at_beats_max_delay (pos.beats ());
 }
 
 int64_t
@@ -336,11 +312,6 @@ BasePattern::to_string (const std::string& indent) const
 {
 	std::string header = indent + self_to_string () + " ";
 	std::stringstream ss;
-	ss << header << "position_sample = " << position_sample << std::endl;
-	ss << header << "start_sample = " << start_sample << std::endl;
-	ss << header << "length_sample = " << length_sample << std::endl;
-	ss << header << "first_sample = " << first_sample << std::endl;
-	ss << header << "last_sample = " << last_sample << std::endl;
 	ss << header << "position = " << position << std::endl;
 	ss << header << "start = " << start << std::endl;
 	ss << header << "length = " << length << std::endl;

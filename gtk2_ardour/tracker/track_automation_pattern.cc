@@ -39,11 +39,11 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
                                                 const RegionSeq& regions,
                                                 bool connect)
 	: AutomationPattern (te,
-	                     TrackerUtils::get_position_sample (regions),
-	                     0,
-	                     TrackerUtils::get_length_sample (regions),
-	                     TrackerUtils::get_first_sample (regions),
-	                     TrackerUtils::get_last_sample (regions),
+	                     TrackerUtils::get_position (regions),
+	                     Temporal::timepos_t (),
+	                     TrackerUtils::get_length (regions),
+	                     TrackerUtils::get_end (regions),
+	                     TrackerUtils::get_nt_last (regions),
 	                     connect)
 	, track(trk)
 {
@@ -51,33 +51,34 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
 
 TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
                                                 TrackPtr trk,
-                                                Temporal::samplepos_t pos,
-                                                Temporal::samplecnt_t len,
-                                                Temporal::samplepos_t fst,
-                                                Temporal::samplepos_t lst,
+                                                Temporal::timepos_t pos,
+                                                Temporal::timecnt_t len,
+                                                Temporal::timepos_t ed,
+                                                Temporal::timepos_t ntl,
                                                 bool connect)
-	: AutomationPattern (te, pos, 0, len, fst, lst, connect)
+	: AutomationPattern (te, pos, Temporal::timepos_t (), len, ed, ntl, connect)
 	, track(trk)
 {
 }
 
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
+	std::cout << "TrackAutomationPattern::insert (param=" << param << ")" << std::endl;
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
 int
 TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	timepos_t when = event->when;
+	timepos_t time = event->when;
 
-	if (when < Temporal::timepos_t (first_sample) || Temporal::timepos_t (last_sample) < when) {
+	if (time < position || end < time) {
 		return INVALID_ROW;
 	}
 
-	int row = row_at_sample (Temporal::timepos_t (when).samples ());
+	int row = row_at_time (time);
 	if (AutomationPattern::control_events_count (row, param) != 0) {
-		row = row_at_sample_min_delay (Temporal::timepos_t (when).samples ());
+		row = row_at_time_min_delay (time);
 	}
 	return row;
 }

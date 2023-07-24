@@ -41,10 +41,10 @@ public:
 	                        bool connect);
 	TrackAutomationPattern (TrackerEditor& te,
 	                        TrackPtr track,
-	                        Temporal::samplepos_t position,
-	                        Temporal::samplecnt_t length,
-	                        Temporal::samplepos_t first_sample,
-	                        Temporal::samplepos_t last_sample,
+	                        Temporal::timepos_t position,
+	                        Temporal::timecnt_t length,
+	                        Temporal::timepos_t end,
+	                        Temporal::timepos_t nt_last,
 	                        bool connect);
 
 	// Insert the automation control corresponding to param in
