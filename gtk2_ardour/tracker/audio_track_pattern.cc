@@ -26,12 +26,12 @@ using namespace Tracker;
 AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
                                       TrackPtr trk,
                                       const RegionSeq& regions,
-                                      Temporal::samplepos_t position,
-                                      Temporal::samplecnt_t length,
-                                      Temporal::samplepos_t first_sample,
-                                      Temporal::samplepos_t last_sample,
+                                      Temporal::timepos_t pos,
+                                      Temporal::timecnt_t len,
+                                      Temporal::timepos_t ed,
+                                      Temporal::timepos_t ntl,
                                       bool connect)
-	: TrackPattern (te, trk, position, length, first_sample, last_sample, connect)
+	: TrackPattern (te, trk, pos, len, end, ntl, connect)
 {
 }
 
