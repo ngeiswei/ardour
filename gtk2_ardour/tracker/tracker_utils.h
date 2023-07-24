@@ -330,33 +330,33 @@ public:
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the earliest one.  If empty then return 0.
-	static Temporal::samplepos_t get_position_sample (const RegionSeq& regions);
-	static Temporal::samplepos_t get_position_sample (const MidiRegionSeq& regions);
-	static Temporal::samplepos_t get_position_sample (const RegionSelection& region_selection);
-	static Temporal::samplepos_t get_position_sample (const TrackRegionsMap& regions_per_track);
+	static Temporal::timepos_t get_position (const RegionSeq& regions);
+	static Temporal::timepos_t get_position (const MidiRegionSeq& regions);
+	static Temporal::timepos_t get_position (const RegionSelection& region_selection);
+	static Temporal::timepos_t get_position (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the length between the very first position of the position very last + 1.
 	// If empty then return 0.
-	static Temporal::samplecnt_t get_length_sample (const RegionSeq& regions);
-	static Temporal::samplecnt_t get_length_sample (const MidiRegionSeq& regions);
-	static Temporal::samplepos_t get_length_sample (const RegionSelection& region_selection);
-	static Temporal::samplepos_t get_length_sample (const TrackRegionsMap& regions_per_track);
+	static Temporal::timecnt_t get_length (const RegionSeq& regions);
+	static Temporal::timecnt_t get_length (const MidiRegionSeq& regions);
+	static Temporal::timecnt_t get_length (const RegionSelection& region_selection);
+	static Temporal::timecnt_t get_length (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the very first sample (it looks identical to get_regions_position).  If
 	// empty then return 0.
-	static Temporal::samplepos_t get_first_sample (const RegionSeq& regions);
-	static Temporal::samplepos_t get_first_sample (const MidiRegionSeq& regions);
-	static Temporal::samplepos_t get_first_sample (const RegionSelection& region_selection);
-	static Temporal::samplepos_t get_first_sample (const TrackRegionsMap& regions_per_track);
+	static Temporal::timepos_t get_end (const RegionSeq& regions);
+	static Temporal::timepos_t get_end (const MidiRegionSeq& regions);
+	static Temporal::timepos_t get_end (const RegionSelection& region_selection);
+	static Temporal::timepos_t get_end (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the last sample.  If empty then return 0.
-	static Temporal::samplepos_t get_last_sample (const RegionSeq& regions);
-	static Temporal::samplepos_t get_last_sample (const MidiRegionSeq& regions);
-	static Temporal::samplepos_t get_last_sample (const RegionSelection& region_selection);
-	static Temporal::samplepos_t get_last_sample (const TrackRegionsMap& regions_per_track);
+	static Temporal::timepos_t get_nt_last (const RegionSeq& regions);
+	static Temporal::timepos_t get_nt_last (const MidiRegionSeq& regions);
+	static Temporal::timepos_t get_nt_last (const RegionSelection& region_selection);
+	static Temporal::timepos_t get_nt_last (const TrackRegionsMap& regions_per_track);
 
 	// Compare if two notes have the same on note attributes
 	static bool is_on_equal (NotePtr ln, NotePtr rn);

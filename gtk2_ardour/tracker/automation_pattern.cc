@@ -42,13 +42,13 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
 }
 
 AutomationPattern::AutomationPattern (TrackerEditor& te,
-                                      Temporal::samplepos_t pos,
-                                      Temporal::samplepos_t sta,
-                                      Temporal::samplecnt_t len,
-                                      Temporal::samplepos_t fir,
-                                      Temporal::samplepos_t las,
+                                      Temporal::timepos_t pos,
+                                      Temporal::timepos_t sta,
+                                      Temporal::timecnt_t len,
+                                      Temporal::timepos_t ed,
+                                      Temporal::timepos_t ntl,
                                       bool connect)
-	: BasePattern (te, pos, sta, len, fir, las)
+	: BasePattern (te, pos, sta, len, ed, ntl)
 	, _connect(connect)
 {
 }
@@ -209,6 +209,7 @@ AutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::Cont
 void
 AutomationPattern::update ()
 {
+	std::cout << "AutomationPattern[" << this << "]::update ()" << std::endl;
 	set_row_range ();
 	update_automations ();
 }
@@ -216,6 +217,7 @@ AutomationPattern::update ()
 void
 AutomationPattern::update_automations ()
 {
+	std::cout << "AutomationPattern[" << this << "]::update_automations ()" << std::endl;
 	param_to_row_to_ces.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
 		AutomationControlPtr actl = param_actl->second;
@@ -246,6 +248,7 @@ AutomationPattern::update_automations ()
 void
 AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& name)
 {
+	std::cout << "AutomationPattern[" << this << "]::insert_actl (actl=" << actl << ", name=" << name << ")" << std::endl;
 	Evoral::Parameter param = actl->parameter ();
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));

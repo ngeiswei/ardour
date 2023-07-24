@@ -45,11 +45,11 @@ public:
 	                   RegionPtr region,
 	                   bool connect);
 	AutomationPattern (TrackerEditor& te,
-	                   Temporal::samplepos_t position,
-	                   Temporal::samplepos_t start,
-	                   Temporal::samplecnt_t length,
-	                   Temporal::samplepos_t first_sample,
-	                   Temporal::samplepos_t last_sample,
+	                   Temporal::timepos_t position,
+	                   Temporal::timepos_t start,
+	                   Temporal::timecnt_t length,
+	                   Temporal::timepos_t end,
+	                   Temporal::timepos_t nt_last,
 	                   bool connect);
 
 	// Make a deep copy of the automation controls
