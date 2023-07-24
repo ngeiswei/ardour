@@ -38,10 +38,10 @@ public:
 	                  TrackPtr track,
 	                  const std::vector<RegionView*>& region_views,
 	                  const RegionSeq& regions,
-	                  Temporal::samplepos_t position,
-	                  Temporal::samplecnt_t length,
-	                  Temporal::samplepos_t first_sample,
-	                  Temporal::samplepos_t last_sample,
+	                  Temporal::timepos_t position,
+	                  Temporal::timecnt_t length,
+	                  Temporal::timepos_t end,
+	                  Temporal::timepos_t nt_last,
 	                  bool connect);
 	virtual ~MidiTrackPattern ();
 

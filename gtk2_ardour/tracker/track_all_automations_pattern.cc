@@ -39,18 +39,18 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         const RegionSeq& regions,
                                                         bool connect)
 	: BasePattern (te,
-	               TrackerUtils::get_position_sample (regions),
-	               0,
-	               TrackerUtils::get_length_sample (regions),
-	               TrackerUtils::get_first_sample (regions),
-	               TrackerUtils::get_last_sample (regions))
+	               TrackerUtils::get_position (regions),
+	               Temporal::timepos_t (),
+	               TrackerUtils::get_length (regions),
+	               TrackerUtils::get_end (regions),
+	               TrackerUtils::get_nt_last (regions))
 	, track (trk)
 	, track_automation_pattern (te,
 	                            track,
-	                            TrackerUtils::get_position_sample (regions),
-	                            TrackerUtils::get_length_sample (regions),
-	                            TrackerUtils::get_first_sample (regions),
-	                            TrackerUtils::get_last_sample (regions),
+	                            TrackerUtils::get_position (regions),
+	                            TrackerUtils::get_length (regions),
+	                            TrackerUtils::get_end (regions),
+	                            TrackerUtils::get_nt_last (regions),
 	                            connect)
 {
 	setup_automation_controls ();
@@ -58,19 +58,19 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
 
 TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         TrackPtr trk,
-                                                        Temporal::samplepos_t pos,
-                                                        Temporal::samplecnt_t len,
-                                                        Temporal::samplepos_t fst,
-                                                        Temporal::samplepos_t lst,
+                                                        Temporal::timepos_t pos,
+                                                        Temporal::timecnt_t len,
+                                                        Temporal::timepos_t ed,
+                                                        Temporal::timepos_t ntl,
                                                         bool connect)
-	: BasePattern (te, pos, 0, len, fst, lst)
+	: BasePattern (te, pos, Temporal::timepos_t (), len, ed, ntl)
 	, track(trk)
 	, track_automation_pattern (te,
 	                            track,
 	                            pos,
 	                            len,
-	                            fst,
-	                            lst,
+	                            ed,
+	                            ntl,
 	                            connect)
 {
 	setup_automation_controls ();
@@ -132,6 +132,7 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 void
 TrackAllAutomationsPattern::update ()
 {
+	std::cout << "TrackAllAutomationsPattern[" << this << "]::update ()" << std::endl;
 	track_automation_pattern.update ();
 }
 

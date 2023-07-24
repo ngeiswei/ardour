@@ -46,10 +46,10 @@ public:
 	              bool connect);
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
-	              Temporal::samplepos_t pos,
-	              Temporal::samplecnt_t len,
-	              Temporal::samplepos_t fst,
-	              Temporal::samplepos_t lst,
+	              Temporal::timepos_t position,
+	              Temporal::timecnt_t length,
+	              Temporal::timepos_t end,
+	              Temporal::timepos_t nt_last,
 	              bool connect);
 	virtual ~TrackPattern ();
 
@@ -73,7 +73,7 @@ public:
 	AudioTrackPattern* audio_track_pattern ();
 
 	// Build or rebuild note and automation pattern
-	void update ();
+	virtual void update ();
 
 	// Default implementation is for tracks not supporting regions
 	// NEXT.2:

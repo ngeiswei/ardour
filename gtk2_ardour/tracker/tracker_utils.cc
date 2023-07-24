@@ -266,181 +266,181 @@ TrackerUtils::get_sorted_regions (const RegionSelection& region_selection)
 	return regions;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_position_sample (const RegionSeq& regions)
+Temporal::timepos_t
+TrackerUtils::get_position (const RegionSeq& regions)
 {
 	if (regions.empty ())
-		return 0;
+		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::samplepos_t position_sample = regions[i++]->position_sample ();
+	Temporal::timepos_t position = regions[i++]->position ();
 	for (; i < regions.size (); i++) {
-		position_sample = std::min (position_sample, regions[i]->position_sample ());
+		position = std::min (position, regions[i]->position ());
 	}
-	return position_sample;
+	return position;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_position_sample (const MidiRegionSeq& regions)
+Temporal::timepos_t
+TrackerUtils::get_position (const MidiRegionSeq& regions)
 {
 	if (regions.empty ())
-		return 0;
+		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::samplepos_t position_sample = regions[i++]->position_sample ();
+	Temporal::timepos_t position = regions[i++]->position ();
 	for (; i < regions.size (); i++) {
-		position_sample = std::min (position_sample, regions[i]->position_sample ());
+		position = std::min (position, regions[i]->position ());
 	}
-	return position_sample;
+	return position;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_position_sample (const RegionSelection& region_selection)
+Temporal::timepos_t
+TrackerUtils::get_position (const RegionSelection& region_selection)
 {
-	return region_selection.start_time ().samples ();
+	return region_selection.start_time ();
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_position_sample (const TrackRegionsMap& regions_per_track)
+Temporal::timepos_t
+TrackerUtils::get_position (const TrackRegionsMap& regions_per_track)
 {
 	if (regions_per_track.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	TrackRegionsMap::const_iterator it = regions_per_track.begin();
-	Temporal::samplepos_t position_sample = get_position_sample (it->second);
+	Temporal::timepos_t position = get_position (it->second);
 	for (; it != regions_per_track.end(); ++it) {
-		position_sample = std::min (position_sample, get_position_sample (it->second));
+		position = std::min (position, get_position (it->second));
 	}
-	return position_sample;
+	return position;
 }
 
-Temporal::samplecnt_t
-TrackerUtils::get_length_sample (const RegionSeq& regions)
+Temporal::timecnt_t
+TrackerUtils::get_length (const RegionSeq& regions)
 {
-	return get_last_sample (regions) + 1 - get_first_sample (regions);
+	return get_position (regions).distance (get_end (regions));
 }
 
-Temporal::samplecnt_t
-TrackerUtils::get_length_sample (const MidiRegionSeq& regions)
+Temporal::timecnt_t
+TrackerUtils::get_length (const MidiRegionSeq& regions)
 {
-	return get_last_sample (regions) + 1 - get_first_sample (regions);
+	return get_position (regions).distance (get_end (regions));
 }
 
-Temporal::samplecnt_t
-TrackerUtils::get_length_sample (const RegionSelection& region_selection)
+Temporal::timecnt_t
+TrackerUtils::get_length (const RegionSelection& region_selection)
 {
-	return get_last_sample (region_selection) + 1 - get_first_sample (region_selection);
+	return get_position (region_selection).distance (get_end (region_selection));
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_length_sample (const TrackRegionsMap& regions_per_track)
+Temporal::timecnt_t
+TrackerUtils::get_length (const TrackRegionsMap& regions_per_track)
 {
-	return get_last_sample (regions_per_track) + 1 - get_first_sample (regions_per_track);
+	return get_position (regions_per_track).distance (get_end (regions_per_track));
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_first_sample (const MidiRegionSeq& regions)
+Temporal::timepos_t
+TrackerUtils::get_end (const MidiRegionSeq& regions)
 {
 	if (regions.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::samplepos_t first_sample = regions[i++]->first_sample ();
+	Temporal::timepos_t end = regions[i++]->end ();
 	for (; i < regions.size (); i++) {
-		first_sample = std::min (first_sample, regions[i]->first_sample ());
+		end = std::max (end, regions[i]->end ());
 	}
-	return first_sample;
+	return end;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_first_sample (const RegionSeq& regions)
+Temporal::timepos_t
+TrackerUtils::get_end (const RegionSeq& regions)
 {
 	if (regions.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::samplepos_t first_sample = regions[i++]->first_sample ();
+	Temporal::timepos_t end = regions[i++]->end ();
 	for (; i < regions.size (); i++) {
-		first_sample = std::min (first_sample, regions[i]->first_sample ());
+		end = std::max (end, regions[i]->end ());
 	}
-	return first_sample;
+	return end;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_first_sample (const RegionSelection& region_selection)
+Temporal::timepos_t
+TrackerUtils::get_end (const RegionSelection& region_selection)
 {
 	if (region_selection.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	RegionSelection::const_iterator it = region_selection.begin ();
-	Temporal::samplepos_t first_sample = (*it)->region ()->first_sample ();
+	Temporal::timepos_t end = (*it)->region ()->end ();
 	++it;
 	for (; it != region_selection.end (); ++it) {
-		first_sample = std::min (first_sample, (*it)->region ()->first_sample ());
+		end = std::max (end, (*it)->region ()->end ());
 	}
-	return first_sample;
+	return end;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_first_sample (const TrackRegionsMap& regions_per_track)
+Temporal::timepos_t
+TrackerUtils::get_end (const TrackRegionsMap& regions_per_track)
 {
 	if (regions_per_track.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	TrackRegionsMap::const_iterator it = regions_per_track.begin();
-	Temporal::samplepos_t first_sample = get_first_sample(it->second);
+	Temporal::timepos_t end = get_end (it->second);
 	for (; it != regions_per_track.end(); ++it) {
-		first_sample = std::min (first_sample, get_first_sample(it->second));
+		end = std::max (end, get_end (it->second));
 	}
-	return first_sample;
+	return end;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_last_sample (const RegionSeq& regions)
+Temporal::timepos_t
+TrackerUtils::get_nt_last (const RegionSeq& regions)
 {
 	if (regions.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::samplepos_t last_sample = regions[i++]->last_sample ();
+	Temporal::timepos_t nt_last = regions[i++]->nt_last ();
 	for (; i < regions.size (); i++) {
-		last_sample = std::max (last_sample, regions[i]->last_sample ());
+		nt_last = std::max (nt_last, regions[i]->nt_last ());
 	}
-	return last_sample;
+	return nt_last;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_last_sample (const MidiRegionSeq& regions)
+Temporal::timepos_t
+TrackerUtils::get_nt_last (const MidiRegionSeq& regions)
 {
 	if (regions.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::samplepos_t last_sample = regions[i++]->last_sample ();
+	Temporal::timepos_t nt_last = regions[i++]->nt_last ();
 	for (; i < regions.size (); i++) {
-		last_sample = std::max (last_sample, regions[i]->last_sample ());
+		nt_last = std::max (nt_last, regions[i]->nt_last ());
 	}
-	return last_sample;
+	return nt_last;
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_last_sample (const RegionSelection& region_selection)
+Temporal::timepos_t
+TrackerUtils::get_nt_last (const RegionSelection& region_selection)
 {
-	return region_selection.end_time ().samples ();
+	return region_selection.end_time ().decrement ();
 }
 
-Temporal::samplepos_t
-TrackerUtils::get_last_sample (const TrackRegionsMap& regions_per_track)
+Temporal::timepos_t
+TrackerUtils::get_nt_last (const TrackRegionsMap& regions_per_track)
 {
 	if (regions_per_track.empty())
-		return 0;
+		return Temporal::timepos_t ();
 
 	TrackRegionsMap::const_iterator it = regions_per_track.begin();
-	Temporal::samplepos_t last_sample = get_last_sample(it->second);
+	Temporal::timepos_t nt_last = get_nt_last (it->second);
 	for (; it != regions_per_track.end(); ++it) {
-		last_sample = std::max (last_sample, get_last_sample(it->second));
+		nt_last = std::max (nt_last, get_nt_last (it->second));
 	}
-	return last_sample;
+	return nt_last;
 }
 
 bool
