@@ -28,11 +28,11 @@ using namespace Tracker;
 
 Pattern::Pattern (TrackerEditor& te, bool connect)
 	: BasePattern (te,
-	               TrackerUtils::get_position_sample (te.region_selection),
-	               0,
-	               TrackerUtils::get_length_sample (te.region_selection),
-	               TrackerUtils::get_first_sample (te.region_selection),
-	               TrackerUtils::get_last_sample (te.region_selection))
+	               TrackerUtils::get_position (te.region_selection),
+	               Temporal::timepos_t (),
+	               TrackerUtils::get_length (te.region_selection),
+	               TrackerUtils::get_end (te.region_selection),
+	               TrackerUtils::get_nt_last (te.region_selection))
 	, earliest_mti (0)
 	, earliest_tp (0)
 	, global_nrows (0)
@@ -83,6 +83,7 @@ Pattern::operator= (const Pattern& other)
 PatternPhenomenalDiff
 Pattern::phenomenal_diff (const Pattern& prev) const
 {
+	std::cout << "Pattern::phenomenal_diff (prev=" << prev.to_string() <<  ")" << std::endl;
 	PatternPhenomenalDiff diff;
 	if (!prev.enabled && !enabled) {
 		return diff;
@@ -170,7 +171,7 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 	if (midi_track) {
 		// TODO: fix memory leak
 		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
-		                                              position_sample, length_sample, first_sample, last_sample, _connect);
+		                                              position, length, end, nt_last, _connect);
 		tps.push_back (mtp);
 	}
 	// NEXT.2: re-enable
@@ -192,6 +193,7 @@ Pattern::setup_row_offset ()
 void
 Pattern::update ()
 {
+	std::cout << "Pattern::update ()" << std::endl;
 	update_position_etc ();
 	update_rows_per_beat ();
 	set_row_range ();
@@ -203,16 +205,16 @@ Pattern::update ()
 void
 Pattern::update_position_etc ()
 {
-	position_sample = TrackerUtils::get_position_sample (regions_per_track);
-	length_sample = TrackerUtils::get_length_sample (regions_per_track);
-	first_sample = TrackerUtils::get_first_sample (regions_per_track);
-	last_sample = TrackerUtils::get_last_sample (regions_per_track);
+	position = TrackerUtils::get_position (regions_per_track);
+	length = TrackerUtils::get_length (regions_per_track);
+	end = TrackerUtils::get_end (regions_per_track);
+	nt_last = TrackerUtils::get_nt_last (regions_per_track);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
-		tp->position_sample = position_sample;
-		tp->length_sample = length_sample;
-		tp->first_sample = first_sample;
-		tp->last_sample = last_sample;
+		tp->position = position;
+		tp->length = length;
+		tp->end = end;
+		tp->nt_last = nt_last;
 	}
 }
 
@@ -230,6 +232,7 @@ Pattern::update_rows_per_beat ()
 void
 Pattern::update_content ()
 {
+	std::cout << "Pattern::update_content ()" << std::endl;
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
 		tp->update ();

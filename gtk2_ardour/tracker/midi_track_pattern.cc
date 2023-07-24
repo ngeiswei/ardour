@@ -33,12 +33,12 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     TrackPtr trk,
                                     const std::vector<RegionView*>& region_views,
                                     const RegionSeq& regions,
-                                    Temporal::samplepos_t position,
-                                    Temporal::samplecnt_t length,
-                                    Temporal::samplepos_t first_sample,
-                                    Temporal::samplepos_t last_sample,
+                                    Temporal::timepos_t pos,
+                                    Temporal::timecnt_t len,
+                                    Temporal::timepos_t ed,
+                                    Temporal::timepos_t ntl,
                                     bool connect)
-	: TrackPattern (te, trk, position, length, first_sample, last_sample, connect)
+	: TrackPattern (te, trk, pos, len, end, ntl, connect)
 	, midi_track (std::static_pointer_cast<ARDOUR::MidiTrack> (trk))
 	, rvs (region_views)
 	, row_offset (regions.size (), 0)
@@ -209,6 +209,8 @@ MidiTrackPattern::set_row_range ()
 void
 MidiTrackPattern::update ()
 {
+	std::cout << "MidiTrackPattern::update ()" << std::endl;
+
 	// Update midi regions
 	set_row_range ();
 	update_midi_regions ();

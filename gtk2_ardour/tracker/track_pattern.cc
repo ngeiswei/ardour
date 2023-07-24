@@ -65,18 +65,18 @@ TrackPattern::TrackPattern (TrackerEditor& te,
                             const RegionSeq& regions,
                             bool connect)
 	: BasePattern (te,
-	               TrackerUtils::get_position_sample (regions),
-	               0,
-	               TrackerUtils::get_length_sample (regions),
-	               TrackerUtils::get_first_sample (regions),
-	               TrackerUtils::get_last_sample (regions))
+	               TrackerUtils::get_position (regions),
+	               Temporal::timepos_t (),
+	               TrackerUtils::get_length (regions),
+	               TrackerUtils::get_end (regions),
+	               TrackerUtils::get_nt_last (regions))
 	, track (trk)
 	, track_all_automations_pattern (te,
 	                                 track,
-	                                 TrackerUtils::get_position_sample (regions),
-	                                 TrackerUtils::get_length_sample (regions),
-	                                 TrackerUtils::get_first_sample (regions),
-	                                 TrackerUtils::get_last_sample (regions),
+	                                 TrackerUtils::get_position (regions),
+	                                 TrackerUtils::get_length (regions),
+	                                 TrackerUtils::get_end (regions),
+	                                 TrackerUtils::get_nt_last (regions),
 	                                 connect)
 {
 	if (connect)
@@ -85,14 +85,14 @@ TrackPattern::TrackPattern (TrackerEditor& te,
 
 TrackPattern::TrackPattern (TrackerEditor& te,
                             TrackPtr trk,
-                            Temporal::samplepos_t pos,
-                            Temporal::samplecnt_t len,
-                            Temporal::samplepos_t fst,
-                            Temporal::samplepos_t lst,
+                            Temporal::timepos_t pos,
+                            Temporal::timecnt_t len,
+                            Temporal::timepos_t ed,
+                            Temporal::timepos_t ntl,
                             bool connect)
-	: BasePattern (te, pos, 0, len, fst, lst)
+	: BasePattern (te, pos, Temporal::timepos_t (), len, ed, ntl)
 	, track (trk)
-	, track_all_automations_pattern (te, trk, pos, len, fst, lst, connect)
+	, track_all_automations_pattern (te, trk, pos, len, ed, ntl, connect)
 {
 	if (connect)
 		tracker_editor.connect_track (track);
@@ -194,6 +194,7 @@ TrackPattern::audio_track_pattern ()
 void
 TrackPattern::update ()
 {
+	std::cout << "TrackPattern[" << this <<"]::update ()" << std::endl;
 	track_all_automations_pattern.update ();
 }
 

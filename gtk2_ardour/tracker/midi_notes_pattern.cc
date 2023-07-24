@@ -214,9 +214,8 @@ MidiNotesPattern::update_track_to_notes ()
 	// to some defined order.
 	const MidiModel::Notes& notes = _midi_model->notes ();
 	MidiModel::StrictNotes strict_notes;
-	Temporal::Beats end_time = start_beats + Temporal::timepos_t (length_sample).beats ();
 	for (MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound (start_beats);
-	     it != notes.end () && (*it)->time () < end_time; ++it)
+	     it != notes.end () && (*it)->time () < end_beats; ++it)
 		strict_notes.insert (*it);
 
 	// Remove missing notes

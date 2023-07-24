@@ -252,6 +252,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 int
 Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::add_midi_automation_column (mti=" << mti << ", param=" << param << ")" << std::endl;
 	// Insert the corresponding automation control (and connect to the grid if
 	// not already there)
 	pattern.insert (mti, param); // NEXT.12: should take the processor as well
@@ -339,6 +340,7 @@ Grid::change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Para
 void
 Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::update_automation_column_visibility (mti=" << mti << ", param=" << param << ")" << std::endl;
 	if (!pattern.tps[mti]->is_midi_track_pattern ()) { // TODO: Why?  Shouldn't
 	                                                   // that apply to audio
 	                                                   // track as well?  If it
@@ -939,6 +941,7 @@ Grid::redisplay_global_columns ()
 void
 Grid::redisplay_grid ()
 {
+	std::cout << "Grid::redisplay_grid ()" << std::endl;
 	if (editing_editable) {
 		return;
 	}
@@ -1364,6 +1367,7 @@ Grid::redisplay_current_row ()
 void
 Grid::redisplay_pattern ()
 {
+	std::cout << "Grid::redisplay_pattern ()" << std::endl;
 	if (_phenomenal_diff.full)
 	{
 		for (size_t mti = 0; mti < pattern.tps.size (); mti++)
@@ -3286,10 +3290,8 @@ void
 Grid::follow_playhead (Temporal::timepos_t pos)
 {
 	if (skip_follow_playhead.empty()) { // Do not skip
-		// TODO: relax that interval so that follow goes to the extremes
-		Temporal::samplepos_t sample_pos = Temporal::timepos_t (pos).samples ();
-		if (pattern.first_sample <= sample_pos && sample_pos <= pattern.last_sample && pos != clock_pos) {
-			int row_idx = pattern.row_at_sample (sample_pos);
+		if (pattern.position <= pos && pos < pattern.end && pos != clock_pos) {
+			int row_idx = pattern.row_at_time (pos);
 			if (row_idx != current_row_idx) {
 				if (is_cell_defined (row_idx, current_col)) {
 					set_current_cursor (row_idx, current_col, false);
