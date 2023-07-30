@@ -38,7 +38,7 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     Temporal::timepos_t ed,
                                     Temporal::timepos_t ntl,
                                     bool connect)
-	: TrackPattern (te, trk, pos, len, end, ntl, connect)
+	: TrackPattern (te, trk, pos, len, ed, ntl, connect)
 	, midi_track (std::static_pointer_cast<ARDOUR::MidiTrack> (trk))
 	, rvs (region_views)
 	, row_offset (regions.size (), 0)
