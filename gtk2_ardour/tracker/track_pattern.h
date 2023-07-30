@@ -42,10 +42,6 @@ class TrackPattern : public BasePattern {
 public:
 	TrackPattern (TrackerEditor& te,
 	              TrackPtr track,
-	              const RegionSeq& regions,
-	              bool connect);
-	TrackPattern (TrackerEditor& te,
-	              TrackPtr track,
 	              Temporal::timepos_t position,
 	              Temporal::timecnt_t length,
 	              Temporal::timepos_t end,
