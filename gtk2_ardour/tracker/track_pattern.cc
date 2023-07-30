@@ -26,63 +26,6 @@
 
 using namespace Tracker;
 
-// NEXT.9
-//
-// We need to think about how to have TrackPattern implement
-//
-// void insert (const Evoral::Parameter& param)
-//
-// Likely, it shouldn't implement it but rather implement
-//
-// insert(param, processor) or such.  Though in the mean time it could try to
-// be backward compatible and implement insert(param), TBD.
-//
-// Note: the problem has been raised by the following compile error:
-//
-// ../gtk2_ardour/tracker/pattern.cc: In member function ‘void Tracker::Pattern::insert(int, const Evoral::Parameter&)’:
-// ../gtk2_ardour/tracker/pattern.cc:480:19: error: ‘class Tracker::TrackPattern’ has no member named ‘insert’
-//   480 |         tps[mti]->insert (param);
-//       |                   ^~~~~~
-//
-// NEXT.8
-//
-// ../gtk2_ardour/tracker/track_pattern.cc: In constructor ‘Tracker::TrackPattern::TrackPattern(Tracker::TrackerEditor&, Tracker::TrackPtr, const RegionSeq&, bool)’:
-// ../gtk2_ardour/tracker/track_pattern.cc:33:11: error: type ‘Tracker::AutomationPattern’ is not a direct base of ‘Tracker::TrackPattern’
-//    33 |         : AutomationPattern (te,
-//       |           ^~~~~~~~~~~~~~~~~
-// ../gtk2_ardour/tracker/track_pattern.cc:40:21: error: no matching function for call to ‘Tracker::BasePattern::BasePattern()’
-//    40 |         , track (trk)
-//       |                     ^
-// In file included from ../gtk2_ardour/tracker/track_pattern.h:27,
-//                  from ../gtk2_ardour/tracker/track_automation_pattern.h:24,
-//                  from ../gtk2_ardour/tracker/audio_track_pattern.h:25,
-//                  from ../gtk2_ardour/tracker/track_pattern.cc:19:
-// ../gtk2_ardour/tracker/base_pattern.h:58:9: note: candidate: ‘Tracker::BasePattern::BasePattern(Tracker::TrackerEditor&, Temporal::timepos_t, Temporal::timepos_t, Temporal::timepos_t, Temporal::timepos_t, Temporal::timepos_t)’
-//    58 |         BasePattern (TrackerEditor& te,
-//       |         ^~~~~~~~~~~
-TrackPattern::TrackPattern (TrackerEditor& te,
-                            TrackPtr trk,
-                            const RegionSeq& regions,
-                            bool connect)
-	: BasePattern (te,
-	               TrackerUtils::get_position (regions),
-	               Temporal::timepos_t (),
-	               TrackerUtils::get_length (regions),
-	               TrackerUtils::get_end (regions),
-	               TrackerUtils::get_nt_last (regions))
-	, track (trk)
-	, track_all_automations_pattern (te,
-	                                 track,
-	                                 TrackerUtils::get_position (regions),
-	                                 TrackerUtils::get_length (regions),
-	                                 TrackerUtils::get_end (regions),
-	                                 TrackerUtils::get_nt_last (regions),
-	                                 connect)
-{
-	if (connect)
-		tracker_editor.connect_track (track);
-}
-
 TrackPattern::TrackPattern (TrackerEditor& te,
                             TrackPtr trk,
                             Temporal::timepos_t pos,

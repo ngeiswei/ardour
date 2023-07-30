@@ -34,10 +34,6 @@ class MainAutomationPattern : public TrackAutomationPattern {
 public:
 	MainAutomationPattern (TrackerEditor& te,
 	                       TrackPtr track,
-	                       RegionSeq regions,
-	                       bool connect);
-	MainAutomationPattern (TrackerEditor& te,
-	                       TrackPtr track,
 	                       Temporal::timepos_t position,
 	                       Temporal::timecnt_t length,
 	                       Temporal::timepos_t end,

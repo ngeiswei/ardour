@@ -35,10 +35,6 @@ namespace Tracker {
  */
 class TrackAllAutomationsPattern : public BasePattern {
 public:
-	TrackAllAutomationsPattern (TrackerEditor& te, // NEXT: do we need that ctor?
-	                            TrackPtr track,
-	                            const RegionSeq& regions,
-	                            bool connect);
 	TrackAllAutomationsPattern (TrackerEditor& te,
 	                            TrackPtr track,
 	                            Temporal::timepos_t position,
