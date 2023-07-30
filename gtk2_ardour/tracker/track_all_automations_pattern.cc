@@ -36,28 +36,6 @@ using namespace Tracker;
 
 TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
                                                         TrackPtr trk,
-                                                        const RegionSeq& regions,
-                                                        bool connect)
-	: BasePattern (te,
-	               TrackerUtils::get_position (regions),
-	               Temporal::timepos_t (),
-	               TrackerUtils::get_length (regions),
-	               TrackerUtils::get_end (regions),
-	               TrackerUtils::get_nt_last (regions))
-	, track (trk)
-	, track_automation_pattern (te,
-	                            track,
-	                            TrackerUtils::get_position (regions),
-	                            TrackerUtils::get_length (regions),
-	                            TrackerUtils::get_end (regions),
-	                            TrackerUtils::get_nt_last (regions),
-	                            connect)
-{
-	setup_automation_controls ();
-}
-
-TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
-                                                        TrackPtr trk,
                                                         Temporal::timepos_t pos,
                                                         Temporal::timecnt_t len,
                                                         Temporal::timepos_t ed,
