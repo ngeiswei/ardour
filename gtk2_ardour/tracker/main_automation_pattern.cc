@@ -26,15 +26,6 @@ using namespace Tracker;
 
 MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
                                               TrackPtr trk,
-                                              RegionSeq regions,
-                                              bool connect)
-	: TrackAutomationPattern (te, trk, regions, connect)
-{
-	// NEXT.3: fill _automatable_parameters
-}
-
-MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
-                                              TrackPtr trk,
                                               Temporal::timepos_t pos,
                                               Temporal::timecnt_t len,
                                               Temporal::timepos_t ed,
