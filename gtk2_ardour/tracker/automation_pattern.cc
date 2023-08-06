@@ -39,6 +39,7 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
 	: BasePattern (te, region)
 	, _connect (connect)
 {
+	std::cout << "AutomationPattern[" << this << "]::AutomationPattern (te=, region=" << region << ", connect=" << connect << ")" << std::endl;
 }
 
 AutomationPattern::AutomationPattern (TrackerEditor& te,
@@ -51,6 +52,7 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
 	: BasePattern (te, pos, sta, len, ed, ntl)
 	, _connect(connect)
 {
+	std::cout << "AutomationPattern[" << this << "]::AutomationPattern (te=, pos=" << pos << ", sta=" << sta << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ", connect=" << connect << ")" << std::endl;
 }
 
 AutomationPattern&
@@ -211,7 +213,9 @@ AutomationPattern::update ()
 {
 	std::cout << "AutomationPattern[" << this << "]::update ()" << std::endl;
 	set_row_range ();
+	std::cout << "AutomationPattern[" << this << "]::update () -1-" << std::endl;
 	update_automations ();
+	std::cout << "AutomationPattern[" << this << "]::update () -2-" << std::endl;
 }
 
 void
