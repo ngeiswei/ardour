@@ -38,6 +38,7 @@ Pattern::Pattern (TrackerEditor& te, bool connect)
 	, global_nrows (0)
 	, _connect (connect)
 {
+	std::cout << "Pattern[" << this << "]::Pattern (te=, connect=" << connect << ")" << std::endl;
 }
 
 Pattern::~Pattern ()
@@ -199,7 +200,9 @@ Pattern::update ()
 	set_row_range ();
 	update_content ();
 	update_earliest_mtp ();
+	std::cout << "Pattern::update () -5-" << std::endl;
 	update_global_nrows ();
+	std::cout << "Pattern::update () -n-" << std::endl;
 }
 
 void
@@ -238,6 +241,7 @@ Pattern::update_content ()
 		tp->update ();
 	}
 
+	std::cout << "Pattern::update_content () -1-" << std::endl;
 	// In case some tracks have been disabled, disable their track headers as
 	// well.
 	//

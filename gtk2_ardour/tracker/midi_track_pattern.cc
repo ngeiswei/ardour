@@ -43,6 +43,7 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
 	, rvs (region_views)
 	, row_offset (regions.size (), 0)
 {
+	std::cout << "MidiTrackPattern[" << this << "]::MidiTrackPattern (te=, trk=" << trk << ", region_views=, regions=, pos=" << pos << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ", connect=" << connect << ")" << std::endl;
 	setup (regions);
 }
 
@@ -225,8 +226,10 @@ MidiTrackPattern::update ()
 
 	// Update track automation pattern
 	TrackPattern::update ();
+	std::cout << "MidiTrackPattern::update () -6-" << std::endl;
 
 	update_row_offset ();
+	std::cout << "MidiTrackPattern::update () -7-" << std::endl;
 }
 
 void
