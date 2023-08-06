@@ -37,6 +37,7 @@ TrackPattern::TrackPattern (TrackerEditor& te,
 	, track (trk)
 	, track_all_automations_pattern (te, trk, pos, len, ed, ntl, connect)
 {
+	std::cout << "TrackPattern[" << this << "]::TrackPattern (te=, trk=" << trk << ", pos=" << pos << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ", connect=" << connect << ")" << std::endl;
 	if (connect)
 		tracker_editor.connect_track (track);
 }
