@@ -109,6 +109,18 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 }
 
 void
+TrackAllAutomationsPattern::set_rows_per_beat (uint16_t rpb)
+{
+	track_automation_pattern.set_rows_per_beat (rpb);
+}
+
+void
+TrackAllAutomationsPattern::set_row_range ()
+{
+	track_automation_pattern.set_row_range ();
+}
+
+void
 TrackAllAutomationsPattern::update ()
 {
 	std::cout << "TrackAllAutomationsPattern[" << this << "]::update ()" << std::endl;

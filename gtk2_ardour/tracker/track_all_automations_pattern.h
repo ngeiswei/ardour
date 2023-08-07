@@ -51,6 +51,14 @@ public:
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
 
+	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
+	// supported). After changing that you probably need to update the pattern,
+	// see below.
+	void set_rows_per_beat (uint16_t rpb);
+
+	// Set position_row_beats, end_row_beats and nrows
+	void set_row_range ();
+
 	// Update the pattern to reflect the current state
 	void update ();
 
