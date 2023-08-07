@@ -191,17 +191,16 @@ MidiTrackPattern::insert (const Evoral::Parameter& param)
 void
 MidiTrackPattern::set_rows_per_beat (uint16_t rpb)
 {
-	BasePattern::set_rows_per_beat (rpb);
+	TrackPattern::set_rows_per_beat (rpb);
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		mrps[mri]->set_rows_per_beat (rpb);
 	}
-	TrackPattern::set_rows_per_beat (rpb);
 }
 
 void
 MidiTrackPattern::set_row_range ()
 {
-	BasePattern::set_row_range ();
+	TrackPattern::set_row_range ();
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		mrps[mri]->set_row_range ();
 	}

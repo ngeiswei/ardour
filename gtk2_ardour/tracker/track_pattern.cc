@@ -99,6 +99,18 @@ TrackPattern::audio_track ()
 	return std::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 }
 
+void
+TrackPattern::set_rows_per_beat (uint16_t rpb)
+{
+	track_all_automations_pattern.set_rows_per_beat (rpb);
+}
+
+void
+TrackPattern::set_row_range ()
+{
+	track_all_automations_pattern.set_row_range ();
+}
+
 bool
 TrackPattern::is_midi_track_pattern () const
 {
