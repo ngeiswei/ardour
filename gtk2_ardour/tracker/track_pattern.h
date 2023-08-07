@@ -60,6 +60,16 @@ public:
 	MidiTrackPtr midi_track ();
 	AudioTrackPtr audio_track ();
 
+	// Set the number of rows per beat. 0 means 1 row per bar.  Overload
+	// BasePattern::set_rows_per_beat to trickle down to track automations and
+	// such.
+	virtual void set_rows_per_beat (uint16_t rpb);
+
+	// Set position_row_beats, end_row_beats and nrows.  Overload
+	// BasePattern::set_rows_per_beat to trickle down to track automations and
+	// such.
+	virtual void set_row_range ();
+
 	// Self cast classes
 	bool is_midi_track_pattern () const;
 	bool is_audio_track_pattern () const;
