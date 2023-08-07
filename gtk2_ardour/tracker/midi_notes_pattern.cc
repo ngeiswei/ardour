@@ -201,7 +201,9 @@ MidiNotesPattern::phenomenal_diff (const MidiNotesPattern& prev) const
 void
 MidiNotesPattern::update ()
 {
-	set_row_range ();
+	set_row_range ();               // TODO: likely redundant since
+	                                // MidiRegionPattern::set_row_range ()
+	                                // updates set_row_range as well.
 	update_track_to_notes ();
 	update_row_to_notes ();
 }

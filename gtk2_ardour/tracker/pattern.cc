@@ -227,8 +227,7 @@ Pattern::update_rows_per_beat ()
 	uint16_t rpb = tracker_editor.main_toolbar.rows_per_beat;
 	BasePattern::set_rows_per_beat (rpb);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		TrackPattern* tp = tps[mti];
-		tp->set_rows_per_beat (rpb);
+		tps[mti]->set_rows_per_beat (rpb);
 	}
 }
 
