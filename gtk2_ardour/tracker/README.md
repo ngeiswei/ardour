@@ -1,7 +1,6 @@
 # Next
 
-- [ ] NEXT.15: fix crash.  The problem appears to be that beats_per_row is null
-      within BasePattern::find_position_row_beats ()
+- [ ] NEXT.15: fix crash.
 - [ ] NEXT.14: find a way to replace Pattern::automation_pattern by something
       cleaner.
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track

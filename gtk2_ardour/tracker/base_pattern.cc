@@ -134,8 +134,6 @@ Temporal::Beats
 BasePattern::find_position_row_beats () const
 {
 	std::cout << "BasePattern[" << this << "]::find_position_row_beats ()" << std::endl;
-	// NEXT.15: the problem is probably that beats_per_row is null
-	// TODO: it could be round_up_to_multiple or round_down_to_multiple
 	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 	return position_beats.round_to_multiple (beats_per_row);
 }
