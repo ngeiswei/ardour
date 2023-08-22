@@ -28,14 +28,7 @@ using namespace Tracker;
 bool
 TrackPatternPhenomenalDiff::empty () const
 {
-	if (is_midi_track_pattern_phenomenal_diff ()) {
-		return midi_track_pattern_phenomenal_diff ()->empty ();
-	} else if (is_audio_track_pattern_phenomenal_diff ()) {
-		return audio_track_pattern_phenomenal_diff ()->empty ();
-	} else {
-		std::cout << "Not implemented" << std::endl;
-		return false;
-	}
+	return taap_diff.empty ();
 }
 
 std::string
@@ -43,26 +36,9 @@ TrackPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl;
-	if (is_midi_track_pattern_phenomenal_diff ()) {
-		ss << midi_track_pattern_phenomenal_diff ()->to_string (indent);
-	} else if (is_audio_track_pattern_phenomenal_diff ()) {
-		ss << audio_track_pattern_phenomenal_diff ()->to_string (indent);
-	} else {
-		std::cout << "Not implemented" << std::endl;
-	}
+	ss << indent << "taap_diff:" << std::endl;
+	ss << taap_diff.to_string (indent + "  ");
 	return ss.str ();
-}
-
-bool
-TrackPatternPhenomenalDiff::is_midi_track_pattern_phenomenal_diff () const
-{
-	return dynamic_cast<const MidiTrackPatternPhenomenalDiff*> (this);
-}
-
-bool
-TrackPatternPhenomenalDiff::is_audio_track_pattern_phenomenal_diff () const
-{
-	return dynamic_cast<const AudioTrackPatternPhenomenalDiff*> (this);
 }
 
 const MidiTrackPatternPhenomenalDiff*

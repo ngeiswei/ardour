@@ -49,6 +49,10 @@ public:
 
 	MidiTrackPattern& operator= (const MidiTrackPattern& other);
 
+	// TODO: for now do not worry about memory leaking, create a new
+	// PhenomenalDiff object at every call
+	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
+
 	MidiTrackPatternPhenomenalDiff phenomenal_diff (const MidiTrackPattern& prev) const;
 
 	std::string get_name (const Evoral::Parameter& param) const;
@@ -89,8 +93,12 @@ public:
 	// existing region.
 	bool is_region_defined (int rowi) const;
 
-	// Return the row index relative to the start of pattern at region index mri
+	// Return the row index relative to the start of the midi region pattern at
+	// region index mri.
 	int to_rrri (int rowi, int mri) const;
+
+	// Return the row index relative to the start of the midi region pattern
+	// pattern at region placed at index rowi.
 	int to_rrri (int rowi) const;
 
 	// Given the row index, calculate the corresponding midi region index. This

@@ -102,6 +102,7 @@ Pattern::phenomenal_diff (const Pattern& prev) const
 
 	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size (); mti++) {
+		// TODO: take care of the memory leak
 		TrackPatternPhenomenalDiff* tp_diff = tps[mti]->phenomenal_diff_ptr (prev.tps[mti]);
 		if (!tp_diff->empty ()) {
 			diff.mti2tp_diff[mti] = tp_diff;

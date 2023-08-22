@@ -42,6 +42,10 @@ public:
 	                   bool connect);
 	virtual ~AudioTrackPattern ();
 
+	// TODO: for now do not worry about memory leaking, create a new
+	// PhenomenalDiff object at every call
+	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
+
 	AudioTrackPatternPhenomenalDiff phenomenal_diff (const AudioTrackPattern& prev) const;
 };
 
