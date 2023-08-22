@@ -57,8 +57,8 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
 TrackAllAutomationsPatternPhenomenalDiff
 TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& prev) const
 {
-	// NEXT
 	TrackAllAutomationsPatternPhenomenalDiff diff;
+	diff.automation_pattern_phenomenal_diff = track_automation_pattern.phenomenal_diff (prev.track_automation_pattern);
 	return diff;
 }
 
