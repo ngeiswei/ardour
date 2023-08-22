@@ -88,8 +88,6 @@ public:
 	// NEXT.2:
 	virtual bool is_automation_displayable (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual size_t control_events_count (int rowi, int mri, const Evoral::Parameter& param) const;
-	// NEXT.14: delete
-	// virtual RowToControlEventsRange control_events_range (int rowi, int mri, const Evoral::Parameter& param) const;
 	virtual bool is_region_defined (int rowi) const;
 	virtual int to_rrri (int rowi, int mri) const;
 	virtual int to_rrri (int rowi) const;

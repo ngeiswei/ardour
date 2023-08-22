@@ -101,7 +101,6 @@ public:
 	bool is_automation_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
 
 	size_t control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
-	// RowToControlEventsRange control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const; // NEXT.14: delete
 
 	NotePtr find_prev_on_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr find_next_on_note (int rowi, int mti, int mri, int cgi) const;
