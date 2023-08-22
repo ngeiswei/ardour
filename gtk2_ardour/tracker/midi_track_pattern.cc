@@ -101,6 +101,14 @@ MidiTrackPattern::operator= (const MidiTrackPattern& other)
 	return *this;
 }
 
+TrackPatternPhenomenalDiff*
+MidiTrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
+{
+	const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
+	MidiTrackPatternPhenomenalDiff mtp_diff = phenomenal_diff (*prev_mtp);
+	return new MidiTrackPatternPhenomenalDiff (mtp_diff);
+}
+
 MidiTrackPatternPhenomenalDiff
 MidiTrackPattern::phenomenal_diff (const MidiTrackPattern& prev) const
 {

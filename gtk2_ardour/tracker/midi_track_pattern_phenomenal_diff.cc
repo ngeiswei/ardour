@@ -33,9 +33,9 @@ MidiTrackPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
 	ss << indent << "mri2mrp_diff:" << std::endl;
-	for (Mri2MidiRegionPatternDiff::const_iterator it = mri2mrp_diff.begin (); it != mri2mrp_diff.end (); ++it) {
-		ss << indent + "  " << "midi_region_pattern_diff[" << it->first << "]:" << std::endl
-		   << it->second.to_string (indent + "    ") << std::endl;
+	for (const Mri2MidiRegionPatternDiff::value_type& mrimrp_diff : mri2mrp_diff) {
+		ss << indent + "  " << "midi_region_pattern_diff[" << mrimrp_diff.first << "]:" << std::endl
+		   << mrimrp_diff.second.to_string (indent + "    ") << std::endl;
 	}
 	ss << indent << "TrackPatternPhenomenalDiff:" << std::endl;
 	ss << TrackPatternPhenomenalDiff::to_string (indent + "  ");
