@@ -252,7 +252,6 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 int
 Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
-	std::cout << "Grid::add_midi_automation_column (mti=" << mti << ", param=" << param << ")" << std::endl;
 	// Insert the corresponding automation control (and connect to the grid if
 	// not already there)
 	pattern.insert (mti, param); // NEXT.12: should take the processor as well
@@ -340,7 +339,6 @@ Grid::change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Para
 void
 Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& param)
 {
-	std::cout << "Grid::update_automation_column_visibility (mti=" << mti << ", param=" << param << ")" << std::endl;
 	if (!pattern.tps[mti]->is_midi_track_pattern ()) { // TODO: Why?  Shouldn't
 	                                                   // that apply to audio
 	                                                   // track as well?  If it
@@ -941,7 +939,6 @@ Grid::redisplay_global_columns ()
 void
 Grid::redisplay_grid ()
 {
-	std::cout << "Grid::redisplay_grid ()" << std::endl;
 	if (editing_editable) {
 		return;
 	}
@@ -1367,7 +1364,6 @@ Grid::redisplay_current_row ()
 void
 Grid::redisplay_pattern ()
 {
-	std::cout << "Grid::redisplay_pattern ()" << std::endl;
 	if (_phenomenal_diff.full)
 	{
 		for (size_t mti = 0; mti < pattern.tps.size (); mti++)
@@ -1424,9 +1420,8 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
-	// NEXT.14: maybe try to find out why param_to_enabled is used.  Ideal I
-	// suppose it should use get_enabled_parameter_set, or such (maybe that one
-	// should be renamed get_enabled_parameters, BTW).
+	std::cout << "Grid::redisplay_track_all_automations (mti=" << mti << ", taap=, taap_diff=" << taap_diff << ")" << std::endl;
+	// NEXT.15: implement
 }
 
 void

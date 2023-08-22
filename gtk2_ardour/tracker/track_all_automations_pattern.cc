@@ -51,7 +51,6 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
 	                            ntl,
 	                            connect)
 {
-	std::cout << "TrackAllAutomationsPattern[" << this << "]::TrackAllAutomationsPattern (te=, trk=" << trk << ", pos=" << pos << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ", connect=" << connect << ")" << std::endl;
 	setup_automation_controls ();
 }
 
@@ -123,7 +122,6 @@ TrackAllAutomationsPattern::set_row_range ()
 void
 TrackAllAutomationsPattern::update ()
 {
-	std::cout << "TrackAllAutomationsPattern[" << this << "]::update ()" << std::endl;
 	track_automation_pattern.update ();
 }
 
