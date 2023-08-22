@@ -1421,7 +1421,12 @@ void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
 	std::cout << "Grid::redisplay_track_all_automations (mti=" << mti << ", taap=, taap_diff=" << taap_diff << ")" << std::endl;
-	// NEXT.15: implement
+	const TrackAutomationPattern& tap = taap.track_automation_pattern;
+	if (taap_diff == 0 || taap_diff->full) {
+		redisplay_track_automations (mti, tap);
+	} else {
+		redisplay_track_automations (mti, tap, &taap_diff->automation_pattern_phenomenal_diff);
+	}
 }
 
 void

@@ -37,9 +37,13 @@ public:
 	BasePatternPhenomenalDiff ();
 	virtual ~BasePatternPhenomenalDiff ();
 
+	// Return true if there is no phenomenal difference at all
 	virtual bool empty () const;
+
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
+	// True if the phenomenal difference is considered complete, meaning that
+	// everthing needs to be rendered.
 	bool full;
 };
 
