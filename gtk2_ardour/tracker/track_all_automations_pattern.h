@@ -86,7 +86,12 @@ public:
 	std::string get_name (const Evoral::Parameter& param) const;
 	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
 	bool is_param_enabled (const Evoral::Parameter& param) const;
+
+	// Return the set of enabled automation parameters across all processors of
+	// the track.  NEXT: it's unclear if this should take a processor parameter,
+	// or aggregate across all processors.
 	ParameterSet get_enabled_parameters () const;
+
 	double lower (const Evoral::Parameter& param) const;
 	double upper (const Evoral::Parameter& param) const;
 

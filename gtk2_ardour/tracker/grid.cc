@@ -1375,10 +1375,9 @@ Grid::redisplay_pattern ()
 			redisplay_track (mti);
 		}
 	} else {
-		for (PatternPhenomenalDiff::Mti2TrackPatternDiff::const_iterator it = _phenomenal_diff.mti2tp_diff.begin ();
-		     it != _phenomenal_diff.mti2tp_diff.end (); ++it)
+		for (const PatternPhenomenalDiff::Mti2TrackPatternDiff::value_type& mti_tpd : _phenomenal_diff.mti2tp_diff)
 		{
-			redisplay_track (it->first, it->second);
+			redisplay_track (mti_tpd.first, mti_tpd.second);
 		}
 	}
 }
@@ -1414,9 +1413,9 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
 		redisplay_inter_midi_regions (mti);
-		for (MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::const_iterator it = mtp_diff->mri2mrp_diff.begin (); it != mtp_diff->mri2mrp_diff.end (); ++it) {
-			size_t mri = it->first;
-			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &it->second);
+		for (const MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::value_type& mri_rpd : mtp_diff->mri2mrp_diff) {
+			size_t mri = mri_rpd.first;
+			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &mri_rpd.second);
 		}
 		redisplay_track_all_automations (mti, mtp.track_all_automations_pattern, &mtp_diff->taap_diff);
 	}
@@ -1434,10 +1433,8 @@ void
 Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
 {
 	if (automation_diff == 0 || automation_diff->full) {
-		for (AutomationPattern::ParamEnabledMap::const_iterator it = tap.param_to_enabled.begin (); it != tap.param_to_enabled.end (); ++it) {
-			if (it->second) {
-				redisplay_track_automation_param (mti, tap, it->first);
-			}
+		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
+			redisplay_track_automation_param (mti, tap, param);
 		}
 	} else {
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = automation_diff->param2rows_diff.begin (); it != automation_diff->param2rows_diff.end (); ++it) {
@@ -2986,6 +2983,13 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 	// Update current row
 	current_path = path;
 	current_row_idx = to_row_index (path);
+
+	// Abort if current_row_idx is negative.  This may happen if the user clicks
+	// on an area with no row.
+	if (current_row_idx < 0) {
+		return;
+	}
+
 	current_beats = pattern.beats_at_row (current_row_idx);
 	current_row = to_row (current_row_idx);
 
