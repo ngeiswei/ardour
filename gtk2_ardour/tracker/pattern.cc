@@ -38,7 +38,6 @@ Pattern::Pattern (TrackerEditor& te, bool connect)
 	, global_nrows (0)
 	, _connect (connect)
 {
-	std::cout << "Pattern[" << this << "]::Pattern (te=, connect=" << connect << ")" << std::endl;
 }
 
 Pattern::~Pattern ()
@@ -84,7 +83,6 @@ Pattern::operator= (const Pattern& other)
 PatternPhenomenalDiff
 Pattern::phenomenal_diff (const Pattern& prev) const
 {
-	std::cout << "Pattern::phenomenal_diff (prev=" << prev.to_string() <<  ")" << std::endl;
 	PatternPhenomenalDiff diff;
 	if (!prev.enabled && !enabled) {
 		return diff;
@@ -195,15 +193,12 @@ Pattern::setup_row_offset ()
 void
 Pattern::update ()
 {
-	std::cout << "Pattern::update ()" << std::endl;
 	update_position_etc ();
 	update_rows_per_beat ();
 	set_row_range ();
 	update_content ();
 	update_earliest_mtp ();
-	std::cout << "Pattern::update () -5-" << std::endl;
 	update_global_nrows ();
-	std::cout << "Pattern::update () -n-" << std::endl;
 }
 
 void
@@ -235,13 +230,11 @@ Pattern::update_rows_per_beat ()
 void
 Pattern::update_content ()
 {
-	std::cout << "Pattern::update_content ()" << std::endl;
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
 		tp->update ();
 	}
 
-	std::cout << "Pattern::update_content () -1-" << std::endl;
 	// In case some tracks have been disabled, disable their track headers as
 	// well.
 	//
