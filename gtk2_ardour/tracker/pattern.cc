@@ -416,13 +416,6 @@ Pattern::control_events_count (int rowi, int mti, int mri, const Evoral::Paramet
 	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, param);
 }
 
-// NEXT.14: delete
-// RowToControlEventsRange
-// Pattern::control_events_range (int rowi, int mti, int mri, const Evoral::Parameter& param) const
-// {
-// 	return tps[mti]->control_events_range (to_rri (rowi, mti), mri, param);
-// }
-
 NotePtr
 Pattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
 {
