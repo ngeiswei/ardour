@@ -25,27 +25,14 @@ using namespace Tracker;
 bool
 TrackAllAutomationsPatternPhenomenalDiff::empty () const
 {
-	return !full && param2rows_diff.empty ();
+	return automation_pattern_phenomenal_diff.empty ();
 }
 
 std::string
 TrackAllAutomationsPatternPhenomenalDiff::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << BasePatternPhenomenalDiff::to_string (indent) << std::endl
-		<< indent << "param2rows_diff:" << std::endl
-	   << indent << "size = " << param2rows_diff.size ();
-	for (Param2RowsPhenomenalDiff::const_iterator it = param2rows_diff.begin (); it != param2rows_diff.end (); ++it) {
-		ss << std::endl << indent << "  " << " (param=" << it->first << ", full=" << it->second.full << ", rows={";
-		const RowsPhenomenalDiff& rows_diff = it->second;
-		const std::set<int>& rows = rows_diff.rows;
-		for (std::set<int>::const_iterator row_it = rows.begin (); row_it != rows.end (); ++row_it) {
-			if (row_it != rows.begin ()) {
-				ss << ",";
-			}
-			ss << *row_it;
-		}
-		ss << "})";
-	}
+	ss << indent << "automation_pattern_phenomenal_diff:" << std::endl;
+	ss << automation_pattern_phenomenal_diff.to_string(indent + "  ");
 	return ss.str ();
 }

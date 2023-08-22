@@ -23,7 +23,7 @@
 using namespace Tracker;
 
 BasePatternPhenomenalDiff::BasePatternPhenomenalDiff ()
-	: full (false)
+	: full (false)					  // NEXT.12: is it really a good idea?
 {
 }
 
@@ -34,6 +34,7 @@ BasePatternPhenomenalDiff::~BasePatternPhenomenalDiff ()
 bool
 BasePatternPhenomenalDiff::empty () const
 {
+	// The base class has no data, therefore, if it is not full, it is empty.
 	return !full;
 }
 
