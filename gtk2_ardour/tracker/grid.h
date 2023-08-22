@@ -457,7 +457,8 @@ private:
 	int get_row_offset (int mti, int mri) const;
 	int get_row_size (int mti, int mri) const;
 
-	// Return the row corresponding to a given row index
+	// Return the row corresponding to a given row index.  Should only be called
+	// with positive or null index, otherwise the output is undetermined.
 	Gtk::TreeModel::Row to_row (int row_idx) const;
 
 	// Return the column index of a tree view column, -1 if col doesn't exist.

@@ -53,9 +53,7 @@ public:
 
 	TrackPattern& operator= (const TrackPattern& other);
 
-	// TODO: for now do not worry about memory leaking, create a new
-	// PhenomenalDiff object at every call
-	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
+	virtual TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const = 0;
 
 	MidiTrackPtr midi_track ();
 	AudioTrackPtr audio_track ();
