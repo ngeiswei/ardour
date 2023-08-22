@@ -24,17 +24,16 @@
 #include "evoral/Parameter.h"
 
 #include "base_pattern_phenomenal_diff.h"
-#include "rows_phenomenal_diff.h"
+#include "automation_pattern_phenomenal_diff.h"
 
 namespace Tracker {
 
-// Represent the differences that may impact grid rendition.
+// Represent the differences that may impact grid rendition for
+// TrackAllAutomationsPattern.
 struct TrackAllAutomationsPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	// NEXT: maybe use AutomationPatternPhenomenalDiff per processor.
-
-	typedef std::map<Evoral::Parameter, RowsPhenomenalDiff> Param2RowsPhenomenalDiff;
-	Param2RowsPhenomenalDiff param2rows_diff;
+	// NEXT: maybe we need to implement a TrackAutomationPatternPhenomenalDiff.
+	AutomationPatternPhenomenalDiff automation_pattern_phenomenal_diff;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
