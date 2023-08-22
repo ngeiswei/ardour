@@ -39,7 +39,6 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
 	: BasePattern (te, region)
 	, _connect (connect)
 {
-	std::cout << "AutomationPattern[" << this << "]::AutomationPattern (te=, region=" << region << ", connect=" << connect << ")" << std::endl;
 }
 
 AutomationPattern::AutomationPattern (TrackerEditor& te,
@@ -52,7 +51,6 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
 	: BasePattern (te, pos, sta, len, ed, ntl)
 	, _connect(connect)
 {
-	std::cout << "AutomationPattern[" << this << "]::AutomationPattern (te=, pos=" << pos << ", sta=" << sta << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ", connect=" << connect << ")" << std::endl;
 }
 
 AutomationPattern&
@@ -211,17 +209,13 @@ AutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::Cont
 void
 AutomationPattern::update ()
 {
-	std::cout << "AutomationPattern[" << this << "]::update ()" << std::endl;
 	set_row_range ();
-	std::cout << "AutomationPattern[" << this << "]::update () -1-" << std::endl;
 	update_automations ();
-	std::cout << "AutomationPattern[" << this << "]::update () -2-" << std::endl;
 }
 
 void
 AutomationPattern::update_automations ()
 {
-	std::cout << "AutomationPattern[" << this << "]::update_automations ()" << std::endl;
 	param_to_row_to_ces.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
 		AutomationControlPtr actl = param_actl->second;
@@ -252,7 +246,6 @@ AutomationPattern::update_automations ()
 void
 AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& name)
 {
-	std::cout << "AutomationPattern[" << this << "]::insert_actl (actl=" << actl << ", name=" << name << ")" << std::endl;
 	Evoral::Parameter param = actl->parameter ();
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
