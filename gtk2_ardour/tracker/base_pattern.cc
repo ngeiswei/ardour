@@ -47,7 +47,6 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
-	std::cout << "BasePattern[" << this << "]::BasePattern (te=, region=" << region << ")" << std::endl;
 }
 
 BasePattern::BasePattern (TrackerEditor& te,
@@ -68,7 +67,6 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, _ticks_per_row (0)
 	, _session (tracker_editor.session)
 {
-	std::cout << "BasePattern[" << this << "]::BasePattern (te=, pos=" << pos << ", sta=" << sta << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ")" << std::endl;
 }
 
 BasePattern::~BasePattern ()
@@ -78,7 +76,6 @@ BasePattern::~BasePattern ()
 BasePattern&
 BasePattern::operator= (const BasePattern& other)
 {
-	std::cout << "BasePattern[" << this << "]::operator= (other=" << ")" << std::endl;
 	if (!other.enabled) {
 		enabled = false;
 		return *this;
@@ -99,7 +96,6 @@ BasePattern::operator= (const BasePattern& other)
 	rows_per_beat = other.rows_per_beat;
 
 	beats_per_row = other.beats_per_row;
-	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 
 	position_row_beats = other.position_row_beats;
 	end_row_beats = other.end_row_beats;
@@ -122,19 +118,15 @@ BasePattern::operator< (const BasePattern& other) const
 void
 BasePattern::set_rows_per_beat (uint16_t rpb)
 {
-	std::cout << "BasePattern[" << this << "]::set_rows_per_beat (rpb=" << rpb << ")" << std::endl;
 	rows_per_beat = rpb;
 	// TODO: deal with rpb == 0 which would mean one row per bar
 	beats_per_row = Temporal::Beats::from_double (1.0 / rows_per_beat);
-	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 	_ticks_per_row = Temporal::ticks_per_beat / rows_per_beat;
 }
 
 Temporal::Beats
 BasePattern::find_position_row_beats () const
 {
-	std::cout << "BasePattern[" << this << "]::find_position_row_beats ()" << std::endl;
-	std::cout << "beats_per_row = " << beats_per_row << std::endl;
 	return position_beats.round_to_multiple (beats_per_row);
 }
 
@@ -154,22 +146,14 @@ BasePattern::find_nrows () const
 void
 BasePattern::set_row_range ()
 {
-	std::cout << "BasePattern[" << this << "]::set_row_range ()" << std::endl;
 	position_beats = position.beats ();
-	std::cout << "position_beats = " << position_beats << std::endl;
 	global_end_beats = end.beats ();
 	length_beats = global_end_beats - position_beats;
-	std::cout << "length_beats = " << length_beats << std::endl;
 	start_beats = start.beats ();
-	std::cout << "start_beats = " << start_beats << std::endl;
 	end_beats = start_beats + length_beats;
-	std::cout << "end_beats = " << end_beats << std::endl;
 	position_row_beats = find_position_row_beats ();
-	std::cout << "position_row_beats = " << position_row_beats << std::endl;
 	end_row_beats = find_end_row_beats ();
-	std::cout << "end_row_beats = " << end_row_beats << std::endl;
 	nrows = find_nrows ();
-	std::cout << "nrows = " << nrows << std::endl;
 }
 
 Temporal::samplepos_t

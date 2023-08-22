@@ -89,32 +89,24 @@ MidiRegionPattern::update_enabled ()
 	set_enabled (selected && is_region_visible ());
 }
 
-// NEXT: do not use *_sample, use timepose equivalent instead
 void
 MidiRegionPattern::update_position_etc ()
 {
-	std::cout << "MidiRegionPattern[" << this << "]::update_position_etc ()" << std::endl;
-	std::cout << "[BEFORE] position = " << position << ", start = " << start << ", length = " << length << ", end = " << end << ", nt_last = " << nt_last << std::endl;
 	position = midi_region->position ();
 	start = midi_region->start ();
 	length = midi_region->length ();
 	end = midi_region->end ();
 	nt_last = midi_region->nt_last ();
-	std::cout << "[AFTER] position = " << position << ", start = " << start << ", length = " << length << ", end = " << end << ", nt_last = " << nt_last << std::endl;
-	std::cout << "[BEFORE] mnp[" << &mnp << "].position = " << mnp.position << ", mnp[" << &mnp << "].start = " << mnp.start << ", mnp[" << &mnp << "].length = " << mnp.length << ", mnp[" << &mnp << "].end = " << mnp.end << ", mnp[" << &mnp << "].nt_last = " << mnp.nt_last << std::endl;
 	mnp.position = position;
 	mnp.start = start;
 	mnp.length = length;
 	mnp.end = end;
 	mnp.nt_last = nt_last;
-	std::cout << "[AFTER] mnp[" << &mnp << "].position = " << mnp.position << ", mnp[" << &mnp << "].start = " << mnp.start << ", mnp[" << &mnp << "].length = " << mnp.length << ", mnp[" << &mnp << "].end = " << mnp.end << ", mnp[" << &mnp << "].nt_last = " << mnp.nt_last << std::endl;
-	std::cout << "[BEFORE] mrap[" << &mrap << "].position = " << mrap.position << ", mrap[" << &mrap << "].start = " << mrap.start << ", mrap[" << &mrap << "].length = " << mrap.length << ", mrap[" << &mrap << "].end = " << mrap.end << ", mrap[" << &mrap << "].nt_last = " << mrap.nt_last << std::endl;
 	mrap.position = position;
 	mrap.start = start;
 	mrap.length = length;
 	mrap.end = end;
 	mrap.nt_last = nt_last;
-	std::cout << "[AFTER] mrap[" << &mrap << "].position = " << mrap.position << ", mrap[" << &mrap << "].start = " << mrap.start << ", mrap[" << &mrap << "].length = " << mrap.length << ", mrap[" << &mrap << "].end = " << mrap.end << ", mrap[" << &mrap << "].nt_last = " << mrap.nt_last << std::endl;
 }
 
 void
@@ -136,7 +128,6 @@ MidiRegionPattern::set_row_range ()
 void
 MidiRegionPattern::update ()
 {
-	std::cout << "MidiRegionPattern[" << this << "]::update ()" << std::endl;
 	update_enabled ();
 	update_position_etc ();
 	set_row_range ();

@@ -44,12 +44,10 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
 	: AutomationPattern (te, pos, Temporal::timepos_t (), len, ed, ntl, connect)
 	, track(trk)
 {
-	std::cout << "TrackAutomationPattern[" << this << "]::TrackAutomationPattern (te=, trk=" << trk << ", pos=" << pos << ", len=" << len << ", ed=" << ed << ", ntl=" << ntl << ", connect=" << connect << ")" << std::endl;
 }
 
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
-	std::cout << "TrackAutomationPattern::insert (param=" << param << ")" << std::endl;
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
