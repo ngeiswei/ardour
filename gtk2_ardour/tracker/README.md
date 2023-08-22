@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.15: fix crash.
+- [ ] NEXT.15: implement Grid::redisplay_track_all_automations.
 - [ ] NEXT.14: find a way to replace Pattern::automation_pattern by something
       cleaner.
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track
