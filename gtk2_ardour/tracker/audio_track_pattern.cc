@@ -39,6 +39,14 @@ AudioTrackPattern::~AudioTrackPattern ()
 {
 }
 
+TrackPatternPhenomenalDiff*
+AudioTrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
+{
+	const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
+	AudioTrackPatternPhenomenalDiff atp_diff = phenomenal_diff (*prev_atp);
+	return new AudioTrackPatternPhenomenalDiff (atp_diff);
+}
+
 AudioTrackPatternPhenomenalDiff
 AudioTrackPattern::phenomenal_diff (const AudioTrackPattern& prev) const
 {

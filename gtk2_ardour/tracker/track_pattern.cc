@@ -66,27 +66,6 @@ TrackPattern::operator= (const TrackPattern& other)
 	return *this;
 }
 
-TrackPatternPhenomenalDiff*
-TrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
-{
-	TrackPatternPhenomenalDiff* diff_ptr;
-	if (is_midi_track_pattern ()) {
-		const MidiTrackPattern* mtp = midi_track_pattern ();
-		const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
-		MidiTrackPatternPhenomenalDiff mtp_diff = mtp->phenomenal_diff (*prev_mtp);
-		diff_ptr = new MidiTrackPatternPhenomenalDiff (mtp_diff);
-	} else if (is_audio_track_pattern ()) {
-		const AudioTrackPattern* atp = audio_track_pattern ();
-		const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
-		AudioTrackPatternPhenomenalDiff atp_diff = atp->phenomenal_diff (*prev_atp);
-		diff_ptr = new AudioTrackPatternPhenomenalDiff (atp_diff);
-	} else {
-		std::cout << "Not implemented" << std::endl;
-		diff_ptr = 0;
-	}
-	return diff_ptr;
-}
-
 MidiTrackPtr
 TrackPattern::midi_track ()
 {
@@ -102,12 +81,14 @@ TrackPattern::audio_track ()
 void
 TrackPattern::set_rows_per_beat (uint16_t rpb)
 {
+	BasePattern::set_rows_per_beat (rpb);
 	track_all_automations_pattern.set_rows_per_beat (rpb);
 }
 
 void
 TrackPattern::set_row_range ()
 {
+	BasePattern::set_row_range ();
 	track_all_automations_pattern.set_row_range ();
 }
 
