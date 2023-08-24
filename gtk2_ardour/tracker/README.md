@@ -35,6 +35,10 @@ the flag `--with-tracker-editor`, such as
 ./waf configure --with-tracker-editor
 ```
 
+## Documentation
+
+A documentation can be found [here](DOCUMENTATION.md).
+
 ## TODO
 
 - [ ] Fix automation of different processors
