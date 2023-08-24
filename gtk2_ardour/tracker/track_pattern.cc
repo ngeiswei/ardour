@@ -196,7 +196,7 @@ TrackPattern::is_empty (const Evoral::Parameter& param) const
 std::vector<Temporal::BBT_Time>
 TrackPattern::get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_bbt_seq (rowi, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_bbt_seq (rowi, param);
 }
 
 std::pair<double, bool>
@@ -208,7 +208,7 @@ TrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& 
 std::vector<double>
 TrackPattern::get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_value_seq (rowi, param); // NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_value_seq (rowi, param);
 }
 
 double
