@@ -124,8 +124,16 @@ public:
 	// Return whether the automation associated to param is empty
 	bool is_empty (const Evoral::Parameter& param) const;
 
+	// Return the sequence in chronological order of BBTs of each value of the
+	// given automation at the given row and mri.
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const;
+
 	// Return a pair with the automation value and whether it is defined or not
 	std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Return the sequence in chronological order of automation values at the
+	// given row and mri.
+	std::vector<double> get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Return the automation interpolation value of param at given location
 	double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param) const;
@@ -140,6 +148,10 @@ public:
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
 	std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Get a sequence in chronological order of automation delays in tick at the
+	// given row amd mri.
+	std::vector<int> get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
 	void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
