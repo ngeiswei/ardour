@@ -98,20 +98,48 @@ public:
 	// will probably need to take a pair (Processor, Parameter).
 	virtual bool is_empty (const Evoral::Parameter& param) const;
 
+	// Return the sequence in chronological order of BBTs of each value of the
+	// given automation at the given row and mri.
 	virtual std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Return a pair with the automation value and whether it is defined or not
 	virtual std::pair<double, bool> get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Return the sequence in chronological order of automation values at the
+	// given row and mri.
 	virtual std::vector<double> get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Return the automation interpolation value of param at given location
 	virtual double get_automation_interpolation_value (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Set the automation value val at rowi and mri for param
 	virtual void set_automation_value (double val, int rowi, int mri, const Evoral::Parameter& param, int delay);
+
+	// Delete automation value at rowi and mri for param
 	virtual void delete_automation_value (int rowi, int mri, const Evoral::Parameter& param);
+
+	// Return pair with automation delay in tick at rowi of param as first
+	// element and whether it is defined as second element. Return (0, false) if
+	// undefined.
 	virtual std::pair<int, bool> get_automation_delay (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Get a sequence in chronological order of automation delays in tick at the
+	// given row amd mri.
 	virtual std::vector<int> get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const;
+
+	// Set the automation delay in tick at rowi, mri and mri for param
 	virtual void set_automation_delay (int delay, int rowi, int mri, const Evoral::Parameter& param);
+
 	virtual std::string get_name (const Evoral::Parameter& param) const;
+
 	virtual void set_param_enabled (const Evoral::Parameter& param, bool enabled);
+
 	virtual bool is_param_enabled (const Evoral::Parameter& param) const;
+
 	virtual ParameterSet get_enabled_parameters (int mri) const;
+
 	virtual double lower (int rowi, const Evoral::Parameter& param) const;
+
 	virtual double upper (int rowi, const Evoral::Parameter& param) const;
 
 	// For displaying pattern data. Mostly for debugging
