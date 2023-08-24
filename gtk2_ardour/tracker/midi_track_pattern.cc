@@ -366,12 +366,28 @@ MidiTrackPattern::is_empty (const Evoral::Parameter& param) const
 	return TrackPattern::is_empty (param);
 }
 
+std::vector<Temporal::BBT_Time>
+MidiTrackPattern::get_automation_bbt_seq (int rowi, int mri, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[mri]->mrap.get_automation_bbt_seq (to_rrri (rowi, mri), param)
+		: TrackPattern::get_automation_bbt_seq (rowi, mri, param);
+}
+
 std::pair<double, bool>
 MidiTrackPattern::get_automation_value (int rowi, int mri, const Evoral::Parameter& param) const
 {
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.get_automation_value (to_rrri (rowi, mri), param)
 		: TrackPattern::get_automation_value (rowi, mri, param);
+}
+
+std::vector<double>
+MidiTrackPattern::get_automation_value_seq (int rowi, int mri, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[mri]->mrap.get_automation_value_seq (to_rrri (rowi, mri), param)
+		: TrackPattern::get_automation_value_seq (rowi, mri, param);
 }
 
 double
@@ -404,6 +420,14 @@ MidiTrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Paramet
 	return TrackerUtils::is_region_automation (param) ?
 		mrps[mri]->mrap.get_automation_delay (to_rrri (rowi, mri), param)
 		: TrackPattern::get_automation_delay (rowi, mri, param);
+}
+
+std::vector<int>
+MidiTrackPattern::get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const
+{
+	return TrackerUtils::is_region_automation (param) ?
+		mrps[mri]->mrap.get_automation_delay_seq (to_rrri (rowi, mri), param)
+		: TrackPattern::get_automation_delay_seq (rowi, mri, param);
 }
 
 void
