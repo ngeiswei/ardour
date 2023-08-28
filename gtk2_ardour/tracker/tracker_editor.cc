@@ -155,16 +155,16 @@ TrackerEditor::connect_automation (AutomationControlPtr actl)
 {
 	std::cout << "TrackerEditor::connect_automation (actl=" << actl << ")" << std::endl;
 	// NEXT.14
-	// // TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
-	// AutomationListPtr alist = actl->alist ();
-	// if (alist) {
-	// 	alist->StateChanged.connect (content_connections, invalidator (*this),
-	// 	                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
-	// 	                             gui_context ());
-	// 	alist->InterpolationChanged.connect (content_connections, invalidator (*this),
-	// 	                                     std::bind (&Grid::redisplay_grid_connect_call, &grid),
-	// 	                                     gui_context ());
-	// }
+	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
+	AutomationListPtr alist = actl->alist ();
+	if (alist) {
+		alist->StateChanged.connect (content_connections, invalidator (*this),
+		                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
+		                             gui_context ());
+		alist->InterpolationChanged.connect (content_connections, invalidator (*this),
+		                                     std::bind (&Grid::redisplay_grid_connect_call, &grid),
+		                                     gui_context ());
+	}
 }
 
 void
