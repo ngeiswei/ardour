@@ -1324,6 +1324,12 @@ Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, con
 void
 Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color)
 {
+	if (is_region_defined (row_idx, mti)) {
+		// Set current row background color for notes
+		redisplay_row_mti_notes_background_color (row, row_idx, mti, color);
+	}
+
+	// Set current row background colors for MIDI and track automations
 	int mri = pattern.to_mri (row_idx, mti);
 	ParameterSet params = pattern.get_enabled_parameters (mti, mri);
 	redisplay_row_mti_automations_background_color (row, row_idx, mti, params, color);
