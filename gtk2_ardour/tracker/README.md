@@ -1,6 +1,5 @@
 # Next
 
-- [ ] NEXT.14: enable connection
 - [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track
       automations (region automation patterns excluded as they are only in
       MidiTrackPattern via MidiRegionPattern).
