@@ -1426,7 +1426,6 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
-	std::cout << "Grid::redisplay_track_all_automations (mti=" << mti << ", taap=, taap_diff=" << taap_diff << ")" << std::endl;
 	const TrackAutomationPattern& tap = taap.track_automation_pattern;
 	if (taap_diff == 0 || taap_diff->full) {
 		redisplay_track_automations (mti, tap);

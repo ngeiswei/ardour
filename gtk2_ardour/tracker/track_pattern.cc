@@ -238,7 +238,7 @@ TrackPattern::get_automation_delay (int rowi, int mri, const Evoral::Parameter& 
 std::vector<int>
 TrackPattern::get_automation_delay_seq (int rowi, int mri, const Evoral::Parameter& param) const
 {
-	return track_all_automations_pattern.get_automation_delay_seq (rowi, param);// NEXT.14 (don't forget to implement for MidiTrackPattern)
+	return track_all_automations_pattern.get_automation_delay_seq (rowi, param);
 }
 
 void
