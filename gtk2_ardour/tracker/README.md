@@ -1,10 +1,7 @@
 # Next
 
-- [ ] NEXT.13: create TrackAllAutomationsPattern that holds all track
-      automations (region automation patterns excluded as they are only in
-      MidiTrackPattern via MidiRegionPattern).
-- [ ] NEXT.12: replace track_automation_pattern by
-      track_all_automations_pattern in TrackPattern.
+- [ ] NEXT.12: replace `TrackAllAutomationsPattern::track_automation_pattern`
+      main and processor automation patterns.
 
 # Tracker Editor
 
