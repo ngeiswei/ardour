@@ -177,10 +177,16 @@ MidiTrackPattern::is_param_enabled (const Evoral::Parameter& param) const
 ParameterSet
 MidiTrackPattern::get_enabled_parameters (int mri) const
 {
-	ParameterSet midi_params = mrps[mri]->mrap.get_enabled_parameters();
+	// If mri is negative then ignore the MIDI parameters
+	if (mri < 0) {
+		return TrackPattern::get_enabled_parameters(mri);
+	}
+
+	// Otherwise include the MIDI parameters of the corresponding region
 	ParameterSet track_params = TrackPattern::get_enabled_parameters(mri);
-	midi_params.insert(track_params.begin(), track_params.end());
-	return midi_params;
+	ParameterSet midi_params = mrps[mri]->mrap.get_enabled_parameters();
+	track_params.insert(midi_params.begin(), midi_params.end());
+	return track_params;
 }
 
 void
