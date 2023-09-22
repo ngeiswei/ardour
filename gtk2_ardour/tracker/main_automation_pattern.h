@@ -27,8 +27,8 @@ namespace Tracker {
 // NEXT.4: alternatively, just have it as list of processors alongside the other plugins
 
 /**
- * Data structure holding the automation list pattern for standard
- * main processings (fade, pan, etc).
+ * Data structure holding the automation list pattern for common automations
+ * across track and track type, such as fade, pan, mute, etc.
  */
 class MainAutomationPattern : public TrackAutomationPattern {
 public:
@@ -39,6 +39,9 @@ public:
 	                       Temporal::timepos_t end,
 	                       Temporal::timepos_t nt_last,
 	                       bool connect);
+
+	// Insert Gain, Trim, Mute and Pan automations
+	void setup_main_automation_controls ();
 
 	// Overload AutomationPattern::automatable_parameters ()
 	const ParameterSet& automatable_parameters () const;
