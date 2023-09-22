@@ -47,7 +47,7 @@ public:
 
 	// Fill _automation_controls
 	void setup_automation_controls ();
-	void setup_main_automation_controls ();
+	void setup_main_automation_controls (); // NEXT.13: remove
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
 
@@ -101,8 +101,9 @@ public:
 
 	TrackPtr track;
 
-	// NEXT.12: replace by main automation pattern and vector of processor
-	// automation patterns.
+	// NEXT.13: replace by main automation pattern and vector of processor
+	// automation patterns.  For the mapping between ID and process, see
+	// Route::nth_processor or Route::processor_by_id.
 	TrackAutomationPattern track_automation_pattern;
 };
 

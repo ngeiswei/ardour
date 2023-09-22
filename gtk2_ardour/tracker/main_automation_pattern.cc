@@ -16,8 +16,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "ardour/pannable.h"
+#include "ardour/panner.h"
+#include "ardour/region.h"
+
 #include "main_automation_pattern.h"
 
+using namespace ARDOUR;
 using namespace Tracker;
 
 ///////////////////////////
@@ -33,7 +38,27 @@ MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
                                               bool connect)
 	: TrackAutomationPattern (te, trk, pos, len, ed, ntl, connect)
 {
-	// NEXT.3: fill _automatable_parameters
+	// NEXT.3: fill _automatable_parameters, maybe...
+	setup_main_automation_controls ();
+}
+
+void
+MainAutomationPattern::setup_main_automation_controls ()
+{
+	// Gain
+	AutomationPattern::insert_actl (track->gain_control (), track->describe_parameter (Evoral::Parameter (GainAutomation)));
+
+	// Trim
+	AutomationPattern::insert_actl (track->trim_control (), track->describe_parameter (Evoral::Parameter (TrimAutomation)));
+
+	// Mute
+	AutomationPattern::insert_actl (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
+
+	// Pan
+	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
+	for (ParameterSet::value_type p : pan_params) {
+		AutomationPattern::insert_actl (track->pannable ()->automation_control (p), track->describe_parameter (p));
+	}
 }
 
 const ParameterSet&
