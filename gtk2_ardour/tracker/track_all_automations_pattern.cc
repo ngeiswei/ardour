@@ -26,7 +26,6 @@
 #include "track_all_automations_pattern.h"
 #include "tracker_utils.h"
 
-using namespace std;
 using namespace ARDOUR;
 using namespace Tracker;
 
@@ -64,10 +63,11 @@ TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& p
 
 void TrackAllAutomationsPattern::setup_automation_controls ()
 {
-	setup_main_automation_controls ();
-	setup_processors_automation_controls ();
+	setup_main_automation_controls (); // NEXT.13: can be removed since it is in MainAutomationPattern
+	setup_processors_automation_controls (); // NEXT.13. move to ProcessorAutomationPattern
 }
 
+// NEXT.13: remove
 void TrackAllAutomationsPattern::setup_main_automation_controls ()
 {
 	// Gain
@@ -80,8 +80,8 @@ void TrackAllAutomationsPattern::setup_main_automation_controls ()
 	track_automation_pattern.insert_actl (track->mute_control (), track->describe_parameter (Evoral::Parameter (MuteAutomation)));
 
 	// Pan
-	set<Evoral::Parameter> const & pan_params = track->pannable ()->what_can_be_automated ();
-	for (set<Evoral::Parameter>::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
+	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
+	for (ParameterSet::const_iterator p = pan_params.begin (); p != pan_params.end (); ++p) {
 		track_automation_pattern.insert_actl (track->pannable ()->automation_control (*p), track->describe_parameter (*p));
 	}
 }
@@ -103,6 +103,9 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 	// NEXT.2: move to processor_pattern, maybe
 	const ParameterSet& automatable = processor->what_can_be_automated ();
 	for (ParameterSetConstIt ait = automatable.begin (); ait != automatable.end (); ++ait) {
+		// NEXT.13: replace track_automation_pattern by mapping from p to
+		// TrackAutomationPattern (maybe using ProcessprAutomationPattern which
+		// can retain information about the processor)
 		track_automation_pattern.insert_actl (std::dynamic_pointer_cast<AutomationControl> (processor->control (*ait)), processor->describe_parameter (*ait));
 	}
 }
