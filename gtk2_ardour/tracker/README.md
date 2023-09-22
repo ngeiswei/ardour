@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.12: replace `TrackAllAutomationsPattern::track_automation_pattern`
+- [ ] NEXT.13: replace `TrackAllAutomationsPattern::track_automation_pattern`
       main and processor automation patterns.
 
 # Tracker Editor
