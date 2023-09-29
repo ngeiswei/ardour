@@ -64,7 +64,7 @@ TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& p
 void TrackAllAutomationsPattern::setup_automation_controls ()
 {
 	setup_main_automation_controls (); // NEXT.13: can be removed since it is in MainAutomationPattern
-	setup_processors_automation_controls (); // NEXT.13. move to ProcessorAutomationPattern
+	setup_processors_automation_controls (); // NEXT.13: move to ProcessorAutomationPattern
 }
 
 // NEXT.13: remove

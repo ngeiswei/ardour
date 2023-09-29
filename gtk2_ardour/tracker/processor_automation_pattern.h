@@ -19,8 +19,8 @@
 #ifndef __ardour_tracker_processor_automation_pattern_h_
 #define __ardour_tracker_processor_automation_pattern_h_
 
-#include "automation_pattern.h"
-#include "processor_automation_pattern_phenomenal_diff.h" // NEXT.2: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
+#include "track_automation_pattern.h"
+// #include "processor_automation_pattern_phenomenal_diff.h" // NEXT.2: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
 
 namespace Tracker {
 
@@ -28,32 +28,22 @@ namespace Tracker {
  * Data structure holding the automation list pattern for a processor
  * (plugin and such).
  */
-// NEXT.11: inherit from TrackAutomationPattern.  Really?  Why?  Answer:
-// because TrackAutomationPattern::event2row is using event->when while
-// MidiRegionAutomationPattern::event2row is using event->when.beats ().
-class ProcessorAutomationPattern : public AutomationPattern {
+class ProcessorAutomationPattern : public TrackAutomationPattern {
 public:
 	ProcessorAutomationPattern (TrackerEditor& te,
-	                            RegionPtr region,
-	                            bool connect,
-	                            ProcessorPtr processor);
-	ProcessorAutomationPattern (TrackerEditor& te,
+	                            TrackPtr track,
 	                            Temporal::timepos_t position,
-	                            Temporal::timepos_t start, // NEXT: really need that?
 	                            Temporal::timecnt_t length,
 	                            Temporal::timepos_t end,
 	                            Temporal::timepos_t nt_last,
 	                            bool connect,
 	                            ProcessorPtr processor);
 
-	// Make a deep copy of the automation controls
-	ProcessorAutomationPattern& operator= (const ProcessorAutomationPattern& other);
+	// Insert all automations of the corresponding processor
+	void setup_processor_automation_control ();
 
-	ProcessorAutomationPatternPhenomenalDiff phenomenal_diff (const ProcessorAutomationPattern& prev) const;
-
-	// NEXT.6: overload AutomationPattern::insert
-
-	virtual const ParameterSet& automatable_parameters () const;
+	// Overload AutomationPattern::automatable_parameters ()
+	const ParameterSet& automatable_parameters () const; // NEXT: maybe...
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
