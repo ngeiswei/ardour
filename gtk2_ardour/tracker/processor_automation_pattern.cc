@@ -25,43 +25,23 @@ using namespace Tracker;
 ////////////////////////////////
 
 ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerEditor& te,
-                                                        RegionPtr region,
-                                                        bool connect,
-                                                        ProcessorPtr processor)
-	: AutomationPattern (te, region, connect)
-	, _processor (processor)
-{
-}
-
-ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerEditor& te,
+                                                        TrackPtr trk,
                                                         Temporal::timepos_t pos,
-                                                        Temporal::timepos_t sta, // NEXT: really need that?
                                                         Temporal::timecnt_t len,
                                                         Temporal::timepos_t ed,
                                                         Temporal::timepos_t ntl,
                                                         bool connect,
                                                         ProcessorPtr processor)
-	: AutomationPattern (te, pos, sta, len, end, ntl, connect)
-	, _processor(processor)
+	: TrackAutomationPattern (te, trk, pos, len, ed, ntl, connect)
 {
+	// NEXT.3: fill _automatable_parameters, maybe...
+	setup_processor_automation_control ();
 }
 
-ProcessorAutomationPattern&
-ProcessorAutomationPattern::operator= (const ProcessorAutomationPattern& other)
+void
+ProcessorAutomationPattern::setup_processor_automation_control ()
 {
-	AutomationPattern::operator= (other);
-	return *this;
-}
-
-ProcessorAutomationPatternPhenomenalDiff
-ProcessorAutomationPattern::phenomenal_diff (const ProcessorAutomationPattern& prev) const
-{
-	// NEXT: fix compile error:
-	//
-	// could not convert ‘Tracker::AutomationPattern::phenomenal_diff(const Tracker::AutomationPattern&) const(prev.Tracker::ProcessorAutomationPattern::<anonymous>)’ from ‘Tracker::AutomationPatternPhenomenalDiff’ to ‘Tracker::ProcessorAutomationPatternPhenomenalDiff’
-	//
-	// return AutomationPattern::phenomenal_diff (prev);
-	return ProcessorAutomationPatternPhenomenalDiff();
+	// NEXT.14: port TrackAllAutomationsPattern::setup_processor_automation_control to here.
 }
 
 const ParameterSet&
@@ -83,7 +63,7 @@ std::string
 ProcessorAutomationPattern::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << AutomationPattern::to_string (indent) << std::endl;
+	ss << TrackAutomationPattern::to_string (indent) << std::endl;
 	std::string header = indent + self_to_string () + " ";
 	ss << header << "processor = " << _processor;
 	return ss.str ();
