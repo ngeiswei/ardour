@@ -153,8 +153,6 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 void
 TrackerEditor::connect_automation (AutomationControlPtr actl)
 {
-	std::cout << "TrackerEditor::connect_automation (actl=" << actl << ")" << std::endl;
-	// NEXT.14
 	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
 	AutomationListPtr alist = actl->alist ();
 	if (alist) {
