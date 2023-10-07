@@ -1,8 +1,5 @@
 # Next
 
-- [ ] NEXT.14: Port
-      TrackAllAutomationsPattern::setup_processor_automation_control to
-      ProcessorAutomationPattern.
 - [ ] NEXT.13: replace `TrackAllAutomationsPattern::track_automation_pattern`
       main and processor automation patterns.
 
