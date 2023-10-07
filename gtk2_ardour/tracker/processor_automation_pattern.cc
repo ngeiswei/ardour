@@ -41,7 +41,20 @@ ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerEditor& te,
 void
 ProcessorAutomationPattern::setup_processor_automation_control ()
 {
-	// NEXT.14: port TrackAllAutomationsPattern::setup_processor_automation_control to here.
+	// NEXT: what to do about
+	//
+	// ProcessorPtr processor (p.lock ());
+	//
+	// ?
+
+	if (!_processor || !_processor->display_to_user ()) {
+		return;
+	}
+
+	const ParameterSet& automatable = _processor->what_can_be_automated ();
+	for (const Evoral::Parameter& param : automatable) {
+		insert_actl (std::dynamic_pointer_cast<ARDOUR::AutomationControl> (_processor->control (param)), _processor->describe_parameter (param));
+	}
 }
 
 const ParameterSet&
