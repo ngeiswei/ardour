@@ -35,9 +35,9 @@ using namespace Tracker;
 
 AutomationPattern::AutomationPattern (TrackerEditor& te,
                                       RegionPtr region,
-                                      bool connect)
+                                      bool cnct)
 	: BasePattern (te, region)
-	, _connect (connect)
+	, connect (cnct)
 {
 }
 
@@ -47,9 +47,9 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
                                       Temporal::timecnt_t len,
                                       Temporal::timepos_t ed,
                                       Temporal::timepos_t ntl,
-                                      bool connect)
+                                      bool cnct)
 	: BasePattern (te, pos, sta, len, ed, ntl)
-	, _connect(connect)
+	, connect(cnct)
 {
 }
 
@@ -249,7 +249,7 @@ AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& na
 	Evoral::Parameter param = actl->parameter ();
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
-	if (actl_result.second && _connect) {
+	if (actl_result.second && connect) {
 		tracker_editor.connect_automation (actl);
 	}
 }

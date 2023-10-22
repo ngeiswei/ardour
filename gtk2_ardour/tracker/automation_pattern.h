@@ -238,8 +238,8 @@ public:
 	typedef std::map<Evoral::Parameter, bool> ParamEnabledMap;
 	mutable ParamEnabledMap param_to_enabled; // disabled by default
 
-protected:
-	bool _connect;
+	// Whether the pattern is supposed to connect to the tracker editor
+	bool connect;
 };
 
 } // ~namespace tracker
