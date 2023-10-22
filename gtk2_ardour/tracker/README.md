@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.13: replace `TrackAllAutomationsPattern::track_automation_pattern`
-      main and processor automation patterns.
+- [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
+      `TrackAllAutomationsPattern`.
 
 # Tracker Editor
 
