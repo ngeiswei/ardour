@@ -867,7 +867,6 @@ Grid::setup ()
 	// buffer to calculate phenomenal differences with the current (updated)
 	// pattern.
 	prev_pattern.setup ();
-
 	init_columns ();
 	init_model ();
 	setup_time_column ();
@@ -1426,7 +1425,8 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
-	const TrackAutomationPattern& tap = taap.track_automation_pattern;
+	// NEXT.13: support processor
+	const TrackAutomationPattern& tap = taap.main_automation_pattern;
 	if (taap_diff == 0 || taap_diff->full) {
 		redisplay_track_automations (mti, tap);
 	} else {

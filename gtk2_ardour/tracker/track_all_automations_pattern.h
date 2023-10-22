@@ -19,10 +19,12 @@
 #ifndef __ardour_tracker_track_all_automations_pattern_h_
 #define __ardour_tracker_track_all_automations_pattern_h_
 
+#include "pbd/id.h"
 #include "ardour/track.h"
 
 #include "automation_pattern.h"
-#include "track_automation_pattern.h"
+#include "main_automation_pattern.h"
+#include "processor_automation_pattern.h"
 #include "track_all_automations_pattern_phenomenal_diff.h"
 
 namespace Tracker {
@@ -45,9 +47,7 @@ public:
 
 	TrackAllAutomationsPatternPhenomenalDiff phenomenal_diff (const TrackAllAutomationsPattern& prev) const;
 
-	// Fill _automation_controls
-	void setup_automation_controls ();
-	void setup_main_automation_controls (); // NEXT.13: remove
+	// Fill id_to_processor_automation_pattern
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
 
@@ -101,10 +101,14 @@ public:
 
 	TrackPtr track;
 
-	// NEXT.13: replace by main automation pattern and vector of processor
-	// automation patterns.  For the mapping between ID and process, see
-	// Route::nth_processor or Route::processor_by_id.
-	TrackAutomationPattern track_automation_pattern;
+	// Automation pattern for Fade, Pan, Mute, etc.
+	MainAutomationPattern main_automation_pattern;
+
+	// Automation patterns for other processors, plugins, etc.
+	std::map<PBD::ID, ProcessorAutomationPattern*> id_to_processor_automation_pattern;
+
+	// Whether the pattern is supposed to connect to the tracker editor
+	bool connect;
 };
 
 } // ~namespace tracker
