@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.14: find out why main automation is not displayed
 - [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
       `TrackAllAutomationsPattern`.
 
