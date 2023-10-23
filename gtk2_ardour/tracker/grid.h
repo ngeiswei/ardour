@@ -284,7 +284,10 @@ public:
 
 	TrackerEditor& tracker_editor;
 
-	// Map column index to automation parameter and vice versa
+	// Map column index to automation parameter and vice versa.  An
+	// IDParameterPair is used instead of Evoral::Parameter to be able to
+	// distiguish parameters from different processors.
+	// NEXT.13: use IDParameterPair
 	typedef boost::bimaps::bimap<int, Evoral::Parameter> IndexParamBimap;
 	std::vector<IndexParamBimap> col2params; // For each track
 
