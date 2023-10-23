@@ -26,6 +26,7 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include "pbd/id.h"
 #include "ardour/midi_track.h"
 #include "ardour/audio_track.h"
 #include "ardour/midi_region.h"
@@ -56,6 +57,9 @@ typedef std::vector<MidiRegionPtr> MidiRegionSeq;
 typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 typedef std::map<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlMap;
 typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlPair;
+
+// Allows to identify a parameter of a processor of a certain ID
+typedef std::pair<PBD::ID, Evoral::Parameter> IDParameterPair;
 
 typedef ARDOUR::AutomationList::iterator AutomationListIt;
 typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
