@@ -160,7 +160,7 @@ TrackerUtils::has_hex_prefix (const std::string& str)
 			return false;
 		}
 		return (str[0] == '0') && ((str[1] == 'x') || (str[1] == 'X'));
-	}	
+	}
 }
 
 std::string
