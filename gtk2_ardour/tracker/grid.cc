@@ -1258,6 +1258,7 @@ Grid::redisplay_blank_automation_foreground (TreeModel::Row& row, int mti, int c
 void
 Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::redisplay_automation (row=, row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", param=" << param << ")" << std::endl;
 	if (is_automation_displayable (row_idx, mti, mri, param)) {
 		double val = pattern.get_automation_value (row_idx, mti, mri, param).first;
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
@@ -1405,6 +1406,7 @@ Grid::redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff)
 void
 Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
+	std::cout << "Grid::redisplay_midi_track (mti=" << mti << ", mtp=, mtp_diff=" << mtp_diff << ")" << std::endl;
 	if (mtp_diff == 0 || mtp_diff->full) {
 		redisplay_inter_midi_regions (mti);
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
@@ -1425,6 +1427,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
+	std::cout << "Grid::redisplay_track_all_automations (mti=" << mti << ", taap=, taap_diff=" << taap_diff << ")" << std::endl;
 	// NEXT.13: support processor
 	const TrackAutomationPattern& tap = taap.main_automation_pattern;
 	if (taap_diff == 0 || taap_diff->full) {
@@ -1437,12 +1440,18 @@ Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern
 void
 Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
 {
+	std::cout << "Grid::redisplay_track_automations (mti=" << mti << ", tap=, automation_diff=" << automation_diff << ")" << std::endl;
 	if (automation_diff == 0 || automation_diff->full) {
+		std::cout << "Grid::redisplay_track_automations -1-" << std::endl;
+		// NEXT.14: Find out why it does not enter the following loop
 		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
+			std::cout << "Grid::redisplay_track_automations -2-" << std::endl;
 			redisplay_track_automation_param (mti, tap, param);
 		}
 	} else {
+		std::cout << "Grid::redisplay_track_automations -3-" << std::endl;
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = automation_diff->param2rows_diff.begin (); it != automation_diff->param2rows_diff.end (); ++it) {
+			std::cout << "Grid::redisplay_track_automations -4-" << std::endl;
 			redisplay_track_automation_param (mti, tap, it->first, &it->second);
 		}
 	}
@@ -1451,6 +1460,7 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	std::cout << "Grid::redisplay_track_automation_param (mti=" << mti << ", tap=, param=" << param << ", rows_diff=" << rows_diff << ")" << std::endl;
 	int cgi = to_cgi (mti, param);
 	if (cgi < 0) {
 		return;
@@ -1470,6 +1480,7 @@ Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& t
 void
 Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::redisplay_track_automation_param_row (mti=" << mti << ", cgi=" << cgi << ", row_idx=" << row_idx << ", tap=, param=" << param << ")" << std::endl;
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int mri = -1;
@@ -1530,6 +1541,7 @@ Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, con
 void
 Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomationPattern& mrap, const MidiRegionAutomationPatternPhenomenalDiff* mrap_diff)
 {
+	std::cout << "Grid::redisplay_region_automations (mti=" << mti << ", mri=" << mri << ", mrap=, mrap_diff=" << mrap_diff << ")" << std::endl;
 	if (mrap_diff == 0 || mrap_diff->full || mrap_diff->ap_diff.full) {
 		const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
 		for (ParameterSetConstIt it = mtp->enabled_region_params.begin (); it != mtp->enabled_region_params.end (); ++it)
@@ -1557,6 +1569,7 @@ Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomation
 void
 Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	std::cout << "Grid::redisplay_region_automation_param (mti=" << mti << ", mri=" << mri << ", mrap=, param=" << param << ", rows_diff=" << rows_diff << ")" << std::endl;
 	int cgi = to_cgi (mti, param);
 
 	if (cgi < 0) {
@@ -1578,6 +1591,8 @@ Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutom
 void
 Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::redisplay_region_automation_param_row (mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ", row_idx=" << row_idx << ", mrap=, param=" << param << ")" << std::endl;
+
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
