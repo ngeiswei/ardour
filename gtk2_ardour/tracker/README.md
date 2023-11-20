@@ -1,6 +1,8 @@
 # Next
 
-- [ ] NEXT.14: find out why main automation is not displayed
+- [ ] NEXT.15: Find out why
+      `taap.main_automation_pattern.get_enabled_parameters ()` is empty.
+- [ ] NEXT.14: find out why main automation is not displayed.
 - [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
       `TrackAllAutomationsPattern`.
 

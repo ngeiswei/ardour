@@ -1428,7 +1428,9 @@ void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
 	std::cout << "Grid::redisplay_track_all_automations (mti=" << mti << ", taap=, taap_diff=" << taap_diff << ")" << std::endl;
-	// NEXT.13: support processor
+	// NEXT.13: support processor.  Note that
+	// TrackAllAutomationsPattern::get_enabled_parameters () could be used down
+	// the line.
 	const TrackAutomationPattern& tap = taap.main_automation_pattern;
 	if (taap_diff == 0 || taap_diff->full) {
 		redisplay_track_automations (mti, tap);
@@ -1443,18 +1445,27 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 	std::cout << "Grid::redisplay_track_automations (mti=" << mti << ", tap=, automation_diff=" << automation_diff << ")" << std::endl;
 	if (automation_diff == 0 || automation_diff->full) {
 		std::cout << "Grid::redisplay_track_automations -1-" << std::endl;
-		// NEXT.14: Find out why it does not enter the following loop
+		// NEXT.14: Find out why it does not enter the following loop, even when
+		// Fader is defined.  ANSWER: apparently it is empty
+		// (tap.get_enabled_parameters () returns an empty set).
+
+		// NEXT.15: Find out why
+		// taap.main_automation_pattern.get_enabled_parameters () is empty, even
+		// when Fader is defined.
 		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
 			std::cout << "Grid::redisplay_track_automations -2-" << std::endl;
 			redisplay_track_automation_param (mti, tap, param);
 		}
+		std::cout << "Grid::redisplay_track_automations -2.5-" << std::endl;
 	} else {
 		std::cout << "Grid::redisplay_track_automations -3-" << std::endl;
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = automation_diff->param2rows_diff.begin (); it != automation_diff->param2rows_diff.end (); ++it) {
 			std::cout << "Grid::redisplay_track_automations -4-" << std::endl;
 			redisplay_track_automation_param (mti, tap, it->first, &it->second);
 		}
+		std::cout << "Grid::redisplay_track_automations -5-" << std::endl;
 	}
+	std::cout << "Grid::redisplay_track_automations -6-" << std::endl;
 }
 
 void
