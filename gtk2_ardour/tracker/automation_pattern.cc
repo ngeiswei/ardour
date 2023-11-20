@@ -707,8 +707,11 @@ AutomationPattern::is_param_enabled (const Evoral::Parameter& param) const
 ParameterSet
 AutomationPattern::get_enabled_parameters () const
 {
+	std::cout << "AutomationPattern[" << this << "]::get_enabled_parameters ()" << std::endl;
 	ParameterSet eps;
 	for (const auto& pte : param_to_enabled) {
+		std::cout << "pte.first = " << pte.first
+		          << ", pte.second = " << pte.second << std::endl;
 		if (pte.second) {
 			eps.insert(pte.first);
 		}
