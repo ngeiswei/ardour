@@ -45,14 +45,16 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
 	, main_automation_pattern (te, track, pos, len, ed, ntl, cnct)
 	, connect(cnct)
 {
+	std::cout << "TrackAllAutomationsPattern[" << this << "]::TrackAllAutomationsPattern" << std::endl;
 	setup_processors_automation_controls ();
 }
 
 TrackAllAutomationsPatternPhenomenalDiff
 TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& prev) const
 {
+	std::cout << "TrackAllAutomationsPattern[" << this << "]::phenomenal_diff" << std::endl;
 	TrackAllAutomationsPatternPhenomenalDiff diff;
-	// NEXT: implement
+	// NEXT.16: implement
 	// diff.automation_pattern_phenomenal_diff = track_automation_pattern.phenomenal_diff (prev.track_automation_pattern);
 	return diff;
 }
@@ -93,6 +95,7 @@ TrackAllAutomationsPattern::set_row_range ()
 void
 TrackAllAutomationsPattern::update ()
 {
+	std::cout << "TrackAllAutomationsPattern[" << this << "]::update ()" << std::endl;
 	main_automation_pattern.update ();
 	// NEXT.13: processor
 }

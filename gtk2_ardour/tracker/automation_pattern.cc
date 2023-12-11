@@ -209,6 +209,7 @@ AutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::Cont
 void
 AutomationPattern::update ()
 {
+	std::cout << "AutomationPattern[" << this << "]::update ()" << std::endl;
 	set_row_range ();
 	update_automations ();
 }
@@ -216,13 +217,16 @@ AutomationPattern::update ()
 void
 AutomationPattern::update_automations ()
 {
+	std::cout << "AutomationPattern[" << this << "]::update_automations ()" << std::endl;
 	param_to_row_to_ces.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
 		AutomationControlPtr actl = param_actl->second;
 		AutomationListPtr al = actl->alist ();
 		const Evoral::Parameter& param = actl->parameter ();
+		std::cout << "AutomationPattern[" << this << "]::update_automations () param = " << param << std::endl;
 
 		// Save CPU resources
+		std::cout << "AutomationPattern[" << this << "]::update_automations () param_to_enable[" << param << "] = " <<  param_to_enabled[param] << std::endl;
 		if (!param_to_enabled[param]) {
 			continue;
 		}
@@ -234,9 +238,11 @@ AutomationPattern::update_automations ()
 
 		// Build automation pattern
 		for (ARDOUR::AutomationList::iterator it = al->begin (); it != al->end (); ++it) {
+			std::cout << "AutomationPattern[" << this << "]::update_automations ()" << std::endl;
 			Evoral::ControlEvent* event = *it;
 			int row = event2row (param, event);
 			if (row != INVALID_ROW) {
+				std::cout << "AutomationPattern[" << this << "]::update_automations () row = " << row << std::endl;
 				param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
 			}
 		}
@@ -710,7 +716,8 @@ AutomationPattern::get_enabled_parameters () const
 	std::cout << "AutomationPattern[" << this << "]::get_enabled_parameters ()" << std::endl;
 	ParameterSet eps;
 	for (const auto& pte : param_to_enabled) {
-		std::cout << "pte.first = " << pte.first
+		std::cout << "AutomationPattern[" << this << "]::get_enabled_parameters ()"
+		          << " pte.first = " << pte.first
 		          << ", pte.second = " << pte.second << std::endl;
 		if (pte.second) {
 			eps.insert(pte.first);
