@@ -232,6 +232,7 @@ Grid::select_available_automation_column (int mti)
 int
 Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 {
+	std::cout << "Grid::add_main_automation_column (mti=" << mti << ", param=" << param << ")" << std::endl;
 	// Select the next available column
 	int column = select_available_automation_column (mti);
 	if (column == 0) {
@@ -439,6 +440,7 @@ Grid::is_pan_visible (int mti) const
 void
 Grid::update_gain_column_visibility (int mti)
 {
+	std::cout << "Grid::update_gain_column_visibility (mti=" << mti << ")" << std::endl;
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->gain_automation_item->get_active ();
 
 	if (gain_columns[mti] == 0) {
@@ -860,12 +862,14 @@ Grid::first_defined_col ()
 void
 Grid::setup ()
 {
+	std::cout << "pattern.setup ();" << std::endl;
 	pattern.setup ();
 
 	// Setup previous pattern in order to instantiate its tracks in
 	// memory. However prev_pattern will never be updated, and only serve as
 	// buffer to calculate phenomenal differences with the current (updated)
 	// pattern.
+	std::cout << "prev_pattern.setup ();" << std::endl;
 	prev_pattern.setup ();
 	init_columns ();
 	init_model ();
@@ -938,6 +942,7 @@ Grid::redisplay_global_columns ()
 void
 Grid::redisplay_grid ()
 {
+	std::cout << "Grid::redisplay_grid ()" << std::endl;
 	if (editing_editable) {
 		return;
 	}
@@ -985,6 +990,7 @@ Grid::redisplay_grid ()
 void
 Grid::redisplay_grid_direct_call ()
 {
+	std::cout << "Grid::redisplay_grid_direct_call ()" << std::endl;
 	redisplay_grid ();
 }
 
@@ -1370,15 +1376,21 @@ Grid::redisplay_current_row ()
 void
 Grid::redisplay_pattern ()
 {
+	std::cout << "Grid::redisplay_pattern ()" << std::endl;
 	if (_phenomenal_diff.full)
 	{
+		std::cout << "Grid::redisplay_pattern () -1-" << std::endl;
 		for (size_t mti = 0; mti < pattern.tps.size (); mti++)
 		{
+			std::cout << "Grid::redisplay_pattern () -1.5-" << std::endl;
 			redisplay_track (mti);
 		}
 	} else {
+		std::cout << "Grid::redisplay_pattern () -2-" << std::endl;
+		// NEXT.15: find out why does not take this loop
 		for (const PatternPhenomenalDiff::Mti2TrackPatternDiff::value_type& mti_tpd : _phenomenal_diff.mti2tp_diff)
 		{
+			std::cout << "Grid::redisplay_pattern () -2.5-" << std::endl;
 			redisplay_track (mti_tpd.first, mti_tpd.second);
 		}
 	}
@@ -1387,6 +1399,7 @@ Grid::redisplay_pattern ()
 void
 Grid::redisplay_track (int mti, const TrackPatternPhenomenalDiff* tp_diff)
 {
+	std::cout << "Grid::redisplay_track" << std::endl;
 	if (!pattern.tps[mti]->enabled)
 		return;
 
