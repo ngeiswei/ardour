@@ -54,8 +54,39 @@ TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& p
 {
 	std::cout << "TrackAllAutomationsPattern[" << this << "]::phenomenal_diff" << std::endl;
 	TrackAllAutomationsPatternPhenomenalDiff diff;
-	// NEXT.16: implement
-	// diff.automation_pattern_phenomenal_diff = track_automation_pattern.phenomenal_diff (prev.track_automation_pattern);
+
+	// Calculate phenomenal diff of main automations
+	diff.main_automation_pattern_phenomenal_diff = main_automation_pattern.phenomenal_diff (prev.main_automation_pattern);
+
+	// Calculate phenomenal diff of processor automations
+	for (const auto& id_prauto : id_to_processor_automation_pattern) {
+		const PBD::ID& id = id_prauto.first;
+		const ProcessorAutomationPattern* auto_ptrn = id_prauto.second;
+		auto prev_it = prev.id_to_processor_automation_pattern.find(id);
+		AutomationPatternPhenomenalDiff pppd;
+		if (prev_it != prev.id_to_processor_automation_pattern.end ()) {
+			pppd = auto_ptrn->phenomenal_diff (*prev_it->second);
+		}
+
+		// No need to add if empty
+		if (pppd.empty ())
+			continue;
+
+		// Add non empty phenomenal diff for that processor
+		diff.id_to_processor_automation_pattern_phenomenal_diff[id] = pppd;
+	}
+
+	// In case a processor track is present in prev but missing in this, insert
+	// a full phenomenal diff as well
+	for (const auto& prev_id_prauto : prev.id_to_processor_automation_pattern) {
+		const PBD::ID& prev_id = prev_id_prauto.first;
+		auto it = id_to_processor_automation_pattern.find(prev_id);
+		if (it == id_to_processor_automation_pattern.end ()) {
+			AutomationPatternPhenomenalDiff pppd;
+			diff.id_to_processor_automation_pattern_phenomenal_diff[prev_id] = pppd;
+		}
+	}
+
 	return diff;
 }
 

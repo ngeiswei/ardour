@@ -1448,7 +1448,7 @@ Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern
 	if (taap_diff == 0 || taap_diff->full) {
 		redisplay_track_automations (mti, tap);
 	} else {
-		redisplay_track_automations (mti, tap, &taap_diff->automation_pattern_phenomenal_diff);
+		redisplay_track_automations (mti, tap, &taap_diff->main_automation_pattern_phenomenal_diff);
 	}
 }
 
