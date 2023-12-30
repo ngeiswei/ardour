@@ -21,6 +21,7 @@
 
 #include <map>
 
+#include "pbd/id.h"
 #include "evoral/Parameter.h"
 
 #include "base_pattern_phenomenal_diff.h"
@@ -32,8 +33,8 @@ namespace Tracker {
 // TrackAllAutomationsPattern.
 struct TrackAllAutomationsPatternPhenomenalDiff : public BasePatternPhenomenalDiff
 {
-	// NEXT: maybe we need to implement a TrackAutomationPatternPhenomenalDiff.
-	AutomationPatternPhenomenalDiff automation_pattern_phenomenal_diff;
+	AutomationPatternPhenomenalDiff main_automation_pattern_phenomenal_diff;
+	std::map<PBD::ID, AutomationPatternPhenomenalDiff> id_to_processor_automation_pattern_phenomenal_diff;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
