@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.16: implement TrackAllAutomationsPattern::phenomenal_diff
-- [ ] NEXT.15: Find out why
+- [ ] NEXT.16: support id_to_processor_automation_pattern_phenomenal_diff
+- [ ] NEXT.15: find out why
       `taap.main_automation_pattern.get_enabled_parameters ()` is empty.
 - [ ] NEXT.14: find out why main automation is not displayed.
 - [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
