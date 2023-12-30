@@ -25,7 +25,8 @@ using namespace Tracker;
 bool
 TrackAllAutomationsPatternPhenomenalDiff::empty () const
 {
-	return automation_pattern_phenomenal_diff.empty ();
+	// NEXT.16: support id_to_processor_automation_pattern_phenomenal_diff
+	return main_automation_pattern_phenomenal_diff.empty ();
 }
 
 std::string
@@ -33,6 +34,7 @@ TrackAllAutomationsPatternPhenomenalDiff::to_string (const std::string& indent) 
 {
 	std::stringstream ss;
 	ss << indent << "automation_pattern_phenomenal_diff:" << std::endl;
-	ss << automation_pattern_phenomenal_diff.to_string(indent + "  ");
+	ss << main_automation_pattern_phenomenal_diff.to_string(indent + "  ");
+	// NEXT.16: support id_to_processor_automation_pattern_phenomenal_diff
 	return ss.str ();
 }
