@@ -23,7 +23,8 @@
 using namespace Tracker;
 
 BasePatternPhenomenalDiff::BasePatternPhenomenalDiff ()
-	: full (false)					  // NEXT.12: is it really a good idea?
+	: full (true) // by default phenomenal diff is full to reduce the odds that
+	              // some phenomenal differences are missed
 {
 }
 
