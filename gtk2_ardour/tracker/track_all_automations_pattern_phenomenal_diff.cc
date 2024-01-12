@@ -25,8 +25,17 @@ using namespace Tracker;
 bool
 TrackAllAutomationsPatternPhenomenalDiff::empty () const
 {
-	// NEXT.16: support id_to_processor_automation_pattern_phenomenal_diff
-	return main_automation_pattern_phenomenal_diff.empty ();
+	if (!main_automation_pattern_phenomenal_diff.empty ()) {
+		return false;
+	}
+
+	for (const auto& id_appd : id_to_processor_automation_pattern_phenomenal_diff) {
+		if (!id_appd.second.empty ()) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 std::string
