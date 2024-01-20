@@ -38,7 +38,6 @@ MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
                                               bool connect)
 	: TrackAutomationPattern (te, trk, pos, len, ed, ntl, connect)
 {
-	std::cout << "MainAutomationPattern[" << this << "]::MainAutomationPattern" << std::endl;
 	// NEXT.3: fill _automatable_parameters, maybe...
 	setup_main_automation_controls ();
 }

@@ -83,7 +83,6 @@ Pattern::operator= (const Pattern& other)
 PatternPhenomenalDiff
 Pattern::phenomenal_diff (const Pattern& prev) const
 {
-	std::cout << "Pattern[" << this << "::phenomenal_diff" << std::endl;
 	PatternPhenomenalDiff diff;
 	if (!prev.enabled && !enabled) {
 		return diff;
@@ -113,7 +112,6 @@ Pattern::phenomenal_diff (const Pattern& prev) const
 void
 Pattern::setup ()
 {
-	std::cout << "Pattern[" << this << "]::setup ()" << std::endl;
 	setup_region_views_per_track ();
 	setup_regions_per_track ();
 	setup_track_patterns ();
@@ -195,7 +193,6 @@ Pattern::setup_row_offset ()
 void
 Pattern::update ()
 {
-	std::cout << "Pattern::update ()" << std::endl;
 	update_position_etc ();
 	update_rows_per_beat ();
 	set_row_range ();
@@ -233,7 +230,6 @@ Pattern::update_rows_per_beat ()
 void
 Pattern::update_content ()
 {
-	std::cout << "Pattern::update_content ()" << std::endl;
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
 		tp->update ();
