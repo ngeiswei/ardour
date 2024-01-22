@@ -44,9 +44,9 @@ TrackAllAutomationsPatternPhenomenalDiff::to_string (const std::string& indent) 
 	std::stringstream ss;
 	ss << indent << "main_automation_pattern_phenomenal_diff:" << std::endl;
 	ss << main_automation_pattern_phenomenal_diff.to_string(indent + "  ");
-	for (const auto& id_appd : id_to_processor_automation_pattern_phenomenal_diff) {
-		ss << indent << "id_to_processor_automation_pattern_phenomenal_diff[" << id_appd.first << "]:" << std::endl;
-		ss << id_appd.second.to_string(indent + "  ") << std::endl;
+	for (const auto& id_papd : id_to_processor_automation_pattern_phenomenal_diff) {
+		ss << indent << "id_to_processor_automation_pattern_phenomenal_diff[" << id_papd.first << "]:" << std::endl;
+		ss << id_papd.second.to_string(indent + "  ") << std::endl;
 	}
 	return ss.str ();
 }

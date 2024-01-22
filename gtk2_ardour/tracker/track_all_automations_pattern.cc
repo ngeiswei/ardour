@@ -290,7 +290,10 @@ TrackAllAutomationsPattern::to_string (const std::string& indent) const
 	// Print content of track_automation_pattern
 	ss << std::endl << header << "track_automation_pattern:" << std::endl
 	   << main_automation_pattern.to_string (header + " ");
-	// NEXT.13: processor
+	for (const auto& id_pap : id_to_processor_automation_pattern) {
+		ss << indent << "id_to_processor_automation_pattern[" << id_pap.first << "]:" << std::endl;
+		ss << id_pap.second->to_string(indent + "  ") << std::endl;
+	}
 
 	return ss.str ();
 }
