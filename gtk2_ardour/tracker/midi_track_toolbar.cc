@@ -644,7 +644,8 @@ MidiTrackToolbar::show_existing_midi_automations ()
 {
 	const ParameterSet params = midi_track->midi_playlist ()->contained_automation ();
 	for (ParameterSetConstIt p = params.begin (); p != params.end (); ++p) {
-		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find (*p);
+		IDParameterPair idpar (/* NEXT.14: get the right PBD::ID */ PBD::ID(), *p);
+		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find (idpar);
 		int column = (it == grid.col2params[track_index].right.end ()) || (it->second == 0) ?
 			grid.add_midi_automation_column (track_index, *p) : it->second;
 
@@ -664,12 +665,15 @@ MidiTrackToolbar::hide_midi_automations ()
 	for (std::set<int>::iterator it = grid.visible_automation_columns.begin ();
 	     it != grid.visible_automation_columns.end (); ++it) {
 		int column = *it;
+		// NEXT.14
 		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find (column);
 		if (c2p_it == grid.col2params[track_index].left.end ()) {
 			continue;
 		}
 
-		Evoral::Parameter param = c2p_it->second;
+		// NEXT.14: make sure the PBD::ID is used as it is supposed to
+		// IDParameterPair id_param = c2p_it->second;
+		Evoral::Parameter param = c2p_it->second.second;
 		CheckMenuItem* mitem = automation_child_menu_item (param);
 
 		if (mitem) {
