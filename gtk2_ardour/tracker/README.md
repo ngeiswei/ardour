@@ -1,5 +1,7 @@
 # Next
 
+- [ ] NEXT.15: find the PBD::ID of main
+- [ ] NEXT.14: use IDParameterPair in IndexParamBimap
 - [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
       `TrackAllAutomationsPattern`.
 
