@@ -239,7 +239,9 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	col2params[mti].insert (IndexParamBimap::value_type (column, param)); // TODO: better put this knowledge in an inherited column
+	// NEXT.15: find the PBD::ID of main
+	IDParameterPair idpar (/* NEXT.14: get the PBD::ID */ PBD::ID(), param);
+	col2params[mti].insert (IndexParamBimap::value_type (column, idpar)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
@@ -263,6 +265,7 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
+	// NEXT.14
 	col2params[mti].insert (IndexParamBimap::value_type (column, param));
 
 	// Set the column title and tooltip
@@ -303,6 +306,7 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	}
 
 	// Associate that column to the parameter
+	// NEXT.14
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, param));
 
 	// Set the column title and tooltip
@@ -355,6 +359,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	const bool showit = mitem->get_active ();
 
 	// Find the column associated to this parameter, assign one if necessary
+	// NEXT.14
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
@@ -373,6 +378,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 bool
 Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const
 {
+	// NEXT.14
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
 	return it != col2params[mti].right.end () &&
 		visible_automation_columns.find (it->second) != visible_automation_columns.end ();
@@ -514,6 +520,7 @@ Grid::update_pan_columns_visibility (int mti)
 	}
 
 	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
+		// NEXT.14
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
 		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
@@ -3100,6 +3107,7 @@ Grid::get_param (int mti, int cgi) const
 		return Evoral::Parameter ();
 	}
 	int edited_colnum = ac_it->second;
+	// NEXT.14
 	IndexParamBimap::left_const_iterator it = col2params[mti].left.find (edited_colnum);
 	if (it == col2params[mti].left.end ()) {
 		return Evoral::Parameter ();
@@ -3111,6 +3119,7 @@ Grid::get_param (int mti, int cgi) const
 int
 Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 {
+	// NEXT.14
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (param);
 	if (cp_it == col2params[mti].right.end ()) {
 		return -1;
@@ -3589,6 +3598,7 @@ Grid::setup_data_columns ()
 		gain_columns.push_back (0);
 		trim_columns.push_back (0);
 		mute_columns.push_back (0);
+		// NEXT.14
 		col2params.push_back (IndexParamBimap ());
 		col2auto_cgi.push_back (IndexBimap ());
 		pan_columns.push_back (std::vector<int> ());
@@ -4140,6 +4150,7 @@ Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* c
 		if (tc && tc->automation_type == TrackerColumn::AutomationType::AUTOMATION_DELAY) {
 			coli--;
 		}
+		// NEXT.14
 		IndexParamBimap::left_const_iterator it = col2params[mti].left.find (coli);
 		Evoral::Parameter param = it->second;
 		return pattern.is_automation_defined (row_idx, mti, param);
