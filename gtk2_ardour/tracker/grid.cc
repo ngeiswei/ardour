@@ -239,9 +239,8 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	// NEXT.15: find the PBD::ID of main
-	IDParameterPair idpar (/* NEXT.14: get the PBD::ID */ PBD::ID(), param);
-	col2params[mti].insert (IndexParamBimap::value_type (column, idpar)); // TODO: better put this knowledge in an inherited column
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of main */ PBD::ID(), param);
+	col2params[mti].insert (IndexParamBimap::value_type (column, idparam)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
@@ -265,8 +264,8 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	// NEXT.14
-	col2params[mti].insert (IndexParamBimap::value_type (column, param));
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of MIDI*/ PBD::ID(), param);
+	col2params[mti].insert (IndexParamBimap::value_type (column, idparam));
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
@@ -306,8 +305,8 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	}
 
 	// Associate that column to the parameter
-	// NEXT.14
-	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, param));
+	IDParameterPair idparam (/* NEXT.15: get the PBD::ID of processor*/ PBD::ID(), param);
+	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
