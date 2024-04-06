@@ -358,8 +358,8 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	const bool showit = mitem->get_active ();
 
 	// Find the column associated to this parameter, assign one if necessary
-	// NEXT.14
-	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID(), param);
+	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (idparam);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
 
@@ -375,10 +375,10 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 }
 
 bool
-Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const
+Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const // NEXT.14: maybe needs to upgrade the signature
 {
-	// NEXT.14
-	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID(), param);
+	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (idparam);
 	return it != col2params[mti].right.end () &&
 		visible_automation_columns.find (it->second) != visible_automation_columns.end ();
 }
@@ -519,7 +519,7 @@ Grid::update_pan_columns_visibility (int mti)
 	}
 
 	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
-		// NEXT.14
+		// NEXT.16: deal with the shit, but take your time
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
 		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
