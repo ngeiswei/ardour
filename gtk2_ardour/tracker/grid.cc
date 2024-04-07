@@ -239,7 +239,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of main */ PBD::ID(), param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of main or leave it as it is*/ PBD::ID(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, idparam)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
