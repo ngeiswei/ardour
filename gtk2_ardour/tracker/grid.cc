@@ -519,9 +519,8 @@ Grid::update_pan_columns_visibility (int mti)
 	}
 
 	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
-		// NEXT.16: deal with the shit, but take your time
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
-		set_automation_column_visible (mti, c2p_it->second, *it, showit);
+		set_automation_column_visible (mti, c2p_it->second.second /* NEXT.14: this or we change the signature of set_automation_column_visible */, *it, showit);
 	}
 
 	/* now trigger a redisplay */
@@ -3106,7 +3105,7 @@ Grid::get_param (int mti, int cgi) const
 		return Evoral::Parameter ();
 	}
 	int edited_colnum = ac_it->second;
-	// NEXT.14
+	// NEXT.16: deal with the shit but take your time
 	IndexParamBimap::left_const_iterator it = col2params[mti].left.find (edited_colnum);
 	if (it == col2params[mti].left.end ()) {
 		return Evoral::Parameter ();
