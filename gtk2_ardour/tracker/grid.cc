@@ -3105,20 +3105,19 @@ Grid::get_param (int mti, int cgi) const
 		return Evoral::Parameter ();
 	}
 	int edited_colnum = ac_it->second;
-	// NEXT.16: deal with the shit but take your time
 	IndexParamBimap::left_const_iterator it = col2params[mti].left.find (edited_colnum);
 	if (it == col2params[mti].left.end ()) {
 		return Evoral::Parameter ();
 	}
-	const Evoral::Parameter& param = it->second;
+	const Evoral::Parameter& param = it->second.second; /* NEXT.14: this or we change the signature of get_param */
 	return param;
 }
 
 int
 Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 {
-	// NEXT.14
-	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
+	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (idparam);
 	if (cp_it == col2params[mti].right.end ()) {
 		return -1;
 	}
@@ -4148,9 +4147,8 @@ Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* c
 		if (tc && tc->automation_type == TrackerColumn::AutomationType::AUTOMATION_DELAY) {
 			coli--;
 		}
-		// NEXT.14
 		IndexParamBimap::left_const_iterator it = col2params[mti].left.find (coli);
-		Evoral::Parameter param = it->second;
+		Evoral::Parameter param = it->second.second; /* NEXT.14: this or we change the signature of get_param */
 		return pattern.is_automation_defined (row_idx, mti, param);
 	}
 }
