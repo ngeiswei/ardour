@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.16: fix crash
+- [ ] NEXT.16: fix not displaying automation
 - [ ] NEXT.15: find the PBD::ID of processor
 - [ ] NEXT.14: find the PBD::ID when/if needed + other morphing
 - [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
