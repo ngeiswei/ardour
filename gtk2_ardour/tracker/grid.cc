@@ -1458,7 +1458,9 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
+	std::cout << "Grid::redisplay_track_automation_param (mti=, tap=, param=, rows_diff=)" << std::endl;
 	int cgi = to_cgi (mti, param);
+	std::cout << "Grid::redisplay_track_automation_param cgi = " << cgi << std::endl;
 	if (cgi < 0) {
 		return;
 	}
@@ -3116,16 +3118,21 @@ Grid::get_param (int mti, int cgi) const
 int
 Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 {
+	std::cout << "Grid::to_cgi (mti=, param=)" << std::endl;
 	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (idparam);
 	if (cp_it == col2params[mti].right.end ()) {
+		std::cout << "Grid::to_cgi -1-" << std::endl;
+		// NEXT.16: problem is here.
 		return -1;
 	}
 	int coli = cp_it->second;
 	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (coli);
 	if (cac_it == col2auto_cgi[mti].left.end ()) {
+		std::cout << "Grid::to_cgi -2-" << std::endl;
 		return -1;
 	}
+	std::cout << "Grid::to_cgi -3-" << std::endl;
 	return cac_it->second;
 }
 
