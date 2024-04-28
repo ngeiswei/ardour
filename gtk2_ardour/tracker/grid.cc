@@ -2206,6 +2206,14 @@ Grid::scroll_to_current_row ()
 	scroll_to_row (current_path);
 }
 
+std::string
+Grid::to_string () const
+{
+	std::stringstream ss;
+	// NEXT.17: implement, in particular for col2params
+	return ss.str ();
+}
+
 /////////////////////
 // Edit Pattern    //
 /////////////////////
@@ -3116,7 +3124,7 @@ Grid::get_param (int mti, int cgi) const
 }
 
 int
-Grid::to_cgi (int mti, const Evoral::Parameter& param) const
+Grid::to_cgi (int mti, const Evoral::Parameter& param) const // NEXT.14: use PBD::ID
 {
 	std::cout << "Grid::to_cgi (mti=, param=)" << std::endl;
 	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
@@ -3124,6 +3132,7 @@ Grid::to_cgi (int mti, const Evoral::Parameter& param) const
 	if (cp_it == col2params[mti].right.end ()) {
 		std::cout << "Grid::to_cgi -1-" << std::endl;
 		// NEXT.16: problem is here.
+		std::cout << to_string() << std::endl;
 		return -1;
 	}
 	int coli = cp_it->second;
