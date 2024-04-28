@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.17: implement Grid::to_string ()
 - [ ] NEXT.16: fix not displaying automation
 - [ ] NEXT.15: find the PBD::ID of processor
 - [ ] NEXT.14: find the PBD::ID when/if needed + other morphing
