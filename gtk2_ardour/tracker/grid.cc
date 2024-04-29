@@ -2207,10 +2207,23 @@ Grid::scroll_to_current_row ()
 }
 
 std::string
-Grid::to_string () const
+Grid::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	// NEXT.17: implement, in particular for col2params
+
+	std::string indent1 = indent + "  ";
+	std::string indent2 = indent + "    ";
+	// TODO: add more attributes
+
+	// col2params
+	ss << indent << "col2params:";
+	for (unsigned mti = 0; mti != col2params.size(); ++mti) {
+		ss << std::endl << indent1 << "col2params[" << mti << "]:";
+		for (const auto& cip : col2params[mti].left) {
+			ss << std::endl << indent2 << "idparam[col=" << cip.first << "] = "
+			   << "(id=" << cip.second.first << ", param=" << cip.second.second << ")";
+		}
+	}
 	return ss.str ();
 }
 
@@ -3128,11 +3141,14 @@ Grid::to_cgi (int mti, const Evoral::Parameter& param) const // NEXT.14: use PBD
 {
 	std::cout << "Grid::to_cgi (mti=, param=)" << std::endl;
 	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
+	std::cout << "Grid::to_cgi idparam = (id=" << idparam.first << ", param=" << idparam.second << ")" << std::endl;
+	IDParameterPair idparam2 (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
+	std::cout << "Grid::to_cgi idparam2 = (id=" << idparam2.first << ", param=" << idparam.second << ")" << std::endl;
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (idparam);
 	if (cp_it == col2params[mti].right.end ()) {
 		std::cout << "Grid::to_cgi -1-" << std::endl;
-		// NEXT.16: problem is here.
-		std::cout << to_string() << std::endl;
+		// NEXT.16: problem is here.  ANSWER: PBD::ID() returns a different ID every time!!!
+		std::cout << "grid:" << std::endl << to_string ("  ") << std::endl;
 		return -1;
 	}
 	int coli = cp_it->second;
