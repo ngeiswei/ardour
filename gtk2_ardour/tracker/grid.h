@@ -283,7 +283,7 @@ public:
 	void scroll_to_current_row ();
 
 	// Output the string represention of the current Grid object
-	std::string to_string () const;
+	std::string to_string (const std::string& indent = std::string ()) const;
 
 	TrackerEditor& tracker_editor;
 
