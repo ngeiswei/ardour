@@ -239,7 +239,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of main or leave it as it is*/ PBD::ID(), param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of main or leave it as it is*/ PBD::ID (0), param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, idparam)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
@@ -264,7 +264,7 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of MIDI*/ PBD::ID(), param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of MIDI*/ PBD::ID (0), param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, idparam));
 
 	// Set the column title and tooltip
@@ -305,7 +305,7 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (/* NEXT.15: get the PBD::ID of processor*/ PBD::ID(), param);
+	IDParameterPair idparam (/* NEXT.15: get the PBD::ID of processor*/ PBD::ID (0), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
 
 	// Set the column title and tooltip
@@ -358,7 +358,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	const bool showit = mitem->get_active ();
 
 	// Find the column associated to this parameter, assign one if necessary
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID(), param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (idparam);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
@@ -377,7 +377,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 bool
 Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const // NEXT.14: maybe needs to upgrade the signature
 {
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID(), param);
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (idparam);
 	return it != col2params[mti].right.end () &&
 		visible_automation_columns.find (it->second) != visible_automation_columns.end ();
@@ -1458,9 +1458,7 @@ Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, c
 void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	std::cout << "Grid::redisplay_track_automation_param (mti=, tap=, param=, rows_diff=)" << std::endl;
 	int cgi = to_cgi (mti, param);
-	std::cout << "Grid::redisplay_track_automation_param cgi = " << cgi << std::endl;
 	if (cgi < 0) {
 		return;
 	}
@@ -3139,25 +3137,17 @@ Grid::get_param (int mti, int cgi) const
 int
 Grid::to_cgi (int mti, const Evoral::Parameter& param) const // NEXT.14: use PBD::ID
 {
-	std::cout << "Grid::to_cgi (mti=, param=)" << std::endl;
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
-	std::cout << "Grid::to_cgi idparam = (id=" << idparam.first << ", param=" << idparam.second << ")" << std::endl;
-	IDParameterPair idparam2 (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID(), param);
-	std::cout << "Grid::to_cgi idparam2 = (id=" << idparam2.first << ", param=" << idparam.second << ")" << std::endl;
+	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID (0), param);
+	IDParameterPair idparam2 (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID (0), param);
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (idparam);
 	if (cp_it == col2params[mti].right.end ()) {
-		std::cout << "Grid::to_cgi -1-" << std::endl;
-		// NEXT.16: problem is here.  ANSWER: PBD::ID() returns a different ID every time!!!
-		std::cout << "grid:" << std::endl << to_string ("  ") << std::endl;
 		return -1;
 	}
 	int coli = cp_it->second;
 	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (coli);
 	if (cac_it == col2auto_cgi[mti].left.end ()) {
-		std::cout << "Grid::to_cgi -2-" << std::endl;
 		return -1;
 	}
-	std::cout << "Grid::to_cgi -3-" << std::endl;
 	return cac_it->second;
 }
 
