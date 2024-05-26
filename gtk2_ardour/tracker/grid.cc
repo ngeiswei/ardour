@@ -305,6 +305,11 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	}
 
 	// Associate that column to the parameter
+	std::cout << "BEFORE" << std::endl;
+	std::shared_ptr<Route> r1 = tracker_editor.session->route_by_id (0);
+	std::shared_ptr<Route> r2 = tracker_editor.session->route_by_name ("");
+	std::cout << "AFTER" << std::endl;
+
 	IDParameterPair idparam (/* NEXT.15: get the PBD::ID of processor*/ PBD::ID (0), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
 
