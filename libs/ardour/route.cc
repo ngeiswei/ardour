@@ -5617,6 +5617,7 @@ Route::processor_by_id (PBD::ID id) const
 {
 	Glib::Threads::RWLock::ReaderLock lm (_processor_lock);
 	for (ProcessorList::const_iterator i = _processors.begin(); i != _processors.end(); ++i) {
+		std::cout << "Route[" << this << "]::processor_by_id (id=" << id << ") *i = " << *i << ", (*i)->id() = " << (*i)->id() << ", (*i)->display_name() = " << (*i)->display_name() << std::endl;
 		if ((*i)->id() == id) {
 			return *i;
 		}
