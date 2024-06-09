@@ -307,7 +307,8 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	// Associate that column to the parameter
 	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id() << std::endl;
 
-	IDParameterPair idparam (/* NEXT.15: get the PBD::ID of processor*/ PBD::ID (0), param);
+	// NEXT.15: test all the way
+	IDParameterPair idparam (processor->id(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
 
 	// Set the column title and tooltip
