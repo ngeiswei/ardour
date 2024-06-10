@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.15: Test processor->id() all the way
-- [ ] NEXT.14: find the PBD::ID when/if needed + other morphing
+- [ ] NEXT.14: find the PBD::ID when/if needed + other change type signatures
+      to include PBD::ID
 - [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
       `TrackAllAutomationsPattern`.
 

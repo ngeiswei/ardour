@@ -307,7 +307,7 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	// Associate that column to the parameter
 	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id() << std::endl;
 
-	// NEXT.15: test all the way
+	// NEXT.14: test all the way
 	IDParameterPair idparam (processor->id(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
 
@@ -343,7 +343,7 @@ Grid::change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Para
  *  Will add column if necessary.
  */
 void
-Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& param)
+Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& param) // NEXT.14: understand the context
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern ()) { // TODO: Why?  Shouldn't
 	                                                   // that apply to audio
