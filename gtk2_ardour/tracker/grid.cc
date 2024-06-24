@@ -966,6 +966,11 @@ Grid::redisplay_grid ()
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
 
+	std::cout << "Grid:" << std::endl << to_string ("") << std::endl;
+	// NEXT.15: search in the code where knowing the id allows to call the right
+	// processor.  In the test-tracker session (on the desktop) the id of DX10
+	// is 272.
+
 	// Redisplay the grid
 	redisplay_global_columns ();
 	redisplay_pattern ();
