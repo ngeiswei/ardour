@@ -454,7 +454,7 @@ MidiNotesPattern::to_string (const std::string& indent) const
 			ss << indent + "  " << "row[" << it->first << "] = " << "[" << it->second << "] " << *it->second << std::endl;
 		}
 	}
-	ss << header << "_midi_region = " << _midi_region;
+	ss << header << "_midi_region = " << _midi_region << std::endl;
 	ss << header << "_midi_model = " << _midi_model;
 
 	return ss.str ();
