@@ -283,16 +283,18 @@ TrackAllAutomationsPattern::to_string (const std::string& indent) const
 	ss << BasePattern::to_string (indent);
 
 	std::string header = indent + self_to_string () + " ";
+	std::string indent2 = indent + "  ";
+	std::string indent3 = indent2 + "  ";
 
 	// Print track pointer address
 	ss << std::endl << header << "track = " << track;
 
 	// Print content of track_automation_pattern
 	ss << std::endl << header << "track_automation_pattern:" << std::endl
-	   << main_automation_pattern.to_string (header + " ");
+	   << main_automation_pattern.to_string (indent2);
 	for (const auto& id_pap : id_to_processor_automation_pattern) {
-		ss << indent << "id_to_processor_automation_pattern[" << id_pap.first << "]:" << std::endl;
-		ss << id_pap.second->to_string(indent + "  ") << std::endl;
+		ss << std::endl << indent2 << "id_to_processor_automation_pattern[" << id_pap.first << "]:" << std::endl;
+		ss << id_pap.second->to_string(indent3);
 	}
 
 	return ss.str ();
