@@ -111,21 +111,27 @@ void
 TrackAllAutomationsPattern::set_rows_per_beat (uint16_t rpb)
 {
 	main_automation_pattern.set_rows_per_beat (rpb);
-	// NEXT.13: processor
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		idpap.second->set_rows_per_beat (rpb);
+	}
 }
 
 void
 TrackAllAutomationsPattern::set_row_range ()
 {
 	main_automation_pattern.set_row_range ();
-	// NEXT.13: processor
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		idpap.second->set_row_range ();
+	}
 }
 
 void
 TrackAllAutomationsPattern::update ()
 {
 	main_automation_pattern.update ();
-	// NEXT.13: processor
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		idpap.second->update ();
+	}
 }
 
 void
@@ -247,11 +253,17 @@ TrackAllAutomationsPattern::is_param_enabled (const Evoral::Parameter& param) co
 	return main_automation_pattern.is_param_enabled (param);
 }
 
+// NEXT.13: should return a set of pairs <ID, Parameter>, or a multimap from ID
+// to Parameter.
 ParameterSet
 TrackAllAutomationsPattern::get_enabled_parameters () const
 {
-	// NEXT.13: processor
-	return main_automation_pattern.get_enabled_parameters ();
+	ParameterSet ep = main_automation_pattern.get_enabled_parameters ();
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		ParameterSet pep = idpap.second->get_enabled_parameters ();
+		ep.insert(pep.begin(), pep.end());
+	}
+	return ep;
 }
 
 double
