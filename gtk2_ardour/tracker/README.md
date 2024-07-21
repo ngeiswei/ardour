@@ -1,14 +1,6 @@
 # Next
 
-- [ ] NEXT.16: find the right id in Grid::add_midi_automation_column.  After
-      that jump directly to NEXT.13.
-- [ ] NEXT.15: search in the code where knowing the id allows to call the right
-      processor.  In the test-tracker session (on the desktop) the id of DX10
-      is 272.
-- [ ] NEXT.14: find the PBD::ID when/if needed + other change type signatures
-      to include PBD::ID
-- [ ] NEXT.13: support processor in `Grid::redisplay_track_all_automations` and
-      `TrackAllAutomationsPattern`.
+- [ ] NEXT.13: support processors.
 
 # Tracker Editor
 
