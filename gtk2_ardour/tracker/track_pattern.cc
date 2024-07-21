@@ -182,9 +182,9 @@ TrackPattern::to_mri (int rowi) const
 }
 
 void
-TrackPattern::insert (const Evoral::Parameter& param)
+TrackPattern::insert (const PBD::ID& id, const Evoral::Parameter& param)
 {
-	track_all_automations_pattern.insert (param);
+	track_all_automations_pattern.insert (id, param);
 }
 
 bool

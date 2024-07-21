@@ -92,7 +92,7 @@ public:
 	virtual int to_rrri (int rowi, int mri) const;
 	virtual int to_rrri (int rowi) const;
 	virtual int to_mri (int rowi) const;
-	virtual void insert (const Evoral::Parameter& param);
+	virtual void insert (const PBD::ID& id, const Evoral::Parameter& param);
 
 	// Return whether the automation associated to param is empty.  NEXT: this
 	// will probably need to take a pair (Processor, Parameter).

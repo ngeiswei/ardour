@@ -64,7 +64,7 @@ public:
 
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
-	void insert (const Evoral::Parameter& param);
+	void insert (const PBD::ID& id, const Evoral::Parameter& param);
 
 	// Return whether the automation associated to param is empty.  NEXT: this
 	// will probably need to take a pair (Processor, Parameter).
