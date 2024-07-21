@@ -190,14 +190,14 @@ MidiTrackPattern::get_enabled_parameters (int mri) const
 }
 
 void
-MidiTrackPattern::insert (const Evoral::Parameter& param)
+MidiTrackPattern::insert (const PBD::ID& id, const Evoral::Parameter& param)
 {
 	if (TrackerUtils::is_region_automation (param)) {
 		for (size_t mri = 0; mri < mrps.size (); mri++) {
 			mrps[mri]->insert (param);
 		}
 	} else {
-		TrackPattern::insert (param);
+		TrackPattern::insert (id, param);
 	}
 }
 

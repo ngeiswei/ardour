@@ -135,10 +135,18 @@ TrackAllAutomationsPattern::update ()
 }
 
 void
-TrackAllAutomationsPattern::insert (const Evoral::Parameter& param)
+TrackAllAutomationsPattern::insert (const PBD::ID& id, const Evoral::Parameter& param)
 {
-	main_automation_pattern.insert_actl (track->automation_control (param, true), track->describe_parameter (param));
-	// NEXT.13: processor
+	if (id == 0) {
+		main_automation_pattern.insert (param);
+	} else {
+		auto it = id_to_processor_automation_pattern.find (id);
+		if (it != id_to_processor_automation_pattern.end()) {
+			it->second->insert (param);
+		} else {
+			std::cerr << "Maybe there is a problem in TrackAllAutomationsPattern::insert (id=" << id << ", param=" << param << ")" << std::endl;
+		}
+	}
 }
 
 bool
