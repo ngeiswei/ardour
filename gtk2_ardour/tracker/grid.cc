@@ -255,6 +255,7 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
 	// Insert the corresponding automation control (and connect to the grid if
 	// not already there)
+	// NEXT.16: find the right id
 	pattern.insert (mti, param); // NEXT.12: should take the processor as well
 
 	// Select the next available column

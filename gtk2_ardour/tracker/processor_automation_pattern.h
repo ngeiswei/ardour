@@ -39,6 +39,10 @@ public:
 	                            bool connect,
 	                            ProcessorPtr processor);
 
+	// Insert the automation control corresponding to param in _processor, and
+	// connect it to the grid for connect changes.
+	void insert (const Evoral::Parameter& param);
+
 	// Insert all automations of the corresponding processor
 	void setup_processor_automation_control ();
 

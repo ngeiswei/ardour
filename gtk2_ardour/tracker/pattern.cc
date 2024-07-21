@@ -465,9 +465,9 @@ Pattern::to_mri (int rowi, int mti) const
 }
 
 void
-Pattern::insert (int mti, const Evoral::Parameter& param)
+Pattern::insert (int mti, const PBD::ID& id, const Evoral::Parameter& param)
 {
-	tps[mti]->insert (param);
+	tps[mti]->insert (id, param);
 }
 
 MidiModelPtr

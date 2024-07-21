@@ -67,7 +67,7 @@ public:
 
 	// Insert the automation control (s) corresponding to param (and connect it
 	// to the grid for changes)
-	void insert (const Evoral::Parameter& param);
+	void insert (const PBD::ID& id, const Evoral::Parameter& param);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,

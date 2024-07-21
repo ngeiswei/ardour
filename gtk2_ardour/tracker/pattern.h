@@ -124,7 +124,7 @@ public:
 
 	// Insert the automation control (s) associated to param at mti (and connect
 	// it to the grid for changes)
-	void insert (int mti, const Evoral::Parameter& param);
+	void insert (int mti, const PBD::ID& id, const Evoral::Parameter& param);
 
 	// Return the midi model at mti and mri
 	MidiModelPtr midi_model (int mti, int mri);
