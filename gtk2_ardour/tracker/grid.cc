@@ -239,7 +239,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of main or leave it as it is*/ PBD::ID (0), param);
+	IDParameterPair idparam (PBD::ID (0) /* id of main is assumed to be 0 */, param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, idparam)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
@@ -255,8 +255,8 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 {
 	// Insert the corresponding automation control (and connect to the grid if
 	// not already there)
-	// NEXT.16: find the right id
-	pattern.insert (mti, param); // NEXT.12: should take the processor as well
+	PBD::ID id (0); // id of MIDI is assumed to be 0
+	pattern.insert (mti, id, param);
 
 	// Select the next available column
 	int column = select_available_automation_column (mti);
@@ -265,7 +265,7 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID of MIDI*/ PBD::ID (0), param);
+	IDParameterPair idparam (id, param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, idparam));
 
 	// Set the column title and tooltip
@@ -308,7 +308,6 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	// Associate that column to the parameter
 	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id() << std::endl;
 
-	// NEXT.14: test all the way
 	IDParameterPair idparam (processor->id(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
 
