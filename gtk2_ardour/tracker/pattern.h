@@ -73,7 +73,7 @@ public:
 
 	// Return true iff the row at mti is defined for param
 	// Warning: if param is undefined, then the behavior is unknown
-	bool is_automation_defined (int rowi, int mti, const Evoral::Parameter& param) const;
+	bool is_automation_defined (int rowi, int mti, const IDParameterPair& id_param) const;
 
 	// Like beats_at_row but the beats is calculated in reference to the
 	// region's position
@@ -98,9 +98,9 @@ public:
 	RowToNotesRange off_notes_range (int rowi, int mti, int mri, int cgi) const;
 	RowToNotesRange on_notes_range (int rowi, int mti, int mri, int cgi) const;
 
-	bool is_automation_displayable (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	bool is_automation_displayable (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
-	size_t control_events_count (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	size_t control_events_count (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	NotePtr find_prev_on_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr find_next_on_note (int rowi, int mti, int mri, int cgi) const;
@@ -124,7 +124,7 @@ public:
 
 	// Insert the automation control (s) associated to param at mti (and connect
 	// it to the grid for changes)
-	void insert (int mti, const PBD::ID& id, const Evoral::Parameter& param);
+	void insert (int mti, const IDParameterPair& id_param);
 
 	// Return the midi model at mti and mri
 	MidiModelPtr midi_model (int mti, int mri);
@@ -145,9 +145,9 @@ public:
 	// Apply given command at mti
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
-	std::string get_name (int mti, const Evoral::Parameter& param) const;
-	void set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled);
-	bool is_param_enabled (int mti, const Evoral::Parameter& param) const;
+	std::string get_name (int mti, const IDParameterPair& id_param) const;
+	void set_param_enabled (int mti, const IDParameterPair& id_param, bool enabled);
+	bool is_param_enabled (int mti, const IDParameterPair& id_param) const;
 
 	// Return the set of enabled parameters for the given mti, and possibly mri
 	// in the case of a region.  NEXT: once any processor automation is
@@ -157,38 +157,38 @@ public:
 
 	// Return the sequence in chronological order of BBTs of each value at the
 	// given location.
-	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Return a pair with some automation value at the given location and
 	// whether it is defined or not.  If multiple automation values exist at
 	// this location, then return one of them, not necessarily the ealiest one.
-	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::pair<double, bool> get_automation_value (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Return a sequence in chronological order of automation values at the
 	// given location.
-	std::vector<double> get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::vector<double> get_automation_value_seq (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Return the automation interpolation value of param at given location
-	double get_automation_interpolation_value (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	double get_automation_interpolation_value (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Set the automation value val at rowi, mti and mri for param
-	void set_automation_value (double val, int rowi, int mti, int mri, const Evoral::Parameter& param, int delay);
+	void set_automation_value (double val, int rowi, int mti, int mri, const IDParameterPair& id_param, int delay);
 
 	// Delete automation value at rowi, mti and mri for param.  TODO: what if
 	// there are multiple values?
-	void delete_automation_value (int rowi, int mti, int mri, const Evoral::Parameter& param);
+	void delete_automation_value (int rowi, int mti, int mri, const IDParameterPair& id_param);
 
 	// Get a pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::pair<int, bool> get_automation_delay (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Get a sequence in chronological order of automation delays in tick at the
 	// given location.
-	std::vector<int> get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::vector<int> get_automation_delay_seq (int rowi, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, int rowi, int mti, int mri, const Evoral::Parameter& param);
+	void set_automation_delay (int delay, int rowi, int mti, int mri, const IDParameterPair& id_param);
 
 	// Return the track pattern assicuated to track, or 0 if it doesn't exist
 	TrackPattern* find_track_pattern (TrackPtr track);

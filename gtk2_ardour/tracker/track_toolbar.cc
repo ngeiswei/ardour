@@ -466,19 +466,19 @@ void
 TrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = !track_pattern->is_empty (Evoral::Parameter (GainAutomation));
+	bool gain_visible = !track_pattern->is_empty (PBD::ID (0), Evoral::Parameter (GainAutomation));
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
 
 	// Trim
 	if (is_audio_track_toolbar ()) {
-		bool trim_visible = !track_pattern->is_empty (Evoral::Parameter (TrimAutomation));
+		bool trim_visible = !track_pattern->is_empty (PBD::ID (0), Evoral::Parameter (TrimAutomation));
 		trim_automation_item->set_active (trim_visible);
 		grid.update_trim_column_visibility (track_index);
 	}
 
 	// Mute
-	bool mute_visible = !track_pattern->is_empty (Evoral::Parameter (MuteAutomation));
+	bool mute_visible = !track_pattern->is_empty (PBD::ID (0), Evoral::Parameter (MuteAutomation));
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility (track_index);
 
@@ -486,7 +486,7 @@ TrackToolbar::show_existing_main_automations ()
 	bool pan_visible = false;
 	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (ParameterSetConstIt p = pan_params.begin (); p != pan_params.end (); ++p) {
-		if (!track_pattern->is_empty (*p)) {
+		if (!track_pattern->is_empty (PBD::ID (0), *p)) {
 			pan_visible = true;
 			break;
 		}
@@ -542,11 +542,10 @@ TrackToolbar::show_all_processor_automations ()
 void
 TrackToolbar::show_existing_processor_automations ()
 {
-	// NEXT: understand the weirdness (other processor automation)
 	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
-			bool exist = !track_pattern->is_empty ((*ii)->param);
+			bool exist = !track_pattern->is_empty ((*i)->processor->id (), (*ii)->param);
 
 			// Create automation column if necessary
 			if (exist) {
