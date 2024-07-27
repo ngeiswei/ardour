@@ -633,7 +633,7 @@ private:
 	// content is replaced by ***
 	bool is_note_displayable (int row_idx, int mti, int mri, int cgi) const;
 	bool is_automation_displayable (int row_idx, int mti, int mri, int cgi) const;
-	bool is_automation_displayable (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
+	bool is_automation_displayable (int row_idx, int mti, int mri, const PBD::ID& id, const Evoral::Parameter& param) const;
 
 	// Get note from path, mti and cgi
 	NotePtr get_on_note (const std::string& path, int mti, int cgi) const;
@@ -693,7 +693,7 @@ private:
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
-	Evoral::Parameter get_param (int mti, int cgi) const;
+	IDParameterPair get_id_param (int mti, int cgi) const;
 
 	// Return cgi associated to param at mti. If undefined for param return -1.
 	int to_cgi (int mti, const Evoral::Parameter& param) const;

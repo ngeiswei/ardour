@@ -209,7 +209,7 @@ public:
 	 * "-0xA" -> true
 	 */
 	static bool has_hex_prefix (const std::string& str);
-	
+
 	/**
 	 * Append hex prefix to a hexadecimal number if missing. For instance
 	 *
@@ -393,6 +393,8 @@ public:
 	// Wrap <b> </b> around the givem string
 	static std::string bold (const std::string& str);
 };
+
+	std::ostream& operator<< (std::ostream& ostr, const IDParameterPair&);
 
 } // ~namespace tracker
 

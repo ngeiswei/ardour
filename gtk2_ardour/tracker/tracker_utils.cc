@@ -510,3 +510,10 @@ TrackerUtils::bold (const std::string& str)
 {
 	return std::string("<b>") + str + "</b>";
 }
+
+std::ostream&
+operator<< (std::ostream& ostr, const IDParameterPair& id_param)
+{
+	ostr << "(id=" << id_param.first << ", param=" << id_param.second << ")";
+	return ostr;
+}
