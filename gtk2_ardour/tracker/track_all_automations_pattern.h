@@ -64,36 +64,36 @@ public:
 
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
-	void insert (const PBD::ID& id, const Evoral::Parameter& param);
+	void insert (const IDParameterPair& id_param);
 
 	// Return whether the automation associated to param is empty.  NEXT: this
 	// will probably need to take a pair (Processor, Parameter).
-	bool is_empty (const Evoral::Parameter& param) const;
+	bool is_empty (const IDParameterPair& id_param) const;
 
 	virtual const ParameterSet& automatable_parameters () const;
 
-	bool is_displayable (int rowi, const Evoral::Parameter& param) const;
-	size_t control_events_count (int rowi, const Evoral::Parameter& param) const;
-	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const Evoral::Parameter& param) const;
-	std::pair<double, bool> get_automation_value (int rowi, const Evoral::Parameter& param) const;
-	std::vector<double> get_automation_value_seq (int rowi, const Evoral::Parameter& param) const;
-	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
-	void set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay);
-	void delete_automation_value (int rowi, const Evoral::Parameter& param);
-	std::pair<int, bool> get_automation_delay (int rowi, const Evoral::Parameter& param) const;
-	std::vector<int> get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const;
-	void set_automation_delay (int delay, int rowi, const Evoral::Parameter& param);
-	std::string get_name (const Evoral::Parameter& param) const;
-	void set_param_enabled (const Evoral::Parameter& param, bool enabled);
-	bool is_param_enabled (const Evoral::Parameter& param) const;
+	bool is_displayable (int rowi, const IDParameterPair& id_param) const;
+	size_t control_events_count (int rowi, const IDParameterPair& id_param) const;
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const IDParameterPair& id_param) const;
+	std::pair<double, bool> get_automation_value (int rowi, const IDParameterPair& id_param) const;
+	std::vector<double> get_automation_value_seq (int rowi, const IDParameterPair& id_param) const;
+	double get_automation_interpolation_value (int rowi, const IDParameterPair& id_param) const;
+	void set_automation_value (double val, int rowi, const IDParameterPair& id_param, int delay);
+	void delete_automation_value (int rowi, const IDParameterPair& id_param);
+	std::pair<int, bool> get_automation_delay (int rowi, const IDParameterPair& id_param) const;
+	std::vector<int> get_automation_delay_seq (int rowi, const IDParameterPair& id_param) const;
+	void set_automation_delay (int delay, int rowi, const IDParameterPair& id_param);
+	std::string get_name (const IDParameterPair& id_param) const;
+	void set_param_enabled (const IDParameterPair& id_param, bool enabled);
+	bool is_param_enabled (const IDParameterPair& id_param) const;
 
 	// Return the set of enabled automation parameters across all processors of
 	// the track.  NEXT: it's unclear if this should take a processor parameter,
 	// or aggregate across all processors.
 	ParameterSet get_enabled_parameters () const;
 
-	double lower (const Evoral::Parameter& param) const;
-	double upper (const Evoral::Parameter& param) const;
+	double lower (const IDParameterPair& id_param) const;
+	double upper (const IDParameterPair& id_param) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;

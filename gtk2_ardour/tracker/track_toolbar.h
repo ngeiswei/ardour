@@ -43,7 +43,7 @@ struct ProcessorAutomationNode {
 	~ProcessorAutomationNode ();
 
 	// For debugging
-	std::string to_string (const std::string& indent="") const;
+	std::string to_string (const std::string& indent="") const; // NEXT.14: it needs the processor.  See NEXT.2.
 
 	Evoral::Parameter param;
 	Gtk::CheckMenuItem* menu_item;

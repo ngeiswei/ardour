@@ -1439,9 +1439,6 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
-	// NEXT.13: support processor.  Note that
-	// TrackAllAutomationsPattern::get_enabled_parameters () could be used down
-	// the line.
 	const TrackAutomationPattern& tap = taap.main_automation_pattern;
 	if (taap_diff == 0 || taap_diff->full) {
 		redisplay_track_automations (mti, tap);
@@ -1906,7 +1903,7 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		if (is_blank (val_str)) {
 			break;
 		}
-		Evoral::Parameter param = get_param (mti, cgi);
+		Evoral::Parameter param = get_id_param (mti, cgi); // NEXT.14
 		double l = lower (current_row, mti, param);
 		double u = upper (current_row, mti, param);
 		double mlu = std::max (std::abs (l), std::abs (u));
@@ -2326,14 +2323,14 @@ Grid::is_note_displayable (int row_idx, int mti, int mri, int cgi) const
 bool
 Grid::is_automation_displayable (int row_idx, int mti, int mri, int cgi) const
 {
-	Evoral::Parameter param = get_param (mti, cgi);
-	return pattern.is_automation_displayable (row_idx, mti, mri, param);
+	IDParameterPair id_param = get_id_param (mti, cgi);
+	return is_automation_displayable (row_idx, mti, mri, id_param.first, id_param.second);
 }
 
 bool
-Grid::is_automation_displayable (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
+Grid::is_automation_displayable (int row_idx, int mti, int mri, const PBD::ID& id, const Evoral::Parameter& param) const
 {
-	return pattern.is_automation_displayable (row_idx, mti, mri, param);
+	return pattern.is_automation_displayable (row_idx, mti, mri, id, param);
 }
 
 NotePtr
@@ -3127,9 +3124,10 @@ Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 	redisplay_selection ();
 }
 
-Evoral::Parameter
-Grid::get_param (int mti, int cgi) const
+IDParameterPair
+Grid::get_id_param (int mti, int cgi) const
 {
+	// NEXT.14
 	IndexBimap::right_const_iterator ac_it = col2auto_cgi[mti].right.find (cgi);
 	if (ac_it == col2auto_cgi[mti].right.end ()) {
 		return Evoral::Parameter ();
@@ -3176,8 +3174,8 @@ Grid::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Paramete
 std::pair<double, bool>
 Grid::get_automation_value (int row_idx, int mti, int mri, int cgi) const
 {
-	Evoral::Parameter param = get_param (mti, cgi);
-	return pattern.get_automation_value (row_idx, mti, mri, param);
+	IDParameterPair id_param = get_id_param (mti, cgi);
+	return pattern.get_automation_value (row_idx, mti, mri, id_param.first, id_param.second);
 }
 
 bool
@@ -3195,13 +3193,14 @@ Grid::get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parame
 double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const
 {
-	return get_automation_interpolation_value (row_idx, mti, mri, get_param (mti, cgi));
+	IDParameterPair id_param = get_param (mti, cgi);
+	return get_automation_interpolation_value (row_idx, mti, mri, id_param.first, id_param.second);
 }
 
 double
-Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const
+Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const PBD::ID& id, const Evoral::Parameter& param) const
 {
-	return pattern.get_automation_interpolation_value (row_idx, mti, mri, param);
+	return pattern.get_automation_interpolation_value (row_idx, mti, mri, id, param);
 }
 
 void
@@ -3231,20 +3230,20 @@ void
 Grid::set_automation_value (int row_idx, int mti, int mri, int cgi, double val)
 {
 	// Find the parameter to automate
-	Evoral::Parameter param = get_param (mti, cgi);
+	IDParameterPair id_param = get_id_param (mti, cgi);
 
 	// Find delay in case the value has to be created
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
-	return pattern.set_automation_value (val, row_idx, mti, mri, param, delay);
+	return pattern.set_automation_value (val, row_idx, mti, mri, id_param.first, id_param.second, delay);
 }
 
 void
 Grid::delete_automation_value (int row_idx, int mti, int mri, int cgi)
 {
 	if (has_automation_value (row_idx, mti, mri, cgi)) {
-		Evoral::Parameter param = get_param (mti, cgi);
-		pattern.delete_automation_value (row_idx, mti, mri, param);
+		IDParameterPair id_param = get_id_param (mti, cgi);
+		pattern.delete_automation_value (row_idx, mti, mri, id_param.first, id_param.second);
 	}
 }
 
@@ -3265,8 +3264,8 @@ std::pair<int, bool>
 Grid::get_automation_delay (int row_idx, int mti, int mri, int cgi) const
 {
 	// Find the parameter to automate
-	Evoral::Parameter param = get_param (mti, cgi);
-	return pattern.get_automation_delay (row_idx, mti, mri, param);
+	IDParameterPair id_param = get_id_param (mti, cgi);
+	return pattern.get_automation_delay (row_idx, mti, mri, id_param.first, id_param.second);
 }
 
 bool
@@ -3278,8 +3277,8 @@ Grid::has_automation_delay (int row_idx, int mti, int mri, int cgi) const
 void
 Grid::set_automation_delay (int row_idx, int mti, int mri, int cgi, int delay)
 {
-	Evoral::Parameter param = get_param (mti, cgi);
-	return pattern.set_automation_delay (delay, row_idx, mti, mri, param);
+	IDParameterPair id_param = get_id_param (mti, cgi);
+	return pattern.set_automation_delay (delay, row_idx, mti, mri, id_param.first, id_param.second);
 }
 
 void
@@ -3517,9 +3516,9 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 std::string
 Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
-	Evoral::Parameter param = get_param (mti, cgi);
+	IDParameterPair id_param = get_id_param (mti, cgi);
 	std::stringstream ss;
-	size_t count = pattern.control_events_count (row_idx, mti, mri, param);
+	size_t count = pattern.control_events_count (row_idx, mti, mri, id_param.first, id_param.second);
 	if (0 < count) {
 		ss << TrackerUtils::underline("Track") << ": "
 		   << TrackerUtils::bold(pattern.tps[mti]->track->name ()) << std::endl;
@@ -3531,7 +3530,7 @@ Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl;
 		ss << TrackerUtils::underline("Values") << ":";
 
-		std::vector<Temporal::BBT_Time> bbt_seq = pattern.get_automation_bbt_seq (row_idx, mti, mri, param);
+		std::vector<Temporal::BBT_Time> bbt_seq = pattern.get_automation_bbt_seq (row_idx, mti, mri, id_param.first, id_param.second);
 		std::vector<double> value_seq = pattern.get_automation_value_seq (row_idx, mti, mri, param);
 		std::vector<int>  delay_seq = pattern.get_automation_delay_seq (row_idx, mti, mri, param);
 		size_t seq_size = bbt_seq.size ();

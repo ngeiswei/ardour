@@ -135,8 +135,10 @@ TrackAllAutomationsPattern::update ()
 }
 
 void
-TrackAllAutomationsPattern::insert (const PBD::ID& id, const Evoral::Parameter& param)
+TrackAllAutomationsPattern::insert (const IDParameterPair& id_param)
 {
+	const PBD::ID& id = id_param.first;
+	const Evoral::Parameter& param = id_param.second;
 	if (id == 0) {
 		main_automation_pattern.insert (param);
 	} else {
@@ -144,118 +146,140 @@ TrackAllAutomationsPattern::insert (const PBD::ID& id, const Evoral::Parameter& 
 		if (it != id_to_processor_automation_pattern.end()) {
 			it->second->insert (param);
 		} else {
-			std::cerr << "Maybe there is a problem in TrackAllAutomationsPattern::insert (id=" << id << ", param=" << param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::insert (id_param=" << id_param << ")" << std::endl;
 		}
 	}
 }
 
 bool
-TrackAllAutomationsPattern::is_empty (const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::is_empty (const IDParameterPair& id_param) const
 {
-	// NEXT.13: processor
-	return main_automation_pattern.is_empty (param);
+	const PBD::ID& id = id_param.first;
+	const Evoral::Parameter& param = id_param.second;
+	if (id == 0) {
+		return main_automation_pattern.is_empty (param);
+	} else {
+		auto it = id_to_processor_automation_pattern.find (id);
+		if (it != id_to_processor_automation_pattern.end()) {
+			return it->second->is_empty (param);
+		} else {
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << id_param << ")" << std::endl;
+			return false;
+		}
+	}
 }
 
 const ParameterSet&
 TrackAllAutomationsPattern::automatable_parameters () const
 {
-	// NEXT.12
+	// NEXT.12: do we still need that?
 	return ParameterSet();
 }
 
 bool
-TrackAllAutomationsPattern::is_displayable (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameterPair& id_param) const
 {
-	// NEXT.13: processor
-	return main_automation_pattern.is_displayable (rowi, param);
+	const PBD::ID& id = id_param.first;
+	const Evoral::Parameter& param = id_param.second;
+	if (id == 0) {
+		return main_automation_pattern.is_displayable (rowi, param);
+	} else {
+		auto it = id_to_processor_automation_pattern.find (id);
+		if (it != id_to_processor_automation_pattern.end()) {
+			return it->second->is_displayable (rowi, param);
+		} else {
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << id_param << ")" << std::endl;
+			return false;
+		}
+	}
 }
 
 size_t
-TrackAllAutomationsPattern::control_events_count (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::control_events_count (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.control_events_count (rowi, param);
 }
 
 std::vector<Temporal::BBT_Time>
-TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_automation_bbt_seq (rowi, param);
 }
 
 std::pair<double, bool>
-TrackAllAutomationsPattern::get_automation_value (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_automation_value (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_automation_value (rowi, param);
 }
 
 std::vector<double>
-TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_automation_value_seq (rowi, param);
 }
 
 double
-TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_automation_interpolation_value (rowi, param);
 }
 
 void
-TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const Evoral::Parameter& param, int delay)
+TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const IDParameterPair& id_param, int delay)
 {
 	// NEXT.13: processor
 	main_automation_pattern.set_automation_value (val, rowi, param, delay);
 }
 
 void
-TrackAllAutomationsPattern::delete_automation_value (int rowi, const Evoral::Parameter& param)
+TrackAllAutomationsPattern::delete_automation_value (int rowi, const IDParameterPair& id_param)
 {
 	// NEXT.13: processor
 	main_automation_pattern.delete_automation_value (rowi, param);
 }
 
 std::pair<int, bool>
-TrackAllAutomationsPattern::get_automation_delay (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_automation_delay (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_automation_delay (rowi, param);
 }
 
 std::vector<int>
-TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_automation_delay_seq (rowi, param);
 }
 
 void
-TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const Evoral::Parameter& param)
+TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const IDParameterPair& id_param)
 {
 	// NEXT.13: processor
 	main_automation_pattern.set_automation_delay (delay, rowi, param);
 }
 
 std::string
-TrackAllAutomationsPattern::get_name (const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::get_name (const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.get_name (param);
 }
 
 void
-TrackAllAutomationsPattern::set_param_enabled (const Evoral::Parameter& param, bool enabled)
+TrackAllAutomationsPattern::set_param_enabled (const IDParameterPair& id_param, bool enabled)
 {
 	// NEXT.13: processor
 	main_automation_pattern.set_param_enabled (param, enabled);
 }
 
 bool
-TrackAllAutomationsPattern::is_param_enabled (const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::is_param_enabled (const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.is_param_enabled (param);
@@ -275,14 +299,14 @@ TrackAllAutomationsPattern::get_enabled_parameters () const
 }
 
 double
-TrackAllAutomationsPattern::lower (const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::lower (const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.lower (param);
 }
 
 double
-TrackAllAutomationsPattern::upper (const Evoral::Parameter& param) const
+TrackAllAutomationsPattern::upper (const IDParameterPair& id_param) const
 {
 	// NEXT.13: processor
 	return main_automation_pattern.upper (param);
