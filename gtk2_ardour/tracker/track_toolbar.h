@@ -38,16 +38,15 @@ class MidiTrackToolbar;
 class AudioTrackToolbar;
 
 struct ProcessorAutomationNode {
-	ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem, const TrackPattern* tp);
-	// TODO: do we really need this?
+	ProcessorAutomationNode (ProcessorPtr proc, Evoral::Parameter param, Gtk::CheckMenuItem* mitem);
 	~ProcessorAutomationNode ();
 
 	// For debugging
-	std::string to_string (const std::string& indent="") const; // NEXT.14: it needs the processor.  See NEXT.2.
+	std::string to_string (const std::string& indent="") const;
 
-	Evoral::Parameter param;
+	ProcessorPtr processor;
+	Evoral::Parameter parameter;
 	Gtk::CheckMenuItem* menu_item;
-	const TrackPattern* track_pattern; // NEXT.2: maybe replace by processor_pattern
 
 	// Corresponding column index. If set to 0 then undetermined yet
 	int column;

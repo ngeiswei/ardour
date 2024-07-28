@@ -40,8 +40,8 @@ using namespace Gtkmm2ext;
 using namespace ARDOUR;
 using namespace Tracker;
 
-ProcessorAutomationNode::ProcessorAutomationNode (Evoral::Parameter p, Gtk::CheckMenuItem* mitem, const TrackPattern* tp)
-	: param (p), menu_item (mitem), track_pattern(tp), column (0)
+ProcessorAutomationNode::ProcessorAutomationNode (ProcessorPtr proc, Evoral::Parameter param, Gtk::CheckMenuItem* mitem)
+	: processor(proc), parameter (param), menu_item (mitem), column (0)
 {
 }
 
@@ -49,7 +49,7 @@ std::string
 ProcessorAutomationNode::to_string (const std::string& indent) const
 {
 	std::stringstream ss;
-	ss << indent << "param[" << param << "] name = " << track_pattern->get_name (param) << std::endl
+	ss << indent << "parameter[" << parameter << "] name = " << processor->describe_parameter (parameter) << std::endl
 	   << indent << "menu_item = " << menu_item << std::endl
 	   << indent << "column = " << column;
 	return ss.str ();
@@ -326,7 +326,7 @@ TrackToolbar::add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor> 
 		ProcessorAutomationNode* pauno = 0;
 		if ((pauno = find_processor_automation_node (processor, *param_it)) == 0) {
 			/* new item */
-			pauno = new ProcessorAutomationNode (*param_it, mitem, track_pattern);
+			pauno = new ProcessorAutomationNode (processor, *param_it, mitem);
 			pai->columns.push_back (pauno);
 		} else {
 			pauno->menu_item = mitem;
@@ -364,10 +364,10 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, Process
 	const bool showit = pauno->menu_item->get_active ();
 
 	if (pauno->column == 0) {
-		grid.add_processor_automation_column (track_index, pai->processor, pauno->param);
+		grid.add_processor_automation_column (track_index, pai->processor, pauno->parameter);
 	}
 
-	grid.set_automation_column_visible (track_index, pauno->param, pauno->column, showit);
+	grid.set_automation_column_visible (track_index, pauno->parameter, pauno->column, showit);
 
 	/* now trigger a redisplay */
 	redisplay_grid ();
@@ -402,7 +402,7 @@ TrackToolbar::find_processor_automation_node (ProcessorPtr processor, Evoral::Pa
 {
 	ProcessorAutomationInfoSeqIt i = find_processor_automation_info (processor);
 	for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-		if ((*ii)->param == param) {
+		if ((*ii)->parameter == param) {
 			return *ii;
 		}
 	}
@@ -466,19 +466,22 @@ void
 TrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	bool gain_visible = !track_pattern->is_empty (PBD::ID (0), Evoral::Parameter (GainAutomation));
+	IDParameterPair gain_id_param(PBD::ID (0), Evoral::Parameter (GainAutomation));
+	bool gain_visible = !track_pattern->is_empty (gain_id_param);
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
 
 	// Trim
 	if (is_audio_track_toolbar ()) {
-		bool trim_visible = !track_pattern->is_empty (PBD::ID (0), Evoral::Parameter (TrimAutomation));
+		IDParameterPair trim_id_param(PBD::ID (0), Evoral::Parameter (TrimAutomation));
+		bool trim_visible = !track_pattern->is_empty (trim_id_param);
 		trim_automation_item->set_active (trim_visible);
 		grid.update_trim_column_visibility (track_index);
 	}
 
 	// Mute
-	bool mute_visible = !track_pattern->is_empty (PBD::ID (0), Evoral::Parameter (MuteAutomation));
+	IDParameterPair mute_id_param(PBD::ID (0), Evoral::Parameter (MuteAutomation));
+	bool mute_visible = !track_pattern->is_empty (mute_id_param);
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility (track_index);
 
@@ -486,7 +489,8 @@ TrackToolbar::show_existing_main_automations ()
 	bool pan_visible = false;
 	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (ParameterSetConstIt p = pan_params.begin (); p != pan_params.end (); ++p) {
-		if (!track_pattern->is_empty (PBD::ID (0), *p)) {
+		IDParameterPair pan_id_param(PBD::ID (0), *p);
+		if (!track_pattern->is_empty (pan_id_param)) {
 			pan_visible = true;
 			break;
 		}
@@ -524,7 +528,7 @@ TrackToolbar::show_all_processor_automations ()
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
 			if (column == 0) {
-				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->param);
+				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->parameter);
 			}
 
 			// Still no column available, skip
@@ -532,7 +536,7 @@ TrackToolbar::show_all_processor_automations ()
 				continue;
 			}
 
-			grid.set_automation_column_visible (track_index, (*ii)->param, column, true);
+			grid.set_automation_column_visible (track_index, (*ii)->parameter, column, true);
 
 			(*ii)->menu_item->set_active (true);
 		}
@@ -545,12 +549,13 @@ TrackToolbar::show_existing_processor_automations ()
 	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
-			bool exist = !track_pattern->is_empty ((*i)->processor->id (), (*ii)->param);
+			IDParameterPair id_param((*i)->processor->id (), (*ii)->parameter);
+			bool exist = !track_pattern->is_empty (id_param);
 
 			// Create automation column if necessary
 			if (exist) {
 				if (column == 0) {
-					grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->param);
+					grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->parameter);
 				}
 			}
 
@@ -559,7 +564,7 @@ TrackToolbar::show_existing_processor_automations ()
 				continue;
 			}
 
-			grid.set_automation_column_visible (track_index, (*ii)->param, column, exist);
+			grid.set_automation_column_visible (track_index, (*ii)->parameter, column, exist);
 
 			(*ii)->menu_item->set_active (exist);
 		}
@@ -573,7 +578,7 @@ TrackToolbar::hide_processor_automations ()
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int column = (*ii)->column;
 			if (column != 0) {
-				grid.set_automation_column_visible (track_index, (*ii)->param, column, false);
+				grid.set_automation_column_visible (track_index, (*ii)->parameter, column, false);
 				(*ii)->menu_item->set_active (false);
 			}
 		}
