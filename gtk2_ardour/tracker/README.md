@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.14: fix ProcessorAutomationNode::to_string (see track_toolbar.h).
+- [ ] NEXT.14: jump straight to NEXT.13.
 - [ ] NEXT.13: support processors.
 
 # Tracker Editor
