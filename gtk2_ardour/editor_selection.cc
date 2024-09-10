@@ -257,7 +257,6 @@ Editor::set_selected_track (TimeAxisView& view, SelectionOperation op, bool no_r
 		}
 		break;
 
-<<<<<<< HEAD
 	case SelectionAdd:
 		begin_reversible_selection_op (X_("Add track selection"));
 		selection->add (&view);
