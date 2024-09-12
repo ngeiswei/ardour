@@ -466,6 +466,13 @@ Pattern::to_mri (int rowi, int mti) const
 }
 
 void
+Pattern::insert (int mti, const PBD::ID& id, const Evoral::Parameter& param)
+{
+	const IDParameterPair id_param(id, param);
+	insert (mti, id_param);
+}
+
+void
 Pattern::insert (int mti, const IDParameterPair& id_param)
 {
 	tps[mti]->insert (id_param);
