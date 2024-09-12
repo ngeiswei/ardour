@@ -122,8 +122,9 @@ public:
 	// mri is defined, then return -1.
 	int to_mri (int rowi, int mti) const;
 
-	// Insert the automation control (s) associated to param at mti (and connect
-	// it to the grid for changes)
+	// Insert the automation control associated to param of processor id at mti
+	// (and connect it to the grid for changes)
+	void insert (int mti, const PBD::ID& id, const Evoral::Parameter& param);
 	void insert (int mti, const IDParameterPair& id_param);
 
 	// Return the midi model at mti and mri

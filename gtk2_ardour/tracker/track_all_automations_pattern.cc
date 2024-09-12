@@ -22,6 +22,7 @@
 #include "ardour/pannable.h"
 #include "ardour/panner.h"
 #include "ardour/region.h"
+#include "pbd/id.h"
 
 #include "track_all_automations_pattern.h"
 #include "tracker_utils.h"
@@ -498,8 +499,8 @@ TrackAllAutomationsPattern::to_string (const std::string& indent) const
 	ss << std::endl << header << "track_automation_pattern:" << std::endl
 	   << main_automation_pattern.to_string (indent2);
 	for (const auto& id_pap : id_to_processor_automation_pattern) {
-		// NEXT.15: implement ostream for id_pap.first
-		ss << std::endl << indent2 << "id_to_processor_automation_pattern[" << id_pap.first << "]:" << std::endl;
+		const PBD::ID& id = id_pap.first;
+		ss << std::endl << indent2 << "id_to_processor_automation_pattern[" << id.to_s () << "]:" << std::endl;
 		ss << id_pap.second->to_string(indent3);
 	}
 

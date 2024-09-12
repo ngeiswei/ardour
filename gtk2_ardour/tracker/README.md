@@ -1,6 +1,7 @@
 # Next
 
-- [ ] NEXT.15: implement ostream for id_pap.first
+- [ ] NEXT.16: study how to deal with IDParameterPair in Grid
+- [ ] NEXT.15: just compile and fix what comes up
 - [ ] NEXT.14: jump straight to NEXT.13.
 - [ ] NEXT.13: support processors.
 

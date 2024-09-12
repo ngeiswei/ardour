@@ -306,7 +306,7 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	}
 
 	// Associate that column to the parameter
-	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id() << std::endl;
+	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id().to_s() << std::endl;
 
 	IDParameterPair idparam (processor->id(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
@@ -1273,7 +1273,7 @@ void
 Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
 {
 	if (is_automation_displayable (row_idx, mti, mri, param)) {
-		double val = pattern.get_automation_value (row_idx, mti, mri, param).first;
+		double val = pattern.get_automation_value (row_idx, mti, mri, param).first; // NEXT.15 convert param to id_param down the line (could be earlier)
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
 		int delay = pattern.get_automation_delay (row_idx, mti, mri, param).first;
 		if (delay != 0) {
@@ -1447,6 +1447,10 @@ Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern
 	}
 }
 
+// NEXT.16: study from here to come up with the best information flow.  In
+// particular it is not clear what to do with tap.get_enabled_parameters ().
+// Should it return instead a IDParameterPair?  Also what to do with
+// Grid::to_cgi?  Should it take an IDParameterPair?
 void
 Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
 {
