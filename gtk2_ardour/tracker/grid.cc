@@ -239,8 +239,8 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (PBD::ID (0) /* id of main is assumed to be 0 */, param);
-	col2params[mti].insert (IndexParamBimap::value_type (column, idparam)); // TODO: better put this knowledge in an inherited column
+	IDParameterPair id_param (PBD::ID (0) /* id of main is assumed to be 0 */, param);
+	col2params[mti].insert (IndexParamBimap::value_type (column, id_param)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
@@ -265,8 +265,8 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair idparam (id, param);
-	col2params[mti].insert (IndexParamBimap::value_type (column, idparam));
+	IDParameterPair id_param (id, param);
+	col2params[mti].insert (IndexParamBimap::value_type (column, id_param));
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
@@ -308,8 +308,8 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	// Associate that column to the parameter
 	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id().to_s() << std::endl;
 
-	IDParameterPair idparam (processor->id(), param);
-	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, idparam));
+	IDParameterPair id_param (processor->id(), param);
+	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, id_param));
 
 	// Set the column title and tooltip
 	std::string long_name = get_name (mti, param, false);
@@ -361,8 +361,8 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	const bool showit = mitem->get_active ();
 
 	// Find the column associated to this parameter, assign one if necessary
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
-	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (idparam);
+	IDParameterPair id_param (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
+	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (id_param);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
 
@@ -380,8 +380,8 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 bool
 Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const // NEXT.14: maybe needs to upgrade the signature
 {
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
-	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (idparam);
+	IDParameterPair id_param (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
+	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (id_param);
 	return it != col2params[mti].right.end () &&
 		visible_automation_columns.find (it->second) != visible_automation_columns.end ();
 }
@@ -1055,7 +1055,7 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, int mti
 	AutomationPattern& ap = mrp.mrap;
 	for (const Evoral::Parameter& param : ap.get_enabled_parameters ())
 	{
-		int cgi = to_cgi (mti, param);
+		int cgi = to_cgi (mti, PBD::ID (0), param);
 		redisplay_undefined_automation (row, mti, cgi);
 	}
 }
@@ -1436,6 +1436,7 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 	}
 }
 
+// NEXT.17: iterate over processor automations, see TrackAllAutomationsPatternPhenomenalDiff
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
@@ -1448,9 +1449,10 @@ Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern
 }
 
 // NEXT.16: study from here to come up with the best information flow.  In
-// particular it is not clear what to do with tap.get_enabled_parameters ().
-// Should it return instead a IDParameterPair?  Also what to do with
-// Grid::to_cgi?  Should it take an IDParameterPair?
+// particular it is not clear what to do with tap.get_enabled_parameters (),
+// should it return IDParameterPair?  ANSWER: is should NOT return
+// IDParameterPair because it is a method of AutomationPattern, however the
+// ascendant code should pass along the ID of the processor.
 void
 Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
 {
@@ -2228,7 +2230,7 @@ Grid::to_string (const std::string& indent) const
 	for (unsigned mti = 0; mti != col2params.size(); ++mti) {
 		ss << std::endl << indent1 << "col2params[" << mti << "]:";
 		for (const auto& cip : col2params[mti].left) {
-			ss << std::endl << indent2 << "idparam[col=" << cip.first << "] = "
+			ss << std::endl << indent2 << "id_param[col=" << cip.first << "] = "
 			   << "(id=" << cip.second.first << ", param=" << cip.second.second << ")";
 		}
 	}
@@ -3146,11 +3148,16 @@ Grid::get_id_param (int mti, int cgi) const
 }
 
 int
-Grid::to_cgi (int mti, const Evoral::Parameter& param) const // NEXT.14: use PBD::ID
+Grid::to_cgi (int mti, const PBD::ID& id, const Evoral::Parameter& param) const
 {
-	IDParameterPair idparam (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID (0), param);
-	IDParameterPair idparam2 (/* NEXT.14: get the PBD::ID or leave it as it is*/ PBD::ID (0), param);
-	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (idparam);
+	IDParameterPair id_param (id, param);
+	return to_cgi (mti, id_param);
+}
+
+int
+Grid::to_cgi (int mti, const IDParameterPair& id_param) const
+{
+	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (id_param);
 	if (cp_it == col2params[mti].right.end ()) {
 		return -1;
 	}
