@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.17: iterate over processor automations
 - [ ] NEXT.16: study how to deal with IDParameterPair in Grid
 - [ ] NEXT.15: just compile and fix what comes up
 - [ ] NEXT.14: jump straight to NEXT.13.

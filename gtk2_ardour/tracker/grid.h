@@ -695,8 +695,9 @@ private:
 	// undefined.
 	IDParameterPair get_id_param (int mti, int cgi) const;
 
-	// Return cgi associated to param at mti. If undefined for param return -1.
-	int to_cgi (int mti, const Evoral::Parameter& param) const;
+	// Return cgi associated to id_param at mti. If undefined for param return -1.
+	int to_cgi (int mti, const PBD::ID& id, const Evoral::Parameter& param) const;
+	int to_cgi (int mti, const IDParameterPair& id_param) const;
 
 	void automation_edited (const std::string& path, const std::string& text);
 
