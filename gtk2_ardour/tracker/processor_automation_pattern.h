@@ -49,6 +49,9 @@ public:
 	// Overload AutomationPattern::automatable_parameters ()
 	const ParameterSet& automatable_parameters () const; // NEXT: maybe...
 
+	// Return processor ID
+	const PBD::ID& id () const;
+
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
