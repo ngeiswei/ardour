@@ -1436,32 +1436,53 @@ Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrac
 	}
 }
 
-// NEXT.17: iterate over processor automations, see TrackAllAutomationsPatternPhenomenalDiff
 void
 Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern& taap, const TrackAllAutomationsPatternPhenomenalDiff* taap_diff)
 {
-	const TrackAutomationPattern& tap = taap.main_automation_pattern;
 	if (taap_diff == 0 || taap_diff->full) {
-		redisplay_track_automations (mti, tap);
+		redisplay_main_automations (mti, taap.main_automation_pattern);
+		for (const auto& id_pap : taap.id_to_processor_automation_pattern) {
+			redisplay_processor_automations (mti, *id_pap.second);
+		}
 	} else {
-		redisplay_track_automations (mti, tap, &taap_diff->main_automation_pattern_phenomenal_diff);
+		redisplay_main_automations (mti, taap.main_automation_pattern, &taap_diff->main_automation_pattern_phenomenal_diff);
+		for (const auto& id_pappd : taap_diff->id_to_processor_automation_pattern_phenomenal_diff) {
+			const PBD::ID& id = id_pappd.first;
+			auto it = taap.id_to_processor_automation_pattern.find (id);
+			if (it != taap.id_to_processor_automation_pattern.end ()) {
+				redisplay_processor_automations (mti, *it->second, &id_pappd.second);
+			}
+		}
 	}
+}
+
+void
+Grid::redisplay_main_automations (int mti, const MainAutomationPattern& map, const AutomationPatternPhenomenalDiff* map_diff)
+{
+	redisplay_track_automations (mti, map, map_diff);
+}
+
+void
+Grid::redisplay_processor_automations (int mti, const ProcessorAutomationPattern& pap, const AutomationPatternPhenomenalDiff* pap_diff)
+{
+	redisplay_track_automations (mti, pap, pap_diff); // NEXT.16: probably need to extract ID and pass it to redisplay_track_automations
 }
 
 // NEXT.16: study from here to come up with the best information flow.  In
 // particular it is not clear what to do with tap.get_enabled_parameters (),
 // should it return IDParameterPair?  ANSWER: is should NOT return
 // IDParameterPair because it is a method of AutomationPattern, however the
-// ascendant code should pass along the ID of the processor.
+// ascendant code should pass along the ID of the processor because
+// redisplay_track_automation_param calls to_cgi which requires ID.
 void
-Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* automation_diff)
+Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* tap_diff)
 {
-	if (automation_diff == 0 || automation_diff->full) {
+	if (tap_diff == 0 || tap_diff->full) {
 		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
 			redisplay_track_automation_param (mti, tap, param);
 		}
 	} else {
-		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = automation_diff->param2rows_diff.begin (); it != automation_diff->param2rows_diff.end (); ++it) {
+		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = tap_diff->param2rows_diff.begin (); it != tap_diff->param2rows_diff.end (); ++it) {
 			redisplay_track_automation_param (mti, tap, it->first, &it->second);
 		}
 	}
