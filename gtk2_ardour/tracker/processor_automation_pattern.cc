@@ -61,6 +61,12 @@ ProcessorAutomationPattern::automatable_parameters () const
 	return ParameterSet();
 }
 
+const PBD::ID&
+ProcessorAutomationPattern::id () const
+{
+	return _processor->id ();
+}
+
 std::string
 ProcessorAutomationPattern::self_to_string () const
 {
