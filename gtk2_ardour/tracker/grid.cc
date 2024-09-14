@@ -1459,39 +1459,33 @@ Grid::redisplay_track_all_automations (int mti, const TrackAllAutomationsPattern
 void
 Grid::redisplay_main_automations (int mti, const MainAutomationPattern& map, const AutomationPatternPhenomenalDiff* map_diff)
 {
-	redisplay_track_automations (mti, map, map_diff);
+	redisplay_track_automations (mti, PBD::ID (0), map, map_diff);
 }
 
 void
 Grid::redisplay_processor_automations (int mti, const ProcessorAutomationPattern& pap, const AutomationPatternPhenomenalDiff* pap_diff)
 {
-	redisplay_track_automations (mti, pap, pap_diff); // NEXT.16: probably need to extract ID and pass it to redisplay_track_automations
+	redisplay_track_automations (mti, pap.id (), pap, pap_diff);
 }
 
-// NEXT.16: study from here to come up with the best information flow.  In
-// particular it is not clear what to do with tap.get_enabled_parameters (),
-// should it return IDParameterPair?  ANSWER: is should NOT return
-// IDParameterPair because it is a method of AutomationPattern, however the
-// ascendant code should pass along the ID of the processor because
-// redisplay_track_automation_param calls to_cgi which requires ID.
 void
-Grid::redisplay_track_automations (int mti, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* tap_diff)
+Grid::redisplay_track_automations (int mti, const PBD::ID& id, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* tap_diff)
 {
 	if (tap_diff == 0 || tap_diff->full) {
 		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
-			redisplay_track_automation_param (mti, tap, param);
+			redisplay_track_automation_param (mti, id, tap, param);
 		}
 	} else {
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = tap_diff->param2rows_diff.begin (); it != tap_diff->param2rows_diff.end (); ++it) {
-			redisplay_track_automation_param (mti, tap, it->first, &it->second);
+			redisplay_track_automation_param (mti, id, tap, it->first, &it->second);
 		}
 	}
 }
 
 void
-Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_track_automation_param (int mti, const PBD::ID& id, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	int cgi = to_cgi (mti, param);
+	int cgi = to_cgi (mti, id, param);
 	if (cgi < 0) {
 		return;
 	}
