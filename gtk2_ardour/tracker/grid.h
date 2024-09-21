@@ -212,8 +212,8 @@ public:
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
 	void redisplay_blank_automation_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
-	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
-	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param);
+	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param);
+	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param);
 	void redisplay_cell_background (int row_idx, int col_idx);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
@@ -230,8 +230,8 @@ public:
 	void redisplay_main_automations (int mti, const MainAutomationPattern& map, const AutomationPatternPhenomenalDiff* map_diff = 0);
 	void redisplay_processor_automations (int mti, const ProcessorAutomationPattern& pap, const AutomationPatternPhenomenalDiff* pap_diff = 0);
 	void redisplay_track_automations (int mti, const PBD::ID& id, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* tap_diff = 0);
-	void redisplay_track_automation_param (int mti, const PBD::ID& id, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param);
+	void redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameterPair& id_param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameterPair& id_param);
 	void redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 
 	// Redisplay MIDI region, including notes and automations
@@ -635,7 +635,7 @@ private:
 	// content is replaced by ***
 	bool is_note_displayable (int row_idx, int mti, int mri, int cgi) const;
 	bool is_automation_displayable (int row_idx, int mti, int mri, int cgi) const;
-	bool is_automation_displayable (int row_idx, int mti, int mri, const PBD::ID& id, const Evoral::Parameter& param) const;
+	bool is_automation_displayable (int row_idx, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Get note from path, mti and cgi
 	NotePtr get_on_note (const std::string& path, int mti, int cgi) const;
@@ -723,7 +723,7 @@ private:
 	// Return the interpolation value (or default) of an automation at the given
 	// location.
 	double get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const;
-	double get_automation_interpolation_value (int row_idx, int mti, int mri, const Evoral::Parameter& param) const;
+	double get_automation_interpolation_value (int row_idx, int mti, int mri, const IDParameterPair& id_param) const;
 
 	// Set the automation value at the given location.
 	void set_automation_value (int row_idx, int mti, int mri, int cgi, double val);

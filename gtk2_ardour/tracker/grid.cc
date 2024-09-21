@@ -968,9 +968,6 @@ Grid::redisplay_grid ()
 
 	std::cout << "Grid:" << std::endl << to_string () << std::endl;
 	std::cout << "pattern:" << std::endl << pattern.to_string () << std::endl;
-	// NEXT.15: search in the code where knowing the id allows to call the right
-	// processor.  In the test-tracker session (on the desktop) the id of DX10
-	// is 272.
 
 	// Redisplay the grid
 	redisplay_global_columns ();
@@ -1270,12 +1267,12 @@ Grid::redisplay_blank_automation_foreground (TreeModel::Row& row, int mti, int c
 }
 
 void
-Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
+Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param)
 {
-	if (is_automation_displayable (row_idx, mti, mri, param)) {
-		double val = pattern.get_automation_value (row_idx, mti, mri, param).first; // NEXT.15 convert param to id_param down the line (could be earlier)
+	if (is_automation_displayable (row_idx, mti, mri, id_param)) {
+		double val = pattern.get_automation_value (row_idx, mti, mri, id_param).first;
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
-		int delay = pattern.get_automation_delay (row_idx, mti, mri, param).first;
+		int delay = pattern.get_automation_delay (row_idx, mti, mri, id_param).first;
 		if (delay != 0) {
 			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
 			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
@@ -1287,10 +1284,10 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 }
 
 void
-Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const Evoral::Parameter& param)
+Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param)
 {
-	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, param);
-	if (is_int_param (param)) {
+	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, id_param);
+	if (is_int_param (id_param.second)) {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
 	} else {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
@@ -1363,7 +1360,7 @@ void
 Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const ParameterSet& params, const std::string& color)
 {
 	for (const Evoral::Parameter& param : params) {
-		int cgi = to_cgi (mti, param);
+		int cgi = to_cgi (mti, param); // NEXT.15: needs to replace by id_param, however we need to understand where upstream the change must be trickled down
 		row[columns._automation_background_color[mti][cgi]] = color;
 		row[columns._automation_delay_background_color[mti][cgi]] = color;
 	}
@@ -1473,41 +1470,41 @@ Grid::redisplay_track_automations (int mti, const PBD::ID& id, const TrackAutoma
 {
 	if (tap_diff == 0 || tap_diff->full) {
 		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
-			redisplay_track_automation_param (mti, id, tap, param);
+			redisplay_track_automation_param (mti, tap, IDParameterPair (id, param));
 		}
 	} else {
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = tap_diff->param2rows_diff.begin (); it != tap_diff->param2rows_diff.end (); ++it) {
-			redisplay_track_automation_param (mti, id, tap, it->first, &it->second);
+			redisplay_track_automation_param (mti, tap, IDParameterPair (id, it->first), &it->second);
 		}
 	}
 }
 
 void
-Grid::redisplay_track_automation_param (int mti, const PBD::ID& id, const TrackAutomationPattern& tap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameterPair& id_param, const RowsPhenomenalDiff* rows_diff)
 {
-	int cgi = to_cgi (mti, id, param);
+	int cgi = to_cgi (mti, id_param);
 	if (cgi < 0) {
 		return;
 	}
 
 	if (rows_diff == 0 || rows_diff->full) {
 		for (int row_idx = 0; row_idx < tap.nrows; row_idx++) {
-			redisplay_track_automation_param_row (mti, cgi, row_idx, tap, param);
+			redisplay_track_automation_param_row (mti, cgi, row_idx, tap, id_param);
 		}
 	} else {
 		for (std::set<int>::const_iterator it = rows_diff->rows.begin (); it != rows_diff->rows.end (); ++it) {
-			redisplay_track_automation_param_row (mti, cgi, *it, tap, param);
+			redisplay_track_automation_param_row (mti, cgi, *it, tap, id_param);
 		}
 	}
 }
 
 void
-Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const Evoral::Parameter& param)
+Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameterPair& id_param)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	int mri = -1;
-	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
+	int automation_count = pattern.control_events_count (row_idx, mti, mri, id_param);
 
 	// Fill background colors
 	redisplay_automation_background (row, mti, cgi);
@@ -1516,9 +1513,9 @@ Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const
 	redisplay_blank_automation_foreground (row, mti, cgi);
 
 	if (automation_count > 0) {
-		redisplay_automation (row, row_idx, mti, mri, cgi, param);
+		redisplay_automation (row, row_idx, mti, mri, cgi, id_param);
 	} else {
-		redisplay_automation_interpolation (row, row_idx, mti, mri, cgi, param);
+		redisplay_automation_interpolation (row, row_idx, mti, mri, cgi, id_param);
 	}
 }
 
@@ -2345,13 +2342,13 @@ bool
 Grid::is_automation_displayable (int row_idx, int mti, int mri, int cgi) const
 {
 	IDParameterPair id_param = get_id_param (mti, cgi);
-	return is_automation_displayable (row_idx, mti, mri, id_param.first, id_param.second);
+	return is_automation_displayable (row_idx, mti, mri, id_param);
 }
 
 bool
-Grid::is_automation_displayable (int row_idx, int mti, int mri, const PBD::ID& id, const Evoral::Parameter& param) const
+Grid::is_automation_displayable (int row_idx, int mti, int mri, const IDParameterPair& id_param) const
 {
-	return pattern.is_automation_displayable (row_idx, mti, mri, id, param);
+	return pattern.is_automation_displayable (row_idx, mti, mri, id_param);
 }
 
 NotePtr
@@ -3220,13 +3217,13 @@ double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const
 {
 	IDParameterPair id_param = get_param (mti, cgi);
-	return get_automation_interpolation_value (row_idx, mti, mri, id_param.first, id_param.second);
+	return get_automation_interpolation_value (row_idx, mti, mri, id_param);
 }
 
 double
-Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const PBD::ID& id, const Evoral::Parameter& param) const
+Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const PBD::ID& id, const IDParameterPair& id_param) const
 {
-	return pattern.get_automation_interpolation_value (row_idx, mti, mri, id, param);
+	return pattern.get_automation_interpolation_value (row_idx, mti, mri, id_param);
 }
 
 void
