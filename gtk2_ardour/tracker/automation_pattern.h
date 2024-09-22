@@ -62,15 +62,6 @@ public:
 
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
-	// To be implemented by the child class.  Very much like
-	// Automatable::what_can_be_automated() but given another name to
-	// avoid confusion.
-	// NEXT.3: implement in MainAutomationPattern and ProcessorAutomationPattern.
-	//
-	// NEXT.3: medidate over x42 comment
-	// Plugins are wrapped inside a PluginInsert class, which is-a Processor
-	virtual const ParameterSet& automatable_parameters () const = 0;
-
 	// Assign a control event to a row.
 	// Return its row index if successful or INVALID_ROW otherwise.
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);

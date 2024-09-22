@@ -1341,8 +1341,8 @@ Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx,
 
 	// Set current row background colors for MIDI and track automations
 	int mri = pattern.to_mri (row_idx, mti);
-	ParameterSet params = pattern.get_enabled_parameters (mti, mri);
-	redisplay_row_mti_automations_background_color (row, row_idx, mti, params, color);
+	IDParameterSet id_params = pattern.get_enabled_parameters (mti, mri);
+	redisplay_row_mti_automations_background_color (row, row_idx, mti, id_params, color);
 }
 
 void
@@ -1357,10 +1357,10 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int ro
 }
 
 void
-Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const ParameterSet& params, const std::string& color)
+Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const IDParameterSet& id_params, const std::string& color)
 {
-	for (const Evoral::Parameter& param : params) {
-		int cgi = to_cgi (mti, param); // NEXT.15: needs to replace by id_param, however we need to understand where upstream the change must be trickled down
+	for (const IDParameterPair& id_param : id_params) {
+		int cgi = to_cgi (mti, id_param);
 		row[columns._automation_background_color[mti][cgi]] = color;
 		row[columns._automation_delay_background_color[mti][cgi]] = color;
 	}
@@ -1588,7 +1588,7 @@ Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomation
 void
 Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	int cgi = to_cgi (mti, param);
+	int cgi = to_cgi (mti, param); // NEXT.15
 
 	if (cgi < 0) {
 		return;

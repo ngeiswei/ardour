@@ -59,7 +59,7 @@ public:
 
 	void set_param_enabled (const IDParameterPair& id_param, bool enabled);
 	bool is_param_enabled (const IDParameterPair& id_param) const;
-	ParameterSet get_enabled_parameters (int mri) const;
+	IDParameterSet get_enabled_parameters (int mri) const;
 
 	// Enable/disable all tracks
 	void enable ();

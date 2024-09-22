@@ -46,9 +46,6 @@ public:
 	// Insert all automations of the corresponding processor
 	void setup_processor_automation_control ();
 
-	// Overload AutomationPattern::automatable_parameters ()
-	const ParameterSet& automatable_parameters () const; // NEXT: maybe...
-
 	// Return processor ID
 	const PBD::ID& id () const;
 

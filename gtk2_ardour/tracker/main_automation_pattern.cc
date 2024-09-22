@@ -38,7 +38,6 @@ MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
                                               bool connect)
 	: TrackAutomationPattern (te, trk, pos, len, ed, ntl, connect)
 {
-	// NEXT.3: fill _automatable_parameters, maybe...
 	setup_main_automation_controls ();
 }
 
@@ -61,12 +60,6 @@ MainAutomationPattern::setup_main_automation_controls ()
 	}
 }
 
-const ParameterSet&
-MainAutomationPattern::automatable_parameters () const
-{
-	return _automatable_parameters;
-}
-
 std::string
 MainAutomationPattern::self_to_string () const
 {
@@ -81,7 +74,5 @@ MainAutomationPattern::to_string (const std::string& indent) const
 	std::stringstream ss;
 	ss << TrackAutomationPattern::to_string (indent) << std::endl;
 	std::string header = indent + self_to_string () + " ";
-	ss << header << "_automatable_parameters:";
-	// NEXT.11: print _automatable_parameters
 	return ss.str ();
 }

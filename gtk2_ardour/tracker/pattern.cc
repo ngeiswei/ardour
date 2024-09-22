@@ -538,7 +538,7 @@ Pattern::is_param_enabled (int mti, const IDParameterPair& id_param) const
 	return tps[mti]->is_param_enabled (id_param);
 }
 
-ParameterSet
+IDParameterSet
 Pattern::get_enabled_parameters (int mti, int mri) const
 {
 	return tps[mti]->get_enabled_parameters (mri);

@@ -67,13 +67,6 @@ TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral:
 	return row;
 }
 
-const ParameterSet&
-TrackAutomationPattern::automatable_parameters () const
-{
-	// NEXT.12
-	return ParameterSet();
-}
-
 std::string
 TrackAutomationPattern::self_to_string () const
 {

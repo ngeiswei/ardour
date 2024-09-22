@@ -43,15 +43,9 @@ public:
 	// Insert Gain, Trim, Mute and Pan automations
 	void setup_main_automation_controls ();
 
-	// Overload AutomationPattern::automatable_parameters ()
-	const ParameterSet& automatable_parameters () const;
-
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
-
-private:
-	ParameterSet _automatable_parameters;
 };
 
 } // ~namespace tracker

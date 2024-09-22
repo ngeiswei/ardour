@@ -57,8 +57,6 @@ public:
 	// Return its row index if successful or INVALID_ROW otherwise.
 	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
-	virtual const ParameterSet& automatable_parameters () const;
-
 	// Return the automation interpolation value of a given param at a given row index
 	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
 

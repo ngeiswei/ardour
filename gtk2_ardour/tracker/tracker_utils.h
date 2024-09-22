@@ -60,7 +60,7 @@ typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationContro
 
 // Allows to identify a parameter of a processor of a certain ID
 typedef std::pair<PBD::ID, Evoral::Parameter> IDParameterPair;
-typedef std::set<IDParameterPair> IDParameterPairSet;
+typedef std::set<IDParameterPair> IDParameterSet;
 
 typedef ARDOUR::AutomationList::iterator AutomationListIt;
 typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;

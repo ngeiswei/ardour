@@ -170,13 +170,6 @@ TrackAllAutomationsPattern::is_empty (const IDParameterPair& id_param) const
 	}
 }
 
-const ParameterSet&
-TrackAllAutomationsPattern::automatable_parameters () const
-{
-	// NEXT.12: do we still need that?
-	return ParameterSet();
-}
-
 bool
 TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameterPair& id_param) const
 {
@@ -425,17 +418,21 @@ TrackAllAutomationsPattern::is_param_enabled (const IDParameterPair& id_param) c
 	}
 }
 
-// NEXT.13: should return a set of pairs <ID, Parameter>, or a multimap from ID
-// to Parameter.
-ParameterSet
+IDParameterSet
 TrackAllAutomationsPattern::get_enabled_parameters () const
 {
-	ParameterSet ep = main_automation_pattern.get_enabled_parameters ();
-	for (auto& idpap : id_to_processor_automation_pattern) {
-		ParameterSet pep = idpap.second->get_enabled_parameters ();
-		ep.insert(pep.begin(), pep.end());
+	IDParameterSet ieps;
+	for (const Evoral::Parameter& param : main_automation_pattern.get_enabled_parameters ()) {
+		ieps.insert(IDParameterPair (PBD::ID (0), param));
 	}
-	return ep;
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		const PBD::ID& id = idpap.first;
+		ParameterSet pep = idpap.second->get_enabled_parameters ();
+		for (const Evoral::Parameter& param : pep) {
+			ieps.insert(IDParameterPair (id, param));
+		}
+	}
+	return ieps;
 }
 
 double

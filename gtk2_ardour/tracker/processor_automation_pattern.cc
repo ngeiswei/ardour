@@ -35,7 +35,6 @@ ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerEditor& te,
 	: TrackAutomationPattern (te, trk, pos, len, ed, ntl, connect)
 	, _processor (processor)
 {
-	// NEXT.3: fill _automatable_parameters, maybe...
 	setup_processor_automation_control ();
 }
 
@@ -52,13 +51,6 @@ ProcessorAutomationPattern::setup_processor_automation_control ()
 	for (const Evoral::Parameter& param : automatable) {
 		insert (param);
 	}
-}
-
-const ParameterSet&
-ProcessorAutomationPattern::automatable_parameters () const
-{
-	// NEXT.6
-	return ParameterSet();
 }
 
 const PBD::ID&
