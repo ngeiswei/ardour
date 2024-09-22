@@ -70,8 +70,6 @@ public:
 	// will probably need to take a pair (Processor, Parameter).
 	bool is_empty (const IDParameterPair& id_param) const;
 
-	virtual const ParameterSet& automatable_parameters () const;
-
 	bool is_displayable (int rowi, const IDParameterPair& id_param) const;
 	size_t control_events_count (int rowi, const IDParameterPair& id_param) const;
 	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const IDParameterPair& id_param) const;
@@ -88,9 +86,8 @@ public:
 	bool is_param_enabled (const IDParameterPair& id_param) const;
 
 	// Return the set of enabled automation parameters across all processors of
-	// the track.  NEXT: it's unclear if this should take a processor parameter,
-	// or aggregate across all processors.
-	ParameterSet get_enabled_parameters () const;
+	// the track.
+	IDParameterSet get_enabled_parameters () const;
 
 	double lower (const IDParameterPair& id_param) const;
 	double upper (const IDParameterPair& id_param) const;

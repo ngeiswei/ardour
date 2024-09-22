@@ -101,13 +101,6 @@ MidiRegionAutomationPattern::event2row (const Evoral::Parameter& param, const Ev
 	return row;
 }
 
-const ParameterSet&
-MidiRegionAutomationPattern::automatable_parameters () const
-{
-	// NEXT.6
-	return ParameterSet();
-}
-
 double
 MidiRegionAutomationPattern::get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const
 {

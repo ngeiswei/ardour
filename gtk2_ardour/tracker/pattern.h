@@ -151,10 +151,8 @@ public:
 	bool is_param_enabled (int mti, const IDParameterPair& id_param) const;
 
 	// Return the set of enabled parameters for the given mti, and possibly mri
-	// in the case of a region.  NEXT: once any processor automation is
-	// supported, the following should probably take an extra argument
-	// caracterizing the processor.
-	ParameterSet get_enabled_parameters (int mti, int mri) const;
+	// in the case of a region.
+	IDParameterSet get_enabled_parameters (int mti, int mri) const;
 
 	// Return the sequence in chronological order of BBTs of each value at the
 	// given location.

@@ -135,7 +135,7 @@ public:
 
 	virtual bool is_param_enabled (const IDParameterPair& id_param) const;
 
-	virtual ParameterSet get_enabled_parameters (int mri) const;
+	virtual IDParameterSet get_enabled_parameters (int mri) const;
 
 	virtual double lower (int rowi, const IDParameterPair& id_param) const;
 

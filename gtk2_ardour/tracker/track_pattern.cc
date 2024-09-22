@@ -265,7 +265,7 @@ TrackPattern::is_param_enabled (const IDParameterPair& id_param) const
 	return track_all_automations_pattern.is_param_enabled (id_param);
 }
 
-ParameterSet
+IDParameterSet
 TrackPattern::get_enabled_parameters (int mri) const
 {
 	return track_all_automations_pattern.get_enabled_parameters ();
