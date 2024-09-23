@@ -64,33 +64,33 @@ public:
 
 	// Insert the automation control corresponding to param in
 	// _automation_controls, and connect it to the grid for connect changes.
-	void insert (const IDParameterPair& id_param);
+	void insert (const IDParameter& id_param);
 
 	// Return whether the automation associated to param is empty.  NEXT: this
 	// will probably need to take a pair (Processor, Parameter).
-	bool is_empty (const IDParameterPair& id_param) const;
+	bool is_empty (const IDParameter& id_param) const;
 
-	bool is_displayable (int rowi, const IDParameterPair& id_param) const;
-	size_t control_events_count (int rowi, const IDParameterPair& id_param) const;
-	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const IDParameterPair& id_param) const;
-	std::pair<double, bool> get_automation_value (int rowi, const IDParameterPair& id_param) const;
-	std::vector<double> get_automation_value_seq (int rowi, const IDParameterPair& id_param) const;
-	double get_automation_interpolation_value (int rowi, const IDParameterPair& id_param) const;
-	void set_automation_value (double val, int rowi, const IDParameterPair& id_param, int delay);
-	void delete_automation_value (int rowi, const IDParameterPair& id_param);
-	std::pair<int, bool> get_automation_delay (int rowi, const IDParameterPair& id_param) const;
-	std::vector<int> get_automation_delay_seq (int rowi, const IDParameterPair& id_param) const;
-	void set_automation_delay (int delay, int rowi, const IDParameterPair& id_param);
-	std::string get_name (const IDParameterPair& id_param) const;
-	void set_param_enabled (const IDParameterPair& id_param, bool enabled);
-	bool is_param_enabled (const IDParameterPair& id_param) const;
+	bool is_displayable (int rowi, const IDParameter& id_param) const;
+	size_t control_events_count (int rowi, const IDParameter& id_param) const;
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, const IDParameter& id_param) const;
+	std::pair<double, bool> get_automation_value (int rowi, const IDParameter& id_param) const;
+	std::vector<double> get_automation_value_seq (int rowi, const IDParameter& id_param) const;
+	double get_automation_interpolation_value (int rowi, const IDParameter& id_param) const;
+	void set_automation_value (double val, int rowi, const IDParameter& id_param, int delay);
+	void delete_automation_value (int rowi, const IDParameter& id_param);
+	std::pair<int, bool> get_automation_delay (int rowi, const IDParameter& id_param) const;
+	std::vector<int> get_automation_delay_seq (int rowi, const IDParameter& id_param) const;
+	void set_automation_delay (int delay, int rowi, const IDParameter& id_param);
+	std::string get_name (const IDParameter& id_param) const;
+	void set_param_enabled (const IDParameter& id_param, bool enabled);
+	bool is_param_enabled (const IDParameter& id_param) const;
 
 	// Return the set of enabled automation parameters across all processors of
 	// the track.
 	IDParameterSet get_enabled_parameters () const;
 
-	double lower (const IDParameterPair& id_param) const;
-	double upper (const IDParameterPair& id_param) const;
+	double lower (const IDParameter& id_param) const;
+	double upper (const IDParameter& id_param) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;

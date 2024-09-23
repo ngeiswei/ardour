@@ -466,21 +466,21 @@ void
 TrackToolbar::show_existing_main_automations ()
 {
 	// Gain
-	IDParameterPair gain_id_param(PBD::ID (0), Evoral::Parameter (GainAutomation));
+	IDParameter gain_id_param(PBD::ID (0), Evoral::Parameter (GainAutomation));
 	bool gain_visible = !track_pattern->is_empty (gain_id_param);
 	gain_automation_item->set_active (gain_visible);
 	grid.update_gain_column_visibility (track_index);
 
 	// Trim
 	if (is_audio_track_toolbar ()) {
-		IDParameterPair trim_id_param(PBD::ID (0), Evoral::Parameter (TrimAutomation));
+		IDParameter trim_id_param(PBD::ID (0), Evoral::Parameter (TrimAutomation));
 		bool trim_visible = !track_pattern->is_empty (trim_id_param);
 		trim_automation_item->set_active (trim_visible);
 		grid.update_trim_column_visibility (track_index);
 	}
 
 	// Mute
-	IDParameterPair mute_id_param(PBD::ID (0), Evoral::Parameter (MuteAutomation));
+	IDParameter mute_id_param(PBD::ID (0), Evoral::Parameter (MuteAutomation));
 	bool mute_visible = !track_pattern->is_empty (mute_id_param);
 	mute_automation_item->set_active (mute_visible);
 	grid.update_mute_column_visibility (track_index);
@@ -489,7 +489,7 @@ TrackToolbar::show_existing_main_automations ()
 	bool pan_visible = false;
 	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (ParameterSetConstIt p = pan_params.begin (); p != pan_params.end (); ++p) {
-		IDParameterPair pan_id_param(PBD::ID (0), *p);
+		IDParameter pan_id_param(PBD::ID (0), *p);
 		if (!track_pattern->is_empty (pan_id_param)) {
 			pan_visible = true;
 			break;
@@ -549,7 +549,7 @@ TrackToolbar::show_existing_processor_automations ()
 	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int& column = (*ii)->column;
-			IDParameterPair id_param((*i)->processor->id (), (*ii)->parameter);
+			IDParameter id_param((*i)->processor->id (), (*ii)->parameter);
 			bool exist = !track_pattern->is_empty (id_param);
 
 			// Create automation column if necessary

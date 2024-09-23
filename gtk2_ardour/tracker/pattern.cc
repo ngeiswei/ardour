@@ -277,7 +277,7 @@ Pattern::is_region_defined (int rowi, int mti) const
 }
 
 bool
-Pattern::is_automation_defined (int rowi, int mti, const IDParameterPair& id_param) const
+Pattern::is_automation_defined (int rowi, int mti, const IDParameter& id_param) const
 {
 	const Evoral::Parameter& param = id_param.second;
 	return TrackerUtils::is_region_automation (param) ? is_region_defined (rowi, mti) : tps[mti]->is_defined (to_rri (rowi, mti));
@@ -406,13 +406,13 @@ Pattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
 }
 
 bool
-Pattern::is_automation_displayable (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::is_automation_displayable (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->is_automation_displayable (to_rri (rowi, mti), mri, id_param);
 }
 
 size_t
-Pattern::control_events_count (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::control_events_count (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->control_events_count (to_rri (rowi, mti), mri, id_param);
 }
@@ -468,12 +468,12 @@ Pattern::to_mri (int rowi, int mti) const
 void
 Pattern::insert (int mti, const PBD::ID& id, const Evoral::Parameter& param)
 {
-	const IDParameterPair id_param(id, param);
+	const IDParameter id_param(id, param);
 	insert (mti, id_param);
 }
 
 void
-Pattern::insert (int mti, const IDParameterPair& id_param)
+Pattern::insert (int mti, const IDParameter& id_param)
 {
 	tps[mti]->insert (id_param);
 }
@@ -521,19 +521,19 @@ Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cm
 }
 
 std::string
-Pattern::get_name (int mti, const IDParameterPair& id_param) const
+Pattern::get_name (int mti, const IDParameter& id_param) const
 {
 	return tps[mti]->get_name (id_param);
 }
 
 void
-Pattern::set_param_enabled (int mti, const IDParameterPair& id_param, bool enabled)
+Pattern::set_param_enabled (int mti, const IDParameter& id_param, bool enabled)
 {
 	tps[mti]->set_param_enabled (id_param, enabled);
 }
 
 bool
-Pattern::is_param_enabled (int mti, const IDParameterPair& id_param) const
+Pattern::is_param_enabled (int mti, const IDParameter& id_param) const
 {
 	return tps[mti]->is_param_enabled (id_param);
 }
@@ -545,55 +545,55 @@ Pattern::get_enabled_parameters (int mti, int mri) const
 }
 
 std::vector<Temporal::BBT_Time>
-Pattern::get_automation_bbt_seq (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::get_automation_bbt_seq (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->get_automation_bbt_seq (to_rri (rowi, mti), mri, id_param);
 }
 
 std::pair<double, bool>
-Pattern::get_automation_value (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::get_automation_value (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->get_automation_value (to_rri (rowi, mti), mri, id_param);
 }
 
 std::vector<double>
-Pattern::get_automation_value_seq (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::get_automation_value_seq (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->get_automation_value_seq (to_rri (rowi, mti), mri, id_param);
 }
 
 double
-Pattern::get_automation_interpolation_value (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::get_automation_interpolation_value (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->get_automation_interpolation_value (to_rri (rowi, mti), mri, id_param);
 }
 
 void
-Pattern::set_automation_value (double val, int rowi, int mti, int mri, const IDParameterPair& id_param, int delay)
+Pattern::set_automation_value (double val, int rowi, int mti, int mri, const IDParameter& id_param, int delay)
 {
 	return tps[mti]->set_automation_value (val, to_rri (rowi, mti), mri, id_param, delay);
 }
 
 void
-Pattern::delete_automation_value (int rowi, int mti, int mri, const IDParameterPair& id_param)
+Pattern::delete_automation_value (int rowi, int mti, int mri, const IDParameter& id_param)
 {
 	return tps[mti]->delete_automation_value (to_rri (rowi, mti), mri, id_param);
 }
 
 std::pair<int, bool>
-Pattern::get_automation_delay (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::get_automation_delay (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->get_automation_delay (to_rri (rowi, mti), mri, id_param);
 }
 
 std::vector<int>
-Pattern::get_automation_delay_seq (int rowi, int mti, int mri, const IDParameterPair& id_param) const
+Pattern::get_automation_delay_seq (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
 	return tps[mti]->get_automation_delay_seq (to_rri (rowi, mti), mri, id_param);
 }
 
 void
-Pattern::set_automation_delay (int delay, int rowi, int mti, int mri, const IDParameterPair& id_param)
+Pattern::set_automation_delay (int delay, int rowi, int mti, int mri, const IDParameter& id_param)
 {
 	return tps[mti]->set_automation_delay (delay, to_rri (rowi, mti), mri, id_param);
 }
