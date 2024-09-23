@@ -32,7 +32,7 @@ namespace Tracker {
  * given track, with possibly multiple regions, possibly overlapping, as long
  * as they all come from the same track.
  */
-class MidiTrackPattern : public TrackPattern /* NEXT: used to inherit from TrackAutomationPattern */ {
+class MidiTrackPattern : public TrackPattern {
 public:
 	MidiTrackPattern (TrackerEditor& te,
 	                  TrackPtr track,
@@ -55,10 +55,10 @@ public:
 
 	MidiTrackPatternPhenomenalDiff phenomenal_diff (const MidiTrackPattern& prev) const;
 
-	std::string get_name (const IDParameterPair& id_param) const;
+	std::string get_name (const IDParameter& id_param) const;
 
-	void set_param_enabled (const IDParameterPair& id_param, bool enabled);
-	bool is_param_enabled (const IDParameterPair& id_param) const;
+	void set_param_enabled (const IDParameter& id_param, bool enabled);
+	bool is_param_enabled (const IDParameter& id_param) const;
 	IDParameterSet get_enabled_parameters (int mri) const;
 
 	// Enable/disable all tracks
@@ -67,7 +67,7 @@ public:
 
 	// Insert the automation control (s) corresponding to param (and connect it
 	// to the grid for changes)
-	void insert (const IDParameterPair& id_param);
+	void insert (const IDParameter& id_param);
 
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
@@ -122,54 +122,54 @@ public:
 	uint16_t get_nreqtracks () const;
 
 	// Return whether the automation associated to param is empty
-	bool is_empty (const IDParameterPair& id_param) const;
+	bool is_empty (const IDParameter& id_param) const;
 
 	// Return the sequence in chronological order of BBTs of each value of the
 	// given automation at the given row and mri.
-	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mri, const IDParameterPair& id_param) const;
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Return a pair with the automation value and whether it is defined or not
-	std::pair<double, bool> get_automation_value (int rowi, int mri, const IDParameterPair& id_param) const;
+	std::pair<double, bool> get_automation_value (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Return the sequence in chronological order of automation values at the
 	// given row and mri.
-	std::vector<double> get_automation_value_seq (int rowi, int mri, const IDParameterPair& id_param) const;
+	std::vector<double> get_automation_value_seq (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Return the automation interpolation value of param at given location
-	double get_automation_interpolation_value (int rowi, int mri, const IDParameterPair& id_param) const;
+	double get_automation_interpolation_value (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Set the automation value val at rowi and mri for param
-	void set_automation_value (double val, int rowi, int mri, const IDParameterPair& id_param, int delay);
+	void set_automation_value (double val, int rowi, int mri, const IDParameter& id_param, int delay);
 
 	// Delete automation value at rowi and mri for param
-	void delete_automation_value (int rowi, int mri, const IDParameterPair& id_param);
+	void delete_automation_value (int rowi, int mri, const IDParameter& id_param);
 
 	// Return pair with automation delay in tick at rowi of param as first
 	// element and whether it is defined as second element. Return (0, false) if
 	// undefined.
-	std::pair<int, bool> get_automation_delay (int rowi, int mri, const IDParameterPair& id_param) const;
+	std::pair<int, bool> get_automation_delay (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Get a sequence in chronological order of automation delays in tick at the
 	// given row amd mri.
-	std::vector<int> get_automation_delay_seq (int rowi, int mri, const IDParameterPair& id_param) const;
+	std::vector<int> get_automation_delay_seq (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Set the automation delay in tick at rowi, mri and mri for param
-	void set_automation_delay (int delay, int rowi, int mri, const IDParameterPair& id_param);
+	void set_automation_delay (int delay, int rowi, int mri, const IDParameter& id_param);
 
 	// Get the relative beats w.r.t. region position at rowi, and region mri
 	Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 
 	int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
-	bool is_automation_displayable (int rowi, int mri, const IDParameterPair& id_param) const;
-	size_t control_events_count (int rowi, int mri, const IDParameterPair& id_param) const;
+	bool is_automation_displayable (int rowi, int mri, const IDParameter& id_param) const;
+	size_t control_events_count (int rowi, int mri, const IDParameter& id_param) const;
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
 
 	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names () const;
 
-	double lower (int rowi, const IDParameterPair& id_param) const;
-	double upper (int rowi, const IDParameterPair& id_param) const;
+	double lower (int rowi, const IDParameter& id_param) const;
+	double upper (int rowi, const IDParameter& id_param) const;
 
 	// Enable/disable midi track pattern and all its sub-patterns
 	void set_enabled (bool e);

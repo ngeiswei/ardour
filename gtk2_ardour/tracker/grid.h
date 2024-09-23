@@ -130,9 +130,9 @@ public:
 	void update_automation_column_visibility (int mti, const Evoral::Parameter& param);
 
 	// Return if the automation column associated to this parameter is currently visible
-	bool is_automation_visible (int mti, const Evoral::Parameter& param) const;
+	bool is_automation_visible (int mti, const IDParameter& id_param) const;
 
-	void set_automation_column_visible (int mti, const Evoral::Parameter& param, int column, bool showit);
+	void set_automation_column_visible (int mti, const IDParameter& id_param, int column, bool showit);
 
 	// Return true iff there exists some automation in that mti that is visible
 	bool has_visible_automation (int mti) const;
@@ -212,8 +212,8 @@ public:
 	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
 	void redisplay_blank_automation_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
-	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param);
-	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param);
+	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param);
+	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param);
 	void redisplay_cell_background (int row_idx, int col_idx);
 	void redisplay_cell_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
@@ -230,8 +230,8 @@ public:
 	void redisplay_main_automations (int mti, const MainAutomationPattern& map, const AutomationPatternPhenomenalDiff* map_diff = 0);
 	void redisplay_processor_automations (int mti, const ProcessorAutomationPattern& pap, const AutomationPatternPhenomenalDiff* pap_diff = 0);
 	void redisplay_track_automations (int mti, const PBD::ID& id, const TrackAutomationPattern& tap, const AutomationPatternPhenomenalDiff* tap_diff = 0);
-	void redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameterPair& id_param, const RowsPhenomenalDiff* rows_diff = 0);
-	void redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameterPair& id_param);
+	void redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameter& id_param, const RowsPhenomenalDiff* rows_diff = 0);
+	void redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameter& id_param);
 	void redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff = 0);
 
 	// Redisplay MIDI region, including notes and automations
@@ -267,8 +267,8 @@ public:
 
 	std::string get_name (int mti, const Evoral::Parameter& param, bool shorten=true) const;
 
-	void set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled);
-	bool is_param_enabled (int mti, const Evoral::Parameter& param) const;
+	void set_param_enabled (int mti, const IDParameter& id_param, bool enabled);
+	bool is_param_enabled (int mti, const IDParameter& id_param) const;
 
 	// Render a val with the position to be affected by step editing underlined
 	Pango::AttrList char_underline (int ul_idx) const;
@@ -290,9 +290,9 @@ public:
 	TrackerEditor& tracker_editor;
 
 	// Map column index to automation parameter and vice versa.  An
-	// IDParameterPair is used instead of Evoral::Parameter to be able to
+	// IDParameter is used instead of Evoral::Parameter to be able to
 	// distiguish parameters from different processors.
-	typedef boost::bimaps::bimap<int, IDParameterPair> IndexParamBimap;
+	typedef boost::bimaps::bimap<int, IDParameter> IndexParamBimap;
 	std::vector<IndexParamBimap> col2params; // For each track
 
 	// Keep track of all visible automation columns across all midi tracks
@@ -635,7 +635,7 @@ private:
 	// content is replaced by ***
 	bool is_note_displayable (int row_idx, int mti, int mri, int cgi) const;
 	bool is_automation_displayable (int row_idx, int mti, int mri, int cgi) const;
-	bool is_automation_displayable (int row_idx, int mti, int mri, const IDParameterPair& id_param) const;
+	bool is_automation_displayable (int row_idx, int mti, int mri, const IDParameter& id_param) const;
 
 	// Get note from path, mti and cgi
 	NotePtr get_on_note (const std::string& path, int mti, int cgi) const;
@@ -695,11 +695,11 @@ private:
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.
-	IDParameterPair get_id_param (int mti, int cgi) const;
+	IDParameter get_id_param (int mti, int cgi) const;
 
 	// Return cgi associated to id_param at mti. If undefined for param return -1.
 	int to_cgi (int mti, const PBD::ID& id, const Evoral::Parameter& param) const;
-	int to_cgi (int mti, const IDParameterPair& id_param) const;
+	int to_cgi (int mti, const IDParameter& id_param) const;
 
 	void automation_edited (const std::string& path, const std::string& text);
 
@@ -723,7 +723,7 @@ private:
 	// Return the interpolation value (or default) of an automation at the given
 	// location.
 	double get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const;
-	double get_automation_interpolation_value (int row_idx, int mti, int mri, const IDParameterPair& id_param) const;
+	double get_automation_interpolation_value (int row_idx, int mti, int mri, const IDParameter& id_param) const;
 
 	// Set the automation value at the given location.
 	void set_automation_value (int row_idx, int mti, int mri, int cgi, double val);
@@ -749,8 +749,8 @@ private:
 	void set_automation_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 
 	// Return lower and upper bounds of the given parameter
-	double lower (int row_idx, int mti, const Evoral::Parameter& param) const;
-	double upper (int row_idx, int mti, const Evoral::Parameter& param) const;
+	double lower (int row_idx, int mti, const IDParameter& id_param) const;
+	double upper (int row_idx, int mti, const IDParameter& id_param) const;
 
 private:
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);

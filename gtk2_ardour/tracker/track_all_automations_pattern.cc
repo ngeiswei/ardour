@@ -136,7 +136,7 @@ TrackAllAutomationsPattern::update ()
 }
 
 void
-TrackAllAutomationsPattern::insert (const IDParameterPair& id_param)
+TrackAllAutomationsPattern::insert (const IDParameter& id_param)
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -153,7 +153,7 @@ TrackAllAutomationsPattern::insert (const IDParameterPair& id_param)
 }
 
 bool
-TrackAllAutomationsPattern::is_empty (const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::is_empty (const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -171,7 +171,7 @@ TrackAllAutomationsPattern::is_empty (const IDParameterPair& id_param) const
 }
 
 bool
-TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -189,7 +189,7 @@ TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameterPair& id_
 }
 
 size_t
-TrackAllAutomationsPattern::control_events_count (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::control_events_count (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -207,7 +207,7 @@ TrackAllAutomationsPattern::control_events_count (int rowi, const IDParameterPai
 }
 
 std::vector<Temporal::BBT_Time>
-TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -225,7 +225,7 @@ TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const IDParameterP
 }
 
 std::pair<double, bool>
-TrackAllAutomationsPattern::get_automation_value (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_automation_value (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -243,7 +243,7 @@ TrackAllAutomationsPattern::get_automation_value (int rowi, const IDParameterPai
 }
 
 std::vector<double>
-TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -261,7 +261,7 @@ TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const IDParamete
 }
 
 double
-TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -279,7 +279,7 @@ TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const 
 }
 
 void
-TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const IDParameterPair& id_param, int delay)
+TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const IDParameter& id_param, int delay)
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -296,7 +296,7 @@ TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const ID
 }
 
 void
-TrackAllAutomationsPattern::delete_automation_value (int rowi, const IDParameterPair& id_param)
+TrackAllAutomationsPattern::delete_automation_value (int rowi, const IDParameter& id_param)
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -313,7 +313,7 @@ TrackAllAutomationsPattern::delete_automation_value (int rowi, const IDParameter
 }
 
 std::pair<int, bool>
-TrackAllAutomationsPattern::get_automation_delay (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_automation_delay (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -331,7 +331,7 @@ TrackAllAutomationsPattern::get_automation_delay (int rowi, const IDParameterPai
 }
 
 std::vector<int>
-TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -349,7 +349,7 @@ TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const IDParamete
 }
 
 void
-TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const IDParameterPair& id_param)
+TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const IDParameter& id_param)
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -366,7 +366,7 @@ TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const IDP
 }
 
 std::string
-TrackAllAutomationsPattern::get_name (const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::get_name (const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -384,7 +384,7 @@ TrackAllAutomationsPattern::get_name (const IDParameterPair& id_param) const
 }
 
 void
-TrackAllAutomationsPattern::set_param_enabled (const IDParameterPair& id_param, bool enabled)
+TrackAllAutomationsPattern::set_param_enabled (const IDParameter& id_param, bool enabled)
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -401,7 +401,7 @@ TrackAllAutomationsPattern::set_param_enabled (const IDParameterPair& id_param, 
 }
 
 bool
-TrackAllAutomationsPattern::is_param_enabled (const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::is_param_enabled (const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -423,20 +423,20 @@ TrackAllAutomationsPattern::get_enabled_parameters () const
 {
 	IDParameterSet ieps;
 	for (const Evoral::Parameter& param : main_automation_pattern.get_enabled_parameters ()) {
-		ieps.insert(IDParameterPair (PBD::ID (0), param));
+		ieps.insert(IDParameter (PBD::ID (0), param));
 	}
 	for (auto& idpap : id_to_processor_automation_pattern) {
 		const PBD::ID& id = idpap.first;
 		ParameterSet pep = idpap.second->get_enabled_parameters ();
 		for (const Evoral::Parameter& param : pep) {
-			ieps.insert(IDParameterPair (id, param));
+			ieps.insert(IDParameter (id, param));
 		}
 	}
 	return ieps;
 }
 
 double
-TrackAllAutomationsPattern::lower (const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::lower (const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;
@@ -454,7 +454,7 @@ TrackAllAutomationsPattern::lower (const IDParameterPair& id_param) const
 }
 
 double
-TrackAllAutomationsPattern::upper (const IDParameterPair& id_param) const
+TrackAllAutomationsPattern::upper (const IDParameter& id_param) const
 {
 	const PBD::ID& id = id_param.first;
 	const Evoral::Parameter& param = id_param.second;

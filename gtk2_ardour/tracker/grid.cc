@@ -239,7 +239,7 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair id_param (PBD::ID (0) /* id of main is assumed to be 0 */, param);
+	IDParameter id_param (PBD::ID (0) /* id of main is assumed to be 0 */, param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, id_param)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
@@ -265,7 +265,7 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	}
 
 	// Associate that column to the parameter
-	IDParameterPair id_param (id, param);
+	IDParameter id_param (id, param);
 	col2params[mti].insert (IndexParamBimap::value_type (column, id_param));
 
 	// Set the column title and tooltip
@@ -308,7 +308,7 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	// Associate that column to the parameter
 	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id().to_s() << std::endl;
 
-	IDParameterPair id_param (processor->id(), param);
+	IDParameter id_param (processor->id(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, id_param));
 
 	// Set the column title and tooltip
@@ -361,7 +361,7 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	const bool showit = mitem->get_active ();
 
 	// Find the column associated to this parameter, assign one if necessary
-	IDParameterPair id_param (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
+	IDParameter id_param (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (id_param);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
 		add_midi_automation_column (mti, param) : it->second;
@@ -378,23 +378,22 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 }
 
 bool
-Grid::is_automation_visible (int mti, const Evoral::Parameter& param) const // NEXT.14: maybe needs to upgrade the signature
+Grid::is_automation_visible (int mti, const IDParameter& id_param) const
 {
-	IDParameterPair id_param (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (id_param);
 	return it != col2params[mti].right.end () &&
 		visible_automation_columns.find (it->second) != visible_automation_columns.end ();
 }
 
 void
-Grid::set_automation_column_visible (int mti, const Evoral::Parameter& param, int column, bool showit)
+Grid::set_automation_column_visible (int mti, const IDParameter& id_param, int column, bool showit)
 {
 	if (showit) {
 		visible_automation_columns.insert (column);
 	} else {
 		visible_automation_columns.erase (column);
 	}
-	set_param_enabled (mti, param, showit);
+	set_param_enabled (mti, id_param, showit);
 }
 
 bool
@@ -1267,7 +1266,7 @@ Grid::redisplay_blank_automation_foreground (TreeModel::Row& row, int mti, int c
 }
 
 void
-Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param)
+Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param)
 {
 	if (is_automation_displayable (row_idx, mti, mri, id_param)) {
 		double val = pattern.get_automation_value (row_idx, mti, mri, id_param).first;
@@ -1284,7 +1283,7 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 }
 
 void
-Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameterPair& id_param)
+Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param)
 {
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, id_param);
 	if (is_int_param (id_param.second)) {
@@ -1359,7 +1358,7 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int ro
 void
 Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const IDParameterSet& id_params, const std::string& color)
 {
-	for (const IDParameterPair& id_param : id_params) {
+	for (const IDParameter& id_param : id_params) {
 		int cgi = to_cgi (mti, id_param);
 		row[columns._automation_background_color[mti][cgi]] = color;
 		row[columns._automation_delay_background_color[mti][cgi]] = color;
@@ -1470,17 +1469,17 @@ Grid::redisplay_track_automations (int mti, const PBD::ID& id, const TrackAutoma
 {
 	if (tap_diff == 0 || tap_diff->full) {
 		for (const Evoral::Parameter& param : tap.get_enabled_parameters ()) {
-			redisplay_track_automation_param (mti, tap, IDParameterPair (id, param));
+			redisplay_track_automation_param (mti, tap, IDParameter (id, param));
 		}
 	} else {
 		for (AutomationPatternPhenomenalDiff::Param2RowsPhenomenalDiff::const_iterator it = tap_diff->param2rows_diff.begin (); it != tap_diff->param2rows_diff.end (); ++it) {
-			redisplay_track_automation_param (mti, tap, IDParameterPair (id, it->first), &it->second);
+			redisplay_track_automation_param (mti, tap, IDParameter (id, it->first), &it->second);
 		}
 	}
 }
 
 void
-Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameterPair& id_param, const RowsPhenomenalDiff* rows_diff)
+Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameter& id_param, const RowsPhenomenalDiff* rows_diff)
 {
 	int cgi = to_cgi (mti, id_param);
 	if (cgi < 0) {
@@ -1499,7 +1498,7 @@ Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& t
 }
 
 void
-Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameterPair& id_param)
+Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameter& id_param)
 {
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
@@ -1588,7 +1587,7 @@ Grid::redisplay_region_automations (int mti, int mri, const MidiRegionAutomation
 void
 Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
-	int cgi = to_cgi (mti, param); // NEXT.15
+	int cgi = to_cgi (mti, PBD::ID (0), param);
 
 	if (cgi < 0) {
 		return;
@@ -1609,9 +1608,10 @@ Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutom
 void
 Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param)
 {
+	IDParameter id_param (PBD::ID (0), param);
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
-	int automation_count = pattern.control_events_count (row_idx, mti, mri, param);
+	int automation_count = pattern.control_events_count (row_idx, mti, mri, id_param);
 
 	// Fill background colors
 	redisplay_automation_background (row, mti, cgi);
@@ -1620,9 +1620,9 @@ Grid::redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_
 	redisplay_blank_automation_foreground (row, mti, cgi);
 
 	if (automation_count > 0) {
-		redisplay_automation (row, row_idx, mti, mri, cgi, param);
+		redisplay_automation (row, row_idx, mti, mri, cgi, id_param);
 	} else {
-		redisplay_automation_interpolation (row, row_idx, mti, mri, cgi, param);
+		redisplay_automation_interpolation (row, row_idx, mti, mri, cgi, id_param);
 	}
 }
 
@@ -1921,11 +1921,11 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		if (is_blank (val_str)) {
 			break;
 		}
-		Evoral::Parameter param = get_id_param (mti, cgi); // NEXT.14
-		double l = lower (current_row, mti, param);
-		double u = upper (current_row, mti, param);
+		IDParameter id_param = get_id_param (mti, cgi);
+		double l = lower (current_row, mti, id_param);
+		double u = upper (current_row, mti, id_param);
 		double mlu = std::max (std::abs (l), std::abs (u));
-		int min_pos = is_int_param (param) ? 0 : MainToolbar::min_position;
+		int min_pos = is_int_param (id_param.second) ? 0 : MainToolbar::min_position;
 		int max_pos = std::floor (std::log10 (mlu));
 		set_current_pos (min_pos, max_pos);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
@@ -2150,6 +2150,8 @@ Grid::get_track_separator_width () const
 	return TRACK_SEPARATOR_WIDTH;
 }
 
+// NEXT.16: think how that should be fixed.  Should the ID processor be taken
+// into account?
 std::string
 Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
 {
@@ -2159,15 +2161,15 @@ Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
 }
 
 void
-Grid::set_param_enabled (int mti, const Evoral::Parameter& param, bool enabled)
+Grid::set_param_enabled (int mti, const IDParameter& id_param, bool enabled)
 {
-	pattern.set_param_enabled (mti, param, enabled);
+	pattern.set_param_enabled (mti, id_param, enabled);
 }
 
 bool
-Grid::is_param_enabled (int mti, const Evoral::Parameter& param) const
+Grid::is_param_enabled (int mti, const IDParameter& id_param) const
 {
-	return pattern.is_param_enabled (mti, param);
+	return pattern.is_param_enabled (mti, id_param);
 }
 
 Pango::AttrList
@@ -2341,12 +2343,12 @@ Grid::is_note_displayable (int row_idx, int mti, int mri, int cgi) const
 bool
 Grid::is_automation_displayable (int row_idx, int mti, int mri, int cgi) const
 {
-	IDParameterPair id_param = get_id_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 	return is_automation_displayable (row_idx, mti, mri, id_param);
 }
 
 bool
-Grid::is_automation_displayable (int row_idx, int mti, int mri, const IDParameterPair& id_param) const
+Grid::is_automation_displayable (int row_idx, int mti, int mri, const IDParameter& id_param) const
 {
 	return pattern.is_automation_displayable (row_idx, mti, mri, id_param);
 }
@@ -3142,7 +3144,7 @@ Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 	redisplay_selection ();
 }
 
-IDParameterPair
+IDParameter
 Grid::get_id_param (int mti, int cgi) const
 {
 	// NEXT.14
@@ -3162,12 +3164,12 @@ Grid::get_id_param (int mti, int cgi) const
 int
 Grid::to_cgi (int mti, const PBD::ID& id, const Evoral::Parameter& param) const
 {
-	IDParameterPair id_param (id, param);
+	IDParameter id_param (id, param);
 	return to_cgi (mti, id_param);
 }
 
 int
-Grid::to_cgi (int mti, const IDParameterPair& id_param) const
+Grid::to_cgi (int mti, const IDParameter& id_param) const
 {
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (id_param);
 	if (cp_it == col2params[mti].right.end ()) {
@@ -3197,7 +3199,7 @@ Grid::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Paramete
 std::pair<double, bool>
 Grid::get_automation_value (int row_idx, int mti, int mri, int cgi) const
 {
-	IDParameterPair id_param = get_id_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 	return pattern.get_automation_value (row_idx, mti, mri, id_param.first, id_param.second);
 }
 
@@ -3216,12 +3218,12 @@ Grid::get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parame
 double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const
 {
-	IDParameterPair id_param = get_param (mti, cgi);
+	IDParameter id_param = get_param (mti, cgi);
 	return get_automation_interpolation_value (row_idx, mti, mri, id_param);
 }
 
 double
-Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const PBD::ID& id, const IDParameterPair& id_param) const
+Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const PBD::ID& id, const IDParameter& id_param) const
 {
 	return pattern.get_automation_interpolation_value (row_idx, mti, mri, id_param);
 }
@@ -3253,7 +3255,7 @@ void
 Grid::set_automation_value (int row_idx, int mti, int mri, int cgi, double val)
 {
 	// Find the parameter to automate
-	IDParameterPair id_param = get_id_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 
 	// Find delay in case the value has to be created
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
@@ -3265,7 +3267,7 @@ void
 Grid::delete_automation_value (int row_idx, int mti, int mri, int cgi)
 {
 	if (has_automation_value (row_idx, mti, mri, cgi)) {
-		IDParameterPair id_param = get_id_param (mti, cgi);
+		IDParameter id_param = get_id_param (mti, cgi);
 		pattern.delete_automation_value (row_idx, mti, mri, id_param.first, id_param.second);
 	}
 }
@@ -3287,7 +3289,7 @@ std::pair<int, bool>
 Grid::get_automation_delay (int row_idx, int mti, int mri, int cgi) const
 {
 	// Find the parameter to automate
-	IDParameterPair id_param = get_id_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 	return pattern.get_automation_delay (row_idx, mti, mri, id_param.first, id_param.second);
 }
 
@@ -3300,7 +3302,7 @@ Grid::has_automation_delay (int row_idx, int mti, int mri, int cgi) const
 void
 Grid::set_automation_delay (int row_idx, int mti, int mri, int cgi, int delay)
 {
-	IDParameterPair id_param = get_id_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 	return pattern.set_automation_delay (delay, row_idx, mti, mri, id_param.first, id_param.second);
 }
 
@@ -3539,7 +3541,7 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 std::string
 Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
-	IDParameterPair id_param = get_id_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 	std::stringstream ss;
 	size_t count = pattern.control_events_count (row_idx, mti, mri, id_param.first, id_param.second);
 	if (0 < count) {

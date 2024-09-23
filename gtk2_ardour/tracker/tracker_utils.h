@@ -59,8 +59,8 @@ typedef std::map<Evoral::Parameter, AutomationControlPtr> ParamAutomationControl
 typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlPair;
 
 // Allows to identify a parameter of a processor of a certain ID
-typedef std::pair<PBD::ID, Evoral::Parameter> IDParameterPair;
-typedef std::set<IDParameterPair> IDParameterSet;
+typedef std::pair<PBD::ID, Evoral::Parameter> IDParameter;
+typedef std::set<IDParameter> IDParameterSet;
 
 typedef ARDOUR::AutomationList::iterator AutomationListIt;
 typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
@@ -394,7 +394,7 @@ public:
 	static std::string bold (const std::string& str);
 };
 
-	std::ostream& operator<< (std::ostream& ostr, const IDParameterPair&);
+	std::ostream& operator<< (std::ostream& ostr, const IDParameter&);
 
 } // ~namespace tracker
 
