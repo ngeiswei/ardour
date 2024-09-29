@@ -648,8 +648,8 @@ MidiTrackToolbar::show_existing_midi_automations ()
 {
 	const ParameterSet params = midi_track->midi_playlist ()->contained_automation ();
 	for (ParameterSetConstIt p = params.begin (); p != params.end (); ++p) {
-		IDParameter idpar (/* NEXT.14: get the right PBD::ID */ PBD::ID (0), *p);
-		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find (idpar);
+		IDParameter id_param (/* MIDI PBD::ID is 0*/ PBD::ID (0), *p);
+		Grid::IndexParamBimap::right_const_iterator it = grid.col2params[track_index].right.find (id_param);
 		int column = (it == grid.col2params[track_index].right.end ()) || (it->second == 0) ?
 			grid.add_midi_automation_column (track_index, *p) : it->second;
 
@@ -658,7 +658,7 @@ MidiTrackToolbar::show_existing_midi_automations ()
 			continue;
 		}
 
-		grid.set_automation_column_visible (track_index, *p, column, true);
+		grid.set_automation_column_visible (track_index, id_param, column, true);
 	}
 }
 

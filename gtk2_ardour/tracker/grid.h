@@ -276,7 +276,7 @@ public:
 	std::pair<std::string, Pango::AttrList> underlined_value (float val) const;
 	std::pair<std::string, Pango::AttrList> underlined_value (const std::string& val_str) const;
 
-	bool is_int_param (const Evoral::Parameter& param) const;
+	bool is_int_param (const IDParameter& id_param) const;
 
 	// Call on user preference change
 	void parameter_changed (const std::string& p);
@@ -705,7 +705,7 @@ private:
 
 	// Return the sequence in chronological order of BBTs of each value at the
 	// given location.
-	std::vector<Temporal::BBT_Time> get_automation_bbt_seq(int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::vector<Temporal::BBT_Time> get_automation_bbt_seq(int rowi, int mti, int mri, const IDParameter& id_param) const;
 
 	// Return a pair with some automation value at the given location and
 	// whether it is defined or not.  If multiple automation values exist at
@@ -718,7 +718,7 @@ private:
 
 	// Return a sequence in chronological order of automation values at the
 	// given location.
-	std::vector<double> get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::vector<double> get_automation_value_seq (int rowi, int mti, int mri, const IDParameter& id_param) const;
 
 	// Return the interpolation value (or default) of an automation at the given
 	// location.
@@ -734,7 +734,7 @@ private:
 
 	// Get a sequence in chronological order of automation delays in tick at the
 	// given location.
-	std::vector<int> get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const;
+	std::vector<int> get_automation_delay_seq (int rowi, int mti, int mri, const IDParameter& id_param) const;
 
 	// Like set_automation_value but provide a text representating the
 	// value instead of value itself.  If empty then it deletes the
