@@ -243,8 +243,8 @@ Grid::add_main_automation_column (int mti, const Evoral::Parameter& param)
 	col2params[mti].insert (IndexParamBimap::value_type (column, id_param)); // TODO: better put this knowledge in an inherited column
 
 	// Set the column title and tooltip
-	std::string long_name = get_name (mti, param, false);
-	std::string short_name = get_name (mti, param, true);
+	std::string long_name = get_name (mti, id_param, false);
+	std::string short_name = get_name (mti, id_param, true);
 	set_col_title (to_col (column), short_name, long_name);
 
 	return column;
@@ -269,8 +269,8 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	col2params[mti].insert (IndexParamBimap::value_type (column, id_param));
 
 	// Set the column title and tooltip
-	std::string long_name = get_name (mti, param, false);
-	std::string short_name = get_name (mti, param, true);
+	std::string long_name = get_name (mti, id_param, false);
+	std::string short_name = get_name (mti, id_param, true);
 	set_col_title (to_col (column), short_name, long_name);
 
 	return column;
@@ -312,8 +312,8 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, id_param));
 
 	// Set the column title and tooltip
-	std::string long_name = get_name (mti, param, false);
-	std::string short_name = get_name (mti, param, true);
+	std::string long_name = get_name (mti, id_param, false);
+	std::string short_name = get_name (mti, id_param, true);
 	set_col_title (to_col (pauno->column), short_name, long_name);
 }
 
@@ -1289,7 +1289,7 @@ void
 Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param)
 {
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, id_param);
-	if (is_int_param (id_param.second)) {
+	if (is_int_param (id_param)) {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
 	} else {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
@@ -1928,7 +1928,7 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		double l = lower (current_row, mti, id_param);
 		double u = upper (current_row, mti, id_param);
 		double mlu = std::max (std::abs (l), std::abs (u));
-		int min_pos = is_int_param (id_param.second) ? 0 : MainToolbar::min_position;
+		int min_pos = is_int_param (id_param) ? 0 : MainToolbar::min_position;
 		int max_pos = std::floor (std::log10 (mlu));
 		set_current_pos (min_pos, max_pos);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
@@ -2206,9 +2206,9 @@ Grid::underlined_value (const std::string& val_str) const
 }
 
 bool
-Grid::is_int_param (const Evoral::Parameter& param) const
+Grid::is_int_param (const IDParameter& id_param) const
 {
-	return TrackerUtils::is_region_automation (param);
+	return TrackerUtils::is_region_automation (id_param.second);
 }
 
 void
@@ -2246,7 +2246,7 @@ Grid::to_string (const std::string& indent) const
 		ss << std::endl << indent1 << "col2params[" << mti << "]:";
 		for (const auto& cip : col2params[mti].left) {
 			ss << std::endl << indent2 << "id_param[col=" << cip.first << "] = "
-			   << "(id=" << cip.second.first << ", param=" << cip.second.second << ")";
+			   << "(id=" << cip.second.first.to_s () << ", param=" << cip.second.second << ")";
 		}
 	}
 	return ss.str ();
@@ -3148,18 +3148,16 @@ Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 IDParameter
 Grid::get_id_param (int mti, int cgi) const
 {
-	// NEXT.14
 	IndexBimap::right_const_iterator ac_it = col2auto_cgi[mti].right.find (cgi);
 	if (ac_it == col2auto_cgi[mti].right.end ()) {
-		return Evoral::Parameter ();
+		return IDParameter ();
 	}
 	int edited_colnum = ac_it->second;
 	IndexParamBimap::left_const_iterator it = col2params[mti].left.find (edited_colnum);
 	if (it == col2params[mti].left.end ()) {
-		return Evoral::Parameter ();
+		return IDParameter ();
 	}
-	const Evoral::Parameter& param = it->second.second; /* NEXT.14: this or we change the signature of get_param */
-	return param;
+	return it->second;
 }
 
 int
@@ -3192,16 +3190,16 @@ Grid::automation_edited (const std::string& path, const std::string& text)
 }
 
 std::vector<Temporal::BBT_Time>
-Grid::get_automation_bbt_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Grid::get_automation_bbt_seq (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
-	return pattern.get_automation_bbt_seq (rowi, mti, mri, param);
+	return pattern.get_automation_bbt_seq (rowi, mti, mri, id_param);
 }
 
 std::pair<double, bool>
 Grid::get_automation_value (int row_idx, int mti, int mri, int cgi) const
 {
 	IDParameter id_param = get_id_param (mti, cgi);
-	return pattern.get_automation_value (row_idx, mti, mri, id_param.first, id_param.second);
+	return pattern.get_automation_value (row_idx, mti, mri, id_param);
 }
 
 bool
@@ -3211,20 +3209,20 @@ Grid::has_automation_value (int row_idx, int mti, int mri, int cgi) const
 }
 
 std::vector<double>
-Grid::get_automation_value_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Grid::get_automation_value_seq (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
-	return pattern.get_automation_value_seq (rowi, mti, mri, param);
+	return pattern.get_automation_value_seq (rowi, mti, mri, id_param);
 }
 
 double
 Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, int cgi) const
 {
-	IDParameter id_param = get_param (mti, cgi);
+	IDParameter id_param = get_id_param (mti, cgi);
 	return get_automation_interpolation_value (row_idx, mti, mri, id_param);
 }
 
 double
-Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const PBD::ID& id, const IDParameter& id_param) const
+Grid::get_automation_interpolation_value (int row_idx, int mti, int mri, const IDParameter& id_param) const
 {
 	return pattern.get_automation_interpolation_value (row_idx, mti, mri, id_param);
 }
@@ -3261,7 +3259,7 @@ Grid::set_automation_value (int row_idx, int mti, int mri, int cgi, double val)
 	// Find delay in case the value has to be created
 	int delay = tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
-	return pattern.set_automation_value (val, row_idx, mti, mri, id_param.first, id_param.second, delay);
+	return pattern.set_automation_value (val, row_idx, mti, mri, id_param, delay);
 }
 
 void
@@ -3269,14 +3267,14 @@ Grid::delete_automation_value (int row_idx, int mti, int mri, int cgi)
 {
 	if (has_automation_value (row_idx, mti, mri, cgi)) {
 		IDParameter id_param = get_id_param (mti, cgi);
-		pattern.delete_automation_value (row_idx, mti, mri, id_param.first, id_param.second);
+		pattern.delete_automation_value (row_idx, mti, mri, id_param);
 	}
 }
 
 std::vector<int>
-Grid::get_automation_delay_seq (int rowi, int mti, int mri, const Evoral::Parameter& param) const
+Grid::get_automation_delay_seq (int rowi, int mti, int mri, const IDParameter& id_param) const
 {
-	return pattern.get_automation_delay_seq (rowi, mti, mri, param);
+	return pattern.get_automation_delay_seq (rowi, mti, mri, id_param);
 }
 
 void
@@ -3291,7 +3289,7 @@ Grid::get_automation_delay (int row_idx, int mti, int mri, int cgi) const
 {
 	// Find the parameter to automate
 	IDParameter id_param = get_id_param (mti, cgi);
-	return pattern.get_automation_delay (row_idx, mti, mri, id_param.first, id_param.second);
+	return pattern.get_automation_delay (row_idx, mti, mri, id_param);
 }
 
 bool
@@ -3304,7 +3302,7 @@ void
 Grid::set_automation_delay (int row_idx, int mti, int mri, int cgi, int delay)
 {
 	IDParameter id_param = get_id_param (mti, cgi);
-	return pattern.set_automation_delay (delay, row_idx, mti, mri, id_param.first, id_param.second);
+	return pattern.set_automation_delay (delay, row_idx, mti, mri, id_param);
 }
 
 void
@@ -3341,15 +3339,15 @@ Grid::set_automation_delay_text (int row_idx, int mti, int mri, int cgi, const s
 }
 
 double
-Grid::lower (int row_idx, int mti, const Evoral::Parameter& param) const
+Grid::lower (int row_idx, int mti, const IDParameter& id_param) const
 {
-	return pattern.tps[mti]->lower (row_idx, param);
+	return pattern.tps[mti]->lower (row_idx, id_param);
 }
 
 double
-Grid::upper (int row_idx, int mti, const Evoral::Parameter& param) const
+Grid::upper (int row_idx, int mti, const IDParameter& id_param) const
 {
-	return pattern.tps[mti]->upper (row_idx, param);
+	return pattern.tps[mti]->upper (row_idx, id_param);
 }
 
 void
@@ -3544,7 +3542,7 @@ Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
 	IDParameter id_param = get_id_param (mti, cgi);
 	std::stringstream ss;
-	size_t count = pattern.control_events_count (row_idx, mti, mri, id_param.first, id_param.second);
+	size_t count = pattern.control_events_count (row_idx, mti, mri, id_param);
 	if (0 < count) {
 		ss << TrackerUtils::underline("Track") << ": "
 		   << TrackerUtils::bold(pattern.tps[mti]->track->name ()) << std::endl;
@@ -3553,12 +3551,12 @@ Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			   << TrackerUtils::bold(pattern.midi_region (mti, mri)->name ()) << std::endl;
 		}
 		ss << TrackerUtils::underline("Parameter") << ": "
-		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl; // NEXT.15
+		   << TrackerUtils::bold(get_name (mti, id_param, false)) << std::endl;
 		ss << TrackerUtils::underline("Values") << ":";
 
-		std::vector<Temporal::BBT_Time> bbt_seq = pattern.get_automation_bbt_seq (row_idx, mti, mri, id_param.first, id_param.second);
-		std::vector<double> value_seq = pattern.get_automation_value_seq (row_idx, mti, mri, param);
-		std::vector<int>  delay_seq = pattern.get_automation_delay_seq (row_idx, mti, mri, param);
+		std::vector<Temporal::BBT_Time> bbt_seq = pattern.get_automation_bbt_seq (row_idx, mti, mri, id_param);
+		std::vector<double> value_seq = pattern.get_automation_value_seq (row_idx, mti, mri, id_param);
+		std::vector<int>  delay_seq = pattern.get_automation_delay_seq (row_idx, mti, mri, id_param);
 		size_t seq_size = bbt_seq.size ();
 
 		// Make sure all sequences have the same size
@@ -4204,8 +4202,7 @@ Grid::is_cell_defined (const Gtk::TreeModel::Path& path, const TreeViewColumn* c
 			coli--;
 		}
 		IndexParamBimap::left_const_iterator it = col2params[mti].left.find (coli);
-		Evoral::Parameter param = it->second.second; /* NEXT.14: this or we change the signature of get_param */
-		return pattern.is_automation_defined (row_idx, mti, param);
+		return pattern.is_automation_defined (row_idx, mti, it->second);
 	}
 }
 
@@ -4224,12 +4221,12 @@ Grid::is_region_defined (int row_idx, int mti) const
 bool
 Grid::is_automation_defined (int row_idx, int mti, int cgi) const
 {
-	Evoral::Parameter param = get_param (mti, cgi);
-	if (param == Evoral::Parameter ()) {
+	IDParameter id_param = get_id_param (mti, cgi);
+	if (id_param == IDParameter ()) {
 		return false;
 	}
 
-	return pattern.is_automation_defined (row_idx, mti, param);
+	return pattern.is_automation_defined (row_idx, mti, id_param);
 }
 
 bool
@@ -5086,7 +5083,7 @@ Grid::step_editing_set_automation_value (int digit)
 
 	// Set new value
 	// Round in case it is int automation
-	if (is_int_param (get_param (current_mti, current_cgi))) {
+	if (is_int_param (get_id_param (current_mti, current_cgi))) {
 		oval = std::round (oval);
 	}
 
