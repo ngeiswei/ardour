@@ -465,12 +465,13 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 				/* for each selected channel, add a menu item for this controller */
 
 				Evoral::Parameter fully_qualified_param (automation_type, chn, cmd);
+				IDParameter id_param (PBD::ID (0), fully_qualified_param);
 				chn_items.push_back (
 					CheckMenuElem (string_compose (_("Channel %1"), chn+1),
 					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
-					                           track_index, fully_qualified_param)));
+					                           track_index, id_param)));
 
-				bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
+				bool visible = grid.is_automation_visible (track_index, id_param);
 
 				CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&chn_items.back ());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
@@ -490,12 +491,13 @@ MidiTrackToolbar::add_channel_command_menu_item (Menu_Helpers::MenuList& items,
 			if (selected_channels & (0x0001 << chn)) {
 
 				Evoral::Parameter fully_qualified_param (automation_type, chn, cmd);
+				IDParameter id_param (PBD::ID (0), fully_qualified_param);
 				items.push_back (
 					CheckMenuElem (label,
 					               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
-					                           track_index, fully_qualified_param)));
+					                           track_index, id_param)));
 
-				bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
+				bool visible = grid.is_automation_visible (track_index, id_param);
 
 				CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&items.back ());
 				_channel_command_menu_map[fully_qualified_param] = cmi;
@@ -521,15 +523,16 @@ MidiTrackToolbar::add_single_channel_controller_item (Menu_Helpers::MenuList& ct
 		if (selected_channels & (0x0001 << chn)) {
 
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
+			IDParameter id_param (PBD::ID (0), fully_qualified_param);
 			ctl_items.push_back (
 				CheckMenuElem (
 					string_compose ("<b>%1</b>: %2 [%3]", ctl, name, int (chn + 1)),
 					sigc::bind (
 						sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
-						track_index, fully_qualified_param)));
+						track_index, id_param)));
 			dynamic_cast<Label*> (ctl_items.back ().get_child ())->set_use_markup (true);
 
-			bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
+			bool visible = grid.is_automation_visible (track_index, id_param);
 
 			CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&ctl_items.back ());
 			_controller_menu_map[fully_qualified_param] = cmi;
@@ -572,12 +575,13 @@ MidiTrackToolbar::add_multi_channel_controller_item (Menu_Helpers::MenuList& ctl
 			/* for each selected channel, add a menu item for this controller */
 
 			Evoral::Parameter fully_qualified_param (MidiCCAutomation, chn, ctl);
+			IDParameter id_param (PBD::ID (0), fully_qualified_param);
 			chn_items.push_back (
 				CheckMenuElem (string_compose (_("Channel %1"), chn+1),
 				               sigc::bind (sigc::mem_fun (grid, &Grid::update_automation_column_visibility),
-				                           track_index, fully_qualified_param)));
+				                           track_index, id_param)));
 
-			bool visible = grid.is_automation_visible (track_index, fully_qualified_param);
+			bool visible = grid.is_automation_visible (track_index, id_param);
 
 			CheckMenuItem* cmi = static_cast<CheckMenuItem*> (&chn_items.back ());
 			_controller_menu_map[fully_qualified_param] = cmi;
@@ -591,10 +595,10 @@ MidiTrackToolbar::add_multi_channel_controller_item (Menu_Helpers::MenuList& ctl
 	dynamic_cast<Label*> (ctl_items.back ().get_child ())->set_use_markup (true);
 }
 
-CheckMenuItem* MidiTrackToolbar::automation_child_menu_item (const Evoral::Parameter& param)
+CheckMenuItem* MidiTrackToolbar::automation_child_menu_item (const IDParameter& id_param)
 {
-	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find (param);
-	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find (param);
+	ParameterMenuMap::iterator cmm_it = _controller_menu_map.find (id_param.second);
+	ParameterMenuMap::iterator ccmm_it = _channel_command_menu_map.find (id_param.second);
 	CheckMenuItem* mitem = 0;
 	if (cmm_it != _controller_menu_map.end ()) {
 		mitem = cmm_it->second;
@@ -671,10 +675,8 @@ MidiTrackToolbar::hide_midi_automations ()
 			continue;
 		}
 
-		// NEXT.14: make sure the PBD::ID is used as it is supposed to
-		// IDParameter id_param = c2p_it->second;
-		Evoral::Parameter param = c2p_it->second.second;
-		CheckMenuItem* mitem = automation_child_menu_item (param);
+		IDParameter id_param = c2p_it->second;
+		CheckMenuItem* mitem = automation_child_menu_item (id_param);
 
 		if (mitem) {
 			to_remove.insert (column);

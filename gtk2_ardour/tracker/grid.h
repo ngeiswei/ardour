@@ -127,7 +127,7 @@ public:
 	                                      const Evoral::Parameter& what);
 
 	void change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Parameter& param);
-	void update_automation_column_visibility (int mti, const Evoral::Parameter& param);
+	void update_automation_column_visibility (int mti, const IDParameter& id_param);
 
 	// Return if the automation column associated to this parameter is currently visible
 	bool is_automation_visible (int mti, const IDParameter& id_param) const;
@@ -265,7 +265,7 @@ public:
 	int get_right_separator_width (int mti) const;
 	int get_track_separator_width () const;
 
-	std::string get_name (int mti, const Evoral::Parameter& param, bool shorten=true) const;
+	std::string get_name (int mti, const IDParameter& id_param, bool shorten=true) const;
 
 	void set_param_enabled (int mti, const IDParameter& id_param, bool enabled);
 	bool is_param_enabled (int mti, const IDParameter& id_param) const;

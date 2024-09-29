@@ -330,7 +330,8 @@ Grid::change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Para
 		if (selected_channels & (0x0001 << chn)) {
 
 			Evoral::Parameter fully_qualified_param (param.type (), chn, param.id ());
-			CheckMenuItem* menu = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar ()->automation_child_menu_item (fully_qualified_param);
+			IDParameter id_param(PBD::ID(0), fully_qualified_param);
+			CheckMenuItem* menu = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar ()->automation_child_menu_item (id_param);
 
 			if (menu) {
 				menu->set_active (yn);
@@ -343,7 +344,7 @@ Grid::change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Para
  *  Will add column if necessary.
  */
 void
-Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& param) // NEXT.14: understand the context
+Grid::update_automation_column_visibility (int mti, const IDParameter& id_param)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern ()) { // TODO: Why?  Shouldn't
 	                                                   // that apply to audio
@@ -356,22 +357,21 @@ Grid::update_automation_column_visibility (int mti, const Evoral::Parameter& par
 	}
 
 	// Find menu item associated to this parameter
-	CheckMenuItem* mitem = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar ()->automation_child_menu_item (param);
+	CheckMenuItem* mitem = tracker_editor.grid_header->track_headers[mti]->track_toolbar->midi_track_toolbar ()->automation_child_menu_item (id_param);
 	assert (mitem);
 	const bool showit = mitem->get_active ();
 
 	// Find the column associated to this parameter, assign one if necessary
-	IDParameter id_param (/* NEXT.14: get the PBD::ID*/ PBD::ID (0), param);
 	IndexParamBimap::right_const_iterator it = col2params[mti].right.find (id_param);
 	int column = (it == col2params[mti].right.end ()) || (it->second == 0) ?
-		add_midi_automation_column (mti, param) : it->second;
+		add_midi_automation_column (mti, id_param.second) : it->second;
 
 	// Still no column available, skip
 	if (column == 0) {
 		return;
 	}
 
-	set_automation_column_visible (mti, param, column, showit);
+	set_automation_column_visible (mti, id_param, column, showit);
 
 	/* now trigger a redisplay */
 	redisplay_grid_direct_call ();
@@ -457,7 +457,8 @@ Grid::update_gain_column_visibility (int mti)
 		return;
 	}
 
-	set_automation_column_visible (mti, Evoral::Parameter (GainAutomation), gain_columns[mti], showit);
+	IDParameter id_param(PBD::ID(0), Evoral::Parameter (GainAutomation));
+	set_automation_column_visible (mti, id_param, gain_columns[mti], showit);
 
 	/* now trigger a redisplay */
 	redisplay_grid_direct_call ();
@@ -477,7 +478,8 @@ Grid::update_trim_column_visibility (int mti)
 		return;
 	}
 
-	set_automation_column_visible (mti, Evoral::Parameter (TrimAutomation), trim_columns[mti], showit);
+	IDParameter id_param(PBD::ID(0), Evoral::Parameter (TrimAutomation));
+	set_automation_column_visible (mti, id_param, trim_columns[mti], showit);
 
 	/* now trigger a redisplay */
 	redisplay_grid_direct_call ();
@@ -497,7 +499,8 @@ Grid::update_mute_column_visibility (int mti)
 		return;
 	}
 
-	set_automation_column_visible (mti, Evoral::Parameter (MuteAutomation), mute_columns[mti], showit);
+	IDParameter id_param(PBD::ID(0), Evoral::Parameter (MuteAutomation));
+	set_automation_column_visible (mti, id_param, mute_columns[mti], showit);
 
 	/* now trigger a redisplay */
 	redisplay_grid_direct_call ();
@@ -522,7 +525,7 @@ Grid::update_pan_columns_visibility (int mti)
 
 	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
-		set_automation_column_visible (mti, c2p_it->second.second /* NEXT.14: this or we change the signature of set_automation_column_visible */, *it, showit);
+		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
 
 	/* now trigger a redisplay */
@@ -2150,12 +2153,10 @@ Grid::get_track_separator_width () const
 	return TRACK_SEPARATOR_WIDTH;
 }
 
-// NEXT.16: think how that should be fixed.  Should the ID processor be taken
-// into account?
 std::string
-Grid::get_name (int mti, const Evoral::Parameter& param, bool shorten) const
+Grid::get_name (int mti, const IDParameter& id_param, bool shorten) const
 {
-	std::string long_name = pattern.get_name (mti, param);
+	std::string long_name = pattern.get_name (mti, id_param);
 	size_t tl = 7;               // target length
 	return shorten ? PBD::short_version(long_name, tl) : long_name;
 }
@@ -3552,7 +3553,7 @@ Grid::automation_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 			   << TrackerUtils::bold(pattern.midi_region (mti, mri)->name ()) << std::endl;
 		}
 		ss << TrackerUtils::underline("Parameter") << ": "
-		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl;
+		   << TrackerUtils::bold(get_name (mti, param, false)) << std::endl; // NEXT.15
 		ss << TrackerUtils::underline("Values") << ":";
 
 		std::vector<Temporal::BBT_Time> bbt_seq = pattern.get_automation_bbt_seq (row_idx, mti, mri, id_param.first, id_param.second);

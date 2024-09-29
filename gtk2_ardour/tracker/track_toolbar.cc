@@ -333,7 +333,9 @@ TrackToolbar::add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor> 
 		}
 
 		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), pai, pauno));
-		bool visible = grid.is_automation_visible (track_index, *param_it);
+		Evoral::Parameter param(*param_it);
+		IDParameter id_param(processor->id(), param);
+		bool visible = grid.is_automation_visible (track_index, id_param);
 		mitem->set_active (visible);
 	}
 
@@ -367,7 +369,8 @@ TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, Process
 		grid.add_processor_automation_column (track_index, pai->processor, pauno->parameter);
 	}
 
-	grid.set_automation_column_visible (track_index, pauno->parameter, pauno->column, showit);
+	IDParameter id_param (pauno->processor->id(), pauno->parameter);
+	grid.set_automation_column_visible (track_index, id_param, pauno->column, showit);
 
 	/* now trigger a redisplay */
 	redisplay_grid ();
@@ -536,7 +539,8 @@ TrackToolbar::show_all_processor_automations ()
 				continue;
 			}
 
-			grid.set_automation_column_visible (track_index, (*ii)->parameter, column, true);
+			IDParameter id_param((*ii)->processor->id(), (*ii)->parameter);
+			grid.set_automation_column_visible (track_index, id_param, column, true);
 
 			(*ii)->menu_item->set_active (true);
 		}
@@ -564,7 +568,7 @@ TrackToolbar::show_existing_processor_automations ()
 				continue;
 			}
 
-			grid.set_automation_column_visible (track_index, (*ii)->parameter, column, exist);
+			grid.set_automation_column_visible (track_index, id_param, column, exist);
 
 			(*ii)->menu_item->set_active (exist);
 		}
@@ -578,7 +582,8 @@ TrackToolbar::hide_processor_automations ()
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
 			int column = (*ii)->column;
 			if (column != 0) {
-				grid.set_automation_column_visible (track_index, (*ii)->parameter, column, false);
+				IDParameter id_param((*ii)->processor->id(), (*ii)->parameter);
+				grid.set_automation_column_visible (track_index, id_param, column, false);
 				(*ii)->menu_item->set_active (false);
 			}
 		}

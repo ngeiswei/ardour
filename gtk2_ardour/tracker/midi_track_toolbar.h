@@ -82,7 +82,7 @@ public:
 	                                         int ctl, const std::string& name);
 	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items,
 	                                        int ctl, const std::string& name);
-	Gtk::CheckMenuItem* automation_child_menu_item (const Evoral::Parameter& param);
+	Gtk::CheckMenuItem* automation_child_menu_item (const IDParameter& id_param);
 
 	/**
 	 * Helpers to update automations
