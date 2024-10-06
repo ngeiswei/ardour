@@ -147,7 +147,7 @@ TrackAllAutomationsPattern::insert (const IDParameter& id_param)
 		if (it != id_to_processor_automation_pattern.end()) {
 			it->second->insert (param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::insert (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::insert (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 		}
 	}
 }
@@ -164,7 +164,7 @@ TrackAllAutomationsPattern::is_empty (const IDParameter& id_param) const
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->is_empty (param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return false;
 		}
 	}
@@ -182,7 +182,7 @@ TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameter& id_para
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->is_displayable (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return false;
 		}
 	}
@@ -200,7 +200,7 @@ TrackAllAutomationsPattern::control_events_count (int rowi, const IDParameter& i
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->control_events_count (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::control_events_count (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::control_events_count (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return 0;
 		}
 	}
@@ -218,7 +218,7 @@ TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const IDParameter&
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_automation_bbt_seq (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_bbt_seq (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_bbt_seq (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return std::vector<Temporal::BBT_Time>();
 		}
 	}
@@ -236,7 +236,7 @@ TrackAllAutomationsPattern::get_automation_value (int rowi, const IDParameter& i
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_automation_value (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_value (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_value (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return std::pair<double, bool>();
 		}
 	}
@@ -254,7 +254,7 @@ TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const IDParamete
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_automation_value_seq (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_value_seq (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_value_seq (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return std::vector<double>();
 		}
 	}
@@ -272,7 +272,7 @@ TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const 
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_automation_interpolation_value (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_interpolation_value (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_interpolation_value (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return 0.0;
 		}
 	}
@@ -290,7 +290,7 @@ TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const ID
 		if (it != id_to_processor_automation_pattern.end()) {
 			it->second->set_automation_value (val, rowi, param, delay);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_automation_value (val=" << val << ", rowi=" << rowi << ", id_param=" << id_param << ", delay=" << delay << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_automation_value (val=" << val << ", rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ", delay=" << delay << ")" << std::endl;
 		}
 	}
 }
@@ -307,7 +307,7 @@ TrackAllAutomationsPattern::delete_automation_value (int rowi, const IDParameter
 		if (it != id_to_processor_automation_pattern.end()) {
 			it->second->delete_automation_value (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::delete_automation_value (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::delete_automation_value (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 		}
 	}
 }
@@ -324,7 +324,7 @@ TrackAllAutomationsPattern::get_automation_delay (int rowi, const IDParameter& i
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_automation_delay (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_delay (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_delay (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return std::pair<int, bool>();
 		}
 	}
@@ -342,7 +342,7 @@ TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const IDParamete
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_automation_delay_seq (rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_delay_seq (rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_delay_seq (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return std::vector<int>();
 		}
 	}
@@ -360,7 +360,7 @@ TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const IDP
 		if (it != id_to_processor_automation_pattern.end()) {
 			it->second->set_automation_delay (delay, rowi, param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_automation_delay (delay=" << delay << ", rowi=" << rowi << ", id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_automation_delay (delay=" << delay << ", rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 		}
 	}
 }
@@ -377,7 +377,7 @@ TrackAllAutomationsPattern::get_name (const IDParameter& id_param) const
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->get_name (param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_name (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_name (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return "";
 		}
 	}
@@ -395,7 +395,7 @@ TrackAllAutomationsPattern::set_param_enabled (const IDParameter& id_param, bool
 		if (it != id_to_processor_automation_pattern.end()) {
 			it->second->set_param_enabled (param, enabled);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_param_enabled (id_param=" << id_param << ", enabled=" << enabled << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_param_enabled (id_param=" << TrackerUtils::id_param_to_string (id_param) << ", enabled=" << enabled << ")" << std::endl;
 		}
 	}
 }
@@ -412,7 +412,7 @@ TrackAllAutomationsPattern::is_param_enabled (const IDParameter& id_param) const
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->is_param_enabled (param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_param_enabled (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_param_enabled (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return false;
 		}
 	}
@@ -447,7 +447,7 @@ TrackAllAutomationsPattern::lower (const IDParameter& id_param) const
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->lower (param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::lower (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::lower (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return 0.0;
 		}
 	}
@@ -465,7 +465,7 @@ TrackAllAutomationsPattern::upper (const IDParameter& id_param) const
 		if (it != id_to_processor_automation_pattern.end()) {
 			return it->second->upper (param);
 		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::upper (id_param=" << id_param << ")" << std::endl;
+			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::upper (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
 			return 0.0;
 		}
 	}

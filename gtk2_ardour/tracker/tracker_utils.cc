@@ -511,10 +511,10 @@ TrackerUtils::bold (const std::string& str)
 	return std::string("<b>") + str + "</b>";
 }
 
-// NEXT.16: why doesn't compile TrackAllAutomationsPattern::insert?
-std::ostream&
-operator<< (std::ostream& ostr, const IDParameter& id_param)
+std::string
+TrackerUtils::id_param_to_string (const IDParameter& id_param)
 {
-	ostr << "(id=" << id_param.first << ", param=" << id_param.second << ")";
-	return ostr;
+	std::stringstream ss;
+	ss << "(id=" << id_param.first.to_s () << ", param=" << id_param.second << ")";
+	return ss.str ();
 }
