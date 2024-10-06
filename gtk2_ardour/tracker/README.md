@@ -1,7 +1,5 @@
 # Next
 
-- [ ] NEXT.16: why doesn't compile TrackAllAutomationsPattern::insert?
-- [ ] NEXT.15: just compile and fix what comes up
 - [ ] NEXT.14: jump straight to NEXT.13.
 - [ ] NEXT.13: support processors.
 

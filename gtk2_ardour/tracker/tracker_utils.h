@@ -392,9 +392,9 @@ public:
 
 	// Wrap <b> </b> around the givem string
 	static std::string bold (const std::string& str);
-};
 
-	std::ostream& operator<< (std::ostream& ostr, const IDParameter&);
+	static std::string id_param_to_string (const IDParameter& id_param);
+};
 
 } // ~namespace tracker
 
