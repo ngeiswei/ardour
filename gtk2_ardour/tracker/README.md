@@ -1,7 +1,6 @@
 # Next
 
-- [ ] NEXT.14: jump straight to NEXT.13.
-- [ ] NEXT.13: support processors.
+- [ ] NEXT: Carefully go over all NEXT comments
 
 # Tracker Editor
 

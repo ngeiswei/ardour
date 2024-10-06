@@ -355,14 +355,6 @@ TrackToolbar::add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor> 
 void
 TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, ProcessorAutomationNode* pauno)
 {
-	// VERY NEXT: to reproduce problem:
-	//
-	// 1. Select ACE_Delay->Time
-	// 2. ACE_Reverb->RoomSize appears
-	// It looks like ACE_Delay->SyncBPM, ACE_Delay->Time, ACE_Delay->Divisor are overlaid with ACE_Reverb->Blend to ACE_Reverb->Enable.
-	//
-	// TODO: Make ProcessorAutomationInfo::to_string() and
-	// ProcessorAutomationNode::to_string more informative.
 	const bool showit = pauno->menu_item->get_active ();
 
 	if (pauno->column == 0) {
