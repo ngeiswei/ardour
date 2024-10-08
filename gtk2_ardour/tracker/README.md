@@ -36,7 +36,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 
 ## TODO
 
-- [ ] Fix automation of different processors
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Final off note management fixes (look for NEXT)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
