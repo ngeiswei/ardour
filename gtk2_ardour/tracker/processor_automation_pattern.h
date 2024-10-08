@@ -20,7 +20,6 @@
 #define __ardour_tracker_processor_automation_pattern_h_
 
 #include "track_automation_pattern.h"
-// #include "processor_automation_pattern_phenomenal_diff.h" // NEXT.2: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
 
 namespace Tracker {
 

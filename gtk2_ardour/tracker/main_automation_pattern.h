@@ -20,11 +20,8 @@
 #define __ardour_tracker_main_automation_pattern_h_
 
 #include "track_automation_pattern.h"
-// #include "main_automation_pattern_phenomenal_diff.h" // NEXT.2: is that really useful?  Can't we simply use automation_pattern_phenomenal_diff?
 
 namespace Tracker {
-
-// NEXT.4: alternatively, just have it as list of processors alongside the other plugins
 
 /**
  * Data structure holding the automation list pattern for common automations

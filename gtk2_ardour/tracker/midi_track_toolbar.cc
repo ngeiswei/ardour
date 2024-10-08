@@ -669,7 +669,6 @@ MidiTrackToolbar::hide_midi_automations ()
 	for (std::set<int>::iterator it = grid.visible_automation_columns.begin ();
 	     it != grid.visible_automation_columns.end (); ++it) {
 		int column = *it;
-		// NEXT.14
 		Grid::IndexParamBimap::left_const_iterator c2p_it = grid.col2params[track_index].left.find (column);
 		if (c2p_it == grid.col2params[track_index].left.end ()) {
 			continue;
