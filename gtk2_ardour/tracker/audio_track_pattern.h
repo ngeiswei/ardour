@@ -30,7 +30,7 @@ namespace Tracker {
 /**
  * Represent audio track pattern. Just track automation for now.
  */
-class AudioTrackPattern : public TrackPattern /* NEXT: used to inherit from TrackAutomationPattern */ {
+class AudioTrackPattern : public TrackPattern {
 public:
 	AudioTrackPattern (TrackerEditor& te,
 	                   TrackPtr track,

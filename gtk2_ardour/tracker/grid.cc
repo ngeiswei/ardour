@@ -3649,7 +3649,6 @@ Grid::setup_data_columns ()
 		gain_columns.push_back (0);
 		trim_columns.push_back (0);
 		mute_columns.push_back (0);
-		// NEXT.14
 		col2params.push_back (IndexParamBimap ());
 		col2auto_cgi.push_back (IndexBimap ());
 		pan_columns.push_back (std::vector<int> ());
