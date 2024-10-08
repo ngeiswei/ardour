@@ -968,9 +968,6 @@ Grid::redisplay_grid ()
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
 
-	std::cout << "Grid:" << std::endl << to_string () << std::endl;
-	std::cout << "pattern:" << std::endl << pattern.to_string () << std::endl;
-
 	// Redisplay the grid
 	redisplay_global_columns ();
 	redisplay_pattern ();

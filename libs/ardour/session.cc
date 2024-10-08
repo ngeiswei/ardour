@@ -4459,7 +4459,6 @@ Session::route_by_name (string name) const
 	std::shared_ptr<RouteList const> r = routes.reader();
 
 	for (auto const& i : *r) {
-		std::cout << "Session[" << this << "]::route_by_id (name=" << name << ") i = " << i << ", i->name() = " << i->name() << std::endl;
 		if (i->name() == name) {
 			return i;
 		}
@@ -4474,7 +4473,6 @@ Session::route_by_id (PBD::ID id) const
 	std::shared_ptr<RouteList const> r = routes.reader ();
 
 	for (auto const& i : *r) {
-		std::cout << "Session[" << this << "]::route_by_id (id=" << id << ") i = " << i << ", i->id() = " << i->id() << std::endl;
 		i->processor_by_id (id);
 		if (i->id() == id) {
 			return i;
