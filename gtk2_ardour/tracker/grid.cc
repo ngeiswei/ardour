@@ -306,8 +306,6 @@ Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Ev
 	}
 
 	// Associate that column to the parameter
-	std::cout << "processor[" << processor << "] name = " << processor->name() << ", id = " << processor->id().to_s() << std::endl;
-
 	IDParameter id_param (processor->id(), param);
 	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, id_param));
 
