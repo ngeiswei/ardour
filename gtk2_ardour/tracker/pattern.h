@@ -94,7 +94,7 @@ public:
 	bool is_note_displayable (int rowi, int mti, int mri, int cgi) const;
 	NotePtr off_note (int rowi, int mti, int mri, int cgi) const;
 	NotePtr on_note (int rowi, int mti, int mri, int cgi) const;
-	// NEXT: replace the methods below, we don't want such a low level structure to leak out to the Grid.
+	// TODO: maybe replace the methods below, as we may not want such a low level structure to leak out to the Grid.
 	RowToNotesRange off_notes_range (int rowi, int mti, int mri, int cgi) const;
 	RowToNotesRange on_notes_range (int rowi, int mti, int mri, int cgi) const;
 

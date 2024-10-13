@@ -80,12 +80,8 @@ public:
 	virtual void update ();
 
 	// Default implementation is for tracks not supporting regions
-	// NEXT.2:
-	// 1. Do not change that API, just make it work buggy like before
-	// 2. Then change the API to make it work
 	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;
 	virtual int64_t region_relative_delay_ticks (const Temporal::Beats& event_time, int rowi, int mri) const;
-	// NEXT.2:
 	virtual bool is_automation_displayable (int rowi, int mri, const IDParameter& id_param) const;
 	virtual size_t control_events_count (int rowi, int mri, const IDParameter& id_param) const;
 	virtual bool is_region_defined (int rowi) const;

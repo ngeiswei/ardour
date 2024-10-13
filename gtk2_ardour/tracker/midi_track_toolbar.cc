@@ -317,7 +317,7 @@ MidiTrackToolbar::build_controller_menu ()
 	   so let's rebuild it */
 	delete controller_menu;
 
-	// NEXT: compare with lastest ardour changes to update if necessary
+	// TODO: compare with lastest ardour changes to update if necessary
 
 	controller_menu = new Menu; // explicitly managed by us
 	Menu_Helpers::MenuList& items (controller_menu->items ());
