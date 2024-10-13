@@ -19,9 +19,10 @@
 #ifndef __ardour_tracker_tracker_utils_h_
 #define __ardour_tracker_tracker_utils_h_
 
-#include <set>
 #include <cmath>
 #include <cstdlib>
+#include <regex>
+#include <set>
 #include <string>
 
 #include <boost/lexical_cast.hpp>
@@ -155,8 +156,7 @@ public:
 	static Num string_to_num (const std::string& str, int base=10)
 	{
 		if (base == 16) {
-			// Warning: this code might require C++11 (use --cxx11 while
-			// configuring waf if necessary).
+			// NEXT: does not work with std="1.FA", parses 1.F instead
 			return (Num)std::stod (append_hex_prefix (str));
 		} else {
 			return boost::lexical_cast<Num> (str);
@@ -190,8 +190,9 @@ public:
 	template <typename Num>
 	static bool is_number (const std::string& str, int base=10)
 	{
-		// NEXT: fix (used in grid.cc)
-		return true;
+		std::string digit = base == 16 ? "[0-9a-fA-F]" : "[0-9]";
+		std::string regexpr = "(\\+|-)?" + digit + "*(\\.?(" + digit + "))$";
+		return std::regex_match(str, std::regex(regexpr));
 	}
 
 	/**
