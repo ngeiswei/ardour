@@ -1,6 +1,7 @@
 # Next
 
-- [ ] NEXT: Carefully go over all NEXT comments
+- [ ] Flatten all commits into a few commits
+- [ ] Carefully go over all NEXT comments
 
 # Tracker Editor
 
