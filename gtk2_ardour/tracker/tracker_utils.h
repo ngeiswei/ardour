@@ -155,11 +155,23 @@ public:
 	template<typename Num>
 	static Num string_to_num (const std::string& str, int base=10)
 	{
-		if (base == 16) {
-			// NEXT: does not work with std="1.FA", parses 1.F instead
-			return (Num)std::stod (append_hex_prefix (str));
+		const std::string sign = "(\\+|-)?";
+		const std::string digit = base == 16 ? "[0-9a-fA-F]" : "[0-9]";
+		const std::string digits = "(" + digit + "*)";
+		const std::string point = "\\.";
+		const std::string number = sign + digits + "(\\." + digits + ")?";
+		const std::regex regex(number);
+		std::smatch match;
+		if (std::regex_search(str, match, regex)) {
+			const std::string msign = match[1];
+			const std::string minteger = match[2];
+			const std::string mfractional = match[4];
+			int sign = msign == "-" ? -1 : 1;
+			int integer = minteger.empty () ? 0 : std::stoi (minteger, nullptr, base);
+			int fractional = mfractional.empty () ? 0 : std::stoi (mfractional, nullptr, base);
+			return (Num)(sign * (integer + fractional / (double)std::pow(base, mfractional.size())));
 		} else {
-			return boost::lexical_cast<Num> (str);
+			return 0;
 		}
 	}
 
@@ -190,9 +202,13 @@ public:
 	template <typename Num>
 	static bool is_number (const std::string& str, int base=10)
 	{
-		std::string digit = base == 16 ? "[0-9a-fA-F]" : "[0-9]";
-		std::string regexpr = "(\\+|-)?" + digit + "*(\\.?(" + digit + "))$";
-		return std::regex_match(str, std::regex(regexpr));
+		const std::string sign = "(\\+|-)?";
+		const std::string digit = base == 16 ? "[0-9a-fA-F]" : "[0-9]";
+		const std::string digits = "(" + digit + "*)";
+		const std::string point = "\\.";
+		const std::string number = sign + digits + "(\\." + digits + ")?";
+		const std::regex regex(number);
+		return std::regex_match(str, regex);
 	}
 
 	/**
