@@ -4473,7 +4473,6 @@ Session::route_by_id (PBD::ID id) const
 	std::shared_ptr<RouteList const> r = routes.reader ();
 
 	for (auto const& i : *r) {
-		i->processor_by_id (id);
 		if (i->id() == id) {
 			return i;
 		}
