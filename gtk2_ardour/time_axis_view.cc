@@ -798,9 +798,7 @@ TimeAxisView::can_edit_name () const
 void
 TimeAxisView::conditionally_add_to_selection ()
 {
-    std::cout << "TimeAxisView::conditionally_add_to_selection" << std::endl;
-
-    if (!selectable()) {
+	if (!selectable()) {
 		return;
 	}
 

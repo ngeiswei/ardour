@@ -281,8 +281,6 @@ Editor::set_selected_track (TimeAxisView& view, SelectionOperation op, bool no_r
 void
 Editor::set_selected_track_from_click (bool press, SelectionOperation op, bool no_remove)
 {
-    std::cout << "Editor::set_selected_track_from_click" << std::endl;
-
 	if (!clicked_routeview) {
 		return;
 	}
