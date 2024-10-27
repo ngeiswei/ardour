@@ -351,6 +351,7 @@ Selection::toggle (timepos_t const & start, timepos_t const & end)
 void
 Selection::add (std::shared_ptr<Playlist> pl)
 {
+
 	if (find (playlists.begin(), playlists.end(), pl) == playlists.end()) {
 		clear_time(); // enforce object/range exclusivity
 		clear_tracks(); // enforce object/track exclusivity

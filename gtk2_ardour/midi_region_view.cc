@@ -867,6 +867,7 @@ MidiRegionView::show_list_editor ()
 	_list_editor->present ();
 }
 
+
 /** Add a note to the model, and the view, at a canvas (click) coordinate.
  * \param t time in samples relative to the position of the region
  * \param y vertical position in pixels
