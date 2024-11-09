@@ -896,16 +896,16 @@ Grid::read_keyboard_layout ()
 void
 Grid::read_colors ()
 {
-	gtk_bases_color = UIConfiguration::instance ().color_str ("gtk_bases");
-	beat_background_color = UIConfiguration::instance ().color_str ("tracker editor: beat background");
-	bar_background_color = UIConfiguration::instance ().color_str ("tracker editor: bar background");
-	background_color = UIConfiguration::instance ().color_str ("tracker editor: background");
-	active_foreground_color = UIConfiguration::instance ().color_str ("tracker editor: active foreground");
-	passive_foreground_color = UIConfiguration::instance ().color_str ("tracker editor: passive foreground");
-	cursor_color = UIConfiguration::instance ().color_str ("tracker editor: cursor");
-	current_row_color = UIConfiguration::instance ().color_str ("tracker editor: current row");
-	current_edit_row_color = UIConfiguration::instance ().color_str ("tracker editor: current edit row");
-	selection_color = UIConfiguration::instance ().color_str ("tracker editor: selection");
+	gtk_bases_color = UIConfiguration::instance ().color ("gtk_bases");
+	beat_background_color = UIConfiguration::instance ().color ("tracker editor: beat background");
+	bar_background_color = UIConfiguration::instance ().color ("tracker editor: bar background");
+	background_color = UIConfiguration::instance ().color ("tracker editor: background");
+	active_foreground_color = UIConfiguration::instance ().color ("tracker editor: active foreground");
+	passive_foreground_color = UIConfiguration::instance ().color ("tracker editor: passive foreground");
+	cursor_color = UIConfiguration::instance ().color ("tracker editor: cursor");
+	current_row_color = UIConfiguration::instance ().color ("tracker editor: current row");
+	current_edit_row_color = UIConfiguration::instance ().color ("tracker editor: current edit row");
+	selection_color = UIConfiguration::instance ().color ("tracker editor: selection");
 }
 
 void
@@ -933,7 +933,10 @@ Grid::redisplay_global_columns ()
 		Temporal::Beats row_beats = pattern.earliest_tp->beats_at_row (row_idx);
 		bool is_row_beat = row_beats == row_beats.round_up_to_beat ();
 		bool is_row_bar = row_bbt.beats == 1;
-		std::string row_background_color = (is_row_beat ? (is_row_bar ? bar_background_color : beat_background_color) : background_color);
+		std::string row_background_color = (is_row_beat ? (is_row_bar ?
+		                                     TrackerUtils::color_to_string (bar_background_color)
+		                                     : TrackerUtils::color_to_string (beat_background_color))
+		                                    : TrackerUtils::color_to_string (background_color));
 		row[columns._background_color] = row_background_color;
 
 		// Set font family
@@ -1028,10 +1031,10 @@ Grid::redisplay_undefined_note (TreeModel::Row& row, int mti, int cgi)
 	row[columns.delay[mti][cgi]] = "";
 
 	// TODO: replace gtk_bases_color by a custom one
-	row[columns._note_background_color[mti][cgi]] = gtk_bases_color;
-	row[columns._channel_background_color[mti][cgi]] = gtk_bases_color;
-	row[columns._velocity_background_color[mti][cgi]] = gtk_bases_color;
-	row[columns._delay_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._note_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns._channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns._velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns._delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
 }
 
 void
@@ -1115,8 +1118,8 @@ Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi
 	row[columns.automation_delay[mti][cgi]] = "";
 
 	// Set undefined background color
-	row[columns._automation_background_color[mti][cgi]] = gtk_bases_color;
-	row[columns._automation_delay_background_color[mti][cgi]] = gtk_bases_color;
+	row[columns._automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns._automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
 }
 
 void
@@ -1134,14 +1137,16 @@ Grid::redisplay_current_row_background ()
 {
 	if (current_row_idx < 0)
 		return;
-	std::string color = step_edit() ? current_edit_row_color : current_row_color;
+	std::string color = step_edit() ?
+		TrackerUtils::color_to_string (current_edit_row_color)
+		: TrackerUtils::color_to_string (current_row_color);
 	redisplay_row_background_color (current_row, current_row_idx, color);
 }
 
 void
 Grid::redisplay_current_note_cursor (TreeModel::Row& row, int mti, int cgi)
 {
-	std::string color = cursor_color;
+	std::string color = TrackerUtils::color_to_string (cursor_color);
 
 	switch (current_note_type) {
 	case TrackerColumn::NoteType::NOTE:
@@ -1171,10 +1176,10 @@ Grid::redisplay_blank_note_foreground (TreeModel::Row& row, int mti, int cgi)
 	row[columns.delay[mti][cgi]] = mk_delay_blank ();
 
 	// Grey out infoless cells
-	row[columns._note_foreground_color[mti][cgi]] = passive_foreground_color;
-	row[columns._channel_foreground_color[mti][cgi]] = passive_foreground_color;
-	row[columns._velocity_foreground_color[mti][cgi]] = passive_foreground_color;
-	row[columns._delay_foreground_color[mti][cgi]] = passive_foreground_color;
+	row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns._channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns._velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns._delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
 }
 
 void
@@ -1193,11 +1198,11 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		NotePtr note = pattern.off_note (row_idx, mti, mri, cgi);
 		if (note) {
 			row[columns.note_name[mti][cgi]] = note_off_str;
-			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			int delay = get_off_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
+				row[columns._delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			}
 		}
 
@@ -1205,30 +1210,30 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		note = pattern.on_note (row_idx, mti, mri, cgi);
 		if (note) {
 			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note ());
-			row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			row[columns.channel[mti][cgi]] = TrackerUtils::channel_to_string (note->channel (), base ());
-			row[columns._channel_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity (), base (), precision ());
-			row[columns._velocity_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			row[columns._velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
 			int delay = get_on_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
 				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-				row[columns._delay_foreground_color[mti][cgi]] = active_foreground_color;
+				row[columns._delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			}
 		}
 	} else {
 		// Too many notes, not displayable
 		row[columns.note_name[mti][cgi]] = undisplayable_str;
-		row[columns._note_foreground_color[mti][cgi]] = active_foreground_color;
+		row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 	}
 }
 
 void
 Grid::redisplay_current_automation_cursor (TreeModel::Row& row, int mti, int cgi)
 {
-	std::string color = cursor_color;
+	std::string color = TrackerUtils::color_to_string (cursor_color);
 
 	switch (current_automation_type) {
 	case TrackerColumn::AutomationType::AUTOMATION:
@@ -1260,7 +1265,7 @@ Grid::redisplay_blank_automation_foreground (TreeModel::Row& row, int mti, int c
 	row[columns.automation_delay[mti][cgi]] = mk_delay_blank ();
 
 	// Fill default foreground color
-	row[columns._automation_delay_foreground_color[mti][cgi]] = passive_foreground_color;
+	row[columns._automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
 }
 
 void
@@ -1272,12 +1277,12 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 		int delay = pattern.get_automation_delay (row_idx, mti, mri, id_param).first;
 		if (delay != 0) {
 			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-			row[columns._automation_delay_foreground_color[mti][cgi]] = active_foreground_color;
+			row[columns._automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 		}
 	} else {
 		row[columns.automation[mti][cgi]] = undisplayable_str;
 	}
-	row[columns._automation_foreground_color[mti][cgi]] = active_foreground_color;
+	row[columns._automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 }
 
 void
@@ -1289,7 +1294,7 @@ Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int 
 	} else {
 		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
 	}
-	row[columns._automation_foreground_color[mti][cgi]] = passive_foreground_color;
+	row[columns._automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
 }
 
 void
@@ -1711,16 +1716,16 @@ Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	switch (get_note_type (col)) {
 	case TrackerColumn::NoteType::NOTE:
-		row[columns._note_background_color[mti][cgi]] = selection_color;
+		row[columns._note_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::NoteType::CHANNEL:
-		row[columns._channel_background_color[mti][cgi]] = selection_color;
+		row[columns._channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::NoteType::VELOCITY:
-		row[columns._velocity_background_color[mti][cgi]] = selection_color;
+		row[columns._velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::NoteType::DELAY:
-		row[columns._delay_background_color[mti][cgi]] = selection_color;
+		row[columns._delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	default:
 		std::cerr << "Grid::redisplay_note_cell_selection: Implementation Error!" << std::endl;
@@ -1736,10 +1741,10 @@ Grid::redisplay_automation_cell_selection (int row_idx, const Gtk::TreeViewColum
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	switch (get_automation_type (col)) {
 	case TrackerColumn::AutomationType::AUTOMATION:
-		row[columns._automation_background_color[mti][cgi]] = selection_color;
+		row[columns._automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::AutomationType::AUTOMATION_DELAY:
-		row[columns._automation_delay_background_color[mti][cgi]] = selection_color;
+		row[columns._automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	default:
 		std::cerr << "Grid::redisplay_automation_cell_selection: Implementation Error!" << std::endl;

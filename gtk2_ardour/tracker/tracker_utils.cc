@@ -518,3 +518,12 @@ TrackerUtils::id_param_to_string (const IDParameter& id_param)
 	ss << "(id=" << id_param.first.to_s () << ", param=" << id_param.second << ")";
 	return ss.str ();
 }
+
+std::string
+TrackerUtils::color_to_string (const Gtkmm2ext::Color& color)
+{
+	std::stringstream ss;
+	ss << std::hex;
+	ss << "#" << std::setw (6) << std::setfill ('0') << (color >> 8);
+	return ss.str();
+}

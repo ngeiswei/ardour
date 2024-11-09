@@ -437,6 +437,9 @@ public:
 	static std::string bold (const std::string& str);
 
 	static std::string id_param_to_string (const IDParameter& id_param);
+
+	// Convert Gtkmm2ext::Color to its string representation
+	static std::string color_to_string (const Gtkmm2ext::Color& color);
 };
 
 } // ~namespace tracker

@@ -809,16 +809,16 @@ private:
 	std::vector<std::set<int>> available_automation_columns;
 
 	// Colors from config
-	std::string gtk_bases_color;
-	std::string beat_background_color;
-	std::string bar_background_color;
-	std::string background_color;
-	std::string active_foreground_color;
-	std::string passive_foreground_color;
-	std::string cursor_color;
-	std::string current_row_color;
-	std::string current_edit_row_color;
-	std::string selection_color;
+	Gtkmm2ext::Color gtk_bases_color;
+	Gtkmm2ext::Color beat_background_color;
+	Gtkmm2ext::Color bar_background_color;
+	Gtkmm2ext::Color background_color;
+	Gtkmm2ext::Color active_foreground_color;
+	Gtkmm2ext::Color passive_foreground_color;
+	Gtkmm2ext::Color cursor_color;
+	Gtkmm2ext::Color current_row_color;
+	Gtkmm2ext::Color current_edit_row_color;
+	Gtkmm2ext::Color selection_color;
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
