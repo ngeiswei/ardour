@@ -85,6 +85,32 @@ struct region_position_less
 	bool operator () (RegionPtr lhs, RegionPtr rhs);
 };
 
+/**
+* Like Sequence::EarlierNoteComparator, but in case the two notes have the
+* same time, then other attributes are used to determine their order, so
+* that the ordering relationship is strict rather than partial. This is
+* currently used by the Midi Pattern Editor.
+*
+* Only channel and pitch attributes are used. For now it is assumed (perhaps
+* wrongly) that simultaneous notes cannot exist on the same midi region if
+* these 2 attributes are equal.
+*/
+struct EarlierNoteStrictComparator {
+	inline bool operator()(const std::shared_ptr<const NoteType> a,
+	                       const std::shared_ptr<const NoteType> b) const {
+		return a->time() < b->time()
+			|| (a->time() == b->time()
+			    && (a->channel() < b->channel()
+			        || (a->channel() == b->channel()
+			            && a->note() < b->note())));
+	}
+};
+
+/**
+ * Strictly ordered multiset of notes
+ */
+typedef std::multiset<NotePtr, EarlierNoteStrictComparator> StrictNotes;
+
 class TrackerUtils
 {
 public:

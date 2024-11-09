@@ -215,7 +215,7 @@ MidiNotesPattern::update_track_to_notes ()
 	// StrictNotes order so that simulatenous notes can be dispatched according
 	// to some defined order.
 	const MidiModel::Notes& notes = _midi_model->notes ();
-	MidiModel::StrictNotes strict_notes;
+	StrictNotes strict_notes;
 	for (MidiModel::Notes::const_iterator it = _midi_model->note_lower_bound (start_beats);
 	     it != notes.end () && (*it)->time () < end_beats; ++it)
 		strict_notes.insert (*it);
@@ -225,7 +225,7 @@ MidiNotesPattern::update_track_to_notes ()
 		MidiModel::Notes& track_notes = track_to_notes[cgi];
 		MidiModel::Notes::iterator track_notes_it = track_notes.begin ();
 		for (; track_notes_it != track_notes.end ();) {
-			MidiModel::StrictNotes::iterator notes_it = find_eq_id (strict_notes, *track_notes_it);
+			StrictNotes::iterator notes_it = find_eq_id (strict_notes, *track_notes_it);
 			if (notes_it == strict_notes.end ()) {
 				track_notes.erase (track_notes_it++);
 			} else {
@@ -235,7 +235,7 @@ MidiNotesPattern::update_track_to_notes ()
 	}
 
 	// Add new notes and move existing notes
-	for (MidiModel::StrictNotes::const_iterator it = strict_notes.begin ();
+	for (StrictNotes::const_iterator it = strict_notes.begin ();
 	     it != strict_notes.end (); ++it) {
 
 		int cgi = find_eq_id (*it);
