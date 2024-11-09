@@ -155,10 +155,6 @@ public:
 	};
 
 	typedef std::multiset<NotePtr, EarlierNoteComparator> Notes;
-	/**
-	 * Like Notes, except they are strictly ordered. We keep a multiset in case
-	 * the comparator isn't strict after all.
-	 */
 	inline       Notes& notes()       { return _notes; }
 	inline const Notes& notes() const { return _notes; }
 
