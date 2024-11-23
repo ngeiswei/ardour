@@ -95,7 +95,7 @@ public:
 	static std::string color_to_hex_string (Gtkmm2ext::Color c);
 	static std::string color_to_hex_string_no_alpha (Gtkmm2ext::Color c);
 
-	void reset_dpi ();
+	void  reset_dpi ();
 	float get_ui_scale ();
 
 	sigc::signal<void, std::string> ParameterChanged;

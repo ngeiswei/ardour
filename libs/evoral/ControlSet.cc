@@ -25,8 +25,6 @@
 #include "evoral/Control.h"
 #include "evoral/Event.h"
 
-#include "pbd/stacktrace.h"
-
 using namespace std;
 
 namespace Evoral {

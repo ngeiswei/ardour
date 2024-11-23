@@ -41,9 +41,6 @@
 
 namespace PBD {
 
-	// Print the stacktrace of all function calls within [start, levels) to out.
-	// If start and levels are set to 0, the defaults, then print the whole
-	// stacktrace.
 	LIBPBD_API void stacktrace (std::ostream& out, int levels = 0, size_t start_level = 0);
 	LIBPBD_API void trace_twb();
 
