@@ -440,6 +440,9 @@ public:
 
 	// Convert Gtkmm2ext::Color to its string representation
 	static std::string color_to_string (const Gtkmm2ext::Color& color);
+
+	// Return initial IDParameter object with no useful information in it
+	static IDParameter defaultIDParameter ();
 };
 
 } // ~namespace tracker

@@ -527,3 +527,9 @@ TrackerUtils::color_to_string (const Gtkmm2ext::Color& color)
 	ss << "#" << std::setw (6) << std::setfill ('0') << (color >> 8);
 	return ss.str();
 }
+
+IDParameter
+TrackerUtils::defaultIDParameter ()
+{
+	return std::make_pair (PBD::ID (0), Evoral::Parameter (0));
+}

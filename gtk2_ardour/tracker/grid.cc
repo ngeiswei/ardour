@@ -3150,12 +3150,12 @@ Grid::get_id_param (int mti, int cgi) const
 {
 	IndexBimap::right_const_iterator ac_it = col2auto_cgi[mti].right.find (cgi);
 	if (ac_it == col2auto_cgi[mti].right.end ()) {
-		return IDParameter ();
+		return TrackerUtils::defaultIDParameter ();
 	}
 	int edited_colnum = ac_it->second;
 	IndexParamBimap::left_const_iterator it = col2params[mti].left.find (edited_colnum);
 	if (it == col2params[mti].left.end ()) {
-		return IDParameter ();
+		return TrackerUtils::defaultIDParameter ();
 	}
 	return it->second;
 }
@@ -4221,7 +4221,7 @@ bool
 Grid::is_automation_defined (int row_idx, int mti, int cgi) const
 {
 	IDParameter id_param = get_id_param (mti, cgi);
-	if (id_param == IDParameter ()) {
+	if (id_param == TrackerUtils::defaultIDParameter ()) {
 		return false;
 	}
 
