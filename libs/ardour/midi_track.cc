@@ -486,11 +486,11 @@ MidiTrack::push_midi_input_to_step_edit_ringbuffer (samplecnt_t nframes)
 
 			const Evoral::Event<samplepos_t> ev(*e, false);
 
-			/* note on, since for step edit, note length is determined
+			/* note on or off, since for step edit, note length is determined
 			   elsewhere
 			*/
 
-			if (ev.is_note_on()) {
+			if (ev.is_note_on() || ev.is_note_off()) {
 				/* we don't care about the time for this purpose */
 				_step_edit_ring_buffer.write (0, ev.event_type(), ev.size(), ev.buffer());
 			}
@@ -778,7 +778,7 @@ MidiTrack::MidiControl::actually_set_value (double val, PBD::Controllable::Group
 }
 
 void
-MidiTrack::set_step_editing (bool yn)
+MidiTrack::set_step_editing (bool yn, bool status_change)
 {
 	if (_session.record_status() != Disabled) {
 		return;
@@ -786,7 +786,9 @@ MidiTrack::set_step_editing (bool yn)
 
 	if (yn != _step_editing) {
 		_step_editing = yn;
-		StepEditStatusChange (yn);
+		if (status_change) {
+			StepEditStatusChange (yn);
+		}
 	}
 }
 
