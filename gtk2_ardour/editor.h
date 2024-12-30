@@ -80,6 +80,8 @@
 
 #include "ptformat/ptformat.h"
 
+#include "tracker/tracker_editor.h"
+
 namespace Gtkmm2ext {
 	class Bindings;
 }
@@ -1186,6 +1188,7 @@ private:
 	void remove_clicked_region ();
 	void show_region_properties ();
 	void show_midi_list_editor ();
+	void show_tracker_editor ();
 	void rename_region ();
 	void duplicate_some_regions (RegionSelection&, float times);
 	void duplicate_selection (float times);
@@ -2221,6 +2224,9 @@ private:
 	void bring_all_sources_into_session ();
 
 	MainMenuDisabler* _main_menu_disabler;
+
+	/* Persistent tracker editor window */
+	Tracker::TrackerEditor* _tracker_editor;
 
 	/* private helper functions to help with registering region actions */
 
