@@ -53,6 +53,10 @@ namespace MIDI {
 	};
 };
 
+namespace Tracker {
+	class TrackerEditor;
+}
+
 class SysEx;
 class Note;
 class Hit;
