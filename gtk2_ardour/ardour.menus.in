@@ -365,6 +365,7 @@
       <menuitem action='show-region-properties'/>
       <menuitem action='loudness-analyze-region'/>
       <menuitem action='spectral-analyze-region'/>
+      <menuitem action='tracker-editor'/>
       <menu action='RegionMenuEdit'>
 #ifndef MIXBUS
         <menuitem action='combine-regions'/>
@@ -993,6 +994,7 @@
 #endif
     <menuitem action='loudness-analyze-region'/>
     <menuitem action='spectral-analyze-region'/>
+    <menuitem action='tracker-editor'/>
     <separator/>
     <menuitem action='remove-region'/>
   </popup>
