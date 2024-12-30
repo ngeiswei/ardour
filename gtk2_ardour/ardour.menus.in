@@ -387,6 +387,7 @@
       <menuitem action='rename-region'/>
       <menuitem action='loudness-analyze-region'/>
       <menuitem action='spectral-analyze-region'/>
+      <menuitem action='tracker-editor'/>
       <menu action='RegionMenuEdit'>
         <menuitem action='edit-region-dedicated-window'/>
         <separator/>
@@ -1021,6 +1022,7 @@
 #endif
     <menuitem action='loudness-analyze-region'/>
     <menuitem action='spectral-analyze-region'/>
+    <menuitem action='tracker-editor'/>
     <separator/>
     <menuitem action='remove-region'/>
   </popup>
