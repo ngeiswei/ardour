@@ -379,6 +379,7 @@ Editor::Editor ()
 	, track_drag (nullptr)
 	, _visible_marker_types (all_marker_types)
 	, _visible_range_types (all_range_types)
+	, _tracker_editor (0)
 {
 	/* we are a singleton */
 

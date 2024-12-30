@@ -2766,6 +2766,19 @@ Editor::show_midi_list_editor ()
 	selection->foreach_midi_regionview (&MidiRegionView::show_list_editor);
 }
 
+/** Show the tracker editor for the selected MIDI regions */
+void
+Editor::show_tracker_editor ()
+{
+	if (_session) {
+		RegionSelection rs = get_regions_from_selection_and_entered ();
+		if (!_tracker_editor)
+			_tracker_editor = new Tracker::TrackerEditor (_session, rs);
+		_tracker_editor->setup (rs);
+		_tracker_editor->present ();
+	}
+}
+
 void
 Editor::rename_region ()
 {
