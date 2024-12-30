@@ -384,6 +384,7 @@ Editor::Editor ()
 	, _visible_range_types (all_range_types)
 	, _midi_inspector (nullptr)
 	, xcursor (nullptr)
+	, _tracker_editor (0)
 {
 	/* we are a singleton */
 
