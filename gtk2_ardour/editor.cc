@@ -385,6 +385,7 @@ Editor::Editor ()
 	, _midi_inspector (nullptr)
 	, midi_inspector_scrolled_window (nullptr)
 	, xcursor (nullptr)
+	, _tracker_editor (0)
 {
 	/* we are a singleton */
 

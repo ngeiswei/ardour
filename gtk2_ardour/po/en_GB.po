@@ -6217,6 +6217,13 @@ msgstr ""
 
 #: editor_ops.cc:6243
 msgid "set fade in length"
+
+#: editor_actions.cc:1935
+msgid "Tracker Editor..."
+msgstr ""
+
+#: editor_actions.cc:1918
+msgid "Properties..."
 msgstr ""
 
 #: editor_ops.cc:6250
