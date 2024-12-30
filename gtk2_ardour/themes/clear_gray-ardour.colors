@@ -465,6 +465,15 @@
     <ColorAlias name="time axis view item base" alias="widget:gray"/>
     <ColorAlias name="time stretch fill" alias="theme:contrasting less"/>
     <ColorAlias name="time stretch outline" alias="widget:gray"/>
+    <ColorAlias name="tracker editor: active foreground" alias="neutral:foregroundest"/>
+    <ColorAlias name="tracker editor: passive foreground" alias="widget:gray"/>
+    <ColorAlias name="tracker editor: background" alias="neutral:background"/>
+    <ColorAlias name="tracker editor: beat background" alias="neutral:background2"/>
+    <ColorAlias name="tracker editor: bar background" alias="neutral:midground"/>
+    <ColorAlias name="tracker editor: cursor" alias="meter color0"/>
+    <ColorAlias name="tracker editor: current row" alias="widget:ruddy"/>
+    <ColorAlias name="tracker editor: current edit row" alias="alert:red"/>
+    <ColorAlias name="tracker editor: selection" alias="alert:blue"/>
     <ColorAlias name="tracknumber label: fill" alias="theme:bg"/>
     <ColorAlias name="tracknumber label: fill active" alias="neutral:background2"/>
     <ColorAlias name="tracknumber label: led active" alias="alert:red"/>
