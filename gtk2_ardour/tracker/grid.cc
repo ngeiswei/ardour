@@ -2021,7 +2021,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			return "";
 		}
 
-		// For now ignore *** (NEXT.3: support Overwrite ***)
+		// For now ignore ***
 		if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 			return "";
 		}
@@ -2068,7 +2068,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			return "";
 		}
 
-		// For now ignore *** (NEXT.3: support Overwrite ***)
+		// For now ignore ***
 		if (!is_automation_displayable (row_idx, mti, mri, cgi)) {
 			return "";
 		}
