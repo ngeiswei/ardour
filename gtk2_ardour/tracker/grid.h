@@ -75,7 +75,6 @@ public:
 		// TODO: add empty columns to separate between each note track and each automations
 		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color, maybe
 		Gtk::TreeModelColumn<std::string> _family; // font family
-		Gtk::TreeModelColumn<std::string> _empty; // empty column used as separator
 		Gtk::TreeModelColumn<std::string> _time_background_color;
 		// TODO: maybe use a row_idx column to rapidely retrieve the row_idx of a row
 		Gtk::TreeModelColumn<std::string> time;
@@ -98,6 +97,7 @@ public:
 		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<Pango::AttrList> _delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _note_empty[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // empty column used as separator
 		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
 		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
@@ -106,6 +106,7 @@ public:
 		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
 		Gtk::TreeModelColumn<Pango::AttrList> _automation_delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
+		Gtk::TreeModelColumn<std::string> _automation_empty[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // empty column used as separator
 		Gtk::TreeModelColumn<std::string> right_separator[MAX_NUMBER_OF_TRACKS];
 		Gtk::TreeModelColumn<std::string> track_separator[MAX_NUMBER_OF_TRACKS];
 	};
