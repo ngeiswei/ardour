@@ -173,7 +173,7 @@ Grid::GridModelColumns::GridModelColumns ()
 			add (_delay_background_color[mti][cgi]);
 			add (_delay_foreground_color[mti][cgi]);
 			add (_delay_attributes[mti][cgi]);
-			add (_empty);
+			add (_note_empty[mti][cgi]);
 		}
 		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
 			add (automation[mti][cgi]);
@@ -184,7 +184,7 @@ Grid::GridModelColumns::GridModelColumns ()
 			add (_automation_delay_background_color[mti][cgi]);
 			add (_automation_delay_foreground_color[mti][cgi]);
 			add (_automation_delay_attributes[mti][cgi]);
-			add (_empty);
+			add (_automation_empty[mti][cgi]);
 		}
 		add (right_separator[mti]);
 		add (track_separator[mti]);
@@ -3875,7 +3875,7 @@ Grid::setup_note_delay_column (int mti, int cgi)
 void
 Grid::setup_note_separator_column (int mti, int cgi)
 {
-	note_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._empty));
+	note_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._note_empty[mti][cgi]));
 
 	// Set width
 	note_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -3947,7 +3947,7 @@ Grid::setup_automation_delay_column (int mti, int cgi)
 void
 Grid::setup_automation_separator_column (int mti, int cgi)
 {
-	automation_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._empty));
+	automation_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._automation_empty[mti][cgi]));
 
 	// Set width
 	automation_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
