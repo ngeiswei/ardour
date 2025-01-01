@@ -1,5 +1,7 @@
 # Next
 
+- [ ] NEXT.4: understand why
+  (ardour-9.0.pre0.614:237517): Gtk-CRITICAL **: 17:06:13.903: IA__gtk_widget_set_size_request: assertion 'width >= -1' failed
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
 
 # Tracker Editor
