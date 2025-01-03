@@ -25,8 +25,6 @@
 #include "tracker_editor.h"
 #include "tracker_utils.h"
 
-#include <boost/stacktrace.hpp>
-
 using namespace Tracker;
 
 ///////////////////////
