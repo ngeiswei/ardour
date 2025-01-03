@@ -1,5 +1,14 @@
 # Ardour Tracker Editor
 
+## Overview
+
+The Tracker editor is a [music tracker](https://en.wikipedia.org/wiki/Music_tracker)
+integrated into Ardour. It allows to visualize and edit midi notes, controls and
+plugin automations with a tracker style interface.
+
+The important point is that it is fully integrated to Ardour in the sense that
+any change on the pianoroll view will affect the tracker view and vice versa.
+
 ### Channel column
 
 In Dec mode, the channel column begins from 1, like in Ardour.  However, in Hex
