@@ -75,7 +75,11 @@ GridHeader::align ()
 	int track_separator_width = tracker_editor.grid.get_track_separator_width ();
 	int time_width = tracker_editor.grid.get_time_width ();
 	set_spacing (track_separator_width);
-	set_time_header_size (time_width - track_separator_width);
+	int diff = time_width - track_separator_width;
+	if (diff < 0) {
+		diff = -1;
+	}
+	set_time_header_size (diff);
 	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size (); mti++) {
 		int track_width = tracker_editor.grid.get_track_width (mti);
 		set_track_header_size (mti, track_width);
