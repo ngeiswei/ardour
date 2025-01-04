@@ -2717,10 +2717,12 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 void
 Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 {
-	// Can't edit *** (NEXT.3: support Overwrite ***)
-	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
+	// Skip if *** and overwrite *** is disabled
+	if (!is_note_displayable (row_idx, mti, mri, cgi) and !tracker_editor.main_toolbar.overwrite_start) {
 		return;
 	}
+
+	// NEXT.4: generalize to delete all notes inside the cell
 
 	NotePtr on_note = get_on_note (row_idx, mti, cgi);
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
