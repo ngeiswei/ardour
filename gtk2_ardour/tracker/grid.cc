@@ -2718,7 +2718,7 @@ void
 Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 {
 	// Skip if *** and overwrite *** is disabled
-	if (!is_note_displayable (row_idx, mti, mri, cgi) and !tracker_editor.main_toolbar.overwrite_start) {
+	if (!is_note_displayable (row_idx, mti, mri, cgi) and !tracker_editor.main_toolbar.overwrite_star) {
 		return;
 	}
 
