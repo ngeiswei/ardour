@@ -2722,7 +2722,9 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 		return;
 	}
 
-	// NEXT.4: generalize to delete all notes inside the cell
+	// NEXT.4: generalize to delete all notes inside the cell.  See
+	// Grid::note_tooltip_msg and its use of pattern.off_notes_range and
+	// pattern.on_notes_range as example
 
 	NotePtr on_note = get_on_note (row_idx, mti, cgi);
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
