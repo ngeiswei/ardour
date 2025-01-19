@@ -89,8 +89,8 @@ public:
 
 	// Return the Beats of the next note on (resp. off) or the end of the region
 	// if none
-	Temporal::Beats next_on (int row, int cgi) const;
-	Temporal::Beats next_off (int row, int cgi) const;
+	Temporal::Beats next_on_beats (int row, int cgi) const;
+	Temporal::Beats next_off_beats (int row, int cgi) const;
 
 	// Return true if the notes are displayable at this resolution. Basically
 	// if there are too many notes, unless its a pair (note off, note on)
