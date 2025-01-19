@@ -366,14 +366,14 @@ MidiNotesPattern::find_next_off (int row, int cgi) const
 }
 
 Temporal::Beats
-MidiNotesPattern::next_on (int row, int cgi) const
+MidiNotesPattern::next_on_beats (int row, int cgi) const
 {
 	NotePtr next_note = find_next_on (row, cgi);
 	return next_note ? next_note->time () : end_beats;
 }
 
 Temporal::Beats
-MidiNotesPattern::next_off (int row, int cgi) const
+MidiNotesPattern::next_off_beats (int row, int cgi) const
 {
 	NotePtr next_note = find_next_off (row, cgi);
 	return next_note ? next_note->end_time () : end_beats;
