@@ -2594,7 +2594,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		// Replace off note by another (non-off) note. Calculate the start
 		// time and length of the new on note.
 		Temporal::Beats start = off_note->end_time ();
-		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_on_note_beats (row_idx, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
 		NotePtr new_note (new NoteType (ch, start, length, pitch, vel));
@@ -2632,7 +2632,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 
 		// Create the new note using the defaults. Calculate the start
 		// and length of the new note
-		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
+		Temporal::Beats end = pattern.next_on_note_beats (row_idx, mti, mri, cgi);
 		// If new note occur between the on note and off note of the previous
 		// note, then use the off note of the previous note as off note of the
 		// new note.
@@ -2722,42 +2722,33 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 		return;
 	}
 
-	// NEXT.4: generalize to delete all notes inside the cell.  See
-	// Grid::note_tooltip_msg and its use of pattern.off_notes_range and
-	// pattern.on_notes_range as example
-
-	NotePtr on_note = get_on_note (row_idx, mti, cgi);
-	NotePtr off_note = get_off_note (row_idx, mti, cgi);
-
 	MidiModel::NoteDiffCommand* cmd = nullptr;
+	char const * opname = _("delete note");
+	cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 
-	if (on_note) {
-		// Delete on note and change
-		char const * opname = _("delete note");
-		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
+	// NEXT.4: deal with weird behavior
+
+	// Remove all on notes
+	RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
+	for (; on_rng.first != on_rng.second; ++on_rng.first) {
+		NotePtr on_note = on_rng.first->second;
 		cmd->remove (on_note);
+	}
 
-		// If there is an off note, update the length of the preceding note
-		// to match the next note or the end of the region.
-		if (off_note) {
-			NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
-			if (prev_note) {
-				// Calculate the length of the previous note
-				Temporal::Beats start = prev_note->time ();
-				Temporal::Beats end = pattern.next_off_note (row_idx, mti, mri, cgi);
-				Temporal::Beats length = end - start;
-				cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
-			}
+	// Change duration of off note if necessary
+	NotePtr off_note = get_off_note (row_idx, mti, cgi);
+	if (off_note) {
+		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
+		if (prev_note && (prev_note == off_note)) {
+			// Calculate the length of the previous note and update it to end at
+			// the next note
+			Temporal::Beats start = prev_note->time ();
+			Temporal::Beats on_end = pattern.next_on_note_beats (row_idx, mti, mri, cgi);
+			Temporal::Beats off_end = pattern.next_off_note_beats (row_idx, mti, mri, cgi);
+			Temporal::Beats end = on_end < off_end ? on_end : off_end;
+			Temporal::Beats length = end - start;
+			cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, length);
 		}
-	} else if (off_note) {
-		// Update the length of the corresponding on note so the off note
-		// matches the next note or the end of the region.
-		Temporal::Beats start = off_note->time ();
-		Temporal::Beats end = pattern.next_on_note (row_idx, mti, mri, cgi);
-		Temporal::Beats length = end - start;
-		char const * opname = _("resize note");
-		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
-		cmd->change (off_note, MidiModel::NoteDiffCommand::Length, length);
 	}
 
 	// Apply note changes

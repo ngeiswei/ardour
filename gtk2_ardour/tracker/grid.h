@@ -655,7 +655,7 @@ private:
 	NotePtr get_note (const std::string& path, int mti, int cgi) const;
 	NotePtr get_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 
-	// Return true iff there is a on or off note at this position.
+	// Return true iff there is at least on or off note at this position.
 	bool has_note (const Gtk::TreeModel::Path& path, int mti, int cgi) const;
 
 	void editing_note_started (Gtk::CellEditable*, const std::string& path, int mti, int cgi);
