@@ -430,15 +430,15 @@ Pattern::find_next_on_note (int rowi, int mti, int mri, int cgi) const
 }
 
 Temporal::Beats
-Pattern::next_on_note (int rowi, int mti, int mri, int cgi) const
+Pattern::next_on_note_beats (int rowi, int mti, int mri, int cgi) const
 {
-	return midi_region_pattern (mti, mri).mnp.next_on (to_rrri (rowi, mti, mri), cgi);
+	return midi_region_pattern (mti, mri).mnp.next_on_beats (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats
-Pattern::next_off_note (int rowi, int mti, int mri, int cgi) const
+Pattern::next_off_note_beats (int rowi, int mti, int mri, int cgi) const
 {
-	return midi_region_pattern (mti, mri).mnp.next_off (to_rrri (rowi, mti, mri), cgi);
+	return midi_region_pattern (mti, mri).mnp.next_off_beats (to_rrri (rowi, mti, mri), cgi);
 }
 
 int
