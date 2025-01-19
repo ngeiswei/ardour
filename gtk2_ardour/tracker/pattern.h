@@ -106,8 +106,8 @@ public:
 
 	// Return the Beats of the next note on (resp. off) or the end of the region
 	// if none
-	Temporal::Beats next_on_note (int rowi, int mti, int mri, int cgi) const;
-	Temporal::Beats next_off_note (int rowi, int mti, int mri, int cgi) const;
+	Temporal::Beats next_on_note_beats (int rowi, int mti, int mri, int cgi) const;
+	Temporal::Beats next_off_note_beats (int rowi, int mti, int mri, int cgi) const;
 
 	// Return the row index relative to the start of pattern at mti.
 	int to_rri (int rowi, int mti) const;
