@@ -19,8 +19,8 @@
 #ifndef __ardour_tracker_track_toolbar_h_
 #define __ardour_tracker_track_toolbar_h_
 
-#include <gtkmm/box.h>
-#include <gtkmm/separator.h>
+#include <ytkmm/box.h>
+#include <ytkmm/separator.h>
 
 #include "widgets/ardour_button.h"
 
