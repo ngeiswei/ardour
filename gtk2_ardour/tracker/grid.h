@@ -21,10 +21,10 @@
 
 #include <boost/bimap/bimap.hpp>
 
-#include <gdkmm/color.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/tooltip.h>
+#include <ydkmm/color.h>
+#include <ytkmm/liststore.h>
+#include <ytkmm/treeview.h>
+#include <ytkmm/tooltip.h>
 
 #include "../piano_key_bindings.h"
 

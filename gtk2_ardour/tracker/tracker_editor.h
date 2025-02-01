@@ -21,9 +21,9 @@
 
 #include <cmath>
 
-#include <gtkmm/box.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/table.h>
+// #include <gtkmm/box.h>
+// #include <gtkmm/scrolledwindow.h>
+// #include <gtkmm/table.h>
 
 #include "gtkmm2ext/bindings.h"
 
