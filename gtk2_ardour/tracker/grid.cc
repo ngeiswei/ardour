@@ -30,8 +30,8 @@
 
 #include <pangomm/attributes.h>
 
-#include <gtkmm/cellrenderercombo.h>
-#include <gtkmm/tooltip.h>
+#include <ytkmm/cellrenderercombo.h>
+#include <ytkmm/tooltip.h>
 
 #include "gtkmm2ext/actions.h"
 #include "gtkmm2ext/gui_thread.h"
