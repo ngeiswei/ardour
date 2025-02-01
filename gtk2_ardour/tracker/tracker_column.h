@@ -19,8 +19,8 @@
 #ifndef __ardour_tracker_tracker_column_h_
 #define __ardour_tracker_tracker_column_h_
 
-#include <gtkmm/treemodelcolumn.h>
-#include <gtkmm/treeviewcolumn.h>
+#include <ytkmm/treemodelcolumn.h>
+#include <ytkmm/treeviewcolumn.h>
 
 namespace Tracker {
 

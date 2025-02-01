@@ -19,7 +19,7 @@
 #ifndef __ardour_tracker_track_header_h_
 #define __ardour_tracker_track_header_h_
 
-#include <gtkmm/frame.h>
+#include <ytkmm/frame.h>
 
 #include "track_pattern.h"
 #include "track_toolbar.h"
