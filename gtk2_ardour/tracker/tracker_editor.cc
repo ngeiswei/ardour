@@ -25,7 +25,7 @@
 #include "pbd/file_utils.h"
 #include "pbd/memento_command.h"
 
-#include <gtkmm/cellrenderercombo.h>
+#include <ytkmm/cellrenderercombo.h>
 
 #include "gtkmm2ext/actions.h"
 #include "gtkmm2ext/gui_thread.h"
