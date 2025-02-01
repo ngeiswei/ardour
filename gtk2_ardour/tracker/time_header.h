@@ -19,7 +19,7 @@
 #ifndef __ardour_tracker_time_header_h_
 #define __ardour_tracker_time_header_h_
 
-#include <gtkmm/table.h>
+#include <ytkmm/table.h>
 
 namespace Tracker {
 
