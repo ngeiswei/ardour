@@ -365,6 +365,8 @@ private:
 	void connect_tooltips ();
 	bool set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 	std::string time_tooltip_msg (int row_idx) const;
+	std::string off_note_tooltip_msg (NotePtr off_note, int row_idx, int mti, int mri);
+	std::string on_note_tooltip_msg (NotePtr on_note, int row_idx, int mti, int mri);
 	std::string note_tooltip_msg (int row_idx, int mti, int mri, int cgi);
 	std::string automation_tooltip_msg (int row_idx, int mti, int mri, int cgi);
 	void connect_events ();
