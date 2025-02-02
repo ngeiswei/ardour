@@ -3503,6 +3503,48 @@ Grid::time_tooltip_msg (int row_idx) const
 }
 
 std::string
+Grid::on_note_tooltip_msg (NotePtr on_note, int row_idx, int mti, int mri)
+{
+	std::stringstream ss;
+	const MidiNotesPattern& midi_notes_pattern = pattern.midi_notes_pattern (mti, mri);
+	Temporal::BBT_Time bbt = midi_notes_pattern.on_note_bbt (on_note);
+	std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
+	int ch = on_note->channel ();
+	int vel = on_note->velocity ();
+	int delay = get_on_note_delay (on_note, row_idx, mti, mri);
+	ss << TrackerUtils::underline("BBT") << ": "
+		<< TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
+		<< TrackerUtils::underline("Note") << ": "
+		<< TrackerUtils::bold(note_name) << ", "
+		<< TrackerUtils::underline("Channel") << ": "
+		<< TrackerUtils::bold(TrackerUtils::channel_to_string (ch, base ())) << ", "
+		<< TrackerUtils::underline("Velocity") << ": "
+		<< TrackerUtils::bold(TrackerUtils::num_to_string (vel, base ())) << ", "
+		<< TrackerUtils::underline("Delay") << ": "
+		<< TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
+	return ss.str ();
+}
+
+std::string
+Grid::off_note_tooltip_msg (NotePtr off_note, int row_idx, int mti, int mri)
+{
+	std::stringstream ss;
+	const MidiNotesPattern& midi_notes_pattern = pattern.midi_notes_pattern (mti, mri);
+	Temporal::BBT_Time bbt = midi_notes_pattern.off_note_bbt (off_note);
+	int ch = off_note->channel ();
+	int delay = get_off_note_delay (off_note, row_idx, mti, mri);
+	ss << TrackerUtils::underline("BBT") << ": "
+		<< TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
+		<< TrackerUtils::underline("Note") << ": "
+		<< TrackerUtils::bold("Off") << ", "
+		<< TrackerUtils::underline("Channel") << ": "
+		<< TrackerUtils::bold(TrackerUtils::channel_to_string (ch, base ())) << ", "
+		<< TrackerUtils::underline("Delay") << ": "
+		<< TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
+	return ss.str ();
+}
+
+std::string
 Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 {
 	size_t off_count = pattern.off_notes_count (row_idx, mti, mri, cgi);
@@ -3514,43 +3556,18 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << TrackerUtils::underline("Region") << ": "
 		   << "<b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
 		ss << TrackerUtils::underline("Notes") << ":";
-		const MidiNotesPattern& midi_notes_pattern = pattern.midi_notes_pattern (mti, mri);
 		if (0 < off_count) {
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
 				NotePtr off_note = off_rng.first->second;
-				Temporal::BBT_Time bbt = midi_notes_pattern.off_note_bbt (off_note);
-				int ch = off_note->channel ();
-				int delay = get_off_note_delay (off_note, row_idx, mti, mri);
-				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
-				   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
-				   << TrackerUtils::underline("Note") << ": "
-				   << TrackerUtils::bold("Off") << ", "
-				   << TrackerUtils::underline("Channel") << ": "
-				   << TrackerUtils::bold(TrackerUtils::channel_to_string (ch, base ())) << ", "
-				   << TrackerUtils::underline("Delay") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
+				ss << std::endl << "  " << off_note_tooltip_msg (off_note, row_idx, mti, mri);
 			}
 		}
 		if (0 < on_count) {
 			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
-				Temporal::BBT_Time bbt = midi_notes_pattern.on_note_bbt (on_note);
-				std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
-				int ch = on_note->channel ();
-				int vel = on_note->velocity ();
-				int delay = get_on_note_delay (on_note, row_idx, mti, mri);
-				ss << std::endl << "  " << TrackerUtils::underline("BBT") << ": "
-				   << TrackerUtils::bold(TrackerUtils::bbt_to_string (bbt, base ())) << ", "
-				   << TrackerUtils::underline("Note") << ": "
-				   << TrackerUtils::bold(note_name) << ", "
-				   << TrackerUtils::underline("Channel") << ": "
-				   << TrackerUtils::bold(TrackerUtils::channel_to_string (ch, base ())) << ", "
-				   << TrackerUtils::underline("Velocity") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string (vel, base ())) << ", "
-				   << TrackerUtils::underline("Delay") << ": "
-				   << TrackerUtils::bold(TrackerUtils::num_to_string (delay, base ()));
+				ss << std::endl << "  " << on_note_tooltip_msg (on_note, row_idx, mti, mri);
 			}
 		}
 		return ss.str ();
