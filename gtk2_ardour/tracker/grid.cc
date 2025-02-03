@@ -1548,6 +1548,7 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 void
 Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, const MidiNotesPatternPhenomenalDiff* mnp_diff)
 {
+	std::cout << "Grid::redisplay_region_notes (mti=" << mti << ", mri=" << mri << ") mnp:" << std::endl << mnp.to_string() << std::endl;
 	if (mnp_diff == 0 || mnp_diff->full) {
 		for (size_t cgi = 0; cgi < mnp.ntracks; cgi++) {
 			redisplay_note_column (mti, mri, cgi, mnp);
@@ -3503,11 +3504,10 @@ Grid::time_tooltip_msg (int row_idx) const
 }
 
 std::string
-Grid::on_note_tooltip_msg (NotePtr on_note, int row_idx, int mti, int mri)
+Grid::on_note_tooltip_msg (NotePtr on_note, const MidiNotesPattern& mnp, int row_idx, int mti, int mri)
 {
 	std::stringstream ss;
-	const MidiNotesPattern& midi_notes_pattern = pattern.midi_notes_pattern (mti, mri);
-	Temporal::BBT_Time bbt = midi_notes_pattern.on_note_bbt (on_note);
+	Temporal::BBT_Time bbt = mnp.on_note_bbt (on_note);
 	std::string note_name = ParameterDescriptor::midi_note_name (on_note->note ());
 	int ch = on_note->channel ();
 	int vel = on_note->velocity ();
@@ -3526,11 +3526,10 @@ Grid::on_note_tooltip_msg (NotePtr on_note, int row_idx, int mti, int mri)
 }
 
 std::string
-Grid::off_note_tooltip_msg (NotePtr off_note, int row_idx, int mti, int mri)
+Grid::off_note_tooltip_msg (NotePtr off_note, const MidiNotesPattern& mnp, int row_idx, int mti, int mri)
 {
 	std::stringstream ss;
-	const MidiNotesPattern& midi_notes_pattern = pattern.midi_notes_pattern (mti, mri);
-	Temporal::BBT_Time bbt = midi_notes_pattern.off_note_bbt (off_note);
+	Temporal::BBT_Time bbt = mnp.off_note_bbt (off_note);
 	int ch = off_note->channel ();
 	int delay = get_off_note_delay (off_note, row_idx, mti, mri);
 	ss << TrackerUtils::underline("BBT") << ": "
@@ -3556,18 +3555,19 @@ Grid::note_tooltip_msg (int row_idx, int mti, int mri, int cgi)
 		ss << TrackerUtils::underline("Region") << ": "
 		   << "<b>" << pattern.midi_region (mti, mri)->name () << "</b>" << std::endl;
 		ss << TrackerUtils::underline("Notes") << ":";
+		const MidiNotesPattern& mnp = pattern.midi_notes_pattern (mti, mri);
 		if (0 < off_count) {
 			RowToNotesRange off_rng = pattern.off_notes_range (row_idx, mti, mri, cgi);
 			for (; off_rng.first != off_rng.second; ++off_rng.first) {
 				NotePtr off_note = off_rng.first->second;
-				ss << std::endl << "  " << off_note_tooltip_msg (off_note, row_idx, mti, mri);
+				ss << std::endl << "  " << off_note_tooltip_msg (off_note, mnp, row_idx, mti, mri);
 			}
 		}
 		if (0 < on_count) {
 			RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 			for (; on_rng.first != on_rng.second; ++on_rng.first) {
 				NotePtr on_note = on_rng.first->second;
-				ss << std::endl << "  " << on_note_tooltip_msg (on_note, row_idx, mti, mri);
+				ss << std::endl << "  " << on_note_tooltip_msg (on_note, mnp, row_idx, mti, mri);
 			}
 		}
 		return ss.str ();
