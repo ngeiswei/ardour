@@ -269,30 +269,37 @@ MidiNotesPattern::update_track_to_notes ()
 void
 MidiNotesPattern::update_row_to_notes ()
 {
+	std::cout << "MidiNotesPattern::update_row_to_notes ()" << std::endl;
 	on_notes.clear ();
 	on_notes.resize (ntracks);
 	off_notes.clear ();
 	off_notes.resize (ntracks);
 
 	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
+		// Naive row to notes distribution.  Notes are placed in the row
+		// corresponding to the regular time interval.
 		for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
 		     inote != track_to_notes[itrack].end (); ++inote) {
 			Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats ((*inote)->time ());
 			Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats ((*inote)->end_time ());
-			int on_max_delay_row = row_at_beats_max_delay (on_time);
+			std::cout << "*inote = " << *inote << ", on_time = " << on_time << ", off_time = " <<  off_time << std::endl;
+			int max_delay_on_row = row_at_beats_max_delay (on_time);
 			int on_row = row_at_beats (on_time);
-			int off_min_delay_row = row_at_beats_min_delay (off_time);
+			int min_delay_off_row = row_at_beats_min_delay (off_time);
 			int off_row = row_at_beats (off_time);
+			std::cout << "on_row = " << on_row << ", off_row = " << off_row << ", max_delay_on_row = " << max_delay_on_row << ", min_delay_off_row = " << min_delay_off_row << std::endl;
 
 			// TODO: make row assignement more intelligent. Given the possible
 			// rows for each on and off notes find an assignement that
 			// maximizes the number displayable rows. If however the number of
 			// combinations to explore is too high fallback on the following
 			// cheap strategy.
-			if (on_row == off_row && on_row != off_min_delay_row) {
-				off_row = off_min_delay_row;
-			} else if (on_row == off_row && on_max_delay_row != off_row) {
-				on_row = on_max_delay_row;
+			if (on_row == off_row && on_row != min_delay_off_row) {
+				// NEXT.4: the problem might be here
+				off_row = min_delay_off_row;
+				std::cout << "off_row = " << off_row << std::endl;
+			} else if (on_row == off_row && max_delay_on_row != off_row) {
+				on_row = max_delay_on_row;
 			}
 
 			on_notes[itrack].insert (RowToNotes::value_type (on_row, *inote));
@@ -301,6 +308,10 @@ MidiNotesPattern::update_row_to_notes ()
 				off_notes[itrack].insert (RowToNotes::value_type (off_row, *inote));
 			}
 		}
+		// NEXT.4: reloop to move the off/on notes to next row is available.
+		// Question should we loop over on_notes[itrack] and off_notes[itrack],
+		// or should loop over track_to_notes[itrack]?  ANSWER: should iterate
+		// over on_notes[itrack] and off_notes[itrack].
 	}
 }
 
