@@ -319,6 +319,9 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 	// Question should we loop over on_notes[itrack] and off_notes[itrack],
 	// or should loop over track_to_notes[itrack]?  ANSWER: should iterate
 	// over on_notes[itrack] and off_notes[itrack].
+
+	// NEXT.4: alternatively maybe we can use track_to_notes[itrack] to evaluate
+	// whether to move or not the current note
 }
 
 void
