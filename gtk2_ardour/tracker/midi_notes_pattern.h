@@ -72,6 +72,11 @@ public:
 	// Update the mapping from row to on and off notes.
 	void update_row_to_notes ();
 
+	// Update the mapping from row to on and off notes for a given track.  It
+	// assumes the on_notes and off_notes maps have been cleared and resized to
+	// ntracks.
+	void update_row_to_notes_at_track (uint16_t itrack);
+
 	// Increase and decrease the number of tracks
 	void set_ntracks (uint16_t n);
 	void inc_ntracks ();
