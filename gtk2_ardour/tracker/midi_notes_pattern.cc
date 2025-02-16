@@ -296,6 +296,17 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 		int off_row = row_at_beats (off_time);
 		std::cout << "on_row = " << on_row << ", off_row = " << off_row << ", max_delay_on_row = " << max_delay_on_row << ", min_delay_off_row = " << min_delay_off_row << std::endl;
 
+		// NEXT.4: the strategy should be:
+		//
+		// 1. check is an on-note can be placed in the on_row (this is the case
+		//    only if the cell is empty or there is only one off-note that is
+		//    precisely at the start of that on-note).
+		//
+		// 2. If it cannot, then check if the next row is free for it.  If it is,
+		//    then place the on-note in it.
+		//
+		// 3. NEXT: off-note
+
 		// TODO: make row assignement more intelligent. Given the possible
 		// rows for each on and off notes find an assignement that
 		// maximizes the number displayable rows. If however the number of
