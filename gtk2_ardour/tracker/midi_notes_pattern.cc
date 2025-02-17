@@ -287,9 +287,10 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 	// corresponding to the regular time interval.
 	for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
 		  inote != track_to_notes[itrack].end (); ++inote) {
-		Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats ((*inote)->time ());
-		Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats ((*inote)->end_time ());
-		std::cout << "*inote = " << *inote << ", on_time = " << on_time << ", off_time = " <<  off_time << std::endl;
+		NotePtr note = *inote;
+		Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
+		Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
+		std::cout << "note = " << note << ", on_time = " << on_time << ", off_time = " <<  off_time << std::endl;
 		int max_delay_on_row = row_at_beats_max_delay (on_time);
 		int on_row = row_at_beats (on_time);
 		int min_delay_off_row = row_at_beats_min_delay (off_time);
@@ -313,6 +314,13 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 		//    then place the off-note in it.  If it is not, place it in off_row,
 		//    unless off_row is less than new on_row, in this case place it
 		//    off_row + 1.
+		if (is_on_row_saturated (on_row, on_time)) {
+			// The on_row is saturated, check if the next row is not going to
+			// be saturated, if so move the on-note there instead
+			if (is_next_row_saturated (on_row, off_row, std::next(inote))) {
+				// NEXT
+			}
+		}
 
 		// TODO: make row assignement more intelligent. Given the possible
 		// rows for each on and off notes find an assignement that
