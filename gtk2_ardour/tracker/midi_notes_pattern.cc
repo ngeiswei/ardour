@@ -298,7 +298,7 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 
 		// NEXT.4: the strategy should be:
 		//
-		// 1. Check is an on-note can be placed in the on_row (this is the case
+		// 1. Check if an on-note can be placed in the on_row (this is the case
 		//    only if the cell is empty or there is only one off-note that is
 		//    precisely at the start of that on-note).
 		//
