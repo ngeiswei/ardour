@@ -298,14 +298,21 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 
 		// NEXT.4: the strategy should be:
 		//
-		// 1. check is an on-note can be placed in the on_row (this is the case
+		// 1. Check is an on-note can be placed in the on_row (this is the case
 		//    only if the cell is empty or there is only one off-note that is
 		//    precisely at the start of that on-note).
 		//
 		// 2. If it cannot, then check if the next row is free for it.  If it is,
-		//    then place the on-note in it.
+		//    then place the on-note in it, otherwise place it in on_row.
 		//
-		// 3. NEXT: off-note
+		// 3. Check if the off-note can be placed in the off_row (this is the
+		//    case only if the cell is empty or the is only one on-note that is
+		//    precisely at the end of that off-note).
+		//
+		// 4. If it cannot, the check if the next row is free for it.  If it is,
+		//    then place the off-note in it.  If it is not, place it in off_row,
+		//    unless off_row is less than new on_row, in this case place it
+		//    off_row + 1.
 
 		// TODO: make row assignement more intelligent. Given the possible
 		// rows for each on and off notes find an assignement that
