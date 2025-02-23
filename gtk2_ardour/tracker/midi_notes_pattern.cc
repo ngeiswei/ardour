@@ -299,26 +299,42 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 
 		// NEXT.4: the strategy should be:
 		//
-		// 1. Check if an on-note can be placed in the on_row (this is the case
-		//    only if the cell is empty or there is only one off-note that is
-		//    precisely at the start of that on-note).
+		// 1. Check if an on note can be placed at on_row (this is the case only
+		//    if the cell is empty or there is only one off note that is
+		//    precisely at the start of that on note).
 		//
 		// 2. If it cannot, then check if the next row is free for it.  If it is,
-		//    then place the on-note in it, otherwise place it in on_row.
+		//    then place the on note in it, otherwise place it in on_row.
 		//
-		// 3. Check if the off-note can be placed in the off_row (this is the
+		// 3. Check if the off note can be placed in the off_row (this is the
 		//    case only if the cell is empty or the is only one on-note that is
-		//    precisely at the end of that off-note).
+		//    precisely at the end of that off note).
 		//
 		// 4. If it cannot, the check if the next row is free for it.  If it is,
-		//    then place the off-note in it.  If it is not, place it in off_row,
+		//    then place the off note in it.  If it is not, place it in off_row,
 		//    unless off_row is less than new on_row, in this case place it
 		//    off_row + 1.
-		if (is_on_row_saturated (on_row, on_time)) {
-			// The on_row is saturated, check if the next row is not going to
-			// be saturated, if so move the on-note there instead
-			if (is_next_row_saturated (on_row, off_row, std::next(inote))) {
-				// NEXT
+		if (is_on_cell_available (on_row, on_time)) {
+			if (is_off_cell_available (on_row, off_row, off_time)) {
+				std::cout << "on_row=" << on_row << " and off_row=" << off_row << " are available, nothing needs to be done" << std::endl;
+			} else {
+				// The cell at off_row is not available, check if the next cell is
+				// available, if so move it there
+				if (is_next_off_cell_available (on_row, off_row, std::next(inote))) {
+					std::cout << "on_row=" << on_row << "is available but off_row=" << off_row << " is not, however it can be moved to the next row=" << min_delay_off_row << std::endl;
+					off_row = min_delay_off_row;
+				} else {
+					std::cout << "on_row=" << on_row << "is available and off_row=" << off_row << " is not but there is no next cell available, so it is left there" << std::endl;
+				}
+			}
+		} else {
+			// The cell at on_row is not available, check if the next cell is
+			// available, if so move the on note there
+			if (is_next_on_cell_available (on_row, off_row, std::next(inote))) {
+			std:cout << "on_row=" << on_row << " is not available but the next row=" << max_delay_on_row << " is, so it is moved there" << std::endl;
+				on_row = max_delay_on_row;
+			} else {
+				std::cout << "on_row=" << on_row << " is not available and the next row=" << max_delay_on_row << " isn't either, thus it is left there" << std::endl;
 			}
 		}
 
