@@ -283,88 +283,135 @@ MidiNotesPattern::update_row_to_notes ()
 void
 MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
 {
-	// Naive row to notes distribution.  Notes are placed in the row
-	// corresponding to the regular time interval.
 	for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
 		  inote != track_to_notes[itrack].end (); ++inote) {
-		NotePtr note = *inote;
-		Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
-		Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
-		std::cout << "note = " << note << ", on_time = " << on_time << ", off_time = " <<  off_time << std::endl;
-		int max_delay_on_row = row_at_beats_max_delay (on_time);
-		int on_row = row_at_beats (on_time);
-		int min_delay_off_row = row_at_beats_min_delay (off_time);
-		int off_row = row_at_beats (off_time);
-		std::cout << "on_row = " << on_row << ", off_row = " << off_row << ", max_delay_on_row = " << max_delay_on_row << ", min_delay_off_row = " << min_delay_off_row << std::endl;
-
-		// NEXT.4: the strategy should be:
-		//
-		// 1. Check if an on note can be placed at on_row (this is the case only
-		//    if the cell is empty or there is only one off note that is
-		//    precisely at the start of that on note).
-		//
-		// 2. If it cannot, then check if the next row is free for it.  If it is,
-		//    then place the on note in it, otherwise place it in on_row.
-		//
-		// 3. Check if the off note can be placed in the off_row (this is the
-		//    case only if the cell is empty or the is only one on-note that is
-		//    precisely at the end of that off note).
-		//
-		// 4. If it cannot, the check if the next row is free for it.  If it is,
-		//    then place the off note in it.  If it is not, place it in off_row,
-		//    unless off_row is less than new on_row, in this case place it
-		//    off_row + 1.
-		if (is_on_cell_available (on_row, on_time)) {
-			if (is_off_cell_available (on_row, off_row, off_time)) {
-				std::cout << "on_row=" << on_row << " and off_row=" << off_row << " are available, nothing needs to be done" << std::endl;
-			} else {
-				// The cell at off_row is not available, check if the next cell is
-				// available, if so move it there
-				if (is_next_off_cell_available (on_row, off_row, std::next(inote))) {
-					std::cout << "on_row=" << on_row << "is available but off_row=" << off_row << " is not, however it can be moved to the next row=" << min_delay_off_row << std::endl;
-					off_row = min_delay_off_row;
-				} else {
-					std::cout << "on_row=" << on_row << "is available and off_row=" << off_row << " is not but there is no next cell available, so it is left there" << std::endl;
-				}
-			}
-		} else {
-			// The cell at on_row is not available, check if the next cell is
-			// available, if so move the on note there
-			if (is_next_on_cell_available (on_row, off_row, std::next(inote))) {
-			std:cout << "on_row=" << on_row << " is not available but the next row=" << max_delay_on_row << " is, so it is moved there" << std::endl;
-				on_row = max_delay_on_row;
-			} else {
-				std::cout << "on_row=" << on_row << " is not available and the next row=" << max_delay_on_row << " isn't either, thus it is left there" << std::endl;
-			}
-		}
-
-		// TODO: make row assignement more intelligent. Given the possible
-		// rows for each on and off notes find an assignement that
-		// maximizes the number displayable rows. If however the number of
-		// combinations to explore is too high fallback on the following
-		// cheap strategy.
-		if (on_row == off_row && on_row != min_delay_off_row) {
-			// NEXT.4: the problem might be here
-			off_row = min_delay_off_row;
-			std::cout << "off_row = " << off_row << std::endl;
-		} else if (on_row == off_row && max_delay_on_row != off_row) {
-			on_row = max_delay_on_row;
-		}
-
-		on_notes[itrack].insert (RowToNotes::value_type (on_row, *inote));
-		// Do no display off notes occuring at the very end of the region
-		if (off_time < global_end_beats) {
-			off_notes[itrack].insert (RowToNotes::value_type (off_row, *inote));
-		}
+		update_row_to_notes_at_track_note (itrack, inote);
 	}
-	// NEXT.4: reloop to move the off/on notes to next row is available.
-	// Question should we loop over on_notes[itrack] and off_notes[itrack],
-	// or should loop over track_to_notes[itrack]?  ANSWER: should iterate
-	// over on_notes[itrack] and off_notes[itrack].
-
-	// NEXT.4: alternatively maybe we can use track_to_notes[itrack] to evaluate
-	// whether to move or not the current note
 }
+
+void
+MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t itrack, MidiModel::Notes::iterator inote)
+{
+	NotePtr note = *inote;
+	int on_row = find_nearest_on_row (itrack, inote);
+	int off_row = find_nearest_off_row (itrack, inote);
+	on_notes[itrack].insert (RowToNotes::value_type (on_row, note));
+	// Do no display off notes occuring at the very end of the region
+	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
+	if (off_time < global_end_beats) {
+		off_notes[itrack].insert (RowToNotes::value_type (off_row, note));
+	}
+}
+
+int
+MidiNotesPattern::find_nearest_on_row (uint16_t itrack, MidiModel::Notes::iterator inote)
+{
+	NotePtr note = *inote;
+	// Naive on row to notes distribution: notes are placed in the row
+	// corresponding to the regular time interval.
+	Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
+	// NEXT.4: fix goes here!
+	return row_at_beats (on_time);
+}
+
+int
+MidiNotesPattern::find_nearest_off_row (uint16_t itrack, MidiModel::Notes::iterator inote)
+{
+	NotePtr note = *inote;
+	// Naive off row to notes distribution: notes are placed in the row
+	// corresponding to the regular time interval.
+	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
+	// NEXT.4: fix goes here!
+	return row_at_beats (off_time);
+}
+
+// bool
+// MidiNotesPattern::is_on_cell_available (
+// 		Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
+// 		Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
+// 		std::cout << "note = " << note << ", on_time = " << on_time << ", off_time = " <<  off_time << std::endl;
+// 		int max_delay_on_row = row_at_beats_max_delay (on_time);
+// 		int on_row = row_at_beats (on_time);
+// 		int min_delay_off_row = row_at_beats_min_delay (off_time);
+// 		int off_row = row_at_beats (off_time);
+// 		std::cout << "on_row = " << on_row
+// 		          << ", off_row = " << off_row
+// 		          << ", max_delay_on_row = " << max_delay_on_row
+// 		          << ", min_delay_off_row = " << min_delay_off_row << std::endl;
+
+// 		// NEXT.4: the strategy should be:
+// 		//
+// 		// 1. Check if an on note can be placed at on_row (this is the case only
+// 		//    if the cell is empty or there is only one off note that is
+// 		//    precisely at the start of that on note).
+// 		//
+// 		// 2. If it cannot, then check if the next row is free for it.  If it is,
+// 		//    then place the on note in it, otherwise place it in on_row.
+// 		//
+// 		// 3. Check if the off note can be placed in the off_row (this is the
+// 		//    case only if the cell is empty or the is only one on-note that is
+// 		//    precisely at the end of that off note).
+// 		//
+// 		// 4. If it cannot, the check if the next row is free for it.  If it is,
+// 		//    then place the off note in it.  If it is not, place it in off_row,
+// 		//    unless off_row is less than new on_row, in this case place it
+// 		//    off_row + 1.
+// 		if (is_on_cell_available (on_row, on_time)) {
+// 			if (is_off_cell_available (on_row, off_row, off_time)) {
+// 				std::cout << "on_row=" << on_row << " and off_row=" << off_row << " are available, nothing needs to be done" << std::endl;
+// 			} else {
+// 				// The cell at off_row is not available, check if the next cell is
+// 				// available, if so move it there
+// 				if (is_next_off_cell_available (on_row, off_row, std::next(inote))) {
+// 					std::cout << "on_row=" << on_row << "is available but off_row=" << off_row
+// 					          << " is not, however it can be moved to the next row=" << min_delay_off_row << std::endl;
+// 					off_row = min_delay_off_row;
+// 				} else {
+// 					std::cout << "on_row=" << on_row << "is available and off_row=" << off_row
+// 					          << " is not but there is no next cell available, so it is left there" << std::endl;
+// 				}
+// 			}
+// 		} else {
+// 			// The cell at on_row is not available, check if the next cell is
+// 			// available, if so move the on note there
+// 			if (is_next_on_cell_available (on_row, off_row, std::next(inote))) {
+// 				std::cout << "on_row=" << on_row << " is not available but the next row=" << max_delay_on_row
+// 				          << " is, so it is moved there" << std::endl;
+// 				on_row = max_delay_on_row;
+// 				// NEXT.4: deal with off note as well
+// 			} else {
+// 				std::cout << "on_row=" << on_row << " is not available and the next row=" << max_delay_on_row
+// 				          << " isn't either, thus it is left there" << std::endl;
+// 			}
+// 		}
+
+// 		// // TODO: make row assignement more intelligent. Given the possible
+// 		// // rows for each on and off notes find an assignement that
+// 		// // maximizes the number displayable rows. If however the number of
+// 		// // combinations to explore is too high fallback on the following
+// 		// // cheap strategy.
+// 		// if (on_row == off_row && on_row != min_delay_off_row) {
+// 		// 	// NEXT.4: the problem might be here
+// 		// 	off_row = min_delay_off_row;
+// 		// 	std::cout << "off_row = " << off_row << std::endl;
+// 		// } else if (on_row == off_row && max_delay_on_row != off_row) {
+// 		// 	on_row = max_delay_on_row;
+// 		// }
+
+// 		on_notes[itrack].insert (RowToNotes::value_type (on_row, *inote));
+// 		// Do no display off notes occuring at the very end of the region
+// 		if (off_time < global_end_beats) {
+// 			off_notes[itrack].insert (RowToNotes::value_type (off_row, *inote));
+// 		}
+// 	}
+// 	// NEXT.4: reloop to move the off/on notes to next row is available.
+// 	// Question should we loop over on_notes[itrack] and off_notes[itrack],
+// 	// or should loop over track_to_notes[itrack]?  ANSWER: should iterate
+// 	// over on_notes[itrack] and off_notes[itrack].
+
+// 	// NEXT.4: alternatively maybe we can use track_to_notes[itrack] to evaluate
+// 	// whether to move or not the current note
+// }
 
 void
 MidiNotesPattern::set_ntracks (uint16_t n)
