@@ -275,47 +275,72 @@ MidiNotesPattern::update_row_to_notes ()
 	off_notes.clear ();
 	off_notes.resize (ntracks);
 
-	for (uint16_t itrack = 0; itrack < nreqtracks; ++itrack) {
-		update_row_to_notes_at_track (itrack);
+	for (uint16_t cgi = 0; cgi < nreqtracks; ++cgi) {
+		update_row_to_notes_at_track (cgi);
 	}
 }
 
 void
-MidiNotesPattern::update_row_to_notes_at_track (uint16_t itrack)
+MidiNotesPattern::update_row_to_notes_at_track (uint16_t cgi)
 {
-	for (MidiModel::Notes::iterator inote = track_to_notes[itrack].begin ();
-		  inote != track_to_notes[itrack].end (); ++inote) {
-		update_row_to_notes_at_track_note (itrack, inote);
+	for (MidiModel::Notes::iterator inote = track_to_notes[cgi].begin ();
+		  inote != track_to_notes[cgi].end (); ++inote) {
+		update_row_to_notes_at_track_note (cgi, inote);
 	}
 }
 
 void
-MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t itrack, MidiModel::Notes::iterator inote)
+MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
 	NotePtr note = *inote;
-	int on_row = find_nearest_on_row (itrack, inote);
-	int off_row = find_nearest_off_row (itrack, inote);
-	on_notes[itrack].insert (RowToNotes::value_type (on_row, note));
+	int on_row = find_nearest_on_row (cgi, inote);
+	int off_row = find_nearest_off_row (cgi, inote);
+	on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
 	// Do no display off notes occuring at the very end of the region
 	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
 	if (off_time < global_end_beats) {
-		off_notes[itrack].insert (RowToNotes::value_type (off_row, note));
+		off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
 	}
 }
 
 int
-MidiNotesPattern::find_nearest_on_row (uint16_t itrack, MidiModel::Notes::iterator inote)
+MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
+	// Naive on row to note distribution.  The note is placed in its default on
+	// row, unless the default on row is already taken in which case it checks
+	// if the next on row is available, and place it there if it is, otherwise
+	// keeps it in the default row.
 	NotePtr note = *inote;
-	// Naive on row to notes distribution: notes are placed in the row
-	// corresponding to the regular time interval.
 	Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
-	// NEXT.4: fix goes here!
-	return row_at_beats (on_time);
+	int on_row = row_at_beats (on_time);
+	RowToNotes::const_iterator off_it = off_notes[cgi].find (on_row);
+	size_t on_count_at_on_row = on_notes[cgi].count (on_row);
+	size_t off_count_at_on_row = off_notes[cgi].count (on_row);
+	// Check if the cell at the default on row is available.  It is available if
+	// the row is empty or contains exactly one off note that ends at the same
+	// time as this one begins.  NEXT.4 what is the off note occurs in the same
+	// on row?
+	bool is_on_row_available = (on_count_at_on_row > 0 &&
+	                            (off_count_at_on_row > 0 ||
+	                             (off_count_at_on_row == 1 &&
+	                              off_meets_on (off_it->second, note))));
+	if (is_on_row_available) {
+		return on_row;
+	} else {
+		int max_delay_on_row = row_at_beats_max_delay (on_time);
+		// Check if the cell at the next row is available.  NEXT.4
+		bool is_next_on_row_available = on_notes[cgi].empty(); // NEXT.4: fix goes here!
+		if (is_next_on_row_available) {
+			return max_delay_on_row;
+		} else {
+			// Cannot place in next on row, so place in default on row
+			return on_row;
+		}
+	}
 }
 
 int
-MidiNotesPattern::find_nearest_off_row (uint16_t itrack, MidiModel::Notes::iterator inote)
+MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
 	NotePtr note = *inote;
 	// Naive off row to notes distribution: notes are placed in the row
@@ -323,6 +348,12 @@ MidiNotesPattern::find_nearest_off_row (uint16_t itrack, MidiModel::Notes::itera
 	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
 	// NEXT.4: fix goes here!
 	return row_at_beats (off_time);
+}
+
+bool
+MidiNotesPattern::off_meets_on (NotePtr off_note, NotePtr on_note)
+{
+	return off_note->end_time () == on_note->time ();
 }
 
 // bool
@@ -398,18 +429,18 @@ MidiNotesPattern::find_nearest_off_row (uint16_t itrack, MidiModel::Notes::itera
 // 		// 	on_row = max_delay_on_row;
 // 		// }
 
-// 		on_notes[itrack].insert (RowToNotes::value_type (on_row, *inote));
+// 		on_notes[cgi].insert (RowToNotes::value_type (on_row, *inote));
 // 		// Do no display off notes occuring at the very end of the region
 // 		if (off_time < global_end_beats) {
-// 			off_notes[itrack].insert (RowToNotes::value_type (off_row, *inote));
+// 			off_notes[cgi].insert (RowToNotes::value_type (off_row, *inote));
 // 		}
 // 	}
 // 	// NEXT.4: reloop to move the off/on notes to next row is available.
-// 	// Question should we loop over on_notes[itrack] and off_notes[itrack],
-// 	// or should loop over track_to_notes[itrack]?  ANSWER: should iterate
-// 	// over on_notes[itrack] and off_notes[itrack].
+// 	// Question should we loop over on_notes[cgi] and off_notes[cgi],
+// 	// or should loop over track_to_notes[cgi]?  ANSWER: should iterate
+// 	// over on_notes[cgi] and off_notes[cgi].
 
-// 	// NEXT.4: alternatively maybe we can use track_to_notes[itrack] to evaluate
+// 	// NEXT.4: alternatively maybe we can use track_to_notes[cgi] to evaluate
 // 	// whether to move or not the current note
 // }
 
