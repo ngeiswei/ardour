@@ -306,6 +306,7 @@ MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::No
 int
 MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
+	std::cout << "MidiNotesPattern::find_nearest_on_row( cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
 	// Naive on row to note distribution.  The note is placed in its default on
 	// row, unless the default on row is already taken in which case it checks
 	// if the next on row is available, and place it there if it is, otherwise
@@ -320,20 +321,27 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 	// the row is empty or contains exactly one off note that ends at the same
 	// time as this one begins.  NEXT.4 what is the off note occurs in the same
 	// on row?
-	bool is_on_row_available = (on_count_at_on_row > 0 &&
-	                            (off_count_at_on_row > 0 ||
+	std::cout << "on_time = " << on_time << ", on_count_at_on_row = " << on_count_at_on_row
+	          << ", off_count_at_on_row = " << off_count_at_on_row << std::endl;
+	bool is_on_row_available = (on_count_at_on_row == 0 &&
+	                            (off_count_at_on_row == 0 ||
 	                             (off_count_at_on_row == 1 &&
 	                              off_meets_on (off_it->second, note))));
 	if (is_on_row_available) {
+		std::cout << "is_on_row_available on_row = " << on_row << std::endl;
 		return on_row;
 	} else {
-		int max_delay_on_row = row_at_beats_max_delay (on_time);
-		// Check if the cell at the next row is available.  NEXT.4
-		bool is_next_on_row_available = on_notes[cgi].empty(); // NEXT.4: fix goes here!
+		int min_delay_on_row = row_at_beats_min_delay (on_time);
+		// Check if the cell at the next row is available.  It is available if
+		// the next on row is different than the current on row NEXT.4
+		bool is_next_on_row_available = on_row != min_delay_on_row; // NEXT.4: fix goes here!
 		if (is_next_on_row_available) {
-			return max_delay_on_row;
+			std::cout << "is_next_on_row_available on_row = " << on_row
+			          << ", min_delay_on_row = " << min_delay_on_row << std::endl;
+			return min_delay_on_row;
 		} else {
 			// Cannot place in next on row, so place in default on row
+			std::cout << "nothing is available on_row = " << on_row << ", min_delay_on_row = " << min_delay_on_row << std::endl;
 			return on_row;
 		}
 	}
