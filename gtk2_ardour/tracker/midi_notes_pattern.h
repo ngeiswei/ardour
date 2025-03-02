@@ -75,17 +75,20 @@ public:
 	// Update the mapping from row to on and off notes for a given track.  It
 	// assumes the on_notes and off_notes maps have been cleared and resized to
 	// ntracks.
-	void update_row_to_notes_at_track (uint16_t itrack);
+	void update_row_to_notes_at_track (uint16_t cgi);
 
 	// Update the mapping from row to on and off notes for a given track and a
 	// given note.  It assumes the on_notes and off_notes maps have been cleared
 	// and resized to ntracks.
-	void update_row_to_notes_at_track_note (uint16_t itrack, ARDOUR::MidiModel::Notes::iterator inote);
+	void update_row_to_notes_at_track_note (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 
 	// In the process of updating the mapping from row to on (resp. off) notes,
 	// find the nearest row to place that on (resp. off) note
-	int find_nearest_on_row (uint16_t itrack, ARDOUR::MidiModel::Notes::iterator inote);
-	int find_nearest_off_row (uint16_t itrack, ARDOUR::MidiModel::Notes::iterator inote);
+	int find_nearest_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
+	int find_nearest_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
+
+	// Return true iff off_note ends exactly where on_note begings
+	bool off_meets_on (NotePtr off_note, NotePtr on_note);
 
 	// Increase and decrease the number of tracks
 	void set_ntracks (uint16_t n);
