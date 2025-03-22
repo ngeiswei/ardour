@@ -536,7 +536,7 @@ MidiNotesPattern::is_displayable (int row, int cgi) const
 	RowToNotes::const_iterator i_on = on_notes[cgi].find (row);
 	return off_notes_count <= 1 && on_notes_count <= 1
 		&& (off_notes_count != 1 || on_notes_count != 1
-		    || i_off->second->end_time () == i_on->second->time ());
+		    || off_meets_on (i_off->second, i_on->second));
 }
 
 void
