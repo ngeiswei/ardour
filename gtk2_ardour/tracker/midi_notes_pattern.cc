@@ -366,9 +366,8 @@ MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator
 	// Grab on note at off_row, if it exists
 	RowToNotes::const_iterator on_it = on_notes[cgi].find (off_row);
 
-	// Get off and on note counts at off_row
+	// Get on note counts at off_row
 	size_t on_count_at_off_row = on_notes[cgi].count (off_row);
-	size_t off_count_at_off_row = off_notes[cgi].count (off_row);
 
 	// Check if the cell at the default off row is available.  It is available
 	// if there is no on note.  NEXT.4: check what is happening after that off
@@ -378,9 +377,9 @@ MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator
 	if (is_off_row_available) {
 		return off_row;
 	} else {
-		int min_delay_off_row = row_at_beats_min_delay (off_time);
 		// Check if the next off row is available.  It is available if it is
 		// different than the current on row and NEXT.4
+		int min_delay_off_row = row_at_beats_min_delay (off_time);
 		bool is_next_off_row_available = off_row != min_delay_off_row;
 		if (is_next_off_row_available) {
 			return min_delay_off_row;
