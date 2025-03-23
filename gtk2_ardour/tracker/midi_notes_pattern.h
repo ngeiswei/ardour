@@ -87,9 +87,6 @@ public:
 	int find_nearest_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 	int find_nearest_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 
-	// Return true iff off_note ends exactly where on_note begings
-	bool off_meets_on (NotePtr off_note, NotePtr on_note);
-
 	// Increase and decrease the number of tracks
 	void set_ntracks (uint16_t n);
 	void inc_ntracks ();
