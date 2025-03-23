@@ -307,16 +307,20 @@ int
 MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
 	std::cout << "MidiNotesPattern::find_nearest_on_row( cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
-	// Naive on row to note distribution.  The note is placed in its default on
-	// row, unless the default on row is already taken in which case it checks
-	// if the next on row is available, and place it there if it is, otherwise
-	// keeps it in the default row.
+	// The on note is placed in its default on row, unless the default on row is
+	// already taken in which case it checks if the next on row is available,
+	// and place it there if it is, otherwise keeps it in the default row.
 	NotePtr note = *inote;
 	Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
 	int on_row = row_at_beats (on_time);
+
+	// Grab off note at on_row, if it exists
 	RowToNotes::const_iterator off_it = off_notes[cgi].find (on_row);
+
+	// Get off and on note counts at on_row
 	size_t on_count_at_on_row = on_notes[cgi].count (on_row);
 	size_t off_count_at_on_row = off_notes[cgi].count (on_row);
+
 	// Check if the cell at the default on row is available.  It is available if
 	// the row is empty or contains exactly one off note that ends at the same
 	// time as this one begins.  NEXT.4 what is the off note occurs in the same
@@ -326,15 +330,16 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 	bool is_on_row_available = (on_count_at_on_row == 0 &&
 	                            (off_count_at_on_row == 0 ||
 	                             (off_count_at_on_row == 1 &&
-	                              off_meets_on (off_it->second, note))));
+	                              TrackerUtils::off_meets_on (off_it->second, note))));
+
 	if (is_on_row_available) {
 		std::cout << "is_on_row_available on_row = " << on_row << std::endl;
 		return on_row;
 	} else {
 		int min_delay_on_row = row_at_beats_min_delay (on_time);
-		// Check if the cell at the next row is available.  It is available if
-		// the next on row is different than the current on row NEXT.4
-		bool is_next_on_row_available = on_row != min_delay_on_row; // NEXT.4: fix goes here!
+		// Check if the next on row is available.  It is available if it is
+		// different than the current on and row NEXT.4
+		bool is_next_on_row_available = on_row != min_delay_on_row;
 		if (is_next_on_row_available) {
 			std::cout << "is_next_on_row_available on_row = " << on_row
 			          << ", min_delay_on_row = " << min_delay_on_row << std::endl;
@@ -350,107 +355,40 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 int
 MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
+	// The off note is placed in its default off row, unless the default off row
+	// is already taken in which case it checks if the next off row is
+	// available, and place it there if it is, otherwise keeps it in the default
+	// row.
 	NotePtr note = *inote;
-	// Naive off row to notes distribution: notes are placed in the row
-	// corresponding to the regular time interval.
 	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
-	// NEXT.4: fix goes here!
-	return row_at_beats (off_time);
+	int off_row = row_at_beats (off_time);
+
+	// Grab on note at off_row, if it exists
+	RowToNotes::const_iterator on_it = on_notes[cgi].find (off_row);
+
+	// Get off and on note counts at off_row
+	size_t on_count_at_off_row = on_notes[cgi].count (off_row);
+	size_t off_count_at_off_row = off_notes[cgi].count (off_row);
+
+	// Check if the cell at the default off row is available.  It is available
+	// if there is no on note.  NEXT.4: check what is happening after that off
+	// note has been inserted in this row.
+	bool is_off_row_available = on_count_at_off_row == 0;
+
+	if (is_off_row_available) {
+		return off_row;
+	} else {
+		int min_delay_off_row = row_at_beats_min_delay (off_time);
+		// Check if the next off row is available.  It is available if it is
+		// different than the current on row and NEXT.4
+		bool is_next_off_row_available = off_row != min_delay_off_row;
+		if (is_next_off_row_available) {
+			return min_delay_off_row;
+		} else {
+			return off_row;
+		}
+	}
 }
-
-bool
-MidiNotesPattern::off_meets_on (NotePtr off_note, NotePtr on_note)
-{
-	return off_note->end_time () == on_note->time ();
-}
-
-// bool
-// MidiNotesPattern::is_on_cell_available (
-// 		Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
-// 		Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
-// 		std::cout << "note = " << note << ", on_time = " << on_time << ", off_time = " <<  off_time << std::endl;
-// 		int max_delay_on_row = row_at_beats_max_delay (on_time);
-// 		int on_row = row_at_beats (on_time);
-// 		int min_delay_off_row = row_at_beats_min_delay (off_time);
-// 		int off_row = row_at_beats (off_time);
-// 		std::cout << "on_row = " << on_row
-// 		          << ", off_row = " << off_row
-// 		          << ", max_delay_on_row = " << max_delay_on_row
-// 		          << ", min_delay_off_row = " << min_delay_off_row << std::endl;
-
-// 		// NEXT.4: the strategy should be:
-// 		//
-// 		// 1. Check if an on note can be placed at on_row (this is the case only
-// 		//    if the cell is empty or there is only one off note that is
-// 		//    precisely at the start of that on note).
-// 		//
-// 		// 2. If it cannot, then check if the next row is free for it.  If it is,
-// 		//    then place the on note in it, otherwise place it in on_row.
-// 		//
-// 		// 3. Check if the off note can be placed in the off_row (this is the
-// 		//    case only if the cell is empty or the is only one on-note that is
-// 		//    precisely at the end of that off note).
-// 		//
-// 		// 4. If it cannot, the check if the next row is free for it.  If it is,
-// 		//    then place the off note in it.  If it is not, place it in off_row,
-// 		//    unless off_row is less than new on_row, in this case place it
-// 		//    off_row + 1.
-// 		if (is_on_cell_available (on_row, on_time)) {
-// 			if (is_off_cell_available (on_row, off_row, off_time)) {
-// 				std::cout << "on_row=" << on_row << " and off_row=" << off_row << " are available, nothing needs to be done" << std::endl;
-// 			} else {
-// 				// The cell at off_row is not available, check if the next cell is
-// 				// available, if so move it there
-// 				if (is_next_off_cell_available (on_row, off_row, std::next(inote))) {
-// 					std::cout << "on_row=" << on_row << "is available but off_row=" << off_row
-// 					          << " is not, however it can be moved to the next row=" << min_delay_off_row << std::endl;
-// 					off_row = min_delay_off_row;
-// 				} else {
-// 					std::cout << "on_row=" << on_row << "is available and off_row=" << off_row
-// 					          << " is not but there is no next cell available, so it is left there" << std::endl;
-// 				}
-// 			}
-// 		} else {
-// 			// The cell at on_row is not available, check if the next cell is
-// 			// available, if so move the on note there
-// 			if (is_next_on_cell_available (on_row, off_row, std::next(inote))) {
-// 				std::cout << "on_row=" << on_row << " is not available but the next row=" << max_delay_on_row
-// 				          << " is, so it is moved there" << std::endl;
-// 				on_row = max_delay_on_row;
-// 				// NEXT.4: deal with off note as well
-// 			} else {
-// 				std::cout << "on_row=" << on_row << " is not available and the next row=" << max_delay_on_row
-// 				          << " isn't either, thus it is left there" << std::endl;
-// 			}
-// 		}
-
-// 		// // TODO: make row assignement more intelligent. Given the possible
-// 		// // rows for each on and off notes find an assignement that
-// 		// // maximizes the number displayable rows. If however the number of
-// 		// // combinations to explore is too high fallback on the following
-// 		// // cheap strategy.
-// 		// if (on_row == off_row && on_row != min_delay_off_row) {
-// 		// 	// NEXT.4: the problem might be here
-// 		// 	off_row = min_delay_off_row;
-// 		// 	std::cout << "off_row = " << off_row << std::endl;
-// 		// } else if (on_row == off_row && max_delay_on_row != off_row) {
-// 		// 	on_row = max_delay_on_row;
-// 		// }
-
-// 		on_notes[cgi].insert (RowToNotes::value_type (on_row, *inote));
-// 		// Do no display off notes occuring at the very end of the region
-// 		if (off_time < global_end_beats) {
-// 			off_notes[cgi].insert (RowToNotes::value_type (off_row, *inote));
-// 		}
-// 	}
-// 	// NEXT.4: reloop to move the off/on notes to next row is available.
-// 	// Question should we loop over on_notes[cgi] and off_notes[cgi],
-// 	// or should loop over track_to_notes[cgi]?  ANSWER: should iterate
-// 	// over on_notes[cgi] and off_notes[cgi].
-
-// 	// NEXT.4: alternatively maybe we can use track_to_notes[cgi] to evaluate
-// 	// whether to move or not the current note
-// }
 
 void
 MidiNotesPattern::set_ntracks (uint16_t n)
@@ -536,7 +474,7 @@ MidiNotesPattern::is_displayable (int row, int cgi) const
 	RowToNotes::const_iterator i_on = on_notes[cgi].find (row);
 	return off_notes_count <= 1 && on_notes_count <= 1
 		&& (off_notes_count != 1 || on_notes_count != 1
-		    || off_meets_on (i_off->second, i_on->second));
+		    || TrackerUtils::off_meets_on (i_off->second, i_on->second));
 }
 
 void

@@ -459,6 +459,12 @@ TrackerUtils::is_off_equal (NotePtr ln, NotePtr rn)
 }
 
 bool
+TrackerUtils::off_meets_on (NotePtr off_note, NotePtr on_note)
+{
+	return off_note->end_time () == on_note->time ();
+}
+
+bool
 TrackerUtils::is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce)
 {
 	return lce.when == rce.when && lce.value == rce.value;

@@ -412,6 +412,9 @@ public:
 	// Compare if two notes have the same off note attributes
 	static bool is_off_equal (NotePtr ln, NotePtr rn);
 
+	// Return true iff off_note ends exactly where on_note begings
+	static bool off_meets_on (NotePtr off_note, NotePtr on_note);
+
 	// Compare if two control events have the same attributes
 	static bool is_equal (const Evoral::ControlEvent& lce, const Evoral::ControlEvent& rce);
 
