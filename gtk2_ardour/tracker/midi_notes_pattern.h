@@ -82,6 +82,16 @@ public:
 	// and resized to ntracks.
 	void update_row_to_notes_at_track_note (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 
+	// Return true iff the row at cgi is free, meaning it can potentially host
+	// the given note.
+	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
+	bool is_off_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
+
+	// Return default on/off row, centered around the on/off note.  If no such
+	// note exists, return -1.
+	int default_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	int default_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
 	// In the process of updating the mapping from row to on (resp. off) notes,
 	// find the nearest row to place that on (resp. off) note
 	int find_nearest_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
