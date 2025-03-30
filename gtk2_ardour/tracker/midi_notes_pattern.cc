@@ -294,60 +294,103 @@ MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::No
 {
 	NotePtr note = *inote;
 	int on_row = find_nearest_on_row (cgi, inote);
-	int off_row = find_nearest_off_row (cgi, inote);
 	on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
 	// Do no display off notes occuring at the very end of the region
 	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
 	if (off_time < global_end_beats) {
+		int off_row = find_nearest_off_row (cgi, inote);
 		off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
 	}
 }
 
 int
+MidiNotesPattern::default_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
+{
+	if (inote != track_to_notes[cgi].end ()) {
+		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
+	}
+	return -1;
+}
+
+int
+MidiNotesPattern::default_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
+{
+	if (inote != track_to_notes[cgi].end ()) {
+		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+	}
+	return -1;
+}
+
+bool
+MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote)
+{
+	// Get off and on note counts at row
+	size_t on_count_at_row = on_notes[cgi].count (row);
+	size_t off_count_at_row = off_notes[cgi].count (row);
+
+	// Grab off note at row, if it exists
+	RowToNotes::const_iterator off_it = off_notes[cgi].find (row);
+
+	// Get next note, if it exists
+	MidiModel::Notes::iterator ninote = std::next(inote);
+
+	// The row is is available if it is empty or contains exactly one off note
+	// that ends at the same time as this note begins, and the next note is note
+	// in that row by default.
+	return (on_count_at_row == 0 &&
+	        (off_count_at_row == 0 ||
+	         (off_count_at_row == 1 &&
+	          TrackerUtils::off_meets_on (off_it->second, *inote))) &&
+	        (default_on_row (cgi, ninote) != row));
+}
+
+bool
+MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote)
+{
+	// Get on note counts at row
+	size_t on_count_at_row = on_notes[cgi].count (row);
+
+	// The row is available if there is no on note.
+	return on_count_at_row == 0;
+}
+
+int
 MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
-	std::cout << "MidiNotesPattern::find_nearest_on_row( cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
-	// The on note is placed in its default on row, unless the default on row is
-	// already taken in which case it checks if the next on row is available,
-	// and place it there if it is, otherwise keeps it in the default row.
+	std::cout << "MidiNotesPattern::find_nearest_on_row(cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
+	// The on note is placed in its default row, unless the default row is
+	// already taken in which case it checks if the previous, then the next rows
+	// are available, and place it there if they are, otherwise keeps it in the
+	// default row.
 	NotePtr note = *inote;
 	Temporal::Beats on_time = _midi_region->source_beats_to_absolute_beats (note->time ());
-	int on_row = row_at_beats (on_time);
+	int default_row = row_at_beats (on_time);
 
-	// Grab off note at on_row, if it exists
-	RowToNotes::const_iterator off_it = off_notes[cgi].find (on_row);
-
-	// Get off and on note counts at on_row
-	size_t on_count_at_on_row = on_notes[cgi].count (on_row);
-	size_t off_count_at_on_row = off_notes[cgi].count (on_row);
-
-	// Check if the cell at the default on row is available.  It is available if
-	// the row is empty or contains exactly one off note that ends at the same
-	// time as this one begins.  NEXT.4 what is the off note occurs in the same
-	// on row?
-	std::cout << "on_time = " << on_time << ", on_count_at_on_row = " << on_count_at_on_row
-	          << ", off_count_at_on_row = " << off_count_at_on_row << std::endl;
-	bool is_on_row_available = (on_count_at_on_row == 0 &&
-	                            (off_count_at_on_row == 0 ||
-	                             (off_count_at_on_row == 1 &&
-	                              TrackerUtils::off_meets_on (off_it->second, note))));
-
-	if (is_on_row_available) {
-		std::cout << "is_on_row_available on_row = " << on_row << std::endl;
-		return on_row;
+	bool is_default_row_available = is_on_row_available (cgi, default_row, inote);
+	if (is_default_row_available) {
+		std::cout << "is_default_row_available on_row = " << default_row << std::endl;
+		return default_row;
 	} else {
-		int min_delay_on_row = row_at_beats_min_delay (on_time);
-		// Check if the next on row is available.  It is available if it is
-		// different than the current on and row NEXT.4
-		bool is_next_on_row_available = on_row != min_delay_on_row;
-		if (is_next_on_row_available) {
-			std::cout << "is_next_on_row_available on_row = " << on_row
-			          << ", min_delay_on_row = " << min_delay_on_row << std::endl;
-			return min_delay_on_row;
+		// Default row is not available, try the previous row
+		int previous_row = row_at_beats_max_delay (on_time);
+		bool is_previous_row_available = (default_row != previous_row &&
+		                                  is_on_row_available (cgi, previous_row, inote));
+		if (is_previous_row_available) {
+			std::cout << "is_previous_row_available previous_row = " << previous_row << std::endl;
+			return previous_row;
 		} else {
-			// Cannot place in next on row, so place in default on row
-			std::cout << "nothing is available on_row = " << on_row << ", min_delay_on_row = " << min_delay_on_row << std::endl;
-			return on_row;
+			// Neither default row, nor previous rows are available, try the next row
+			int next_row = row_at_beats_min_delay (on_time);
+			bool is_next_row_available = (default_row != next_row &&
+			                              is_on_row_available (cgi, next_row, inote));
+			if (is_next_row_available) {
+				std::cout << "is_next_row_available next_row = " << next_row << std::endl;
+				return next_row;
+			} else {
+				// No row are available, fall back to default row
+				std::cout << "nothing is available default_row = " << default_row << std::endl;
+				return default_row;
+			}
 		}
 	}
 }
@@ -355,36 +398,40 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 int
 MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
-	// The off note is placed in its default off row, unless the default off row
-	// is already taken in which case it checks if the next off row is
-	// available, and place it there if it is, otherwise keeps it in the default
-	// row.
+	std::cout << "MidiNotesPattern::find_nearest_off_row(cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
+	// The off note is placed in its default row, unless the default off row is
+	// already taken in which case it checks if the previous, then the next
+	// rows, are available, and place it there if they are, otherwise keeps it
+	// in the default row.
 	NotePtr note = *inote;
 	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
-	int off_row = row_at_beats (off_time);
+	int default_row = row_at_beats (off_time);
 
-	// Grab on note at off_row, if it exists
-	RowToNotes::const_iterator on_it = on_notes[cgi].find (off_row);
+	// Check if the cell at the default off row is available.
+	bool is_default_row_available = is_off_row_available (cgi, default_row, inote);
 
-	// Get on note counts at off_row
-	size_t on_count_at_off_row = on_notes[cgi].count (off_row);
-
-	// Check if the cell at the default off row is available.  It is available
-	// if there is no on note.  NEXT.4: check what is happening after that off
-	// note has been inserted in this row.
-	bool is_off_row_available = on_count_at_off_row == 0;
-
-	if (is_off_row_available) {
-		return off_row;
+	std::cout << "is_default_row_available = " << is_default_row_available << std::endl;
+	if (is_default_row_available) {
+		std::cout << "is_default_row_available off_row = " << default_row << std::endl;
+		return default_row;
 	} else {
-		// Check if the next off row is available.  It is available if it is
-		// different than the current on row and NEXT.4
-		int min_delay_off_row = row_at_beats_min_delay (off_time);
-		bool is_next_off_row_available = off_row != min_delay_off_row;
-		if (is_next_off_row_available) {
-			return min_delay_off_row;
+		// The default row is not available, check the previous row
+		int previous_row = row_at_beats_max_delay (off_time);
+		bool is_previous_row_available = (default_row != previous_row &&
+		                                  is_off_row_available (cgi, previous_row, inote));
+		if (is_previous_row_available) {
+			return previous_row;
 		} else {
-			return off_row;
+			// Neither the default nor the previous rows are available, check the next row
+			int next_row = row_at_beats_min_delay (off_time);
+			bool is_next_row_available = (default_row != next_row &&
+			                              is_off_row_available (cgi, next_row, inote));
+			if (is_next_row_available) {
+				return next_row;
+			} else {
+				// No row are available, fall back to default row
+				return default_row;
+			}
 		}
 	}
 }
