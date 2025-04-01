@@ -341,7 +341,7 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 	        (off_count_at_row == 0 ||
 	         (off_count_at_row == 1 &&
 	          TrackerUtils::off_meets_on (off_it->second, *inote))) &&
-	        (default_on_row (cgi, ninote) != row));
+	        default_on_row (cgi, ninote) != row); // NEXT.4
 }
 
 bool
@@ -350,8 +350,16 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 	// Get on note counts at row
 	size_t on_count_at_row = on_notes[cgi].count (row);
 
-	// The row is available if there is no on note.
-	return on_count_at_row == 0;
+	// Get next note, if it exists
+	MidiModel::Notes::iterator ninote = std::next(inote);
+	MidiModel::Notes::iterator nninote = std::next(ninote);
+
+	// The row is available if there is no on note, or if there is one, and only
+	// one, the off note exactly meets the on note.
+	return (on_count_at_row == 0 &&
+	        (default_on_row (cgi, ninote) != row ||
+	         TrackerUtils::off_meets_on (*inote, *ninote)) &&
+	        default_on_row (cgi, nninote) != row);
 }
 
 int
@@ -368,7 +376,7 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 
 	bool is_default_row_available = is_on_row_available (cgi, default_row, inote);
 	if (is_default_row_available) {
-		std::cout << "is_default_row_available on_row = " << default_row << std::endl;
+		std::cout << "is_default_row_available default_row = " << default_row << std::endl;
 		return default_row;
 	} else {
 		// Default row is not available, try the previous row
