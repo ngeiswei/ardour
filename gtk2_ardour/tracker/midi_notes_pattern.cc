@@ -270,6 +270,9 @@ void
 MidiNotesPattern::update_row_to_notes ()
 {
 	std::cout << "MidiNotesPattern::update_row_to_notes ()" << std::endl;
+	// NEXT.4: instead of clearing, we should attempt to modify what is
+	//         modifiable, that would allow to not systematically move notes
+	//         with extreme delays.
 	on_notes.clear ();
 	on_notes.resize (ntracks);
 	off_notes.clear ();
