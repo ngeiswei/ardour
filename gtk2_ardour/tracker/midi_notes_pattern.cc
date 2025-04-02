@@ -422,9 +422,9 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 int
 MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
 {
-	int prev_row = previous_on_row (cgi, ninote);
-	int cent_row = centered_on_row (cgi, ninote);
-	int next_row = next_on_row (cgi, ninote);
+	int prev_row = previous_on_row (cgi, inote);
+	int cent_row = centered_on_row (cgi, inote);
+	int next_row = next_on_row (cgi, inote);
 	switch (rank) {
 	case 0:
 		return cent_row;
@@ -433,16 +433,16 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 	case 2:
 		return cent_row < next_row ? next_row : -1;
 	default:
-		-1;
+		return -1;
 	}
 }
 
 int
 MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
 {
-	int prev_row = previous_off_row (cgi, ninote);
-	int cent_row = centered_off_row (cgi, ninote);
-	int next_row = next_off_row (cgi, ninote);
+	int prev_row = previous_off_row (cgi, inote);
+	int cent_row = centered_off_row (cgi, inote);
+	int next_row = next_off_row (cgi, inote);
 	switch (rank) {
 	case 0:
 		return cent_row;
@@ -451,7 +451,7 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 	case 2:
 		return cent_row < next_row ? next_row : -1;
 	default:
-		-1;
+		return -1;
 	}
 }
 
@@ -466,89 +466,25 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 			return row;
 		}
 		rank++;
-		row = on_row_suggestion (cgi, row, rank);
+		row = on_row_suggestion (cgi, inote, rank);
 	} while (rank < 3 && 0 <= row);
 	return default_row;
 }
-	// for (int rank = 0; rank < 3; rank++) {
-	// 	int row = on_row_suggestion (cgi, inote, rank);
-	// 	if (is_on_row_available (cgi, row, inote))
-	// 		return row;
-	// }
-	
-	// std::cout << "MidiNotesPattern::find_nearest_on_row(cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
-	// // The on note is placed in its default row, unless the default row is
-	// // already taken in which case it checks if the previous, then the next rows
-	// // are available, and place it there if they are, otherwise keeps it in the
-	// // default row.
-	// int default_row = centered_on_row (cgi, inote);
-
-	// bool is_default_row_available = is_on_row_available (cgi, default_row, inote);
-	// if (is_default_row_available) {
-	// 	std::cout << "is_default_row_available default_row = " << default_row << std::endl;
-	// 	return default_row;
-	// } else {
-	// 	// Default row is not available, try the previous row
-	// 	int previous_row = previous_on_row (cgi, inote);
-	// 	bool is_previous_row_available = (default_row != previous_row &&
-	// 	                                  is_on_row_available (cgi, previous_row, inote));
-	// 	if (is_previous_row_available) {
-	// 		std::cout << "is_previous_row_available previous_row = " << previous_row << std::endl;
-	// 		return previous_row;
-	// 	} else {
-	// 		// Neither default row, nor previous rows are available, try the next row
-	// 		int next_row = next_on_row (cgi, inote);
-	// 		bool is_next_row_available = (default_row != next_row &&
-	// 		                              is_on_row_available (cgi, next_row, inote));
-	// 		if (is_next_row_available) {
-	// 			std::cout << "is_next_row_available next_row = " << next_row << std::endl;
-	// 			return next_row;
-	// 		} else {
-	// 			// No row are available, fall back to default row
-	// 			std::cout << "nothing is available default_row = " << default_row << std::endl;
-	// 			return default_row;
-	// 		}
-	// 	}
-	// }
-// }
 
 int
 MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
-	std::cout << "MidiNotesPattern::find_nearest_off_row(cgi=" << cgi << ", *inote=" << *inote << ")" << std::endl;
-	// The off note is placed in its default row, unless the default off row is
-	// already taken in which case it checks if the previous, then the next
-	// rows, are available, and place it there if they are, otherwise keeps it
-	// in the default row.
-	int default_row = centered_off_row (cgi, inote);
-
-	// Check if the cell at the default off row is available.
-	bool is_default_row_available = is_off_row_available (cgi, default_row, inote);
-
-	std::cout << "is_default_row_available = " << is_default_row_available << std::endl;
-	if (is_default_row_available) {
-		std::cout << "is_default_row_available off_row = " << default_row << std::endl;
-		return default_row;
-	} else {
-		// The default row is not available, check the previous row
-		int previous_row = previous_off_row (cgi, inote);
-		bool is_previous_row_available = (default_row != previous_row &&
-		                                  is_off_row_available (cgi, previous_row, inote));
-		if (is_previous_row_available) {
-			return previous_row;
-		} else {
-			// Neither the default nor the previous rows are available, check the next row
-			int next_row = next_off_row (cgi, inote);
-			bool is_next_row_available = (default_row != next_row &&
-			                              is_off_row_available (cgi, next_row, inote));
-			if (is_next_row_available) {
-				return next_row;
-			} else {
-				// No row are available, fall back to default row
-				return default_row;
-			}
+	int rank = 0;
+	int row = off_row_suggestion (cgi, inote, rank);
+	int default_row = row;
+	do {
+		if (is_off_row_available (cgi, row, inote)) {
+			return row;
 		}
-	}
+		rank++;
+		row = off_row_suggestion (cgi, inote, rank);
+	} while (rank < 3 && 0 <= row);
+	return default_row;
 }
 
 void
