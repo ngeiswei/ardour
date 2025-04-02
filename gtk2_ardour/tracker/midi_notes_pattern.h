@@ -88,12 +88,37 @@ public:
 	bool is_off_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
 
 	// Return default on/off row, centered around the on/off note.  If no such
-	// note exists, return -1.
-	int default_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
-	int default_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	// note exists, return -1.  It takes a note iterator instead of a note in
+	// order to be resilient on being called with a next note that does not
+	// exists.
+	int centered_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	int centered_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
+	// Return row right above the centered row around the on/off note.  If no
+	// such note exists, return -1.
+	int previous_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	int previous_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
+	// Return row right below the centered row around the on/off note.  If no
+	// such note exists, return -1.
+	int next_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	int next_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
+	// Return defacto on/off row, which is either the row that previously
+	// contained the note, or if it's been moved, is centered around the on/off
+	// note.
+	int defacto_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	int defacto_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
+	// Given a rank of priority return the corresponding row for an on/off note.
+	// The rank goes from 0 to at most 2.  If the provided rank goes out of
+	// range, then return -1.  NEXT.4: could be const, maybe
+	int on_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank);
+	int off_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank);
 
 	// In the process of updating the mapping from row to on (resp. off) notes,
 	// find the nearest row to place that on (resp. off) note
+	// NEXT.4: could be const, maybe
 	int find_nearest_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 	int find_nearest_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 
@@ -186,6 +211,10 @@ private:
 	int find_free_track (NotePtr note) const;
 
 	static bool overlap (NotePtr a, NotePtr b);
+
+	// Used to temporary save the state of on_notes and off_notes during update
+	std::vector<RowToNotes> _prev_on_notes;
+	std::vector<RowToNotes> _prev_off_notes;
 
 	MidiRegionPtr _midi_region;
 	MidiModelPtr _midi_model;
