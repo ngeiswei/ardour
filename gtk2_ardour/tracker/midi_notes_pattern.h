@@ -212,9 +212,20 @@ private:
 
 	static bool overlap (NotePtr a, NotePtr b);
 
-	// Used to temporary save the state of on_notes and off_notes during update
+	// Used to temporarily save the state of on_notes and off_notes during
+	// update
 	std::vector<RowToNotes> _prev_on_notes;
 	std::vector<RowToNotes> _prev_off_notes;
+
+	// Mapping from on/off note pointer to row per cgi.  Used to minimize the
+	// amount of movements of a note.
+	std::vector<NoteToRow> _on_note_to_row;
+	std::vector<NoteToRow> _off_note_to_row;
+
+	// Like _on_note_to_row and _off_note_to_row but used to temporarily save
+	// the state of this mapping during update
+	std::vector<NoteToRow> _prev_on_note_to_row;
+	std::vector<NoteToRow> _prev_off_note_to_row;
 
 	MidiRegionPtr _midi_region;
 	MidiModelPtr _midi_model;
