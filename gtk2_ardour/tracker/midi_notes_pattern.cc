@@ -276,14 +276,28 @@ MidiNotesPattern::update_row_to_notes ()
 
 	// Temporarily save the state of on_notes and off_notes to keep track of
 	// which row holds delayed events
+	// NEXT.4: do we really need that
 	_prev_on_notes = on_notes;
 	_prev_off_notes = off_notes;
 
+	// Clear on_notes and off_notes
 	on_notes.clear ();
 	on_notes.resize (ntracks);
 	off_notes.clear ();
 	off_notes.resize (ntracks);
 
+	// Temporaily save the state of _on_note_to_row and _off_note_to_row to keep
+	// track of which row each note used to belong to.
+	_prev_on_note_to_row = _on_note_to_row;
+	_prev_off_note_to_row = _off_note_to_row;
+
+	// Clear _on_note_to_row and _off_note_to_row
+	_on_note_to_row.clear ();
+	_on_note_to_row.resize (ntracks);
+	_off_note_to_row.clear ();
+	_off_note_to_row.resize (ntracks);
+
+	// Fill on_notes and off_notes
 	for (uint16_t cgi = 0; cgi < nreqtracks; ++cgi) {
 		update_row_to_notes_at_track (cgi);
 	}
@@ -301,6 +315,7 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t cgi)
 void
 MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
+	// NEXT.4: integrate _on_note_to_row and _off_note_to_row
 	NotePtr note = *inote;
 	int on_row = find_nearest_on_row (cgi, inote);
 	on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
