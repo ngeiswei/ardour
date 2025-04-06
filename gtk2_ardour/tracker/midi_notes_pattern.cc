@@ -315,16 +315,22 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t cgi)
 void
 MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
-	// NEXT.4: integrate _on_note_to_row and _off_note_to_row
 	NotePtr note = *inote;
 	int on_row = find_nearest_on_row (cgi, inote);
 	on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
-	// Do no display off notes occuring at the very end of the region
-	Temporal::Beats off_time = _midi_region->source_beats_to_absolute_beats (note->end_time ());
-	if (off_time < global_end_beats) {
+	_on_note_to_row[cgi][note] = on_row;
+	// Only display off notes occuring within the region
+	if (note_ends_within_region (note)) {
 		int off_row = find_nearest_off_row (cgi, inote);
 		off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
+		_off_note_to_row[cgi][note] = off_row;
 	}
+}
+
+bool
+MidiNotesPattern::note_ends_within_region (NotePtr note) const
+{
+	return _midi_region->source_beats_to_absolute_beats (note->end_time ()) < global_end_beats;
 }
 
 int
@@ -396,6 +402,9 @@ MidiNotesPattern::defacto_off_row (uint16_t cgi, MidiModel::Notes::iterator inot
 bool
 MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote)
 {
+	// NEXT.4: take into account _on_note_to_row and _off_note_to_row.  Maybe
+	// use defacto_on_row, not sure.
+
 	// Get off and on note counts at row
 	size_t on_count_at_row = on_notes[cgi].count (row);
 	size_t off_count_at_row = off_notes[cgi].count (row);
@@ -437,6 +446,9 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 int
 MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
 {
+	// NEXT.4: take into account _on_note_to_row and _off_note_to_row.  Maybe
+	// use defacto_on_row, not sure.
+
 	int prev_row = previous_on_row (cgi, inote);
 	int cent_row = centered_on_row (cgi, inote);
 	int next_row = next_on_row (cgi, inote);
