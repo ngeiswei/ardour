@@ -87,6 +87,10 @@ public:
 	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
 	bool is_off_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
 
+	// Return true if the note ends with the current region, otherwise, if the
+	// note ends beyond it, return false.
+	bool note_ends_within_region (NotePtr note) const;
+
 	// Return default on/off row, centered around the on/off note.  If no such
 	// note exists, return -1.  It takes a note iterator instead of a note in
 	// order to be resilient on being called with a next note that does not
