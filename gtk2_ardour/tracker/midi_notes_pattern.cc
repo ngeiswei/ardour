@@ -446,27 +446,41 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 int
 MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
 {
-	// NEXT.4: take into account _on_note_to_row and _off_note_to_row.  Maybe
-	// use defacto_on_row, not sure.
-
+	if (inote == track_to_notes[cgi].end ()) {
+		return -1;
+	}
+	// Evaluate possible rows
 	int prev_row = previous_on_row (cgi, inote);
 	int cent_row = centered_on_row (cgi, inote);
 	int next_row = next_on_row (cgi, inote);
-	switch (rank) {
-	case 0:
-		return cent_row;
-	case 1:
-		return prev_row < cent_row ? prev_row : -1;
-	case 2:
-		return cent_row < next_row ? next_row : -1;
-	default:
-		return -1;
+	// Default ranking
+	int ranked_row[3];
+	ranked_row[0] = cent_row;
+	ranked_row[1] = prev_row < cent_row ? prev_row : -1;
+	ranked_row[2] = cent_row < next_row ? next_row : -1;
+	// Overwrite ranking according to previous _on_note_to_row
+	if (cgi < _prev_on_note_to_row.size ()) {
+		auto it = _prev_on_note_to_row[cgi].find (*inote);
+		if (it != _prev_on_note_to_row[cgi].end ()) {
+			int note_row = it->second;
+			if (note_row == prev_row && prev_row < cent_row) {
+				ranked_row[0] = prev_row;
+				ranked_row[1] = cent_row;
+			} else if (note_row == next_row && cent_row < next_row) {
+				ranked_row[0] = next_row;
+				ranked_row[1] = cent_row;
+				ranked_row[2] = prev_row < cent_row ? prev_row : -1;
+			}
+		}
 	}
+	// Select row according to its ranking
+	return rank < 3 ? ranked_row[rank] : -1;
 }
 
 int
 MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
 {
+	// NEXT.5: implement on the model MidiNotesPattern::off_row_suggestion
 	int prev_row = previous_off_row (cgi, inote);
 	int cent_row = centered_off_row (cgi, inote);
 	int next_row = next_off_row (cgi, inote);
