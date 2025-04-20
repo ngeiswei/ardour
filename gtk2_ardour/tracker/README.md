@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.5: take into account _on_note_to_row and _off_note_to_row
 - [ ] NEXT.4: generalize Grid::delete_note to support all notes
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
 
