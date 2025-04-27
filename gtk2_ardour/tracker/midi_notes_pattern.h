@@ -183,6 +183,8 @@ public:
 	std::vector<RowToNotes> off_notes;
 
 private:
+	// Given a range of notes gotten from RowToNotesRange, return a pointer to
+	// the earliest (resp. lattest) note.
 	NotePtr earliest (const RowToNotesRange& rng) const;
 	NotePtr lattest (const RowToNotesRange& rng) const;
 
