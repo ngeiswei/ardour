@@ -705,7 +705,7 @@ MidiNotesPattern::earliest (const RowToNotesRange& rng) const
 {
 	NotePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
-		if (!result || result->time () < it->second->time ()) {
+		if (!result || it->second->time () < result->time ()) {
 			result = it->second;
 		}
 	}
@@ -717,7 +717,7 @@ MidiNotesPattern::lattest (const RowToNotesRange& rng) const
 {
 	NotePtr result;
 	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
-		if (!result || it->second->time () < result->time ()) {
+		if (!result || result->time () < it->second->time ()) {
 			result = it->second;
 		}
 	}
