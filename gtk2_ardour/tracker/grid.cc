@@ -1548,7 +1548,6 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 void
 Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, const MidiNotesPatternPhenomenalDiff* mnp_diff)
 {
-	std::cout << "Grid::redisplay_region_notes (mti=" << mti << ", mri=" << mri << ") mnp:" << std::endl << mnp.to_string() << std::endl;
 	if (mnp_diff == 0 || mnp_diff->full) {
 		for (size_t cgi = 0; cgi < mnp.ntracks; cgi++) {
 			redisplay_note_column (mti, mri, cgi, mnp);
@@ -2718,7 +2717,6 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 void
 Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 {
-	std::cout << "Grid::delete_note (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ")" << std::endl;
 	// Skip if *** and overwrite *** is disabled
 	if (!is_note_displayable (row_idx, mti, mri, cgi) and !tracker_editor.main_toolbar.overwrite_star) {
 		return;
@@ -2739,14 +2737,10 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 
 	// Change duration of off note if necessary
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
-	std::cout << "off_note = " << off_note << std::endl;
 	if (off_note) {
-		std::cout << "*off_note = " << *off_note << std::endl;
 		// NEXT.6: fix pattern.find_prev_on_note when ***
 		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
-		std::cout << "prev_note = " << prev_note << std::endl;
 		if (prev_note && (prev_note == off_note)) {
-			std::cout << "*prev_note = " << *prev_note << std::endl;
 			// Calculate the length of the previous note and update it to end at
 			// the next note
 			Temporal::Beats start = prev_note->time ();
