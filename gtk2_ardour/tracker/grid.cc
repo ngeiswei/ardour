@@ -2718,6 +2718,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 void
 Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 {
+	std::cout << "Grid::delete_note (row_idx=" << row_idx << ", mti=" << mti << ", mri=" << mri << ", cgi=" << cgi << ")" << std::endl;
 	// Skip if *** and overwrite *** is disabled
 	if (!is_note_displayable (row_idx, mti, mri, cgi) and !tracker_editor.main_toolbar.overwrite_star) {
 		return;
@@ -2738,9 +2739,14 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 
 	// Change duration of off note if necessary
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
+	std::cout << "off_note = " << off_note << std::endl;
 	if (off_note) {
+		std::cout << "*off_note = " << *off_note << std::endl;
+		// NEXT.6: fix pattern.find_prev_on_note when ***
 		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
+		std::cout << "prev_note = " << prev_note << std::endl;
 		if (prev_note && (prev_note == off_note)) {
+			std::cout << "*prev_note = " << *prev_note << std::endl;
 			// Calculate the length of the previous note and update it to end at
 			// the next note
 			Temporal::Beats start = prev_note->time ();
