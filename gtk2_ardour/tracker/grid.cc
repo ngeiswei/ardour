@@ -2738,7 +2738,6 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 	// Change duration of off note if necessary
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
 	if (off_note) {
-		// NEXT.6: fix pattern.find_prev_on_note when ***
 		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
 		if (prev_note && (prev_note == off_note)) {
 			// Calculate the length of the previous note and update it to end at
