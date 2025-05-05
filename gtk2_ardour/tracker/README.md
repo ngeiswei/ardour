@@ -1,6 +1,5 @@
 # Next
 
-- [ ] NEXT.6: fix pattern.find_prev_on_note when ***
 - [ ] NEXT.5: try to understand how to avoid *** first time
 - [ ] NEXT.4: generalize Grid::delete_note to support all notes
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
