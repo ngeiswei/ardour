@@ -315,7 +315,7 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t cgi)
 void
 MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::Notes::iterator inote)
 {
-	// NEXT.5: try to understand how to avoid *** first time
+	// NEXT.5: fix latest misplaced off note
 	NotePtr note = *inote;
 	int on_row = find_nearest_on_row (cgi, inote);
 	on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
