@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.5: try to understand how to avoid *** first time
+- [ ] NEXT.5: fix latest misplaced off note
 - [ ] NEXT.4: generalize Grid::delete_note to support all notes
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
 
