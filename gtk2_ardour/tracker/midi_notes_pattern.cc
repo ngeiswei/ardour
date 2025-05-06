@@ -460,10 +460,6 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 int
 MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
 {
-	// NEXT.6: sort ranked_row so that all -1 appear last.  For instance
-	// ranked_row[0] = 8, ranked_row[1] = -1, ranked_row[2] = 9
-	// is reordered into
-	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
 	std::cout << "MidiNotesPattern::on_row_suggestion (cgi, inote, rank=" << rank << ")" << std::endl;
 	if (inote == track_to_notes[cgi].end ()) {
 		return -1;
@@ -495,6 +491,7 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 	}
 	// Select row according to its ranking
 	std::cout << "ranked_row[0] = " << ranked_row[0] << ", ranked_row[1] = " << ranked_row[1] << ", ranked_row[2] = " << ranked_row[2] << std::endl;
+	repair_ranked_row (ranked_row);
 	return rank < 3 ? ranked_row[rank] : -1;
 }
 
@@ -529,7 +526,21 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 		}
 	}
 	// Select row according to its ranking
+	repair_ranked_row (ranked_row);
 	return rank < 3 ? ranked_row[rank] : -1;
+}
+
+void
+MidiNotesPattern::repair_ranked_row (int ranked_row[3])
+{
+	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
+		ranked_row[1] = ranked_row[2];
+		ranked_row[2] = -1;
+	}
+	if (ranked_row[0] < 0 && ranked_row[1] >= 0) {
+		ranked_row[0] = ranked_row[1];
+		ranked_row[1] = -1;
+	}
 }
 
 int
