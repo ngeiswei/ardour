@@ -1,6 +1,5 @@
 # Next
 
-- [ ] NEXT.6: sort ranked_row so that all -1 appear last
 - [ ] NEXT.5: try to understand how to avoid *** first time
 - [ ] NEXT.4: generalize Grid::delete_note to support all notes
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
@@ -40,6 +39,7 @@ A documentation can be found [here](DOCUMENTATION.md).
 ## TODO
 
 - [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
+- [ ] Disable *Editing* when the window is hidden
 - [ ] Final off note management fixes (look for NEXT)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
