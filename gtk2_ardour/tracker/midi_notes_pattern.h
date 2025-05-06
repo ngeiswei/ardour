@@ -120,6 +120,15 @@ public:
 	int on_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank);
 	int off_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank);
 
+	// Repair ranked_row so that all -1 appear last, for instance
+	//
+	// ranked_row[0] = 8, ranked_row[1] = -1, ranked_row[2] = 9
+	//
+	// is reordered into
+	//
+	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
+	void repair_ranked_row (int ranked_row[3]);
+
 	// In the process of updating the mapping from row to on (resp. off) notes,
 	// find the nearest row to place that on (resp. off) note
 	// NEXT.4: could be const, maybe
