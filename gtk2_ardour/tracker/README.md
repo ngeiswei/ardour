@@ -1,5 +1,6 @@
 # Next
 
+- [ ] NEXT.6: sort ranked_row so that all -1 appear last
 - [ ] NEXT.5: try to understand how to avoid *** first time
 - [ ] NEXT.4: generalize Grid::delete_note to support all notes
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
