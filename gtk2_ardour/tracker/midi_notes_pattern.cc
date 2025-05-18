@@ -441,7 +441,7 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 	// one, the off note exactly meets the on note, and the next note is not in
 	// this row or below it by default.
 	bool is_available = (on_count_at_row == 0 &&
-	                     (centered_on_row (cgi, ninote) != row ||
+	                     (row_lt (row, centered_on_row (cgi, ninote)) ||
 	                      TrackerUtils::off_meets_on (*inote, *ninote)) &&
 	                     row_lt (row, centered_on_row (cgi, nninote)));
 	return is_available;
