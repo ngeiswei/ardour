@@ -395,6 +395,15 @@ MidiNotesPattern::defacto_off_row (uint16_t cgi, MidiModel::Notes::iterator inot
 }
 
 bool
+MidiNotesPattern::row_lt (int row1, int row2) const
+{
+	if (row1 > -1 and row2 > -1) {
+		return row1 < row2;
+	}
+	return true;
+}
+
+bool
 MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote)
 {
 	// Get off and on note counts at row
@@ -414,7 +423,7 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 	                     (off_count_at_row == 0 ||
 	                      (off_count_at_row == 1 &&
 	                       TrackerUtils::off_meets_on (off_it->second, *inote))) &&
-	                     centered_on_row (cgi, ninote) > row);
+	                     row_lt (row, centered_on_row (cgi, ninote)));
 	return is_available;
 }
 
@@ -434,7 +443,7 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 	bool is_available = (on_count_at_row == 0 &&
 	                     (centered_on_row (cgi, ninote) != row ||
 	                      TrackerUtils::off_meets_on (*inote, *ninote)) &&
-	                     centered_on_row (cgi, nninote) > row);
+	                     row_lt (row, centered_on_row (cgi, nninote)));
 	return is_available;
 }
 
