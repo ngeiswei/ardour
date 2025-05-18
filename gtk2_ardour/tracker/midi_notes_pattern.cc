@@ -269,13 +269,9 @@ MidiNotesPattern::update_track_to_notes ()
 void
 MidiNotesPattern::update_row_to_notes ()
 {
-	// NEXT.4: instead of clearing, we should attempt to modify what is
-	//         modifiable, that would allow to not systematically move notes
-	//         with extreme delays.
-
 	// Temporarily save the state of on_notes and off_notes to keep track of
 	// which row holds delayed events
-	// NEXT.4: do we really need that
+	// TODO: optimize
 	_prev_on_notes = on_notes;
 	_prev_off_notes = off_notes;
 
