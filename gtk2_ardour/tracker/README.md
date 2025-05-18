@@ -1,7 +1,5 @@
 # Next
 
-- [ ] NEXT.5: fix latest misplaced off note
-- [ ] NEXT.4: generalize Grid::delete_note to support all notes
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
 
 # Tracker Editor
@@ -38,7 +36,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 
 ## TODO
 
-- [ ] Deal with `***` in a proper manner (using the  "Overwrite *" button)
 - [ ] Disable *Editing* when the window is hidden
 - [ ] Final off note management fixes (look for NEXT)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
