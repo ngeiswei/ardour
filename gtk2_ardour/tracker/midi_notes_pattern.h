@@ -82,6 +82,10 @@ public:
 	// and resized to ntracks.
 	void update_row_to_notes_at_track_note (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 
+	// Return true if row1 < row2 and both are different from -1.  If any is
+	// equals to -1 then returns true as well.
+	bool row_lt (int row1, int row2) const;
+
 	// Return true iff the row at cgi is free, meaning it can potentially host
 	// the given note.
 	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
