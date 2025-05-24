@@ -316,7 +316,7 @@ MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::No
 	_on_note_to_row[cgi][note] = on_row;
 	// Only display off notes occuring within the region
 	if (note_ends_within_region (note)) {
-		int off_row = find_nearest_off_row (cgi, inote);
+		int off_row = std::max (find_nearest_off_row (cgi, inote), on_row);
 		off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
 		_off_note_to_row[cgi][note] = off_row;
 	}
