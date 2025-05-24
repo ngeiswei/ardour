@@ -255,9 +255,11 @@ public:
 	void set_underline_current_step_edit_note_cell ();
 	void set_underline_current_step_edit_automation_cell ();
 
-	// Modifier/Accessor.
+	// Modifier/Accessor
 	void set_cell_content (int row_idx, int col_idx, const std::string& text);
-	// Return an empty string if the data is blank or interpolated
+
+	// Return the content of a cell or an empty string if it is blank, *** or
+	// interpolated.  Used for copy/cut/paste.
 	std::string get_cell_content (int row_idx, int col_idx) const;
 
 	// To align grid header
@@ -779,6 +781,18 @@ private:
 	std::string mk_vel_blank () const;
 	std::string mk_delay_blank () const;
 	std::string mk_automation_blank () const;
+
+	/**
+	 * Skip processing a note cell if it is filled with *** and the feature to
+	 * overwrite *** is disabled.
+	 */
+	bool skip_note_stars (int row_idx, int mti, int mri, int cgi) const;
+
+	/**
+	 * Skip processing an automation cell if it is filled with *** and the
+	 * feature to overwrite *** is disabled.
+	 */
+	bool skip_automation_stars (int row_idx, int mti, int mri, int cgi) const;
 
 	const std::string cellfont;
 
