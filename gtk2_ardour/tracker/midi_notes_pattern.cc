@@ -382,18 +382,6 @@ MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) 
 	return -1;
 }
 
-int
-MidiNotesPattern::defacto_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
-{
-	return -1;
-}
-
-int
-MidiNotesPattern::defacto_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
-{
-	return -1;
-}
-
 bool
 MidiNotesPattern::row_lt (int row1, int row2) const
 {
@@ -404,7 +392,7 @@ MidiNotesPattern::row_lt (int row1, int row2) const
 }
 
 bool
-MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote)
+MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote) const
 {
 	// Get off and on note counts at row
 	size_t on_count_at_row = on_notes[cgi].count (row);
@@ -428,7 +416,7 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 }
 
 bool
-MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote)
+MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote) const
 {
 	// Get on note counts at row
 	size_t on_count_at_row = on_notes[cgi].count (row);
@@ -448,7 +436,7 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 }
 
 int
-MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
+MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
 	if (inote == track_to_notes[cgi].end ()) {
 		return -1;
@@ -483,7 +471,7 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 }
 
 int
-MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank)
+MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
 	if (inote == track_to_notes[cgi].end ()) {
 		return -1;
@@ -518,7 +506,7 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 }
 
 void
-MidiNotesPattern::repair_ranked_row (int ranked_row[3])
+MidiNotesPattern::repair_ranked_row (int ranked_row[3]) const
 {
 	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
 		ranked_row[1] = ranked_row[2];
@@ -531,7 +519,7 @@ MidiNotesPattern::repair_ranked_row (int ranked_row[3])
 }
 
 int
-MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator inote)
+MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
 	int rank = 0;
 	int row = on_row_suggestion (cgi, inote, rank);
@@ -547,7 +535,7 @@ MidiNotesPattern::find_nearest_on_row (uint16_t cgi, MidiModel::Notes::iterator 
 }
 
 int
-MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator inote)
+MidiNotesPattern::find_nearest_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
 	int rank = 0;
 	int row = off_row_suggestion (cgi, inote, rank);
