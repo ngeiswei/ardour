@@ -88,8 +88,8 @@ public:
 
 	// Return true iff the row at cgi is free, meaning it can potentially host
 	// the given note.
-	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
-	bool is_off_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote);
+	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote) const;
+	bool is_off_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote) const;
 
 	// Return true if the note ends with the current region, otherwise, if the
 	// note ends beyond it, return false.
@@ -112,17 +112,11 @@ public:
 	int next_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
 	int next_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
 
-	// Return defacto on/off row, which is either the row that previously
-	// contained the note, or if it's been moved, is centered around the on/off
-	// note.
-	int defacto_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
-	int defacto_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
-
 	// Given a rank of priority return the corresponding row for an on/off note.
 	// The rank goes from 0 to at most 2.  If the provided rank goes out of
-	// range, then return -1.  NEXT.4: could be const, maybe
-	int on_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank);
-	int off_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank);
+	// range, then return -1.
+	int on_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank) const;
+	int off_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank) const;
 
 	// Repair ranked_row so that all -1 appear last, for instance
 	//
@@ -131,13 +125,12 @@ public:
 	// is reordered into
 	//
 	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
-	void repair_ranked_row (int ranked_row[3]);
+	void repair_ranked_row (int ranked_row[3]) const;
 
 	// In the process of updating the mapping from row to on (resp. off) notes,
 	// find the nearest row to place that on (resp. off) note
-	// NEXT.4: could be const, maybe
-	int find_nearest_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
-	int find_nearest_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
+	int find_nearest_on_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+	int find_nearest_off_row (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
 
 	// Increase and decrease the number of tracks
 	void set_ntracks (uint16_t n);
