@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.3: make sure *** is correctly supported all over the place
+- [ ] NEXT.3: make sure *** is correctly supported all over the place (overwrite with notes)
 - [ ] NEXT.2: reenable tracker for audio tracks
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
 
