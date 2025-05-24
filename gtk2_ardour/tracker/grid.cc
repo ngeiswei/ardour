@@ -2726,8 +2726,6 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 	char const * opname = _("delete note");
 	cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 
-	// NEXT.4: deal with weird behavior
-
 	// Remove all on notes
 	RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
 	for (; on_rng.first != on_rng.second; ++on_rng.first) {
