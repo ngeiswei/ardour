@@ -2021,7 +2021,7 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 			return "";
 		}
 
-		// For now ignore ***
+		// Ignore ***
 		if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 			return "";
 		}
@@ -2530,11 +2530,6 @@ Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const std::string& 
 	uint8_t pitch = parse_pitch (norm_text);
 	bool is_on = pitch <= 127;
 
-	// Can't edit *** (NEXT.3: support Overwrite ***)
-	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
-		return;
-	}
-
 	if (is_on) {
 		set_on_note (row_idx, mti, mri, cgi, pitch);
 	} else if (is_off) {
@@ -2555,13 +2550,14 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch)
 std::pair<uint8_t, uint8_t>
 Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_t ch, uint8_t vel)
 {
+	// Ignore *** if configured as such
+	if (skip_note_stars (row_idx, mti, mri, cgi)) {
+		return std::make_pair(ch, vel);
+	}
+	// NEXT.3: support ***
+
 	uint8_t new_ch = ch;
 	uint8_t new_vel = vel;
-
-	// For now ignore *** (NEXT.3: support Overwrite ***)
-	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
-		return std::make_pair(new_ch, new_vel);
-	}
 
 	// Abort if the new pitch is invalid
 	if (127 < pitch) {
@@ -2657,10 +2653,11 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 void
 Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 {
-	// For now ignore *** (NEXT.3: support Overwrite ***)
-	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
+	// Ignore *** if configured as such
+	if (skip_note_stars (row_idx, mti, mri, cgi)) {
 		return;
 	}
+	// NEXT.3: support ***
 
 	NotePtr on_note = get_on_note (row_idx, mti, cgi);
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
@@ -2717,8 +2714,8 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 void
 Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 {
-	// Skip if *** and overwrite *** is disabled
-	if (!is_note_displayable (row_idx, mti, mri, cgi) and !tracker_editor.main_toolbar.overwrite_star) {
+	// Ignore *** if configured as such
+	if (skip_note_stars (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
@@ -2765,13 +2762,13 @@ Grid::note_channel_edited (const std::string& path, const std::string& text)
 void
 Grid::set_note_channel_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
-	NotePtr note = get_on_note (row_idx, mti, cgi);
-	if (text.empty() || !note) {
+	// Ignore ***
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
 
-	// Can't edit ***
-	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
+	NotePtr note = get_on_note (row_idx, mti, cgi);
+	if (text.empty() || !note) {
 		return;
 	}
 
@@ -2814,7 +2811,7 @@ Grid::set_note_velocity_text (int row_idx, int mti, int mri, int cgi, const std:
 		return;
 	}
 
-	// Can't edit ***
+	// Ignore ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
@@ -2857,7 +2854,7 @@ Grid::note_delay_edited (const std::string& path, const std::string& text)
 void
 Grid::set_note_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text)
 {
-	// Can't edit ***
+	// Ignore ***
 	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
@@ -3255,11 +3252,6 @@ Grid::set_automation_value_text (int row_idx, int mti, int mri, int cgi, const s
 		return;
 	}
 
-	// Can't edit *** (NEXT.3: support Overwrite ***)
-	if (!is_automation_displayable (row_idx, mti, mri, cgi)) {
-		return;
-	}
-
 	// Can edit
 	if (is_del) {
 		delete_automation_value (row_idx, mti, mri, cgi);
@@ -3272,6 +3264,12 @@ Grid::set_automation_value_text (int row_idx, int mti, int mri, int cgi, const s
 void
 Grid::set_automation_value (int row_idx, int mti, int mri, int cgi, double val)
 {
+	// Ignore *** if configured as such
+	if (skip_automation_stars (row_idx, mti, mri, cgi)) {
+		return;
+	}
+	// NEXT.3: support ***
+
 	// Find the parameter to automate
 	IDParameter id_param = get_id_param (mti, cgi);
 
@@ -3284,6 +3282,12 @@ Grid::set_automation_value (int row_idx, int mti, int mri, int cgi, double val)
 void
 Grid::delete_automation_value (int row_idx, int mti, int mri, int cgi)
 {
+	// Ignore *** if configured as such
+	if (skip_automation_stars (row_idx, mti, mri, cgi)) {
+		return;
+	}
+	// NEXT.3: support ***
+
 	if (has_automation_value (row_idx, mti, mri, cgi)) {
 		IDParameter id_param = get_id_param (mti, cgi);
 		pattern.delete_automation_value (row_idx, mti, mri, id_param);
@@ -3341,7 +3345,7 @@ Grid::set_automation_delay_text (int row_idx, int mti, int mri, int cgi, const s
 		return;
 	}
 
-	// Can't edit *** (NEXT.3: support Overwrite * button)
+	// Ignore ***
 	if (!is_automation_displayable (row_idx, mti, mri, cgi)) {
 		return;
 	}
@@ -3430,6 +3434,20 @@ std::string
 Grid::mk_automation_blank () const
 {
 	return mk_blank (is_hex () ? 3 : 4);
+}
+
+bool
+Grid::skip_note_stars (int row_idx, int mti, int mri, int cgi) const
+{
+	return !is_note_displayable (row_idx, mti, mri, cgi)
+		and !tracker_editor.main_toolbar.overwrite_star;
+}
+
+bool
+Grid::skip_automation_stars (int row_idx, int mti, int mri, int cgi) const
+{
+	return !is_automation_displayable (row_idx, mti, mri, cgi)
+		and !tracker_editor.main_toolbar.overwrite_star;
 }
 
 bool
