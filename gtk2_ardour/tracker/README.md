@@ -1,5 +1,8 @@
 # Next
 
+- [ ] NEXT.4: constify when possible
+- [ ] NEXT.3: make sure *** is correctly supported all over the place
+- [ ] NEXT.2: reenable tracker for audio tracks
 - [ ] Carefully go over all NEXT comments (starting with NEXT.3)
 
 # Tracker Editor
