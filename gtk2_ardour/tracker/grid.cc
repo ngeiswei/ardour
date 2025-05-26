@@ -2555,6 +2555,11 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		return std::make_pair(ch, vel);
 	}
 	// NEXT.3: support ***
+	//
+	// More specifically: refactor delete_note into delete_note_update_cmd.
+	//
+	// - Question: should delete_note_update_cmd take a single note or a range
+	//             of notes?
 
 	uint8_t new_ch = ch;
 	uint8_t new_vel = vel;
