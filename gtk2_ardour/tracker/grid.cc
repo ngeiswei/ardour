@@ -2643,9 +2643,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 	}
 
 	// Apply note changes
-	if (cmd) {
-		apply_command (mti, mri, cmd);
-	}
+	apply_command (mti, mri, cmd);
 
 	return std::make_pair(new_ch, new_vel);
 }
@@ -2706,9 +2704,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 	}
 
 	// Apply note changes
-	if (cmd) {
-		apply_command (mti, mri, cmd);
-	}
+	apply_command (mti, mri, cmd);
 }
 
 void
@@ -2747,9 +2743,7 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 	}
 
 	// Apply note changes
-	if (cmd) {
-		apply_command (mti, mri, cmd);
-	}
+	apply_command (mti, mri, cmd);
 }
 
 void
@@ -3377,7 +3371,9 @@ void
 Grid::apply_command (int mti, int mri, MidiModel::NoteDiffCommand* cmd)
 {
 	// Apply change command
-	pattern.apply_command (mti, mri, cmd);
+	if (cmd) {
+		pattern.apply_command (mti, mri, cmd);
+	}
 }
 
 void
