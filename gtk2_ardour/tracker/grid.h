@@ -759,7 +759,9 @@ private:
 	double upper (int row_idx, int mti, const IDParameter& id_param) const;
 
 private:
+	// Apply command at mti and mri, if not nullptr.
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
 	void follow_playhead (Temporal::timepos_t);
 
 	/**
