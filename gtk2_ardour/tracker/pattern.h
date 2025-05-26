@@ -142,7 +142,7 @@ public:
 	MidiRegionPattern& midi_region_pattern (int mti, int mri);
 	const MidiRegionPattern& midi_region_pattern (int mti, int mri) const;
 
-	// Apply given command at mti
+	// Apply given command at mti and mri
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
 
 	std::string get_name (int mti, const IDParameter& id_param) const;
