@@ -84,21 +84,11 @@ void MidiRegionAutomationPattern::insert (const Evoral::Parameter& param)
 	AutomationPattern::insert_actl (midi_model->automation_control (param, true), midi_track->describe_parameter (param));
 }
 
-int
-MidiRegionAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+Temporal::Beats
+MidiRegionAutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
 	Temporal::Beats relative_beats (event->when.beats ());
-
-	if (relative_beats < start_beats || start_beats + length_beats <= relative_beats) {
-		return INVALID_ROW;
-	}
-
-	Temporal::Beats beats = midi_region->source_beats_to_absolute_beats (relative_beats);
-	int row = row_at_beats (beats);
-	if (control_events_count (row, param) != 0) {
-		row = row_at_beats_min_delay (beats);
-	}
-	return row;
+	return midi_region->source_beats_to_absolute_beats (relative_beats);
 }
 
 double
