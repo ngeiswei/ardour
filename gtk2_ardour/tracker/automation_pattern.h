@@ -62,9 +62,8 @@ public:
 
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
-	// Assign a control event to a row.
-	// Return its row index if successful or INVALID_ROW otherwise.
-	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	// Return the (absolute) beats of a control event
+	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// Build or rebuild the pattern (implement BasePattern::update ())
 	virtual void update ();
