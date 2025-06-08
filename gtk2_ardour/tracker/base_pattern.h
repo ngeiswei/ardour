@@ -60,6 +60,12 @@ public:
 	// A negative row index (i.e. max value) is considered invalid
 	static const int INVALID_ROW = -1;
 
+	// A negative col index is considered invalid
+	static const int INVALID_COL = -1;
+
+	// A negative cgi (col group index) is considered invalid
+	static const int INVALID_CGI = -1;
+
 	// Phenomenal overload of operator= (), only need to copy what is necessary
 	// for phenomenal_diff to correctly operate.
 	BasePattern& operator= (const BasePattern& other);
@@ -149,7 +155,7 @@ public:
 	int delay_ticks_max () const;
 
 	// Return true iff the row index is within the defined range of
-	// rows. Specifially between 0 and nrow-1
+	// rows. Specifially between 0 and nrow - 1
 	virtual bool is_defined (int row_idx) const;
 
 	// Enable/disable pattern
