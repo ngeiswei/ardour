@@ -195,7 +195,7 @@ private:
 	NotePtr lattest (const RowToNotesRange& rng) const;
 
 	// Find track in track_to_notes containing a note with the same id, return
-	// the track index if found, -1 otherwise.
+	// the track index (cgi) if found, -1 otherwise.
 	int find_eq_id (NotePtr note) const;
 
 	// Find the note in track_to_notes[cgi] containing the same id.
@@ -215,11 +215,11 @@ private:
 	// Erase pointer iterator from notes and return the next iterator
 	ARDOUR::MidiModel::Notes::iterator erase (ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
-	// Check if a track is available to receive a note.
+	// Check if a track (cgi) is available to receive a note.
 	bool is_free (int cgi, NotePtr note) const;
 
-	// Find the first track ready of receive a note. Return the track index if
-	// found, -1 otherwise.
+	// Find the first track ready of receive a note. Return the track index
+	// (cgi) if found, -1 otherwise.
 	int find_free_track (NotePtr note) const;
 
 	static bool overlap (NotePtr a, NotePtr b);
