@@ -334,7 +334,7 @@ MidiNotesPattern::centered_on_row (uint16_t cgi, MidiModel::Notes::iterator inot
 	if (inote != track_to_notes[cgi].end ()) {
 		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
 	}
-	return -1;
+	return INVALID_ROW;
 }
 
 int
@@ -343,7 +343,7 @@ MidiNotesPattern::centered_off_row (uint16_t cgi, MidiModel::Notes::iterator ino
 	if (inote != track_to_notes[cgi].end ()) {
 		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
 	}
-	return -1;
+	return INVALID_ROW;
 }
 
 int
@@ -352,7 +352,7 @@ MidiNotesPattern::previous_on_row (uint16_t cgi, MidiModel::Notes::iterator inot
 	if (inote != track_to_notes[cgi].end ()) {
 		return row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
 	}
-	return -1;
+	return INVALID_ROW;
 }
 
 int
@@ -361,7 +361,7 @@ MidiNotesPattern::previous_off_row (uint16_t cgi, MidiModel::Notes::iterator ino
 	if (inote != track_to_notes[cgi].end ()) {
 		return row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
 	}
-	return -1;
+	return INVALID_ROW;
 }
 
 int
@@ -370,7 +370,7 @@ MidiNotesPattern::next_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) c
 	if (inote != track_to_notes[cgi].end ()) {
 		return row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
 	}
-	return -1;
+	return INVALID_ROW;
 }
 
 int
@@ -379,13 +379,13 @@ MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) 
 	if (inote != track_to_notes[cgi].end ()) {
 		return row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
 	}
-	return -1;
+	return INVALID_ROW;
 }
 
 bool
 MidiNotesPattern::row_lt (int row1, int row2) const
 {
-	if (row1 > -1 and row2 > -1) {
+	if (row1 != INVALID_ROW and row2 != INVALID_ROW) {
 		return row1 < row2;
 	}
 	return true;
@@ -439,7 +439,7 @@ int
 MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
 	if (inote == track_to_notes[cgi].end ()) {
-		return -1;
+		return INVALID_ROW;
 	}
 	// Evaluate possible rows
 	int cent_row = centered_on_row (cgi, inote);
@@ -448,8 +448,8 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 	// Default ranking
 	int ranked_row[3];
 	ranked_row[0] = cent_row;
-	ranked_row[1] = prev_row < cent_row ? prev_row : -1;
-	ranked_row[2] = cent_row < next_row ? next_row : -1;
+	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
+	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
 	// Overwrite ranking according to previous _on_note_to_row
 	if (cgi < _prev_on_note_to_row.size ()) {
 		auto it = _prev_on_note_to_row[cgi].find (*inote);
@@ -461,20 +461,20 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 			} else if (note_row == next_row && cent_row < next_row) {
 				ranked_row[0] = next_row;
 				ranked_row[1] = cent_row;
-				ranked_row[2] = prev_row < cent_row ? prev_row : -1;
+				ranked_row[2] = prev_row < cent_row ? prev_row : INVALID_ROW;
 			}
 		}
 	}
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
-	return rank < 3 ? ranked_row[rank] : -1;
+	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
 }
 
 int
 MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
 	if (inote == track_to_notes[cgi].end ()) {
-		return -1;
+		return INVALID_ROW;
 	}
 	// Evaluate possible rows
 	int prev_row = previous_off_row (cgi, inote);
@@ -483,8 +483,8 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 	// Default ranking
 	int ranked_row[3];
 	ranked_row[0] = cent_row;
-	ranked_row[1] = prev_row < cent_row ? prev_row : -1;
-	ranked_row[2] = cent_row < next_row ? next_row : -1;
+	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
+	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
 	// Overwrite ranking according to previous _off_note_to_row
 	if (cgi < _prev_off_note_to_row.size ()) {
 		auto it = _prev_off_note_to_row[cgi].find (*inote);
@@ -496,13 +496,13 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 			} else if (note_row == next_row && cent_row < next_row) {
 				ranked_row[0] = next_row;
 				ranked_row[1] = cent_row;
-				ranked_row[2] = prev_row < cent_row ? prev_row : -1;
+				ranked_row[2] = prev_row < cent_row ? prev_row : INVALID_ROW;
 			}
 		}
 	}
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
-	return rank < 3 ? ranked_row[rank] : -1;
+	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
 }
 
 void
@@ -510,11 +510,11 @@ MidiNotesPattern::repair_ranked_row (int ranked_row[3]) const
 {
 	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
 		ranked_row[1] = ranked_row[2];
-		ranked_row[2] = -1;
+		ranked_row[2] = INVALID_ROW;
 	}
 	if (ranked_row[0] < 0 && ranked_row[1] >= 0) {
 		ranked_row[0] = ranked_row[1];
-		ranked_row[1] = -1;
+		ranked_row[1] = INVALID_ROW;
 	}
 }
 
@@ -738,7 +738,7 @@ MidiNotesPattern::find_eq_id (NotePtr note) const
 			return i;
 		}
 	}
-	return -1;
+	return INVALID_CGI;
 }
 
 MidiModel::Notes::const_iterator
@@ -786,7 +786,7 @@ MidiNotesPattern::find_free_track (NotePtr note) const
 			return i;
 		}
 	}
-	return -1;
+	return INVALID_CGI;
 }
 
 bool
