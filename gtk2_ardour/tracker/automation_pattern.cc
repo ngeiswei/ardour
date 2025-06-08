@@ -196,12 +196,12 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 	return diff;
 }
 
-int
-AutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+Temporal::Beats
+AutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	std::cerr << "AutomationPattern::event2row not implemented" << std::endl;
+	std::cerr << "AutomationPattern::event2beats not implemented" << std::endl;
 	assert (false);
-	return 0;
+	return Temporal::Beats();
 }
 
 void
@@ -233,7 +233,28 @@ AutomationPattern::update_automations ()
 		// Build automation pattern
 		for (ARDOUR::AutomationList::iterator it = al->begin (); it != al->end (); ++it) {
 			Evoral::ControlEvent* event = *it;
-			int row = event2row (param, event);
+			Temporal::Beats beats = event2beats (param, event);
+			// NEXT.4: this is where the fix is.
+			//         Hint: take inspiration from midi_notes_pattern.cc
+			//
+			// Be careful: the following code must be ported as well (or maybe it
+			// can be taken care of in row_at_beats or something).
+			//
+			// From TrackAutomationPattern::event2beats
+			// if (time < position || end < time) {
+			// 	return INVALID_ROW;
+			// }
+			//
+			// From MidiRegionAutomationPattern::event2beats
+			// if (relative_beats < start_beats || start_beats + length_beats <= relative_beats) {
+			// 	return INVALID_ROW;
+			// }
+			//
+			// From both
+			// if (AutomationPattern::control_events_count (row, param) != 0) {
+			// 	row = row_at_time_min_delay (time);
+			// }
+			int row = row_at_beats (beats);
 			if (row != INVALID_ROW) {
 				param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
 			}
