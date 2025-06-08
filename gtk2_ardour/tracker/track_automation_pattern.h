@@ -47,8 +47,8 @@ public:
 	// _automation_controls, and connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
 
-	// Assign a control event to a row
-	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	// Return the (absolute) beats of a control event
+	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
