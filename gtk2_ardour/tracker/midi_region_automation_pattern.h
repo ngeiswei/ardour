@@ -53,9 +53,8 @@ public:
 	// (and connect it to the grid for changes)
 	void insert (const Evoral::Parameter& param);
 
-	// Assign a control event to a row.
-	// Return its row index if successful or INVALID_ROW otherwise.
-	virtual int event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	// Return the (absolute) beats of a control event
+	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
 
 	// Return the automation interpolation value of a given param at a given row index
 	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
