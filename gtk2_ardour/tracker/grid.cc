@@ -88,25 +88,25 @@ Grid::Grid (TrackerEditor& te)
 	, pattern (te, true /* connect */)
 	, prev_pattern (te, false /* not connect */)
 	, current_path (1)			  // NEXT: why 1?
-	, current_row_idx (-1)
+	, current_row_idx (BasePattern::INVALID_ROW)
 	, current_col_idx (0)
 	, current_col (0)
 	, current_mti (-1)
 	, previous_tp (0)
 	, current_tp (0)
 	, current_mri (-1)
-	, current_cgi (-1)
+	, current_cgi (BasePattern::INVALID_CGI)
 	, current_pos (0)
 	, current_note_type (TrackerColumn::NoteType::NOTE)
 	, current_automation_type (TrackerColumn::AutomationType::AUTOMATION_SEPARATOR)
 	, current_is_note_type (true)
 	, clock_pos (0)
-	, edit_row_idx (-1)
-	, edit_col (-1)
+	, edit_row_idx (BasePattern::INVALID_ROW)
+	, edit_col (BasePattern::INVALID_COL)
 	, edit_mti (-1)
 	, edit_mtp (0)
 	, edit_mri (-1)
-	, edit_cgi (-1)
+	, edit_cgi (BasePattern::INVALID_CGI)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
@@ -2266,7 +2266,7 @@ int
 Grid::to_row_index (const TreeModel::Path& path) const
 {
 	if (path.empty())
-		return -1;
+		return BasePattern::INVALID_ROW;
 	return path.front ();
 }
 
@@ -2320,7 +2320,7 @@ Grid::to_col_index (const TreeViewColumn* col)
 		}
 	}
 
-	return -1;
+	return BasePattern::INVALID_COL;
 }
 
 Gtk::TreeViewColumn*
@@ -2491,12 +2491,12 @@ void
 Grid::clear_editables ()
 {
 	edit_path.clear ();
-	edit_row_idx = -1;
-	edit_col = -1;
+	edit_row_idx = BasePattern::INVALID_ROW;
+	edit_col = BasePattern::INVALID_COL;
 	edit_mti = -1;
 	edit_mtp = 0;
 	edit_mri = -1;
-	edit_cgi = -1;
+	edit_cgi = BasePattern::INVALID_CGI;
 	editing_editable = 0;
 
 	redisplay_grid_direct_call ();
@@ -3012,11 +3012,11 @@ Grid::set_current_cursor_undefined ()
 	previous_tp = current_tp;
 
 	current_tp = 0;
-	current_col_idx = -1;
+	current_col_idx = BasePattern::INVALID_COL;
 	current_col = 0;
 	current_mti = -1;
 	current_mri = -1;
-	current_cgi = -1;
+	current_cgi = BasePattern::INVALID_CGI;
 	current_note_type = TrackerColumn::NoteType::NOTE;
 	current_automation_type = TrackerColumn::AutomationType::AUTOMATION_SEPARATOR;
 
@@ -3131,7 +3131,7 @@ Grid::set_current_row_undefined ()
 	unset_underline_current_step_edit_cell ();
 
 	// Set undefined row
-	current_row_idx = -1;
+	current_row_idx = BasePattern::INVALID_ROW;
 }
 
 bool
@@ -3187,12 +3187,12 @@ Grid::to_cgi (int mti, const IDParameter& id_param) const
 {
 	IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (id_param);
 	if (cp_it == col2params[mti].right.end ()) {
-		return -1;
+		return BasePattern::INVALID_CGI;
 	}
 	int coli = cp_it->second;
 	IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (coli);
 	if (cac_it == col2auto_cgi[mti].left.end ()) {
-		return -1;
+		return BasePattern::INVALID_CGI;
 	}
 	return cac_it->second;
 }
@@ -4319,7 +4319,7 @@ Grid::to_cgi (const TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
 	if (!tc)
-		return -1;
+		return BasePattern::INVALID_CGI;
 	return tc->cgi;
 }
 
