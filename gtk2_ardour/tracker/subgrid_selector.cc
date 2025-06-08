@@ -40,18 +40,18 @@ bool Register::empty () const
 
 SubgridSelector::SubgridSelector (TrackerEditor& te)
 	: tracker_editor (te)
-	, src_row_idx (-1)
-	, src_col_idx (-1)
-	, dst_row_idx (-1)
-	, dst_col_idx (-1)
-	, top_row_idx (-1)
-	, bottom_row_idx (-1)
-	, left_col_idx (-1)
-	, right_col_idx (-1)
-	, prev_top_row_idx (-1)
-	, prev_bottom_row_idx (-1)
-	, prev_left_col_idx (-1)
-	, prev_right_col_idx (-1)
+	, src_row_idx (BasePattern::INVALID_ROW)
+	, src_col_idx (BasePattern::INVALID_COL)
+	, dst_row_idx (BasePattern::INVALID_ROW)
+	, dst_col_idx (BasePattern::INVALID_COL)
+	, top_row_idx (BasePattern::INVALID_ROW)
+	, bottom_row_idx (BasePattern::INVALID_ROW)
+	, left_col_idx (BasePattern::INVALID_COL)
+	, right_col_idx (BasePattern::INVALID_COL)
+	, prev_top_row_idx (BasePattern::INVALID_ROW)
+	, prev_bottom_row_idx (BasePattern::INVALID_ROW)
+	, prev_left_col_idx (BasePattern::INVALID_COL)
+	, prev_right_col_idx (BasePattern::INVALID_COL)
 {
 }
 
@@ -60,8 +60,8 @@ SubgridSelector::set_source (int row_idx, int col_idx)
 {
 	src_row_idx = row_idx;
 	src_col_idx = col_idx;
-	dst_row_idx = -1;
-	dst_col_idx = -1;
+	dst_row_idx = BasePattern::INVALID_ROW;
+	dst_col_idx = BasePattern::INVALID_COL;
 
 	set_rectangle ();
 }
@@ -81,10 +81,10 @@ SubgridSelector::set_destination (int row_idx, int col_idx)
 void
 SubgridSelector::unset ()
 {
-	src_row_idx = -1;
-	src_col_idx = -1;
-	dst_row_idx = -1;
-	dst_row_idx = -1;
+	src_row_idx = BasePattern::INVALID_ROW;
+	src_col_idx = BasePattern::INVALID_COL;
+	dst_row_idx = BasePattern::INVALID_ROW;
+	dst_col_idx = BasePattern::INVALID_COL;
 
 	set_rectangle ();
 }
@@ -298,10 +298,10 @@ SubgridSelector::set_rectangle ()
 
 	// No source or destination set
 	if (not has_source ()) {
-		top_row_idx = -1;
-		bottom_row_idx = -1;
-		left_col_idx = -1;
-		right_col_idx = -1;
+		top_row_idx = BasePattern::INVALID_ROW;
+		bottom_row_idx = BasePattern::INVALID_ROW;
+		left_col_idx = BasePattern::INVALID_COL;
+		right_col_idx = BasePattern::INVALID_COL;
 		return;
 	}
 
