@@ -51,20 +51,10 @@ void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));
 }
 
-int
-TrackAutomationPattern::event2row (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+Temporal::Beats
+TrackAutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
 {
-	timepos_t time = event->when;
-
-	if (time < position || end < time) {
-		return INVALID_ROW;
-	}
-
-	int row = row_at_time (time);
-	if (AutomationPattern::control_events_count (row, param) != 0) {
-		row = row_at_time_min_delay (time);
-	}
-	return row;
+	return event->when.beats ();
 }
 
 std::string
