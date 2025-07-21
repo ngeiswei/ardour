@@ -230,34 +230,22 @@ AutomationPattern::update_automations ()
 			continue;
 		}
 
-		// Build automation pattern
-		for (ARDOUR::AutomationList::iterator it = al->begin (); it != al->end (); ++it) {
-			Evoral::ControlEvent* event = *it;
-			Temporal::Beats beats = event2beats (param, event);
-			// NEXT.4: this is where the fix is.
-			//         Hint: take inspiration from midi_notes_pattern.cc
-			//
-			// Be careful: the following code must be ported as well (or maybe it
-			// can be taken care of in row_at_beats or something).
-			//
-			// From TrackAutomationPattern::event2beats
-			// if (time < position || end < time) {
-			// 	return INVALID_ROW;
-			// }
-			//
-			// From MidiRegionAutomationPattern::event2beats
-			// if (relative_beats < start_beats || start_beats + length_beats <= relative_beats) {
-			// 	return INVALID_ROW;
-			// }
-			//
-			// From both
-			// if (AutomationPattern::control_events_count (row, param) != 0) {
-			// 	row = row_at_time_min_delay (time);
-			// }
-			int row = row_at_beats (beats);
-			if (row != INVALID_ROW) {
-				param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
-			}
+		update_automation (param, al);
+	}
+}
+
+void
+AutomationPattern::update_automation (const Evoral::Parameter& param, AutomationListPtr alist)
+{
+	// Build automation pattern
+	for (ARDOUR::AutomationList::iterator it = alist->begin (); it != alist->end (); ++it) {
+		Evoral::ControlEvent* event = *it;
+		Temporal::Beats beats = event2beats (param, event);
+		// NEXT.4: this is where the fix is.
+		//         Hint: take inspiration from midi_notes_pattern.cc
+		int row = row_at_beats (beats);
+		if (row != INVALID_ROW) {
+			param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
 		}
 	}
 }
