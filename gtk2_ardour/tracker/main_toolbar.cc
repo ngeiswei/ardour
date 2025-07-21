@@ -364,23 +364,23 @@ MainToolbar::setup_beats_per_row_menu ()
 	using namespace Gtk::Menu_Helpers;
 
 	// TODO GridTypeBar is not yet supported
-	// beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBar - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBar)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeat - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeat)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv2 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv2)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv3 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv3)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv4 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv4)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv5 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv5)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv6 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv6)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv7 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv7)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv8 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv8)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv10 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv10)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv12 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv12)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv14 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv14)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv16 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv16)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv20 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv20)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv24 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv24)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv28 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv28)));
-	beats_per_row_selector.AddMenuElem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv32 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv32)));
+	// beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBar - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBar)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeat - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeat)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv2 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv2)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv3 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv3)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv4 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv4)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv5 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv5)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv6 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv6)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv7 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv7)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv8 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv8)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv10 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv10)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv12 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv12)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv14 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv14)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv16 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv16)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv20 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv20)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv24 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv24)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv28 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv28)));
+	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv32 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv32)));
 
 	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings.back(), COMBO_TRIANGLE_WIDTH, 2);
 }
