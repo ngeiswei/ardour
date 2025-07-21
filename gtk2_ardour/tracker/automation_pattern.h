@@ -68,6 +68,7 @@ public:
 	// Build or rebuild the pattern (implement BasePattern::update ())
 	virtual void update ();
 	void update_automations ();
+	void update_automation (const Evoral::Parameter& param, AutomationListPtr alist);
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
