@@ -1,8 +1,8 @@
 # Next
 
-- [ ] NEXT.4: support displaying *** more optimally for automations (follow
+- [ ] NEXT.4: support displaying `***` more optimally for automations (follow
       example of notes)
-- [ ] NEXT.3: make sure *** is correctly supported all over the place
+- [ ] NEXT.3: make sure `***` is correctly supported all over the place
       (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
 - [ ] Carefully go over all NEXT comments
