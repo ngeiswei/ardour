@@ -186,7 +186,10 @@ BasePattern::region_relative_beats_at_row (int rowi, int delay) const
 int
 BasePattern::row_at_beats (const Temporal::Beats& beats) const
 {
-	return clamp (row_distance (position_row_beats, beats));
+	if (position_row_beats <= beats and beats <= end_row_beats) {
+		return row_distance (position_row_beats, beats);
+	}
+	return INVALID_ROW;
 }
 
 double
@@ -205,8 +208,11 @@ BasePattern::row_at_time (Temporal::timepos_t pos) const
 int
 BasePattern::row_at_beats_min_delay (const Temporal::Beats& beats) const
 {
-	Temporal::Beats tpr_minus_1 = Temporal::Beats::ticks (_ticks_per_row - 1);
-	return clamp (Temporal::DoubleableBeats (beats - position_row_beats + tpr_minus_1).to_double () * rows_per_beat);
+	if (position_row_beats <= beats and beats <= end_row_beats) {
+		Temporal::Beats tpr_minus_1 = Temporal::Beats::ticks (_ticks_per_row - 1);
+		return Temporal::DoubleableBeats (beats - position_row_beats + tpr_minus_1).to_double () * rows_per_beat;
+	}
+	return INVALID_ROW;
 }
 
 int
@@ -218,7 +224,10 @@ BasePattern::row_at_time_min_delay (Temporal::timepos_t pos) const
 int
 BasePattern::row_at_beats_max_delay (const Temporal::Beats& beats) const
 {
-	return clamp (Temporal::DoubleableBeats(beats - position_row_beats).to_double () * rows_per_beat);
+	if (position_row_beats <= beats and beats <= end_row_beats) {
+		return Temporal::DoubleableBeats(beats - position_row_beats).to_double () * rows_per_beat;
+	}
+	return INVALID_ROW;
 }
 
 int
