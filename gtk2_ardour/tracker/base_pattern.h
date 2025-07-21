@@ -117,7 +117,8 @@ public:
 
 	// Return the row index corresponding to the given beats, assuming the
 	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
-	// is _ticks_per_row/2.
+	// is _ticks_per_row/2.  If beats is outside of the pattern beats interval,
+	// then return INVALID_ROW.
 	int row_at_beats (const Temporal::Beats& beats) const;
 
 	// Return the number rows from contained between 2 beats. Return double just
@@ -128,14 +129,16 @@ public:
 	int row_at_time (Temporal::timepos_t pos) const;
 
 	// Return the row index assuming the beats is allowed to have the minimum
-	// negative delay (1 - _ticks_per_row).
+	// negative delay (1 - _ticks_per_row).  If beats is outside of the pattern
+	// beats interval, then return INVALID_ROW.
 	int row_at_beats_min_delay (const Temporal::Beats& beats) const;
 
 	// Like row_at_beats_min_delay but use timepos_t instead of beats
 	int row_at_time_min_delay (Temporal::timepos_t pos) const;
 
 	// Return the row index assuming the beats is allowed to have the maximum
-	// positive delay (_ticks_per_row - 1).
+	// positive delay (_ticks_per_row - 1).  If beats is outside of the pattern
+	// beats interval, then return INVALID_ROW.
 	int row_at_beats_max_delay (const Temporal::Beats& beats) const;
 
 	// Like row_at_beats_max_delay but use timepos_t instead of beats
