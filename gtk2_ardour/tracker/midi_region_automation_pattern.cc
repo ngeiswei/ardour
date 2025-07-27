@@ -85,7 +85,7 @@ void MidiRegionAutomationPattern::insert (const Evoral::Parameter& param)
 }
 
 Temporal::Beats
-MidiRegionAutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+MidiRegionAutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const
 {
 	Temporal::Beats relative_beats (event->when.beats ());
 	return midi_region->source_beats_to_absolute_beats (relative_beats);

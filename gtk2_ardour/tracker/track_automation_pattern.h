@@ -48,7 +48,7 @@ public:
 	void insert (const Evoral::Parameter& param);
 
 	// Return the (absolute) beats of a control event
-	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const;
 
 	// For displaying pattern data. Mostly for debugging
 	virtual std::string self_to_string () const;
