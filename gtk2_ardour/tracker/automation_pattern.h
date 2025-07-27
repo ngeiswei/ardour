@@ -63,12 +63,18 @@ public:
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
 
 	// Return the (absolute) beats of a control event
-	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const;
 
 	// Build or rebuild the pattern (implement BasePattern::update ())
 	virtual void update ();
 	void update_automations ();
 	void update_automation (const Evoral::Parameter& param, AutomationListPtr alist);
+	void update_automation_event (const Evoral::Parameter& param, Evoral::ControlEvent* event);
+
+	// In the process of update the automation mapping from row to event, find
+	// the nearest row to place the event.  If no such row can be found return
+	// INVALID_ROW.
+	int find_nearest_row (const Evoral::Parameter& param, Evoral::ControlEvent* event) const;
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes

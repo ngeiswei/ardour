@@ -54,7 +54,7 @@ public:
 	void insert (const Evoral::Parameter& param);
 
 	// Return the (absolute) beats of a control event
-	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event);
+	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const;
 
 	// Return the automation interpolation value of a given param at a given row index
 	double get_automation_interpolation_value (int rowi, const Evoral::Parameter& param) const;
