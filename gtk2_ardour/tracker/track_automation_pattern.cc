@@ -52,7 +52,7 @@ void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 }
 
 Temporal::Beats
-TrackAutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+TrackAutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const
 {
 	return event->when.beats ();
 }
