@@ -197,7 +197,7 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 }
 
 Temporal::Beats
-AutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event)
+AutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const
 {
 	std::cerr << "AutomationPattern::event2beats not implemented" << std::endl;
 	assert (false);
@@ -239,15 +239,26 @@ AutomationPattern::update_automation (const Evoral::Parameter& param, Automation
 {
 	// Build automation pattern
 	for (ARDOUR::AutomationList::iterator it = alist->begin (); it != alist->end (); ++it) {
-		Evoral::ControlEvent* event = *it;
-		Temporal::Beats beats = event2beats (param, event);
-		// NEXT.4: this is where the fix is.
-		//         Hint: take inspiration from midi_notes_pattern.cc
-		int row = row_at_beats (beats);
-		if (row != INVALID_ROW) {
-			param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
-		}
+		update_automation_event (param, *it);
 	}
+}
+
+void
+AutomationPattern::update_automation_event (const Evoral::Parameter& param, Evoral::ControlEvent* event)
+{
+	int row = find_nearest_row (param, event);
+	if (row != INVALID_ROW) {
+		param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
+	}
+}
+
+int
+AutomationPattern::find_nearest_row (const Evoral::Parameter& param, Evoral::ControlEvent* event) const
+{
+	Temporal::Beats beats = event2beats (param, event);
+	// NEXT.4: this is where the fix is.  Hint: take inspiration from
+	//         MidiNotesPattern::find_nearest_on_row in midi_notes_pattern.cc
+	return row_at_beats (beats);
 }
 
 void
