@@ -252,13 +252,42 @@ AutomationPattern::update_automation_event (const Evoral::Parameter& param, Evor
 	}
 }
 
+bool
+AutomationPattern::is_row_available (const Evoral::Parameter& param, int row, Evoral::ControlEvent* event) const
+{
+	// NEXT.4: Hint: take inspiration from MidiNotesPattern::is_on_row_available
+	//         in midi_notes_pattern.cc
+	return true;
+}
+
+int
+AutomationPattern::row_suggestion (const Evoral::Parameter& param, Evoral::ControlEvent* event, int rank) const
+{
+	// NEXT.4: Hint: take inspiration from MidiNotesPattern::on_row_suggestion
+	//         in midi_notes_pattern.cc
+	Temporal::Beats beats = event2beats (param, event);
+	return row_at_beats (beats);
+}
+
 int
 AutomationPattern::find_nearest_row (const Evoral::Parameter& param, Evoral::ControlEvent* event) const
 {
-	Temporal::Beats beats = event2beats (param, event);
-	// NEXT.4: this is where the fix is.  Hint: take inspiration from
-	//         MidiNotesPattern::find_nearest_on_row in midi_notes_pattern.cc
-	return row_at_beats (beats);
+	int rank = 0;
+	int row = row_suggestion (param, event, rank);
+	int default_row = row;
+	do {
+		if (is_row_available (param, row, event)) {
+			return row;
+		}
+		rank++;
+		row = row_suggestion (param, event, rank);
+	} while (rank < 3 && 0 <= row);
+	return default_row;
+
+	// Temporal::Beats beats = event2beats (param, event);
+	// // NEXT.4: this is where the fix is.  Hint: take inspiration from
+	// //         MidiNotesPattern::find_nearest_on_row in midi_notes_pattern.cc
+	// return row_at_beats (beats);
 }
 
 void
