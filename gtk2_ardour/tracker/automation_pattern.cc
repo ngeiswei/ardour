@@ -269,6 +269,19 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, Evoral::Contr
 	return row_at_beats (beats);
 }
 
+void
+AutomationPattern::repair_ranked_row (int ranked_row[3]) const
+{
+	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
+		ranked_row[1] = ranked_row[2];
+		ranked_row[2] = INVALID_ROW;
+	}
+	if (ranked_row[0] < 0 && ranked_row[1] >= 0) {
+		ranked_row[0] = ranked_row[1];
+		ranked_row[1] = INVALID_ROW;
+	}
+}
+
 int
 AutomationPattern::find_nearest_row (const Evoral::Parameter& param, Evoral::ControlEvent* event) const
 {
