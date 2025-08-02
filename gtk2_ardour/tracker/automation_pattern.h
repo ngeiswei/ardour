@@ -71,6 +71,14 @@ public:
 	void update_automation (const Evoral::Parameter& param, AutomationListPtr alist);
 	void update_automation_event (const Evoral::Parameter& param, Evoral::ControlEvent* event);
 
+	// Return true iff the given row is free to display the event
+	bool is_row_available (const Evoral::Parameter& param, int row, Evoral::ControlEvent* event) const;
+
+	// Given a rank of priority return the corresponding row for an even.  The
+	// rank goes from 0 to at most 2.  If the provided rank goes out of range,
+	// then return -1.
+	int row_suggestion (const Evoral::Parameter& param, Evoral::ControlEvent* event, int rank) const;
+
 	// In the process of update the automation mapping from row to event, find
 	// the nearest row to place the event.  If no such row can be found return
 	// INVALID_ROW.
