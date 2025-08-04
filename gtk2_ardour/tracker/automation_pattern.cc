@@ -263,10 +263,26 @@ AutomationPattern::is_row_available (const Evoral::Parameter& param, int row, Ev
 int
 AutomationPattern::row_suggestion (const Evoral::Parameter& param, Evoral::ControlEvent* event, int rank) const
 {
+	Temporal::Beats beats = event2beats (param, event);
+
+	// Evaluate possible rows
+	int cent_row = row_at_beats (beats);
+	int prev_row = row_at_beats_max_delay (beats);
+	int next_row = row_at_beats_min_delay (beats);
+
+	// Default ranking
+	int ranked_row[3];
+	ranked_row[0] = cent_row;
+	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
+	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
+
 	// NEXT.4: Hint: take inspiration from MidiNotesPattern::on_row_suggestion
 	//         in midi_notes_pattern.cc
-	Temporal::Beats beats = event2beats (param, event);
-	return row_at_beats (beats);
+	//         See "Overwrite ranking according to previous _on_note_to_row"
+
+	// Select row according to its ranking
+	repair_ranked_row (ranked_row);
+	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
 }
 
 void
@@ -296,11 +312,6 @@ AutomationPattern::find_nearest_row (const Evoral::Parameter& param, Evoral::Con
 		row = row_suggestion (param, event, rank);
 	} while (rank < 3 && 0 <= row);
 	return default_row;
-
-	// Temporal::Beats beats = event2beats (param, event);
-	// // NEXT.4: this is where the fix is.  Hint: take inspiration from
-	// //         MidiNotesPattern::find_nearest_on_row in midi_notes_pattern.cc
-	// return row_at_beats (beats);
 }
 
 void
