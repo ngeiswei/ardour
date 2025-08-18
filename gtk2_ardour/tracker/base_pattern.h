@@ -74,6 +74,19 @@ public:
 	// WARNING: not a total order.
 	bool operator< (const BasePattern& other) const;
 
+	// Return true if row1 < row2 and both are invalid.  If any is invalid then
+	// return true as well.
+	bool row_lt (int row1, int row2) const;
+
+	// Repair ranked_row so that all invalid rows appear last, for instance
+	//
+	// ranked_row[0] = 8, ranked_row[1] = -1, ranked_row[2] = 9
+	//
+	// is reordered into
+	//
+	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
+	void repair_ranked_row (int ranked_row[3]) const;
+
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update ().

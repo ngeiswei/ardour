@@ -79,15 +79,6 @@ public:
 	// then return -1.
 	int row_suggestion (const Evoral::Parameter& param, Evoral::ControlEvent* event, int rank) const;
 
-	// Repair ranked_row so that all -1 appear last, for instance
-	//
-	// ranked_row[0] = 8, ranked_row[1] = -1, ranked_row[2] = 9
-	//
-	// is reordered into
-	//
-	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
-	void repair_ranked_row (int ranked_row[3]) const;
-
 	// In the process of update the automation mapping from row to event, find
 	// the nearest row to place the event.  If no such row can be found return
 	// INVALID_ROW.

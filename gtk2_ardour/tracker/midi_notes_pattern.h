@@ -82,10 +82,6 @@ public:
 	// and resized to ntracks.
 	void update_row_to_notes_at_track_note (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
 
-	// Return true if row1 < row2 and both are different from -1.  If any is
-	// equals to -1 then returns true as well.
-	bool row_lt (int row1, int row2) const;
-
 	// Return true iff the row at cgi is free, meaning it can potentially host
 	// the given note.
 	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote) const;
@@ -117,15 +113,6 @@ public:
 	// range, then return -1.
 	int on_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank) const;
 	int off_row_suggestion (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int rank) const;
-
-	// Repair ranked_row so that all -1 appear last, for instance
-	//
-	// ranked_row[0] = 8, ranked_row[1] = -1, ranked_row[2] = 9
-	//
-	// is reordered into
-	//
-	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
-	void repair_ranked_row (int ranked_row[3]) const;
 
 	// In the process of updating the mapping from row to on (resp. off) notes,
 	// find the nearest row to place that on (resp. off) note
