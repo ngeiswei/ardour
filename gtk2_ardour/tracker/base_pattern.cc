@@ -115,6 +115,28 @@ BasePattern::operator< (const BasePattern& other) const
 	return position < other.position;
 }
 
+bool
+BasePattern::row_lt (int row1, int row2) const
+{
+	if (row1 != INVALID_ROW and row2 != INVALID_ROW) {
+		return row1 < row2;
+	}
+	return true;
+}
+
+void
+BasePattern::repair_ranked_row (int ranked_row[3]) const
+{
+	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
+		ranked_row[1] = ranked_row[2];
+		ranked_row[2] = INVALID_ROW;
+	}
+	if (ranked_row[0] < 0 && ranked_row[1] >= 0) {
+		ranked_row[0] = ranked_row[1];
+		ranked_row[1] = INVALID_ROW;
+	}
+}
+
 void
 BasePattern::set_rows_per_beat (uint16_t rpb)
 {
