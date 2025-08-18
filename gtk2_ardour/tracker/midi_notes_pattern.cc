@@ -383,15 +383,6 @@ MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) 
 }
 
 bool
-MidiNotesPattern::row_lt (int row1, int row2) const
-{
-	if (row1 != INVALID_ROW and row2 != INVALID_ROW) {
-		return row1 < row2;
-	}
-	return true;
-}
-
-bool
 MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote) const
 {
 	// Get off and on note counts at row
@@ -503,19 +494,6 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
 	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
-}
-
-void
-MidiNotesPattern::repair_ranked_row (int ranked_row[3]) const
-{
-	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
-		ranked_row[1] = ranked_row[2];
-		ranked_row[2] = INVALID_ROW;
-	}
-	if (ranked_row[0] < 0 && ranked_row[1] >= 0) {
-		ranked_row[0] = ranked_row[1];
-		ranked_row[1] = INVALID_ROW;
-	}
 }
 
 int
