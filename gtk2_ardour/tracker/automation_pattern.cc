@@ -255,9 +255,17 @@ AutomationPattern::update_automation_event (const Evoral::Parameter& param, Evor
 bool
 AutomationPattern::is_row_available (const Evoral::Parameter& param, int row, Evoral::ControlEvent* event) const
 {
-	// NEXT.4: Hint: take inspiration from MidiNotesPattern::is_on_row_available
+	// Count how many events are already at this row
+	size_t rec = control_events_count (row, param);
+
+	// NEXT.4: Take into account the next event.
+	//         Hint: take inspiration from MidiNotesPattern::is_on_row_available
 	//         in midi_notes_pattern.cc
-	return true;
+
+	// The row is available if it is empty and the next event is not on this row
+	// by default.
+	bool is_available = rec < 1;
+	return is_available;
 }
 
 int
@@ -283,19 +291,6 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, Evoral::Contr
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
 	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
-}
-
-void
-AutomationPattern::repair_ranked_row (int ranked_row[3]) const
-{
-	if (ranked_row[1] < 0 && ranked_row[2] >= 0) {
-		ranked_row[1] = ranked_row[2];
-		ranked_row[2] = INVALID_ROW;
-	}
-	if (ranked_row[0] < 0 && ranked_row[1] >= 0) {
-		ranked_row[0] = ranked_row[1];
-		ranked_row[1] = INVALID_ROW;
-	}
 }
 
 int
