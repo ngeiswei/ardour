@@ -239,39 +239,40 @@ AutomationPattern::update_automation (const Evoral::Parameter& param, Automation
 {
 	// Build automation pattern
 	for (ARDOUR::AutomationList::iterator it = alist->begin (); it != alist->end (); ++it) {
-		update_automation_event (param, *it);
+		update_automation_event (param, it);
 	}
 }
 
 void
-AutomationPattern::update_automation_event (const Evoral::Parameter& param, Evoral::ControlEvent* event)
+AutomationPattern::update_automation_event (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it)
 {
-	int row = find_nearest_row (param, event);
+	int row = find_nearest_row (param, ev_it);
 	if (row != INVALID_ROW) {
-		param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *event));
+		param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, **ev_it));
 	}
 }
 
 bool
-AutomationPattern::is_row_available (const Evoral::Parameter& param, int row, Evoral::ControlEvent* event) const
+AutomationPattern::is_row_available (const Evoral::Parameter& param, int row, ARDOUR::AutomationList::iterator ev_it) const
 {
 	// Count how many events are already at this row
 	size_t rec = control_events_count (row, param);
 
-	// NEXT.4: Take into account the next event.
-	//         Hint: take inspiration from MidiNotesPattern::is_on_row_available
-	//         in midi_notes_pattern.cc
-
 	// The row is available if it is empty and the next event is not on this row
 	// by default.
-	bool is_available = rec < 1;
+	bool is_available = rec < 1 && row != centered_row (param, std::next(ev_it));
 	return is_available;
 }
 
 int
-AutomationPattern::row_suggestion (const Evoral::Parameter& param, Evoral::ControlEvent* event, int rank) const
+AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it, int rank) const
 {
-	Temporal::Beats beats = event2beats (param, event);
+	// Make sure that the iterator is valid
+	if (!is_valid (param, ev_it)) {
+		return INVALID_ROW;
+	}
+
+	Temporal::Beats beats = event2beats (param, *ev_it);
 
 	// Evaluate possible rows
 	int cent_row = row_at_beats (beats);
@@ -293,18 +294,58 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, Evoral::Contr
 	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
 }
 
+bool
+AutomationPattern::is_valid (AutomationControlPtr actl, ARDOUR::AutomationList::iterator ev_it) const {
+	return actl && ev_it != actl->alist()->end();
+}
+
+bool
+AutomationPattern::is_valid (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const {
+	return is_valid (get_actl (param), ev_it);
+}
+
 int
-AutomationPattern::find_nearest_row (const Evoral::Parameter& param, Evoral::ControlEvent* event) const
+AutomationPattern::centered_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const
+{
+	if (is_valid(param, ev_it)) {
+		Temporal::Beats beats = event2beats (param, *ev_it);
+		return row_at_beats (beats);
+	}
+	return INVALID_ROW;
+}
+
+int
+AutomationPattern::previous_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const
+{
+	if (is_valid(param, ev_it)) {
+		Temporal::Beats beats = event2beats (param, *ev_it);
+		return row_at_beats_max_delay (beats);
+	}
+	return INVALID_ROW;
+}
+
+int
+AutomationPattern::next_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const
+{
+	if (is_valid(param, ev_it)) {
+		Temporal::Beats beats = event2beats (param, *ev_it);
+		return row_at_beats_min_delay (beats);
+	}
+	return INVALID_ROW;
+}
+
+int
+AutomationPattern::find_nearest_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const
 {
 	int rank = 0;
-	int row = row_suggestion (param, event, rank);
+	int row = row_suggestion (param, ev_it, rank);
 	int default_row = row;
 	do {
-		if (is_row_available (param, row, event)) {
+		if (is_row_available (param, row, ev_it)) {
 			return row;
 		}
 		rank++;
-		row = row_suggestion (param, event, rank);
+		row = row_suggestion (param, ev_it, rank);
 	} while (rank < 3 && 0 <= row);
 	return default_row;
 }
