@@ -69,20 +69,28 @@ public:
 	virtual void update ();
 	void update_automations ();
 	void update_automation (const Evoral::Parameter& param, AutomationListPtr alist);
-	void update_automation_event (const Evoral::Parameter& param, Evoral::ControlEvent* event);
+	void update_automation_event (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it);
 
 	// Return true iff the given row is free to display the event
-	bool is_row_available (const Evoral::Parameter& param, int row, Evoral::ControlEvent* event) const;
+	bool is_row_available (const Evoral::Parameter& param, int row, ARDOUR::AutomationList::iterator ev_it) const;
 
 	// Given a rank of priority return the corresponding row for an even.  The
 	// rank goes from 0 to at most 2.  If the provided rank goes out of range,
 	// then return -1.
-	int row_suggestion (const Evoral::Parameter& param, Evoral::ControlEvent* event, int rank) const;
+	int row_suggestion (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it, int rank) const;
+
+	// Check if the given iterator is valid
+	bool is_valid (AutomationControlPtr actl, ARDOUR::AutomationList::iterator ev_it) const;
+	bool is_valid (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
+
+	int centered_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
+	int previous_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
+	int next_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
 
 	// In the process of update the automation mapping from row to event, find
 	// the nearest row to place the event.  If no such row can be found return
 	// INVALID_ROW.
-	int find_nearest_row (const Evoral::Parameter& param, Evoral::ControlEvent* event) const;
+	int find_nearest_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
 
 	// Add an automation control in the automation control set and connect it to
 	// the grid to update it when some value changes
@@ -188,7 +196,7 @@ public:
 
 	void register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after);
 
-	// Return RowToAutomationListIt corresponding to the previous (resp. next)
+	// Return RowToControlEvents::const_iterator to the previous (resp. next)
 	// event. If there is no such previous or next event then return end ()
 	// iterator.
 	RowToControlEvents::const_iterator find_prev (RowToControlEvents::const_iterator it) const;
