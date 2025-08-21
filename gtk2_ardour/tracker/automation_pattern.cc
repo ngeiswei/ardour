@@ -214,6 +214,11 @@ AutomationPattern::update ()
 void
 AutomationPattern::update_automations ()
 {
+	// Make temporary copy of param_to_row_to_ces to place events as to minimize changes
+	_prev_param_to_row_to_ces = param_to_row_to_ces;
+
+	// Clear and refill param_to_row_to_ces
+	// TODO: surely this can be optimized
 	param_to_row_to_ces.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
 		AutomationControlPtr actl = param_actl->second;
@@ -288,6 +293,9 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 	// NEXT.4: Hint: take inspiration from MidiNotesPattern::on_row_suggestion
 	//         in midi_notes_pattern.cc
 	//         See "Overwrite ranking according to previous _on_note_to_row"
+	//         and use _prev_param_to_row_to_ces
+
+	// Overwrite ranking according to previous param_to_row_to_ces
 
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
