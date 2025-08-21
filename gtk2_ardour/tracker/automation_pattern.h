@@ -233,6 +233,7 @@ public:
 	// main or midi parameter set.
 	typedef std::map<Evoral::Parameter, RowToControlEvents> ParamToRowToControlEvents;
 	ParamToRowToControlEvents param_to_row_to_ces;
+	ParamToRowToControlEvents _prev_param_to_row_to_ces;
 
 	// Map parameters to actl. See comment about the non-uniqueness of
 	// Evoral::parameter above.
