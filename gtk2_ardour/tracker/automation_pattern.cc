@@ -290,12 +290,14 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
 
-	// NEXT.4: Hint: take inspiration from MidiNotesPattern::on_row_suggestion
-	//         in midi_notes_pattern.cc
-	//         See "Overwrite ranking according to previous _on_note_to_row"
-	//         and use _prev_param_to_row_to_ces
-
 	// Overwrite ranking according to previous param_to_row_to_ces
+	ParamToRowToControlEvents::const_iterator it = _prev_param_to_row_to_ces.find (param);
+	if (it != _prev_param_to_row_to_ces.end ()) {
+		// NEXT.4: Hint: take inspiration from MidiNotesPattern::on_row_suggestion
+		//         in midi_notes_pattern.cc
+		//         See "Overwrite ranking according to previous _on_note_to_row"
+		//         and use _prev_param_to_row_to_ces
+	}
 
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
