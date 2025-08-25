@@ -293,10 +293,15 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 	// Overwrite ranking according to previous param_to_row_to_ces
 	ParamToRowToControlEvents::const_iterator it = _prev_param_to_row_to_ces.find (param);
 	if (it != _prev_param_to_row_to_ces.end ()) {
-		// NEXT.4: Hint: take inspiration from MidiNotesPattern::on_row_suggestion
-		//         in midi_notes_pattern.cc
+		// NEXT.4: Hint: take inspiration from
+		//         MidiNotesPattern::on_row_suggestion in midi_notes_pattern.cc
 		//         See "Overwrite ranking according to previous _on_note_to_row"
-		//         and use _prev_param_to_row_to_ces
+		//         and use _prev_param_to_row_to_ces.  Additionally we want to
+		//         use a reverse ces to row mapping, like _prev_on_note_to_row.
+		//         Before doing that, I think it would be better if
+		//         Evoral::ControlEvent where replaced by Evoral::ControlEvent*
+		//         in RowToControlEvents.  That way pointer equality can be used
+		//         in the reversed mapping.
 	}
 
 	// Select row according to its ranking
