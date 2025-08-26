@@ -108,7 +108,7 @@ AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToCo
 {
 	for (RowToControlEvents::const_iterator l_it = l_row2ces.begin (); l_it != l_row2ces.end ();) {
 		int row = l_it->first;
-		const Evoral::ControlEvent& l_ce = l_it->second;
+		const Evoral::ControlEvent& l_ce = *l_it->second;
 
 		// First, look at the difference in displayability
 		bool is_cell_displayable = is_displayable (row, l_row2ces);
@@ -129,7 +129,7 @@ AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToCo
 		// Check if the event exist in other, and if so if it is equal
 		RowToControlEvents::const_iterator r_it = r_row2ces.find (row);
 		if (r_it != r_row2ces.end ()) {
-			const Evoral::ControlEvent& r_ce = r_it->second;
+			const Evoral::ControlEvent& r_ce = *r_it->second;
 			if (!TrackerUtils::is_equal (l_ce, r_ce)) {
 				// Update all affected row, taking interpolation into account
 				std::pair<int, int> r = prev_next_range (r_it, l_row2ces);
@@ -253,7 +253,7 @@ AutomationPattern::update_automation_event (const Evoral::Parameter& param, ARDO
 {
 	int row = find_nearest_row (param, ev_it);
 	if (row != INVALID_ROW) {
-		param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, **ev_it));
+		param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *ev_it));
 	}
 }
 
@@ -298,10 +298,6 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 		//         See "Overwrite ranking according to previous _on_note_to_row"
 		//         and use _prev_param_to_row_to_ces.  Additionally we want to
 		//         use a reverse ces to row mapping, like _prev_on_note_to_row.
-		//         Before doing that, I think it would be better if
-		//         Evoral::ControlEvent where replaced by Evoral::ControlEvent*
-		//         in RowToControlEvents.  That way pointer equality can be used
-		//         in the reversed mapping.
 	}
 
 	// Select row according to its ranking
@@ -385,7 +381,7 @@ AutomationPattern::is_empty (const Evoral::Parameter& param) const
 AutomationControlPtr AutomationPattern::get_actl (const Evoral::Parameter& param)
 {
 	if (!param) {
-		return 0;
+		return nullptr;
 	}
 
 	ParamAutomationControlMap::iterator it = param_to_actl.find (param);
@@ -393,14 +389,14 @@ AutomationControlPtr AutomationPattern::get_actl (const Evoral::Parameter& param
 		return it->second;
 	}
 
-	return 0;
+	return nullptr;
 }
 
 const AutomationControlPtr
 AutomationPattern::get_actl (const Evoral::Parameter& param) const
 {
 	if (!param) {
-		return 0;
+		return nullptr;
 	}
 
 	ParamAutomationControlMap::const_iterator it = param_to_actl.find (param);
@@ -408,7 +404,7 @@ AutomationPattern::get_actl (const Evoral::Parameter& param) const
 		return it->second;
 	}
 
-	return 0;
+	return nullptr;
 }
 
 size_t
@@ -449,7 +445,7 @@ AutomationPattern::get_alist (const Evoral::Parameter& param)
 		return actl->alist ();
 	}
 
-	return 0;
+	return nullptr;
 }
 
 const AutomationListPtr
@@ -459,7 +455,7 @@ AutomationPattern::get_alist (const Evoral::Parameter& param) const
 		return actl->alist ();
 	}
 
-	return 0;
+	return nullptr;
 }
 
 bool
@@ -493,15 +489,15 @@ AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param)
 {
 	ParamToRowToControlEvents::iterator it = param_to_row_to_ces.find (param);
 	if (it == param_to_row_to_ces.end ()) {
-		return 0;
+		return nullptr;
 	}
 
 	RowToControlEvents::iterator ces_it = it->second.find (rowi);
 	if (ces_it != it->second.end ()) {
-		return &ces_it->second;
+		return ces_it->second;
 	}
 
-	return 0;
+	return nullptr;
 }
 
 const Evoral::ControlEvent*
@@ -509,15 +505,15 @@ AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param) 
 {
 	ParamToRowToControlEvents::const_iterator it = param_to_row_to_ces.find (param);
 	if (it == param_to_row_to_ces.end ()) {
-		return 0;
+		return nullptr;
 	}
 
 	RowToControlEvents::const_iterator ces_it = it->second.find (rowi);
 	if (ces_it != it->second.end ()) {
-		return &ces_it->second;
+		return ces_it->second;
 	}
 
-	return 0;
+	return nullptr;
 }
 
 std::vector<Temporal::BBT_Time>
@@ -544,7 +540,7 @@ AutomationPattern::get_automation_value (int rowi, const Evoral::Parameter& para
 double
 AutomationPattern::get_automation_value (RowToControlEvents::const_iterator it) const
 {
-	return it->second.value;
+	return it->second->value;
 }
 
 std::vector<double>
@@ -640,7 +636,7 @@ int
 AutomationPattern::get_automation_delay (const Evoral::Parameter& param, RowToControlEvents::const_iterator it) const
 {
 	int row_idx = it->first;
-	const Evoral::ControlEvent* ce = &it->second;
+	const Evoral::ControlEvent* ce = it->second;
 	return get_automation_delay (row_idx, param, ce).first;
 }
 
@@ -793,7 +789,7 @@ AutomationPattern::earliest (const RowToControlEventsRange& rng) const
 	RowToControlEvents::const_iterator it = res_it;
 	++it;
 	for (; it != rng.second; ++it) {
-		if (res_it->second.when < it->second.when) {
+		if (res_it->second->when < it->second->when) {
 			res_it = it;
 		}
 	}
@@ -807,7 +803,7 @@ AutomationPattern::lattest (const RowToControlEventsRange& rng) const
 	RowToControlEvents::const_iterator it = res_it;
 	++it;
 	for (; it != rng.second; ++it) {
-		if (it->second.when < res_it->second.when) {
+		if (it->second->when < res_it->second->when) {
 			res_it = it;
 		}
 	}
@@ -880,7 +876,7 @@ AutomationPattern::to_string (const std::string& indent) const
 		ss << std::endl << indent_l1 << "param[" << it->first << "]:";
 		for (RowToControlEvents::const_iterator r2ces_it = it->second.begin (); r2ces_it != it->second.end (); ++r2ces_it) {
 			ss << std::endl << indent_l2 << "row = " << r2ces_it->first
-				<< ", ces[" << &r2ces_it->second << "] = (when=" << r2ces_it->second.when << ", value=" << r2ces_it->second.value << ")";
+				<< ", ces[" << &r2ces_it->second << "] = (when=" << r2ces_it->second->when << ", value=" << r2ces_it->second->value << ")";
 		}
 	}
 	ss << std::endl << header << "param_to_actl:";

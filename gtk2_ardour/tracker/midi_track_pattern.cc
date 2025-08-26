@@ -498,7 +498,7 @@ MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 			return mrps[mri];
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 std::shared_ptr<MIDI::Name::MasterDeviceNames>
