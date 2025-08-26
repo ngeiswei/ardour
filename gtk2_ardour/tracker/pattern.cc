@@ -341,38 +341,38 @@ NotePtr
 Pattern::off_note (int rowi, int mti, int mri, int cgi) const
 {
 	if ((int)tps.size () <= mti)
-		return 0;
+		return nullptr;
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	if (!mtp or (int)mtp->mrps.size () <= mri)
-		return 0;
+		return nullptr;
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
 	if ((int)mrp.mnp.off_notes.size () <= cgi)
-		return 0;
+		return nullptr;
 	const RowToNotes& rtn = mrp.mnp.off_notes[cgi];
 	RowToNotes::const_iterator i_off = rtn.find (to_rrri (rowi, mti, mri));
 	if (i_off != rtn.end ()) {
 		return i_off->second;
 	}
-	return 0;
+	return nullptr;
 }
 
 NotePtr
 Pattern::on_note (int rowi, int mti, int mri, int cgi) const
 {
 	if (mti < 0 && (int)tps.size () <= mti)
-		return 0;
+		return nullptr;
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	if (!mtp or (int)mtp->mrps.size () <= mri)
-		return 0;
+		return nullptr;
 	const MidiRegionPattern& mrp = *mtp->mrps[mri];
 	if ((int)mrp.mnp.on_notes.size () <= cgi)
-		return 0;
+		return nullptr;
 	const RowToNotes& rtn = mrp.mnp.on_notes[cgi];
 	RowToNotes::const_iterator i_on = rtn.find (to_rrri (rowi, mti, mri));
 	if (i_on != rtn.end ()) {
 		return i_on->second;
 	}
-	return 0;
+	return nullptr;
 }
 
 RowToNotesRange
@@ -606,7 +606,7 @@ Pattern::find_track_pattern (TrackPtr track)
 			return tps[mti];
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 void
