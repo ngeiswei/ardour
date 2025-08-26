@@ -862,7 +862,7 @@ Grid::first_defined_col ()
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 void

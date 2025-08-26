@@ -401,7 +401,7 @@ TrackToolbar::find_processor_automation_node (ProcessorPtr processor, Evoral::Pa
 			return *ii;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 // Show all automation.

@@ -67,7 +67,7 @@ typedef ARDOUR::AutomationList::iterator AutomationListIt;
 typedef std::multimap<int, AutomationListIt> RowToAutomationListIt;
 typedef std::pair<RowToAutomationListIt::const_iterator, RowToAutomationListIt::const_iterator> RowToAutomationListItRange;
 
-typedef std::multimap<int, Evoral::ControlEvent> RowToControlEvents;
+typedef std::multimap<int, Evoral::ControlEvent*> RowToControlEvents;
 typedef std::pair<RowToControlEvents::const_iterator, RowToControlEvents::const_iterator> RowToControlEventsRange;
 
 typedef std::multimap<int, NotePtr> RowToNotes;
