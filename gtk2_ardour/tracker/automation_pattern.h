@@ -235,6 +235,12 @@ public:
 	ParamToRowToControlEvents param_to_row_to_ces;
 	ParamToRowToControlEvents _prev_param_to_row_to_ces;
 
+	// Reverse control events to row for better dispatching control events to
+	// row
+	typedef std::map<Evoral::Parameter, ControlEventToRow> ParamToControlEventToRow;
+	ParamToControlEventToRow param_to_ce_to_row;
+	ParamToControlEventToRow _prev_param_to_ce_to_row;
+
 	// Map parameters to actl. See comment about the non-uniqueness of
 	// Evoral::parameter above.
 	ParamAutomationControlMap param_to_actl;
