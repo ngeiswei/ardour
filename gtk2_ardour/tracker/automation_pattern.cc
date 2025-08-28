@@ -214,12 +214,15 @@ AutomationPattern::update ()
 void
 AutomationPattern::update_automations ()
 {
-	// Make temporary copy of param_to_row_to_ces to place events as to minimize changes
+	// Make temporary copy of param_to_row_to_ces and param_to_ce_to_row to
+	// to minimize changes when dispatching events
 	_prev_param_to_row_to_ces = param_to_row_to_ces;
+	_prev_param_to_ce_to_row = param_to_ce_to_row;
 
 	// Clear and refill param_to_row_to_ces
 	// TODO: surely this can be optimized
 	param_to_row_to_ces.clear ();
+	param_to_ce_to_row.clear ();
 	for (ParamAutomationControlMap::const_iterator param_actl = param_to_actl.begin (); param_actl != param_to_actl.end (); ++param_actl) {
 		AutomationControlPtr actl = param_actl->second;
 		AutomationListPtr al = actl->alist ();
@@ -254,6 +257,7 @@ AutomationPattern::update_automation_event (const Evoral::Parameter& param, ARDO
 	int row = find_nearest_row (param, ev_it);
 	if (row != INVALID_ROW) {
 		param_to_row_to_ces[param].insert (RowToControlEvents::value_type (row, *ev_it));
+		param_to_ce_to_row[param].insert (ControlEventToRow::value_type (*ev_it, row));
 	}
 }
 
@@ -296,8 +300,8 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 		// NEXT.4: Hint: take inspiration from
 		//         MidiNotesPattern::on_row_suggestion in midi_notes_pattern.cc
 		//         See "Overwrite ranking according to previous _on_note_to_row"
-		//         and use _prev_param_to_row_to_ces.  Additionally we want to
-		//         use a reverse ces to row mapping, like _prev_on_note_to_row.
+		//         and use _prev_param_to_row_to_ces and
+		//         _prev_param_to_ce_to_row.
 	}
 
 	// Select row according to its ranking
