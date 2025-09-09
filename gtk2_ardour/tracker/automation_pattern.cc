@@ -281,7 +281,8 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 		return INVALID_ROW;
 	}
 
-	Temporal::Beats beats = event2beats (param, *ev_it);
+	Evoral::ControlEvent* ev = *ev_it;
+	Temporal::Beats beats = event2beats (param, ev);
 
 	// Evaluate possible rows
 	int cent_row = row_at_beats (beats);
@@ -294,14 +295,23 @@ AutomationPattern::row_suggestion (const Evoral::Parameter& param, ARDOUR::Autom
 	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
 
-	// Overwrite ranking according to previous param_to_row_to_ces
-	ParamToRowToControlEvents::const_iterator it = _prev_param_to_row_to_ces.find (param);
-	if (it != _prev_param_to_row_to_ces.end ()) {
-		// NEXT.4: Hint: take inspiration from
-		//         MidiNotesPattern::on_row_suggestion in midi_notes_pattern.cc
-		//         See "Overwrite ranking according to previous _on_note_to_row"
-		//         and use _prev_param_to_row_to_ces and
-		//         _prev_param_to_ce_to_row.
+	// Overwrite ranking according to previous param_to_ce_to_row
+	ParamToControlEventToRow::const_iterator pcr_it = _prev_param_to_ce_to_row.find (param);
+	if (pcr_it != _prev_param_to_ce_to_row.end ()) {
+		// Check if the even is already assigned to a row, and if so use it in
+		// priority
+		ControlEventToRow::const_iterator cr_it = pcr_it->second.find (ev);
+		if (cr_it != pcr_it->second.end ()) {
+			int ev_row = cr_it->second;
+			if (ev_row == prev_row && prev_row < cent_row) {
+				ranked_row[0] = prev_row;
+				ranked_row[1] = cent_row;
+			} else if (ev_row == next_row && cent_row < next_row) {
+				ranked_row[0] = next_row;
+				ranked_row[1] = cent_row;
+				ranked_row[2] = prev_row < cent_row ? prev_row : INVALID_ROW;
+			}
+		}
 	}
 
 	// Select row according to its ranking
