@@ -75,6 +75,7 @@ typedef std::pair<RowToNotes::const_iterator, RowToNotes::const_iterator> RowToN
 
 typedef std::map<Evoral::ControlEvent*, int> ControlEventToRow;
 typedef std::map<NotePtr, int> NoteToRow;
+// NEXT.4: add a version that is content based for off notes
 
 typedef std::set<Evoral::Parameter> ParameterSet;
 typedef ParameterSet::iterator ParameterSetIt;
