@@ -216,15 +216,20 @@ private:
 	std::vector<RowToNotes> _prev_on_notes;
 	std::vector<RowToNotes> _prev_off_notes;
 
-	// Mapping from on/off note pointer to row per cgi.  Used to minimize the
-	// amount of movements of a note.
+	// Mapping from on note pointer to row per cgi.  Used to minimize the amount
+	// of movements of a note.
 	std::vector<NoteToRow> _on_note_to_row;
-	std::vector<NoteToRow> _off_note_to_row;
+
+	// Mapping from off beats to row per cgi.  Used to minimize the amount of
+	// movements of an off note.  Off beats is used instead of off note because
+	// when a note is deleted between an earlier note and a later off note, the
+	// existing off note changes the note owner, which becomes the earlier note.
+	std::vector<BeatsToRow> _off_beats_to_row;
 
 	// Like _on_note_to_row and _off_note_to_row but used to temporarily save
 	// the state of this mapping during update
 	std::vector<NoteToRow> _prev_on_note_to_row;
-	std::vector<NoteToRow> _prev_off_note_to_row;
+	std::vector<BeatsToRow> _prev_off_beats_to_row;
 
 	MidiRegionPtr _midi_region;
 	MidiModelPtr _midi_model;
