@@ -479,6 +479,9 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 	// Overwrite ranking according to previous _off_note_to_row
 	if (cgi < _prev_off_note_to_row.size ()) {
 		auto it = _prev_off_note_to_row[cgi].find (*inote);
+		// NEXT.4: either use something that content based for off note or
+		// intercept what is going on.  I guess something like the exact time of
+		// the off note should be enough.
 		if (it != _prev_off_note_to_row[cgi].end ()) {
 			int note_row = it->second;
 			if (note_row == prev_row && prev_row < cent_row) {
