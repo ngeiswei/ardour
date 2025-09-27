@@ -281,16 +281,16 @@ MidiNotesPattern::update_row_to_notes ()
 	off_notes.clear ();
 	off_notes.resize (ntracks);
 
-	// Temporaily save the state of _on_note_to_row and _off_note_to_row to keep
-	// track of which row each note used to belong to.
+	// Temporaily save the state of _on_note_to_row and _off_beats_to_row to
+	// keep track of which row each note used to belong to.
 	_prev_on_note_to_row = _on_note_to_row;
-	_prev_off_note_to_row = _off_note_to_row;
+	_prev_off_beats_to_row = _off_beats_to_row;
 
-	// Clear _on_note_to_row and _off_note_to_row
+	// Clear _on_note_to_row and _off_beats_to_row
 	_on_note_to_row.clear ();
 	_on_note_to_row.resize (ntracks);
-	_off_note_to_row.clear ();
-	_off_note_to_row.resize (ntracks);
+	_off_beats_to_row.clear ();
+	_off_beats_to_row.resize (ntracks);
 
 	// Fill on_notes and off_notes
 	for (uint16_t cgi = 0; cgi < nreqtracks; ++cgi) {
@@ -318,7 +318,7 @@ MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::No
 	if (note_ends_within_region (note)) {
 		int off_row = std::max (find_nearest_off_row (cgi, inote), on_row);
 		off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
-		_off_note_to_row[cgi][note] = off_row;
+		_off_beats_to_row[cgi][note->end_time()] = off_row;
 	}
 }
 
@@ -476,13 +476,10 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 	ranked_row[0] = cent_row;
 	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
-	// Overwrite ranking according to previous _off_note_to_row
-	if (cgi < _prev_off_note_to_row.size ()) {
-		auto it = _prev_off_note_to_row[cgi].find (*inote);
-		// NEXT.4: either use something that content based for off note or
-		// intercept what is going on.  I guess something like the exact time of
-		// the off note should be enough.
-		if (it != _prev_off_note_to_row[cgi].end ()) {
+	// Overwrite ranking according to previous _off_beats_to_row
+	if (cgi < _prev_off_beats_to_row.size ()) {
+		auto it = _prev_off_beats_to_row[cgi].find ((*inote)->end_time());
+		if (it != _prev_off_beats_to_row[cgi].end ()) {
 			int note_row = it->second;
 			if (note_row == prev_row && prev_row < cent_row) {
 				ranked_row[0] = prev_row;
