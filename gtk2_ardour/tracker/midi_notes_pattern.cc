@@ -332,11 +332,26 @@ MidiNotesPattern::note_ends_within_region (NotePtr note) const
 	return _midi_region->source_beats_to_absolute_beats (note->end_time ()) < global_end_beats;
 }
 
+bool
+MidiNotesPattern::is_valid (uint16_t cgi, MidiModel::Notes::iterator inote) const
+{
+	return inote != track_to_notes[cgi].end ();
+}
+
+MidiModel::Notes::iterator
+MidiNotesPattern::next_inote (uint16_t cgi, MidiModel::Notes::iterator inote) const
+{
+	return is_valid(cgi, inote) ? std::next(inote) : inote;
+}
+
 int
 MidiNotesPattern::centered_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (inote != track_to_notes[cgi].end ()) {
-		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
+	// std::cout << "MidiNotesPattern::centered_on_row (cgi=" << cgi << ", inote)" << std::endl;
+	if (is_valid (cgi, inote)) {
+		int rab = row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
+		// std::cout << "MidiNotesPattern::centered_on_row **inote = " << **inote << ", rab = " << rab << std::endl;
+		return rab;
 	}
 	return INVALID_ROW;
 }
@@ -344,7 +359,7 @@ MidiNotesPattern::centered_on_row (uint16_t cgi, MidiModel::Notes::iterator inot
 int
 MidiNotesPattern::centered_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (inote != track_to_notes[cgi].end ()) {
+	if (is_valid (cgi, inote)) {
 		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
 	}
 	return INVALID_ROW;
@@ -353,7 +368,7 @@ MidiNotesPattern::centered_off_row (uint16_t cgi, MidiModel::Notes::iterator ino
 int
 MidiNotesPattern::previous_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (inote != track_to_notes[cgi].end ()) {
+	if (is_valid (cgi, inote)) {
 		return row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
 	}
 	return INVALID_ROW;
@@ -362,7 +377,7 @@ MidiNotesPattern::previous_on_row (uint16_t cgi, MidiModel::Notes::iterator inot
 int
 MidiNotesPattern::previous_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (inote != track_to_notes[cgi].end ()) {
+	if (is_valid (cgi, inote)) {
 		return row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
 	}
 	return INVALID_ROW;
@@ -371,7 +386,7 @@ MidiNotesPattern::previous_off_row (uint16_t cgi, MidiModel::Notes::iterator ino
 int
 MidiNotesPattern::next_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (inote != track_to_notes[cgi].end ()) {
+	if (is_valid (cgi, inote)) {
 		return row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
 	}
 	return INVALID_ROW;
@@ -380,7 +395,7 @@ MidiNotesPattern::next_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) c
 int
 MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (inote != track_to_notes[cgi].end ()) {
+	if (is_valid (cgi, inote)) {
 		return row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
 	}
 	return INVALID_ROW;
@@ -389,6 +404,7 @@ MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) 
 bool
 MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote) const
 {
+	std::cout << "MidiNotesPattern::is_on_row_available (cgi=" << cgi << ", row=" << row << ", **inote=" << **inote << ")" << std::endl;
 	// Get off and on note counts at row
 	size_t on_count_at_row = on_notes[cgi].count (row);
 	size_t off_count_at_row = off_notes[cgi].count (row);
@@ -397,7 +413,7 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 	RowToNotes::const_iterator off_it = off_notes[cgi].find (row);
 
 	// Get next note, if it exists
-	MidiModel::Notes::iterator ninote = std::next(inote);
+	MidiModel::Notes::iterator ninote = next_inote (cgi, inote);
 
 	// The row is is available if it is empty or contains exactly one off note
 	// that ends at the same time as this note begins, and the next note is not
@@ -407,18 +423,33 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 	                      (off_count_at_row == 1 &&
 	                       TrackerUtils::off_meets_on (off_it->second, *inote))) &&
 	                     row_lt (row, centered_on_row (cgi, ninote)));
+	std::cout << "MidiNotesPattern::is_on_row_available is_available = " << is_available << std::endl;
 	return is_available;
 }
 
 bool
 MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes::iterator inote) const
 {
+	std::cout << "MidiNotesPattern::is_off_row_available (cgi=" << cgi << ", row=" << row << ", **inote=" << **inote << ")" << std::endl;
 	// Get on note counts at row
 	size_t on_count_at_row = on_notes[cgi].count (row);
 
 	// Get next note, if it exists
-	MidiModel::Notes::iterator ninote = std::next(inote);
-	MidiModel::Notes::iterator nninote = std::next(ninote);
+	MidiModel::Notes::iterator ninote = next_inote (cgi, inote);
+
+	// Get next next note, if it exists
+	MidiModel::Notes::iterator nninote = next_inote (cgi, ninote);
+	std::cout << "FOCUS track_to_notes[cgi].size() = " << track_to_notes[cgi].size() << std::endl;
+	if (ninote != track_to_notes[cgi].end ()) {
+		std::cout << "FOCUS ninote = " << **ninote << std::endl;
+	} else {
+		std::cout << "FOCUS ninote = None" << std::endl;
+	}
+	if (nninote != track_to_notes[cgi].end ()) {
+		std::cout << "FOCUS nninote = " << **nninote << std::endl;
+	} else {
+		std::cout << "FOCUS nninote = None" << std::endl;
+	}
 
 	// The row is available if there is no on note, or if there is one, and only
 	// one, the off note exactly meets the on note, and the next note is not in
@@ -427,6 +458,19 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 	                     (row_lt (row, centered_on_row (cgi, ninote)) ||
 	                      TrackerUtils::off_meets_on (*inote, *ninote)) &&
 	                     row_lt (row, centered_on_row (cgi, nninote)));
+	if (nninote != track_to_notes[cgi].end ()) {
+		std::cout << "MidiNotesPattern::is_off_row_available nninote = " << **nninote << std::endl;
+	} else {
+		std::cout << "MidiNotesPattern::is_off_row_available nninote = None" << std::endl;
+	}
+	std::cout << "MidiNotesPattern::is_off_row_available on_count_at_row = " << on_count_at_row
+	          << ", row_lt (row=" << row << ", centered_on_row (cgi, ninote)="
+	          << centered_on_row (cgi, ninote) << ") = " << row_lt (row, centered_on_row (cgi, ninote))
+	          // << ", (row_lt (row, centered_on_row (cgi, ninote)) || TrackerUtils::off_meets_on (*inote, *ninote)) = "
+	          // << (row_lt (row, centered_on_row (cgi, ninote)) || TrackerUtils::off_meets_on (*inote, *ninote))
+	          << ", row_lt (row=" << row << ", centered_on_row (cgi, nninote)=" << centered_on_row (cgi, nninote) << ") = " << row_lt (row, centered_on_row (cgi, nninote))
+	          << std::endl;
+	std::cout << "MidiNotesPattern::is_off_row_available is_available = " << is_available << std::endl;
 	return is_available;
 }
 
