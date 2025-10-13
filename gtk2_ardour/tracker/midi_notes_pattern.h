@@ -91,6 +91,14 @@ public:
 	// note ends beyond it, return false.
 	bool note_ends_within_region (NotePtr note) const;
 
+	// Return true iff the note iterator is valid
+	bool is_valid (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
+	// Return the next note iterator, possibly end() if invalid.  For some
+	// reason using std::next twice on the last element returns the first
+	// element, instead of invalid.  This method is here to remedy that.
+	ARDOUR::MidiModel::Notes::iterator next_inote (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
+
 	// Return default on/off row, centered around the on/off note.  If no such
 	// note exists, return -1.  It takes a note iterator instead of a note in
 	// order to be resilient on being called with a next note that does not
