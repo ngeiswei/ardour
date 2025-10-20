@@ -78,6 +78,10 @@ public:
 	// return true as well.
 	bool row_lt (int row1, int row2) const;
 
+	// Return true if row1 >= row2 and both are invalid.  If any is invalid then
+	// return true as well.
+	bool row_gte (int row1, int row2) const;
+
 	// Repair ranked_row so that all invalid rows appear last, for instance
 	//
 	// ranked_row[0] = 8, ranked_row[1] = -1, ranked_row[2] = 9
