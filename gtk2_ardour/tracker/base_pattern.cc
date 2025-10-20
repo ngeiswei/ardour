@@ -124,6 +124,15 @@ BasePattern::row_lt (int row1, int row2) const
 	return true;
 }
 
+bool
+BasePattern::row_gte (int row1, int row2) const
+{
+	if (row1 != INVALID_ROW and row2 != INVALID_ROW) {
+		return row1 >= row2;
+	}
+	return true;
+}
+
 void
 BasePattern::repair_ranked_row (int ranked_row[3]) const
 {
