@@ -537,10 +537,6 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 int
 MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
-	// NEXT.4: do not suggest off row that is less than existing on row, which
-	//         can be found in _on_note_to_row.  HINT: could be done within
-	//         previous_off_row, centered_off_row and next_off_row.  HINT.2: use
-	//         on_row_gte.
 	std::cout << "MidiNotesPattern::off_row_suggestion (cgi=" << cgi << ", **inote=" << **inote << ", rank=" << rank << ")" << std::endl;
 	if (inote == track_to_notes[cgi].end ()) {
 		return INVALID_ROW;
