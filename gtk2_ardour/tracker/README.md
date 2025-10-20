@@ -1,7 +1,7 @@
 # Next
 
-- [ ] NEXT.4: support displaying `***` more optimally for automations (follow
-      example of notes)
+- [ ] NEXT.4: reset note and automation spreading when row per beats is
+      changed.
 - [ ] NEXT.3: make sure `***` is correctly supported all over the place
       (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
