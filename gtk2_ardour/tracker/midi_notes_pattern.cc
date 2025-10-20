@@ -344,6 +344,18 @@ MidiNotesPattern::next_inote (uint16_t cgi, MidiModel::Notes::iterator inote) co
 	return is_valid(cgi, inote) ? std::next(inote) : inote;
 }
 
+bool
+MidiNotesPattern::on_row_gte (uint16_t cgi, MidiModel::Notes::iterator inote, int row) const
+{
+	if (is_valid (cgi, inote)) {
+		auto it = _on_note_to_row[cgi].find (*inote);
+		if (it != _on_note_to_row[cgi].end()) {
+			return row_gte (row, it->second);
+		}
+	}
+	return false;
+}
+
 int
 MidiNotesPattern::centered_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
@@ -360,7 +372,8 @@ int
 MidiNotesPattern::centered_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
 	if (is_valid (cgi, inote)) {
-		return row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		int row = row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		return on_row_gte (cgi, inote, row) ? row : -1;
 	}
 	return INVALID_ROW;
 }
@@ -378,7 +391,8 @@ int
 MidiNotesPattern::previous_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
 	if (is_valid (cgi, inote)) {
-		return row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		int row = row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		return on_row_gte (cgi, inote, row) ? row : -1;
 	}
 	return INVALID_ROW;
 }
@@ -396,7 +410,8 @@ int
 MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
 	if (is_valid (cgi, inote)) {
-		return row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		int row = row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		return on_row_gte (cgi, inote, row) ? row : -1;
 	}
 	return INVALID_ROW;
 }
@@ -490,6 +505,9 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 	ranked_row[0] = cent_row;
 	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
+	std::cout << "B ranked_row[0] = " << ranked_row[0]
+	          << ", ranked_row[1] = " << ranked_row[1]
+	          << ", ranked_row[2] = " << ranked_row[2] << std::endl;
 	// Overwrite ranking according to previous _on_note_to_row
 	if (cgi < _prev_on_note_to_row.size ()) {
 		auto it = _prev_on_note_to_row[cgi].find (*inote);
@@ -505,8 +523,14 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 			}
 		}
 	}
+	std::cout << "A ranked_row[0] = " << ranked_row[0]
+	          << ", ranked_row[1] = " << ranked_row[1]
+	          << ", ranked_row[2] = " << ranked_row[2] << std::endl;
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
+	std::cout << "U ranked_row[0] = " << ranked_row[0]
+	          << ", ranked_row[1] = " << ranked_row[1]
+	          << ", ranked_row[2] = " << ranked_row[2] << std::endl;
 	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
 }
 
@@ -514,7 +538,9 @@ int
 MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
 	// NEXT.4: do not suggest off row that is less than existing on row, which
-	//         can be found in _on_note_to_row
+	//         can be found in _on_note_to_row.  HINT: could be done within
+	//         previous_off_row, centered_off_row and next_off_row.  HINT.2: use
+	//         on_row_gte.
 	std::cout << "MidiNotesPattern::off_row_suggestion (cgi=" << cgi << ", **inote=" << **inote << ", rank=" << rank << ")" << std::endl;
 	if (inote == track_to_notes[cgi].end ()) {
 		return INVALID_ROW;
@@ -523,11 +549,15 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 	int prev_row = previous_off_row (cgi, inote);
 	int cent_row = centered_off_row (cgi, inote);
 	int next_row = next_off_row (cgi, inote);
+	std::cout << "prev_row = " << prev_row << ", cent_row = " << cent_row << ", next_row = " << next_row << std::endl;
 	// Default ranking
 	int ranked_row[3];
 	ranked_row[0] = cent_row;
 	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
+	std::cout << "B ranked_row[0] = " << ranked_row[0]
+	          << ", ranked_row[1] = " << ranked_row[1]
+	          << ", ranked_row[2] = " << ranked_row[2] << std::endl;
 	// Overwrite ranking according to previous _off_beats_to_row
 	if (cgi < _prev_off_beats_to_row.size ()) {
 		auto it = _prev_off_beats_to_row[cgi].find ((*inote)->end_time());
@@ -543,8 +573,14 @@ MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator i
 			}
 		}
 	}
+	std::cout << "A ranked_row[0] = " << ranked_row[0]
+	          << ", ranked_row[1] = " << ranked_row[1]
+	          << ", ranked_row[2] = " << ranked_row[2] << std::endl;
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
+	std::cout << "U ranked_row[0] = " << ranked_row[0]
+	          << ", ranked_row[1] = " << ranked_row[1]
+	          << ", ranked_row[2] = " << ranked_row[2] << std::endl;
 	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
 }
 
