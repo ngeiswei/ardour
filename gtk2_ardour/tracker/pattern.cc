@@ -220,6 +220,8 @@ Pattern::update_position_etc ()
 void
 Pattern::update_rows_per_beat ()
 {
+	// NEXT.4: try to understand how to relate with resetting
+	// MidiNotesPattern::{_prev_on_notes,_prev_off_notes}
 	uint16_t rpb = tracker_editor.main_toolbar.rows_per_beat;
 	BasePattern::set_rows_per_beat (rpb);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
