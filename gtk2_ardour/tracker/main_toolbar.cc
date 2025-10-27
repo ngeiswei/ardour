@@ -101,6 +101,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 void
 MainToolbar::setup ()
 {
+	// Setup layout and actions
 	setup_layout ();
 	setup_tooltips ();
 	setup_beats_per_row_menu ();
@@ -108,6 +109,9 @@ MainToolbar::setup ()
 	register_actions ();
 	set_data ("ardour-bindings", bindings);
 	set_beats_per_row_to (GridTypeBeatDiv4);
+
+	// Make sure that rows_per_beat is set before anything is redisplayed
+	tracker_editor.grid.set_rows_per_beat (rows_per_beat);
 }
 
 void
@@ -531,6 +535,7 @@ MainToolbar::beats_per_row_chosen (GridType st)
 		set_beats_per_row_to (st);
 
 		// TODO: alternatively send signal to TrackerEditor
+		tracker_editor.grid.set_rows_per_beat (rows_per_beat);
 		tracker_editor.grid.redisplay_grid_direct_call ();
 	}
 }
