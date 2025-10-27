@@ -61,9 +61,10 @@ public:
 	void add_track_pattern (TrackPtr, const RegionSeq&);
 	void setup_row_offset ();
 
+	void set_rows_per_beat (uint16_t rpb);
+
 	void update ();
 	void update_position_etc ();
-	void update_rows_per_beat ();
 	void update_content ();
 	void update_earliest_mtp ();  // earliest midi track
 	void update_global_nrows ();  // row_offset, nrows, global_nrows
