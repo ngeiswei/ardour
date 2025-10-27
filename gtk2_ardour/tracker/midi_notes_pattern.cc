@@ -201,7 +201,7 @@ MidiNotesPattern::phenomenal_diff (const MidiNotesPattern& prev) const
 void
 MidiNotesPattern::update ()
 {
-	set_row_range ();               // TODO: likely redundant since
+	set_row_range ();               // NEXT.4: likely redundant since
 	                                // MidiRegionPattern::set_row_range ()
 	                                // updates set_row_range as well.
 	update_track_to_notes ();
