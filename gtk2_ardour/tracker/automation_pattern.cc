@@ -207,13 +207,15 @@ AutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::Co
 void
 AutomationPattern::update ()
 {
-	set_row_range ();
+	set_row_range ();				  // NEXT.4: maybe redundant
 	update_automations ();
 }
 
 void
 AutomationPattern::update_automations ()
 {
+	// NEXT.4: make sure that set_rows_per_beat sets a flag to start fresh
+
 	// Make temporary copy of param_to_row_to_ces and param_to_ce_to_row to
 	// to minimize changes when dispatching events
 	_prev_param_to_row_to_ces = param_to_row_to_ces;
