@@ -947,6 +947,12 @@ Grid::redisplay_global_columns ()
 }
 
 void
+Grid::set_rows_per_beat (uint16_t rpb) {
+	pattern.update_position_etc (); // Required by set_rows_per_beat
+	pattern.set_rows_per_beat (rpb);
+}
+
+void
 Grid::redisplay_grid ()
 {
 	if (editing_editable) {
