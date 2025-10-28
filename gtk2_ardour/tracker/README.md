@@ -1,7 +1,6 @@
 # Next
 
-- [ ] NEXT.4: reset note and automation spreading when row per beats is
-      changed.
+- [ ] NEXT.4: finalize note and automation spreading testing.
 - [ ] NEXT.3: make sure `***` is correctly supported all over the place
       (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
