@@ -231,6 +231,9 @@ public:
 	// Whether the pattern is selected for display
 	bool selected;
 
+	// Flag indicating that the entire event to row mapping must be rebuilt from
+	// scratch
+	bool refresh;
 protected:
 	// number of ticks per rows
 	int _ticks_per_row;
