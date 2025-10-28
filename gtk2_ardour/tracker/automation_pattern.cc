@@ -214,12 +214,16 @@ AutomationPattern::update ()
 void
 AutomationPattern::update_automations ()
 {
-	// NEXT.4: make sure that set_rows_per_beat sets a flag to start fresh
-
-	// Make temporary copy of param_to_row_to_ces and param_to_ce_to_row to
-	// to minimize changes when dispatching events
-	_prev_param_to_row_to_ces = param_to_row_to_ces;
-	_prev_param_to_ce_to_row = param_to_ce_to_row;
+	// Unless the rows per beat has just changed, make temporary copy of
+	// param_to_row_to_ces and param_to_ce_to_row to to minimize changes when
+	// dispatching events
+	if (refresh) {
+		_prev_param_to_row_to_ces.clear ();
+		_prev_param_to_ce_to_row.clear ();
+	} else {
+		_prev_param_to_row_to_ces = param_to_row_to_ces;
+		_prev_param_to_ce_to_row = param_to_ce_to_row;
+	}
 
 	// Clear and refill param_to_row_to_ces
 	// TODO: surely this can be optimized
