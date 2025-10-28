@@ -281,10 +281,17 @@ MidiNotesPattern::update_row_to_notes ()
 	off_notes.clear ();
 	off_notes.resize (ntracks);
 
-	// Temporaily save the state of _on_note_to_row and _off_beats_to_row to
-	// keep track of which row each note used to belong to.
-	_prev_on_note_to_row = _on_note_to_row;
-	_prev_off_beats_to_row = _off_beats_to_row;
+	// Unless the rows per beat has just changed, temporarily save the state of
+	// _on_note_to_row and _off_beats_to_row to keep track of which row each
+	// note used to belong to.
+	if (refresh) {
+		_prev_on_note_to_row.clear ();
+		_prev_off_beats_to_row.clear ();
+		refresh = false;
+	} else {
+		_prev_on_note_to_row = _on_note_to_row;
+		_prev_off_beats_to_row = _off_beats_to_row;
+	}
 
 	// Clear _on_note_to_row and _off_beats_to_row
 	_on_note_to_row.clear ();
