@@ -147,15 +147,23 @@ BasePattern::repair_ranked_row (int ranked_row[3]) const
 }
 
 void
-BasePattern::set_rows_per_beat (uint16_t rpb)
+BasePattern::set_refresh (bool r)
+{
+	refresh = true;
+}
+
+void
+BasePattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
 	rows_per_beat = rpb;
 	// TODO: deal with rpb == 0 which would mean one row per bar
 	beats_per_row = Temporal::Beats::from_double (1.0 / rows_per_beat);
 	_ticks_per_row = Temporal::ticks_per_beat / rows_per_beat;
 
-	// Set flag to rebuild the event to row mapping from scratch next time
-	refresh = true;
+	if (rfs) {
+		// Set flag to rebuild the event to row mapping from scratch next time
+		set_refresh ();
+	}
 }
 
 Temporal::Beats
