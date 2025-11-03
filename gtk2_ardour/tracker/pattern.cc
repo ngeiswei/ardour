@@ -194,6 +194,7 @@ void
 Pattern::update ()
 {
 	update_position_etc ();
+	set_rows_per_beat (tracker_editor.main_toolbar.rows_per_beat, false);
 	set_row_range ();
 	update_content ();
 	update_earliest_mtp ();
@@ -217,11 +218,11 @@ Pattern::update_position_etc ()
 }
 
 void
-Pattern::set_rows_per_beat (uint16_t rpb)
+Pattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
-	BasePattern::set_rows_per_beat (rpb);
+	BasePattern::set_rows_per_beat (rpb, rfs);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		tps[mti]->set_rows_per_beat (rpb);
+		tps[mti]->set_rows_per_beat (rpb, rfs);
 	}
 }
 
