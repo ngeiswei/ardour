@@ -111,7 +111,7 @@ MainToolbar::setup ()
 	set_beats_per_row_to (GridTypeBeatDiv4);
 
 	// Make sure that rows_per_beat is set before anything is redisplayed
-	tracker_editor.grid.set_rows_per_beat (rows_per_beat);
+	tracker_editor.grid.set_rows_per_beat (rows_per_beat, true);
 }
 
 void
@@ -535,7 +535,7 @@ MainToolbar::beats_per_row_chosen (GridType st)
 		set_beats_per_row_to (st);
 
 		// TODO: alternatively send signal to TrackerEditor
-		tracker_editor.grid.set_rows_per_beat (rows_per_beat);
+		tracker_editor.grid.set_rows_per_beat (rows_per_beat, true);
 		tracker_editor.grid.redisplay_grid_direct_call ();
 	}
 }
