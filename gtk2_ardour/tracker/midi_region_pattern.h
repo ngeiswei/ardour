@@ -46,7 +46,7 @@ public:
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// i.e. call update ().
-	void set_rows_per_beat (uint16_t rpb);
+	void set_rows_per_beat (uint16_t rpb, bool refresh=false);
 
 	// Update enabled
 	void update_enabled ();
