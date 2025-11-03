@@ -76,11 +76,11 @@ MidiRegionPattern::phenomenal_diff (const MidiRegionPattern& prev) const
 }
 
 void
-MidiRegionPattern::set_rows_per_beat (uint16_t rpb)
+MidiRegionPattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
-	BasePattern::set_rows_per_beat (rpb);
-	mnp.set_rows_per_beat (rpb);
-	mrap.set_rows_per_beat (rpb);
+	BasePattern::set_rows_per_beat (rpb, rfs);
+	mnp.set_rows_per_beat (rpb, rfs);
+	mrap.set_rows_per_beat (rpb, rfs);
 }
 
 void
