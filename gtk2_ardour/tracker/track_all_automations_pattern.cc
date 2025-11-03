@@ -109,11 +109,11 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 }
 
 void
-TrackAllAutomationsPattern::set_rows_per_beat (uint16_t rpb)
+TrackAllAutomationsPattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
-	main_automation_pattern.set_rows_per_beat (rpb);
+	main_automation_pattern.set_rows_per_beat (rpb, rfs);
 	for (auto& idpap : id_to_processor_automation_pattern) {
-		idpap.second->set_rows_per_beat (rpb);
+		idpap.second->set_rows_per_beat (rpb, rfs);
 	}
 }
 

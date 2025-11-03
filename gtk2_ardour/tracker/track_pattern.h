@@ -61,7 +61,7 @@ public:
 	// Set the number of rows per beat. 0 means 1 row per bar.  Overload
 	// BasePattern::set_rows_per_beat to trickle down to track automations and
 	// such.
-	virtual void set_rows_per_beat (uint16_t rpb);
+	virtual void set_rows_per_beat (uint16_t rpb, bool refresh=false);
 
 	// Set position_row_beats, end_row_beats and nrows.  Overload
 	// BasePattern::set_rows_per_beat to trickle down to track automations and

@@ -78,10 +78,10 @@ TrackPattern::audio_track ()
 }
 
 void
-TrackPattern::set_rows_per_beat (uint16_t rpb)
+TrackPattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
-	BasePattern::set_rows_per_beat (rpb);
-	track_all_automations_pattern.set_rows_per_beat (rpb);
+	BasePattern::set_rows_per_beat (rpb, rfs);
+	track_all_automations_pattern.set_rows_per_beat (rpb, rfs);
 }
 
 void
