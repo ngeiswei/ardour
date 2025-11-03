@@ -91,14 +91,20 @@ public:
 	// ranked_row[0] = 8, ranked_row[1] = 9, ranked_row[2] = -1
 	void repair_ranked_row (int ranked_row[3]) const;
 
+	// Set refresh (to true by default, which will have the effect of refreshing
+	// how events are mapped to rows).
+	void set_refresh (bool r=true);
+
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
-	// i.e. call update ().
+	// i.e. call update ().  If refresh is set to true, then the refresh is set
+	// to true which will have the effect of refreshing how events are mapped to
+	// rows).
 	//
 	// It is virtual because sophisticated inherited pattern classes
 	// may want to overwrite it to trickle down set_rows_per_beat to
 	// their subpatterns.
-	virtual void set_rows_per_beat (uint16_t rpb);
+	virtual void set_rows_per_beat (uint16_t rpb, bool refresh=false);
 
 	// Build or rebuild the pattern
 	virtual void update () = 0;
