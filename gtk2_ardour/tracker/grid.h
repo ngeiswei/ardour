@@ -193,7 +193,7 @@ public:
 	void reset_off_on_note (Gtk::TreeModel::Row& row, int mti, int cgi);
 
 	// Set pattern rows_per_beat
-	void set_rows_per_beat (uint16_t rpb);
+	void set_rows_per_beat (uint16_t rpb, bool refresh=false);
 
 	void redisplay_grid ();
 	void redisplay_grid_direct_call ();
