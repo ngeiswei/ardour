@@ -208,11 +208,11 @@ MidiTrackPattern::insert (const IDParameter& id_param)
 }
 
 void
-MidiTrackPattern::set_rows_per_beat (uint16_t rpb)
+MidiTrackPattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
-	TrackPattern::set_rows_per_beat (rpb);
+	TrackPattern::set_rows_per_beat (rpb, rfs);
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
-		mrps[mri]->set_rows_per_beat (rpb);
+		mrps[mri]->set_rows_per_beat (rpb, rfs);
 	}
 }
 
