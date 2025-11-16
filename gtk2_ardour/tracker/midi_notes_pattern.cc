@@ -436,13 +436,14 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 	MidiModel::Notes::iterator ninote = next_inote (cgi, inote);
 
 	// The row is is available if it is empty or contains exactly one off note
-	// that ends at the same time as this note begins, and the next note is not
-	// in this row or below it by default.
+	// that ends at the same time as this note begins, and its off note and the
+	// next on note is not in this row or below it by default.
 	bool is_available = (on_count_at_row == 0 &&
 	                     (off_count_at_row == 0 ||
 	                      (off_count_at_row == 1 &&
 	                       TrackerUtils::off_meets_on (off_it->second, *inote))) &&
-	                     row_lt (row, centered_on_row (cgi, ninote)));
+	                     (row_lt (row, centered_off_row (cgi, inote)) &&
+	                      row_lt (row, centered_on_row (cgi, ninote))));
 	std::cout << "MidiNotesPattern::is_on_row_available is_available = " << is_available << std::endl;
 	return is_available;
 }
