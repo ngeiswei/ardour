@@ -1,8 +1,6 @@
 # Next
 
-- [ ] NEXT.4: finalize note and automation spreading testing (fix case where on
-      note is at the very end of the row and the off note at the very beginning
-      of the next row).
+- [ ] NEXT.4: finalize note and automation spreading testing, thoroughly test!
 - [ ] NEXT.3: make sure `***` is correctly supported all over the place
       (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
