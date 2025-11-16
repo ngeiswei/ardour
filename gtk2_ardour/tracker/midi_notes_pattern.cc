@@ -356,6 +356,8 @@ MidiNotesPattern::on_row_gte (uint16_t cgi, MidiModel::Notes::iterator inote, in
 		auto it = _on_note_to_row[cgi].find (*inote);
 		if (it != _on_note_to_row[cgi].end()) {
 			return row_gte (row, it->second);
+		} else {
+			return true;
 		}
 	}
 	return false;
@@ -376,8 +378,12 @@ MidiNotesPattern::centered_on_row (uint16_t cgi, MidiModel::Notes::iterator inot
 int
 MidiNotesPattern::centered_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
+	std::cout << "MidiNotesPattern::centered_off_row (cgi=" << "cgi" << ", **inote=" << **inote << ")" << std::endl;
 	if (is_valid (cgi, inote)) {
+		std::cout << "It is valid" << std::endl;
 		int row = row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
+		std::cout << "row = " << row << std::endl;
+		std::cout << "on_row_gte (cgi, inote, row) = " << on_row_gte (cgi, inote, row) << std::endl;
 		return on_row_gte (cgi, inote, row) ? row : -1;
 	}
 	return INVALID_ROW;
@@ -434,6 +440,11 @@ MidiNotesPattern::is_on_row_available (uint16_t cgi, int row, MidiModel::Notes::
 
 	// Get next note, if it exists
 	MidiModel::Notes::iterator ninote = next_inote (cgi, inote);
+
+	int cor = centered_off_row (cgi, inote);
+	std::cout << "centered_off_row (cgi, inote) = " << cor << std::endl;
+	std::cout << "row_lt (row=" << row << ", centered_off_row (cgi, inote)) = "
+	          << row_lt (row, cor) << std::endl;
 
 	// The row is is available if it is empty or contains exactly one off note
 	// that ends at the same time as this note begins, and its off note and the
