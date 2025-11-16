@@ -99,9 +99,10 @@ public:
 	// element, instead of invalid.  This method is here to remedy that.
 	ARDOUR::MidiModel::Notes::iterator next_inote (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote) const;
 
-	// Return true iff the row is greater or equal to the on row currently
-	// associated to inote.  If the rows being compared are invalid then the
-	// behavior is undefined.
+	// Return true if the row is greater or equal to the on row currently
+	// associated to inote.  If no on row is currently associated to inote, then
+	// return true.  If the rows being compared are invalid then the behavior is
+	// undefined and should hopefully not matter.
 	bool on_row_gte (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, int row) const;
 
 	// Return default on/off row, centered around the on/off note.  If no such
