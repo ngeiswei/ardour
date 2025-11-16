@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.4: finalize note and automation spreading testing, thoroughly test!
+- [ ] NEXT.4: fix last issue with two consecutive on notes and nearby off note
 - [ ] NEXT.3: make sure `***` is correctly supported all over the place
       (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
