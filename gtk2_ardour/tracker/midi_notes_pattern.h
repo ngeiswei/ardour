@@ -77,11 +77,6 @@ public:
 	// ntracks.
 	void update_row_to_notes_at_track (uint16_t cgi);
 
-	// Update the mapping from row to on and off notes for a given track and a
-	// given note.  It assumes the on_notes and off_notes maps have been cleared
-	// and resized to ntracks.
-	void update_row_to_notes_at_track_note (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote);
-
 	// Return true iff the row at cgi is free, meaning it can potentially host
 	// the given note.
 	bool is_on_row_available (uint16_t cgi, int row, ARDOUR::MidiModel::Notes::iterator inote) const;
