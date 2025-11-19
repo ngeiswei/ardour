@@ -208,6 +208,14 @@ private:
 	// Erase note in given Notes with the id of the given note
 	void erase_eq_id (ARDOUR::MidiModel::Notes& notes, NotePtr note);
 
+	// Insert on note to on_notes and _on_note_to_row fields at a given cgi and
+	// row
+	void insert_on_note (int cgi, int row, NotePtr on_note);
+
+	// Insert off note to off_notes and _off_beats_to_row fields at a given cgi
+	// and row
+	void insert_off_note (int cgi, int row, NotePtr off_note);
+
 	// Erase pointer iterator from notes and return the next iterator
 	ARDOUR::MidiModel::Notes::iterator erase (ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
