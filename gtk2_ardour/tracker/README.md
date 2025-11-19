@@ -1,6 +1,6 @@
 # Next
 
-- [ ] NEXT.4: fix last issue with two consecutive on notes and nearby off note
+- [ ] NEXT.4: thoroughly test note to row mapping
 - [ ] NEXT.3: make sure `***` is correctly supported all over the place
       (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
