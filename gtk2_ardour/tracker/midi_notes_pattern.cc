@@ -307,22 +307,34 @@ void
 MidiNotesPattern::update_row_to_notes_at_track (uint16_t cgi)
 {
 	std::cout << "MidiNotesPattern::update_row_to_notes_at_track (cgi=" << cgi << ")" << std::endl;
-	for (MidiModel::Notes::iterator inote = track_to_notes[cgi].begin ();
-		  inote != track_to_notes[cgi].end (); ++inote) {
-		// NEXT.4: increment inote inside the body to test whether the off note
-		//         meets the next on note, and so on...
+	bool prev_off_meets_on = false;
+	NotePtr prev_off_note = nullptr;
+	for (MidiModel::Notes::iterator inote = track_to_notes[cgi].begin (); inote != track_to_notes[cgi].end ();) {
 		std::cout << "MidiNotesPattern::update_row_to_notes_at_track_note (cgi=" << cgi << ", **inote=" << **inote << ")" << std::endl;
 		NotePtr note = *inote;
 		int on_row = find_nearest_on_row (cgi, inote);
 		std::cout << "on_row = " << on_row << std::endl;
-		on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
-		_on_note_to_row[cgi][note] = on_row;
+		insert_on_note (cgi, on_row, note);
+		std::cout << "MidiNotesPattern::update_row_to_notes_at_track -1-" << std::endl;
+		// If previous off note meets current on note, then set it to that row
+		if (prev_off_meets_on) {
+			std::cout << "MidiNotesPattern::update_row_to_notes_at_track -2-" << std::endl;
+			insert_off_note (cgi, on_row, prev_off_note);
+			std::cout << "MidiNotesPattern::update_row_to_notes_at_track -3-" << std::endl;
+		}
+		MidiModel::Notes::iterator prev_inote = inote;
+		std::cout << "MidiNotesPattern::update_row_to_notes_at_track -4-" << std::endl;
+		prev_off_note = *prev_inote;
+		std::cout << "MidiNotesPattern::update_row_to_notes_at_track -4-" << std::endl;
+		++inote;
 		// Only display off notes occuring within the region
 		if (note_ends_within_region (note)) {
-			int off_row = std::max (find_nearest_off_row (cgi, inote), on_row);
-			std::cout << "off_row = " << off_row << std::endl;
-			off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
-			_off_beats_to_row[cgi][note->end_time()] = off_row;
+			prev_off_meets_on = is_valid (cgi, inote) ? TrackerUtils::off_meets_on (note, *inote) : false;
+			if (not prev_off_meets_on) {
+				int off_row = std::max (find_nearest_off_row (cgi, prev_inote), on_row);
+				std::cout << "off_row = " << off_row << std::endl;
+				insert_off_note (cgi, off_row, note);
+			}
 		}
 	}
 }
@@ -844,6 +856,20 @@ void
 MidiNotesPattern::erase_eq_id (MidiModel::Notes& notes, NotePtr note)
 {
 	notes.erase (find_eq_id (notes, note));
+}
+
+void
+MidiNotesPattern::insert_on_note (int cgi, int row, NotePtr on_note)
+{
+	on_notes[cgi].insert (RowToNotes::value_type (row, on_note));
+	_on_note_to_row[cgi][on_note] = row;
+}
+
+void
+MidiNotesPattern::insert_off_note (int cgi, int row, NotePtr off_note)
+{
+	off_notes[cgi].insert (RowToNotes::value_type (row, off_note));
+	_off_beats_to_row[cgi][off_note->end_time()] = row;
 }
 
 bool
