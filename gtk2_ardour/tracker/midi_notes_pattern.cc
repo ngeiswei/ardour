@@ -309,25 +309,21 @@ MidiNotesPattern::update_row_to_notes_at_track (uint16_t cgi)
 	std::cout << "MidiNotesPattern::update_row_to_notes_at_track (cgi=" << cgi << ")" << std::endl;
 	for (MidiModel::Notes::iterator inote = track_to_notes[cgi].begin ();
 		  inote != track_to_notes[cgi].end (); ++inote) {
-		update_row_to_notes_at_track_note (cgi, inote);
-	}
-}
-
-void
-MidiNotesPattern::update_row_to_notes_at_track_note (uint16_t cgi, MidiModel::Notes::iterator inote)
-{
-	std::cout << "MidiNotesPattern::update_row_to_notes_at_track_note (cgi=" << cgi << ", **inote=" << **inote << ")" << std::endl;
-	NotePtr note = *inote;
-	int on_row = find_nearest_on_row (cgi, inote);
-	std::cout << "on_row = " << on_row << std::endl;
-	on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
-	_on_note_to_row[cgi][note] = on_row;
-	// Only display off notes occuring within the region
-	if (note_ends_within_region (note)) {
-		int off_row = std::max (find_nearest_off_row (cgi, inote), on_row);
-		std::cout << "off_row = " << off_row << std::endl;
-		off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
-		_off_beats_to_row[cgi][note->end_time()] = off_row;
+		// NEXT.4: increment inote inside the body to test whether the off note
+		//         meets the next on note, and so on...
+		std::cout << "MidiNotesPattern::update_row_to_notes_at_track_note (cgi=" << cgi << ", **inote=" << **inote << ")" << std::endl;
+		NotePtr note = *inote;
+		int on_row = find_nearest_on_row (cgi, inote);
+		std::cout << "on_row = " << on_row << std::endl;
+		on_notes[cgi].insert (RowToNotes::value_type (on_row, note));
+		_on_note_to_row[cgi][note] = on_row;
+		// Only display off notes occuring within the region
+		if (note_ends_within_region (note)) {
+			int off_row = std::max (find_nearest_off_row (cgi, inote), on_row);
+			std::cout << "off_row = " << off_row << std::endl;
+			off_notes[cgi].insert (RowToNotes::value_type (off_row, note));
+			_off_beats_to_row[cgi][note->end_time()] = off_row;
+		}
 	}
 }
 
