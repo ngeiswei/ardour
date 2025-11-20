@@ -207,7 +207,7 @@ AutomationPattern::event2beats (const Evoral::Parameter& param, const Evoral::Co
 void
 AutomationPattern::update ()
 {
-	set_row_range ();				  // NEXT.4: maybe redundant
+	// set_row_range ();				  // NEXT.4: maybe redundant
 	update_automations ();
 }
 
