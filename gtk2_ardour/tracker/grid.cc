@@ -1141,12 +1141,12 @@ Grid::redisplay_note_background (TreeModel::Row& row, int mti, int cgi)
 void
 Grid::redisplay_current_row_background ()
 {
-	if (current_row_idx < 0)
-		return;
-	std::string color = step_edit() ?
-		TrackerUtils::color_to_string (current_edit_row_color)
-		: TrackerUtils::color_to_string (current_row_color);
-	redisplay_row_background_color (current_row, current_row_idx, color);
+	if (current_row_idx != BasePattern::INVALID_ROW) {
+		std::string color = step_edit() ?
+			TrackerUtils::color_to_string (current_edit_row_color)
+			: TrackerUtils::color_to_string (current_row_color);
+		redisplay_row_background_color (current_row, current_row_idx, color);
+	}
 }
 
 void
@@ -1325,9 +1325,9 @@ Grid::redisplay_cell_background (TreeModel::Row& row, int mti, int cgi)
 void
 Grid::redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx)
 {
-	if (row_idx < 0)
-		return;
-	redisplay_row_background_color (row, row_idx, row[columns._background_color]);
+	if (row_idx != BasePattern::INVALID_ROW) {
+		redisplay_row_background_color (row, row_idx, row[columns._background_color]);
+	}
 }
 
 void
