@@ -504,7 +504,8 @@ private:
 	// WARNING: cannot be const because of is_cell_defined.
 	bool is_current_cursor_defined ();
 
-	// Set current row, including drawing row background
+	// Set current row, including drawing row background.  If row_idx is
+	// INVALID_ROW then do not do anything.
 	void set_current_row (int row_idx, bool set_playhead=false);
 	void set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead=false);
 
