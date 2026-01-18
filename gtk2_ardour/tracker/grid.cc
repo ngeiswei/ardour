@@ -2984,7 +2984,9 @@ Grid::send_live_midi_event (int mti, const uint8_t* buf)
 void
 Grid::set_current_cursor (int row_idx, TreeViewColumn* col, bool set_playhead)
 {
-	set_current_cursor (to_path (row_idx), col, set_playhead);
+	if (row_idx != BasePattern::INVALID_ROW) {
+		set_current_cursor (to_path (row_idx), col, set_playhead);
+	}
 }
 
 void
