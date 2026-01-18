@@ -3047,7 +3047,9 @@ Grid::is_current_cursor_defined ()
 void
 Grid::set_current_row (int row_idx, bool set_playhead)
 {
-	set_current_row (to_path (row_idx), set_playhead);
+	if (row_idx != BasePattern::INVALID_ROW) {
+		set_current_row (to_path (row_idx), set_playhead);
+	}
 }
 
 void
