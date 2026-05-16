@@ -2993,23 +2993,29 @@ void
 Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool set_playhead)
 {
 	// NEXT: maybe make sure not to recall if current already set
+	std::cout << "[TRACKER-DEBUG] Grid::set_current_cursor" << std::endl;
 
 	// Make sure the cell is defined
 	if (!is_cell_defined (path, col)) {
 		return;
 	}
+	std::cout << "[TRACKER-DEBUG] Grid::set_current_cursor after is_cell_defined" << std::endl;
 
 	// Set current row and col, including selecting track, drawing row and
 	// cursor
 	set_current_row (path, set_playhead);
+	std::cout << "[TRACKER-DEBUG] Grid::set_current_cursor after set_current_row" << std::endl;
 	set_current_col (col);
+	std::cout << "[TRACKER-DEBUG] Grid::set_current_cursor after set_current_col" << std::endl;
 
 	// Set selector source or destination
 	set_selector (path, col);
+	std::cout << "[TRACKER-DEBUG] Grid::set_current_cursor after set_selector" << std::endl;
 
 	// TODO: remove that when no longer necessary
 	// Align track toolbar
 	tracker_editor.grid_header->align ();
+	std::cout << "[TRACKER-DEBUG] Grid::set_current_cursor after tracker_editor.grid_header->align" << std::endl;
 }
 
 void
@@ -5682,6 +5688,7 @@ Grid::key_release (GdkEventKey* ev)
 bool
 Grid::mouse_button_event (GdkEventButton* ev)
 {
+	std::cout << "[TRACKER-DEBUG] Grid::mouse_button_event" << std::endl;
 	if (ev->button == 1) {
 		TreeModel::Path path;
 		TreeViewColumn* col;
