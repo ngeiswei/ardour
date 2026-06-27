@@ -1326,7 +1326,9 @@ void
 Grid::redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx)
 {
 	if (row_idx != BasePattern::INVALID_ROW) {
+		std::cout << "[TRACKER-DEBUG] before Grid::redisplay_row_background row_idx = " << row_idx << std::endl;
 		redisplay_row_background_color (row, row_idx, row[columns._background_color]);
+		std::cout << "[TRACKER-DEBUG] after Grid::redisplay_row_background" << std::endl;
 	}
 }
 
