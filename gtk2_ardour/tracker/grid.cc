@@ -981,6 +981,17 @@ Grid::redisplay_grid ()
 	redisplay_current_row ();
 	remove_unused_rows ();
 
+	// Warning: produced by Pi+MiniMax-M3
+	//
+	// If current_row was just erased by remove_unused_rows, current_row holds a
+	// dangling Gtk::TreeModel::Row reference even though current_row_idx still
+	// looks valid. Drop the stale reference so subsequent calls to
+	// redisplay_row_background, unset_underline_current_step_edit_cell, etc.,
+	// bail out via their INVALID_ROW guard instead of dereferencing it.
+	if (current_row_idx >= pattern.global_nrows) {
+		current_row_idx = BasePattern::INVALID_ROW;
+	}
+
 	set_model (model);
 
 	// In case tracks have been added or removed
@@ -1772,6 +1783,13 @@ Grid::remove_unused_rows ()
 void
 Grid::unset_underline_current_step_edit_cell ()
 {
+	// Warning: produced by Pi+MiniMax-M3
+	//
+	// Bail out if current_row holds a stale reference (e.g. after the row at
+	// current_row_idx was erased by remove_unused_rows).
+	if (current_row_idx == BasePattern::INVALID_ROW) {
+		return;
+	}
 	if (current_is_note_type) {
 		unset_underline_current_step_edit_note_cell ();
 	} else {
