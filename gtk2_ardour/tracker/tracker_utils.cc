@@ -345,9 +345,9 @@ TrackerUtils::get_end (const MidiRegionSeq& regions)
 		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::timepos_t end = regions[i++]->end ();
+	Temporal::timepos_t end = regions[i++]->end_position ();
 	for (; i < regions.size (); i++) {
-		end = std::max (end, regions[i]->end ());
+		end = std::max (end, regions[i]->end_position ());
 	}
 	return end;
 }
@@ -359,9 +359,9 @@ TrackerUtils::get_end (const RegionSeq& regions)
 		return Temporal::timepos_t ();
 
 	size_t i = 0;
-	Temporal::timepos_t end = regions[i++]->end ();
+	Temporal::timepos_t end = regions[i++]->end_position ();
 	for (; i < regions.size (); i++) {
-		end = std::max (end, regions[i]->end ());
+		end = std::max (end, regions[i]->end_position ());
 	}
 	return end;
 }
@@ -373,10 +373,10 @@ TrackerUtils::get_end (const RegionSelection& region_selection)
 		return Temporal::timepos_t ();
 
 	RegionSelection::const_iterator it = region_selection.begin ();
-	Temporal::timepos_t end = (*it)->region ()->end ();
+	Temporal::timepos_t end = (*it)->region ()->end_position ();
 	++it;
 	for (; it != region_selection.end (); ++it) {
-		end = std::max (end, (*it)->region ()->end ());
+		end = std::max (end, (*it)->region ()->end_position ());
 	}
 	return end;
 }

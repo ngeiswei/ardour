@@ -38,7 +38,7 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, position (region->position ())
 	, start (region->start ())
 	, length (region->length ())
-	, end (region->end ())
+	, end (region->end_position ())
 	, nt_last (region->nt_last ())
 	, rows_per_beat (0)
 	, nrows (0)
