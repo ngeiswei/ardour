@@ -95,7 +95,7 @@ MidiRegionPattern::update_position_etc ()
 	position = midi_region->position ();
 	start = midi_region->start ();
 	length = midi_region->length ();
-	end = midi_region->end ();
+	end = midi_region->end_position ();
 	nt_last = midi_region->nt_last ();
 	mnp.position = position;
 	mnp.start = start;
