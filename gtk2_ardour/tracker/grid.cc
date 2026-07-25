@@ -4372,14 +4372,22 @@ TrackerColumn::NoteType
 Grid::get_note_type (const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
-	return tc->note_type;
+	// Warning: produced by Pi+MiniMax-M3
+	//
+	// SEPARATOR is the "inactive" sentinel (per tracker_column.h); non-Tracker
+	// columns aren't note columns, so consumers' switch defaults handle it safely.
+	return tc ? tc->note_type : TrackerColumn::NoteType::SEPARATOR;
 }
 
 TrackerColumn::AutomationType
 Grid::get_automation_type (const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
-	return tc->automation_type;
+	// Warning: produced by Pi+MiniMax-M3
+	//
+	// AUTOMATION_SEPARATOR is the "inactive" sentinel (per tracker_column.h);
+	// non-Tracker columns aren't automation columns either.
+	return tc ? tc->automation_type : TrackerColumn::AutomationType::AUTOMATION_SEPARATOR;
 }
 
 bool
