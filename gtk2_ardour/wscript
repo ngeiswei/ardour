@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from waflib.extras import autowaf as autowaf
 from waflib import Options, TaskGen
+from waflib.Context import load_module
 import waflib.Logs as Logs, waflib.Utils as Utils
 import os
 import sys
@@ -372,46 +373,15 @@ gtk2_ardour_sources = [
         'velocity_ghost_region.cc',
         'video_server_dialog.cc',
         'utils_videotl.cc',
-        'export_video_dialog.cc',
-        # tracker interface related sources:
-        'tracker/base_pattern.cc',
-        'tracker/track_pattern.cc',
-        'tracker/midi_notes_pattern.cc',
-        'tracker/automation_pattern.cc',
-        'tracker/main_automation_pattern.cc',
-        'tracker/processor_automation_pattern.cc',
-        'tracker/track_automation_pattern.cc',
-        'tracker/track_all_automations_pattern.cc',
-        'tracker/midi_region_automation_pattern.cc',
-        'tracker/midi_region_pattern.cc',
-        'tracker/midi_track_pattern.cc',
-        'tracker/audio_track_pattern.cc',
-        'tracker/pattern.cc',
-        'tracker/main_toolbar.cc',
-        'tracker/track_toolbar.cc',
-        'tracker/audio_track_toolbar.cc',
-        'tracker/midi_track_toolbar.cc',
-        'tracker/track_header.cc',
-        'tracker/time_header.cc',
-        'tracker/grid_header.cc',
-        'tracker/tracker_editor.cc',
-        'tracker/tracker_utils.cc',
-        'tracker/grid.cc',
-        'tracker/tracker_column.cc',
-        'tracker/base_pattern_phenomenal_diff.cc',
-        'tracker/midi_notes_pattern_phenomenal_diff.cc',
-        'tracker/rows_phenomenal_diff.cc',
-        'tracker/midi_region_automation_pattern_phenomenal_diff.cc',
-        'tracker/automation_pattern_phenomenal_diff.cc',
-        'tracker/processor_automation_pattern_phenomenal_diff.cc',
-        'tracker/track_all_automations_pattern_phenomenal_diff.cc',
-        'tracker/midi_region_pattern_phenomenal_diff.cc',
-        'tracker/track_pattern_phenomenal_diff.cc',
-        'tracker/midi_track_pattern_phenomenal_diff.cc',
-        'tracker/audio_track_pattern_phenomenal_diff.cc',
-        'tracker/pattern_phenomenal_diff.cc',
-        'tracker/subgrid_selector.cc'
+        'export_video_dialog.cc'
 ]
+
+# tracker interface related sources: they are maintained in their own
+# wscript in the tracker subdirectory; load it and append its sources,
+# prefixed with 'tracker/', to the list above.  While waf loads this
+# wscript, sys.path[0] is the directory containing it.
+_tracker_wscript = load_module(os.path.join(sys.path[0], 'tracker', 'wscript'))
+gtk2_ardour_sources += ['tracker/' + source for source in _tracker_wscript.tracker_sources]
 
 def enoify (major, minor):
     # Code names based on
