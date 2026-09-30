@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+# Build description for the tracker editor.
+#
+# The tracker editor is compiled into the main ardour executable, so this
+# wscript is not recursed into directly: it is loaded by gtk2_ardour/wscript
+# (one directory up), which appends the sources below, prefixed with
+# 'tracker/', to gtk2_ardour_sources.
+
+# tracker interface related sources:
+tracker_sources = [
+        'base_pattern.cc',
+        'track_pattern.cc',
+        'midi_notes_pattern.cc',
+        'automation_pattern.cc',
+        'main_automation_pattern.cc',
+        'processor_automation_pattern.cc',
+        'track_automation_pattern.cc',
+        'track_all_automations_pattern.cc',
+        'midi_region_automation_pattern.cc',
+        'midi_region_pattern.cc',
+        'midi_track_pattern.cc',
+        'audio_track_pattern.cc',
+        'pattern.cc',
+        'main_toolbar.cc',
+        'track_toolbar.cc',
+        'audio_track_toolbar.cc',
+        'midi_track_toolbar.cc',
+        'track_header.cc',
+        'time_header.cc',
+        'grid_header.cc',
+        'tracker_editor.cc',
+        'tracker_utils.cc',
+        'grid.cc',
+        'tracker_column.cc',
+        'base_pattern_phenomenal_diff.cc',
+        'midi_notes_pattern_phenomenal_diff.cc',
+        'rows_phenomenal_diff.cc',
+        'midi_region_automation_pattern_phenomenal_diff.cc',
+        'automation_pattern_phenomenal_diff.cc',
+        'processor_automation_pattern_phenomenal_diff.cc',
+        'track_all_automations_pattern_phenomenal_diff.cc',
+        'midi_region_pattern_phenomenal_diff.cc',
+        'track_pattern_phenomenal_diff.cc',
+        'midi_track_pattern_phenomenal_diff.cc',
+        'audio_track_pattern_phenomenal_diff.cc',
+        'pattern_phenomenal_diff.cc',
+        'subgrid_selector.cc'
+]
