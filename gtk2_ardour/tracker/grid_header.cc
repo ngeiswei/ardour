@@ -16,6 +16,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "pbd/i18n.h"
+
+#include <glibmm/main.h>
+
 #include "grid_header.h"
 #include "tracker_editor.h"
 
@@ -28,6 +32,17 @@ GridHeader::GridHeader (TrackerEditor& te)
 	pack_start (time_header, Gtk::PACK_SHRINK);
 	setup_track_headers ();
 	show ();
+
+	// Re-align the headers whenever the Grid (TreeView) has been
+	// laid out with a new size, e.g. after the user resizes the
+	// tracker window. Without this, the headers would stay at their
+	// previous size_request while the columns reflow, leaving them
+	// misaligned until the next redisplay. align_deferred() coalesces
+	// successive calls, so even a stream of size-allocate signals
+	// (e.g. during a continuous resize drag) results in a single
+	// alignment once the layout has settled.
+	grid_size_allocate_connection = tracker_editor.grid.signal_size_allocate ().connect (
+		[this] (Gtk::Allocation&) { align_deferred (); });
 }
 
 void
@@ -51,6 +66,8 @@ GridHeader::setup_track_headers ()
 
 GridHeader::~GridHeader ()
 {
+	grid_size_allocate_connection.disconnect ();
+	align_deferred_connection.disconnect ();
 	for (std::vector<TrackHeader*>::iterator it = track_headers.begin (); it != track_headers.end (); ++it) {
 		delete *it;
 	}
@@ -84,4 +101,20 @@ GridHeader::align ()
 		int track_width = tracker_editor.grid.get_track_width (mti);
 		set_track_header_size (mti, track_width);
 	}
+}
+
+void
+GridHeader::align_deferred ()
+{
+	// Coalesce: if a deferred alignment is already pending, do nothing.
+	if (align_deferred_connection.connected ()) {
+		return;
+	}
+	align_deferred_connection = Glib::signal_idle ().connect (
+		[this] () {
+			// Returning false disconnects the idle handler, so the
+			// next align_deferred() schedules a fresh one.
+			align ();
+			return false;
+		});
 }
