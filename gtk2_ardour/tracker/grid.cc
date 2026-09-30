@@ -549,8 +549,11 @@ Grid::redisplay_visible_note ()
 	// Keep the window width to its minimum
 	tracker_editor.resize_width ();
 
-	// Align track toolbar
-	tracker_editor.grid_header->align ();
+	// Align track toolbar (deferred so that column widths queried
+	// during align() reflect the post-visibility-change layout of the
+	// Grid, rather than the stale widths returned immediately after
+	// set_visible()).
+	tracker_editor.grid_header->align_deferred ();
 }
 
 int
@@ -607,8 +610,8 @@ Grid::redisplay_visible_channel ()
 	// Keep the window width to its minimum
 	tracker_editor.resize_width ();
 
-	// Align track toolbar
-	tracker_editor.grid_header->align ();
+	// Align track toolbar (deferred; see redisplay_visible_note).
+	tracker_editor.grid_header->align_deferred ();
 }
 
 int
@@ -637,8 +640,8 @@ Grid::redisplay_visible_velocity ()
 	// Keep the window width to its minimum
 	tracker_editor.resize_width ();
 
-	// Align track toolbar
-	tracker_editor.grid_header->align ();
+	// Align track toolbar (deferred; see redisplay_visible_note).
+	tracker_editor.grid_header->align_deferred ();
 }
 
 int
@@ -667,8 +670,8 @@ Grid::redisplay_visible_delay ()
 	// Keep the window width to its minimum
 	tracker_editor.resize_width ();
 
-	// Align track toolbar
-	tracker_editor.grid_header->align ();
+	// Align track toolbar (deferred; see redisplay_visible_note).
+	tracker_editor.grid_header->align_deferred ();
 }
 
 int
@@ -748,8 +751,8 @@ Grid::redisplay_visible_automation_delay ()
 	// Keep the window width to its minimum
 	tracker_editor.resize_width ();
 
-	// Align track toolbar
-	tracker_editor.grid_header->align ();
+	// Align track toolbar (deferred; see redisplay_visible_note).
+	tracker_editor.grid_header->align_deferred ();
 }
 
 int
@@ -1004,7 +1007,7 @@ Grid::redisplay_grid ()
 	redisplay_visible_automation_separator ();
 
 	redisplay_left_right_separator_columns ();
-	tracker_editor.grid_header->align ();
+	tracker_editor.grid_header->align_deferred ();
 
 	// Save pattern to prev_pattern for subsequent phenomenal diff calculation
 	prev_pattern = pattern;
