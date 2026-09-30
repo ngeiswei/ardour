@@ -21,6 +21,8 @@
 
 #include <vector>
 
+#include <sigc++/connection.h>
+
 #include "time_header.h"
 #include "track_header.h"
 
@@ -49,10 +51,35 @@ public:
 	 */
 	void align ();
 
+	/**
+	 * Schedule an alignment to occur once GTK has had a chance to lay
+	 * out the Grid (and its columns) after the columns visibility or
+	 * count has changed. Without this deferral, querying the columns'
+	 * widths from align() would return stale values because the tree
+	 * view's size allocation has not yet been processed, leaving the
+	 * headers misaligned with the columns until the next redisplay.
+	 *
+	 * Subsequent calls before the deferred alignment runs are
+	 * coalesced into a single align().
+	 */
+	void align_deferred ();
+
 	TrackerEditor& tracker_editor;
 
 	TimeHeader time_header;
 	std::vector<TrackHeader*> track_headers;
+
+private:
+	// Connection for a pending deferred alignment. Disconnects itself
+	// once it fires so the next align_deferred() schedules a fresh one.
+	sigc::connection align_deferred_connection;
+
+	// Connection from the Grid's size-allocate signal, used to
+	// re-align the headers after the tree view has been laid out
+	// (e.g. after the user resizes the tracker window, which would
+	// otherwise leave the headers misaligned with the columns until
+	// the next redisplay).
+	sigc::connection grid_size_allocate_connection;
 };
 
 } // ~namespace tracker
