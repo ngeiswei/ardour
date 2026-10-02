@@ -44,14 +44,16 @@ TrackHeader::TrackHeader (TrackerEditor& te, TrackPattern* tp, int mti)
 	// Add toolbar to frame body
 	add (*track_toolbar);
 
-	// Use the track's color as the frame's background, matching the
-	// color used for the left/right separator columns in the grid
-	// (see Grid::redisplay_left_right_separator). If the track isn't
-	// currently visible in the public editor, time_axis_view_from_stripable
-	// returns nullptr and we leave the frame's background untouched.
-	if (TimeAxisView* tav = te.public_editor.time_axis_view_from_stripable (tp->track)) {
-		modify_bg (Gtk::STATE_NORMAL, tav->color ());
-	}
+	// The following is disabled cause it does not look so well.
+	//
+	// // Use the track's color as the frame's background, matching the
+	// // color used for the left/right separator columns in the grid
+	// // (see Grid::redisplay_left_right_separator). If the track isn't
+	// // currently visible in the public editor, time_axis_view_from_stripable
+	// // returns nullptr and we leave the frame's background untouched.
+	// if (TimeAxisView* tav = te.public_editor.time_axis_view_from_stripable (tp->track)) {
+	// 	modify_bg (Gtk::STATE_NORMAL, tav->color ());
+	// }
 
 	show ();
 }
