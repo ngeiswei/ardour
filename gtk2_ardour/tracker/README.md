@@ -37,16 +37,9 @@ A documentation can be found [here](DOCUMENTATION.md).
 
 ## TODO
 
-- [ ] Final off note management fixes (look for NEXT)
+- [ ] Add popup menu with copy/paste, interpolate, etc
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
-- [ ] Avoid using `get_<something> ()` just use `<something> ()`
-- [ ] Try to get to the bottom of `foo ()` vs `foo()`
-- [ ] Remove `Route::get_control`
-- [ ] Create PR
-- [ ] All the code for modifying notes and such should be moved outside of
-      Grid.  See "TODO: move the following outside of Grid" in grid.cc for
-      example.
 - [ ] Create shortcut key to move to automation vs note
 - [ ] Add shortcut key to cycle through group index
 - [ ] Set position when clicking on the digit position (if the cell is already selected)
@@ -60,10 +53,8 @@ A documentation can be found [here](DOCUMENTATION.md).
 - [ ] What to do when playing and step editing is on?
 - [ ] Fix when trying to paste notes on values (add _note flag in std::string
       extension)
-- [ ] Add popup menu with copy/paste, interpolate, etc
 - [ ] Maybe save octave value per each track, possibly more
 - [ ] Support arbitrary number of tracks (put all properties in tracker_column)
-- [ ] Fix alignment with track toolbar
 - [ ] Fix grid focus. When click on a button, bring focus immediately back to
       the grid.
 - [ ] Fix window focus (the tracker editor window should have focus right away)
