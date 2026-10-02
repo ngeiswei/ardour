@@ -1,8 +1,5 @@
 # Next
 
-- [ ] NEXT.4: thoroughly test note to row mapping
-- [ ] NEXT.3: make sure `***` is correctly supported all over the place
-      (overwrite with notes, don't forget automations)
 - [ ] NEXT.2: reenable tracker for audio tracks
 - [ ] Carefully go over all NEXT comments
 
@@ -40,7 +37,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 
 ## TODO
 
-- [ ] Disable *Editing* when the window is hidden
 - [ ] Final off note management fixes (look for NEXT)
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
