@@ -88,6 +88,9 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	, _first (true)
 {
 	set_session (s);
+
+	signal_map ().connect (sigc::mem_fun (*this, &TrackerEditor::map_handler));
+	signal_unmap ().connect (sigc::mem_fun (*this, &TrackerEditor::unmap_handler));
 }
 
 TrackerEditor::~TrackerEditor ()
@@ -177,6 +180,23 @@ TrackerEditor::disconnect_midi_event ()
 {
 	grid.unset_step_editing_current_track ();
 	midi_event_connection.disconnect ();
+}
+
+void
+TrackerEditor::map_handler ()
+{
+	// Resume step-editing MIDI input when the window becomes visible again.
+	// The step-edit cursor underline will be redrawn by the next cursor move.
+	if (main_toolbar.step_edit) {
+		connect_midi_event ();
+	}
+}
+
+void
+TrackerEditor::unmap_handler ()
+{
+	// Stop step-editing MIDI input while the window is not visible.
+	disconnect_midi_event ();
 }
 
 void
