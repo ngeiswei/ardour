@@ -114,6 +114,9 @@ private:
 
 	// bool on_key_press_event (GdkEventKey* event);
 
+	void map_handler ();
+	void unmap_handler ();
+
 public:
 	// To not redo first time initialization when setup () is called again
 	bool _first;
