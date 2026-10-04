@@ -152,9 +152,12 @@ namespace {
 	std::vector<T>&
 	ensure_size (std::vector<T>& vec, size_t size)
 	{
-		if (vec.size () < size) {
-			vec.resize (size);
-		}
+		// Resize (not just grow): the lookup-table vectors used by the Grid
+		// persist across schema rebuilds, so they must shrink back down when
+		// the note/automation capacity decreases.  Otherwise stale column
+		// indices from the previous (larger) schema survive and cause
+		// out-of-range lookups in redisplay_visible_*().
+		vec.resize (size);
 		return vec;
 	}
 
