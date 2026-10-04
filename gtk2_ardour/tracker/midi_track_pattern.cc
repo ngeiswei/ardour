@@ -319,14 +319,6 @@ MidiTrackPattern::get_ntracks () const
 		ntracks = std::max (ntracks, mrps[mri]->mnp.ntracks);
 	}
 
-	if (ntracks > MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK) {
-		// TODO: use Ardour's logger instead of stdout
-		std::cout << "Warning: Number of note tracks needed for "
-		          << "the tracker interface is too high, "
-		          << "some notes might be discarded" << std::endl;
-		ntracks = MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK;
-	}
-
 	return ntracks;
 }
 

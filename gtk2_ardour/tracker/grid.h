@@ -19,6 +19,9 @@
 #ifndef __ardour_tracker_tracker_grid_h_
 #define __ardour_tracker_tracker_grid_h_
 
+#include <memory>
+#include <vector>
+
 #include <boost/bimap/bimap.hpp>
 
 #include <ydkmm/color.h>
@@ -38,18 +41,8 @@
 
 namespace Tracker {
 
-// Maximum number of note and automation tracks. Temporary limit before a
-// dedicated widget is created to replace Gtk::TreeModel::ColumnRecord
-
-// Maximum number of tracks in case of multi-track support
-#define MAX_NUMBER_OF_TRACKS 32
-
-// Maximum number of note tracks (note, channel, vel, del) per midi track
-#define MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK 16
-
-// Maximum number of automation columns per midi track
-#define MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK 16
-
+// The number of columns is no longer hard-limited.  Columns are allocated
+// on demand.  These constants describe the shape of a single group.
 #define NUMBER_OF_COL_PER_NOTE_TRACK 5 /*note+channel+velocity+delay+separator*/
 #define NUMBER_OF_COL_PER_AUTOMATION_TRACK 3 /*automation+delay+separator*/
 
@@ -72,43 +65,52 @@ public:
 
 	struct GridModelColumns : public Gtk::TreeModel::ColumnRecord {
 		GridModelColumns ();
+
+		// Resize the internal vectors so that indexing by [mti][cgi]
+		// is safe for the given dimensions.
+		void ensure_tracks (size_t ntracks, size_t nnotes, size_t nauto);
+
+		// Register all model columns with the ColumnRecord for the
+		// given dimensions.  Must be called after ensure_tracks().
+		void add_all_columns (size_t ntracks, size_t nnotes, size_t nauto);
+
 		// TODO: add empty columns to separate between each note track and each automations
 		Gtk::TreeModelColumn<std::string> _background_color; // TODO: use Gdk::Color, maybe
 		Gtk::TreeModelColumn<std::string> _family; // font family
 		Gtk::TreeModelColumn<std::string> _time_background_color;
 		// TODO: maybe use a row_idx column to rapidely retrieve the row_idx of a row
 		Gtk::TreeModelColumn<std::string> time;
-		Gtk::TreeModelColumn<std::string> _left_right_separator_background_color[MAX_NUMBER_OF_TRACKS];
-		Gtk::TreeModelColumn<std::string> left_separator[MAX_NUMBER_OF_TRACKS];
-		Gtk::TreeModelColumn<std::string> region_name[MAX_NUMBER_OF_TRACKS];
-		Gtk::TreeModelColumn<std::string> note_name[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _note_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _note_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> channel[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _channel_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _channel_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<Pango::AttrList> _channel_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> velocity[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _velocity_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _velocity_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<Pango::AttrList> _velocity_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<Pango::Alignment> _velocity_alignment[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<Pango::AttrList> _delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _note_empty[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK]; // empty column used as separator
-		Gtk::TreeModelColumn<std::string> automation[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _automation_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<Pango::AttrList> _automation_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> automation_delay[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_delay_background_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<std::string> _automation_delay_foreground_color[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // TODO: use Gdk::Color
-		Gtk::TreeModelColumn<Pango::AttrList> _automation_delay_attributes[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK];
-		Gtk::TreeModelColumn<std::string> _automation_empty[MAX_NUMBER_OF_TRACKS][MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK]; // empty column used as separator
-		Gtk::TreeModelColumn<std::string> right_separator[MAX_NUMBER_OF_TRACKS];
-		Gtk::TreeModelColumn<std::string> track_separator[MAX_NUMBER_OF_TRACKS];
+		std::vector<Gtk::TreeModelColumn<std::string> > _left_right_separator_background_color;
+		std::vector<Gtk::TreeModelColumn<std::string> > left_separator;
+		std::vector<Gtk::TreeModelColumn<std::string> > region_name;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > note_name;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _note_background_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _note_foreground_color;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > channel; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _channel_background_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _channel_foreground_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<Pango::AttrList> > > _channel_attributes;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > velocity;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _velocity_background_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _velocity_foreground_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<Pango::AttrList> > > _velocity_attributes;
+		std::vector<std::vector<Gtk::TreeModelColumn<Pango::Alignment> > > _velocity_alignment;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > delay;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _delay_background_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _delay_foreground_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<Pango::AttrList> > > _delay_attributes;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _note_empty; // empty column used as separator
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > automation;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _automation_background_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _automation_foreground_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<Pango::AttrList> > > _automation_attributes;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > automation_delay;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _automation_delay_background_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _automation_delay_foreground_color; // TODO: use Gdk::Color
+		std::vector<std::vector<Gtk::TreeModelColumn<Pango::AttrList> > > _automation_delay_attributes;
+		std::vector<std::vector<Gtk::TreeModelColumn<std::string> > > _automation_empty; // empty column used as separator
+		std::vector<Gtk::TreeModelColumn<std::string> > right_separator;
+		std::vector<Gtk::TreeModelColumn<std::string> > track_separator;
 	};
 
 	// For playhead synchronization
@@ -202,6 +204,7 @@ public:
 	void redisplay_left_right_separator_columns (int mti);
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, int mti);
 	void redisplay_track_separator (int mti);
+	void redisplay_track_separator_columns ();
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, int mti);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, int mti); // Display undefined notes at row and mti
 	void redisplay_undefined_note (Gtk::TreeModel::Row& row, int mti, int cgi); // Display undefined note at row, mti and cgi
@@ -213,8 +216,8 @@ public:
 	void redisplay_automation_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_note_foreground (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi);
 	void redisplay_current_automation_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
-	void redisplay_current_row_background ();
 	void redisplay_current_cursor ();
+	void redisplay_current_row_background ();
 	void redisplay_blank_automation_foreground (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param);
 	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param);
@@ -301,6 +304,12 @@ public:
 	typedef boost::bimaps::bimap<int, IDParameter> IndexParamBimap;
 	std::vector<IndexParamBimap> col2params; // For each track
 
+	// Current column-schema capacities.  If the pattern ever needs more
+	// than these, the model and columns are rebuilt larger.
+	size_t capacity_tracks;
+	std::vector<size_t> capacity_note_tracks;
+	std::vector<size_t> capacity_automation_tracks;
+
 	// Keep track of all visible automation columns across all midi tracks
 	std::set<int> visible_automation_columns;
 
@@ -317,7 +326,7 @@ public:
 	// same row, then this string is printed.
 	static const std::string undisplayable_str;
 
-	GridModelColumns columns;
+	std::unique_ptr<GridModelColumns> columns;
 	Glib::RefPtr<Gtk::ListStore> model;
 
 	// Location associated to current cursor
@@ -365,6 +374,16 @@ public:
 	std::set<uint8_t> current_on_notes;
 
 private:
+	// Determine whether the current pattern needs more columns than
+	// the current schema provides, and rebuild the model + TreeView if
+	// necessary.  Returns true if a rebuild took place.
+	bool ensure_schema ();
+
+	// Rebuild columns, model and TreeView for a fresh schema.  Called
+	// from ensure_schema() when capacity must increase.  If nauto_hint
+	// is non-zero, at least that many automation columns are allocated.
+	void rebuild_schema (size_t nauto_hint = 0);
+
 	void init_columns ();
 	void init_model ();
 	void connect_tooltips ();
@@ -805,6 +824,22 @@ private:
 	// Map column index to automation cgi and vice versa
 	typedef boost::bimaps::bimap<int, int> IndexBimap;
 
+	// Dynamic column-index lookups.  These are filled when the
+	// TreeView columns are appended and are stable between rebuilds
+	// (but values change after rebuilds).
+	std::vector<int> left_separator_colnums;
+	std::vector<int> region_name_colnums;
+	std::vector<std::vector<int> > note_colnums;
+	std::vector<std::vector<int> > note_channel_colnums;
+	std::vector<std::vector<int> > note_velocity_colnums;
+	std::vector<std::vector<int> > note_delay_colnums;
+	std::vector<std::vector<int> > note_separator_colnums;
+	std::vector<std::vector<int> > automation_colnums;
+	std::vector<std::vector<int> > automation_delay_colnums;
+	std::vector<std::vector<int> > automation_separator_colnums;
+	std::vector<int> right_separator_colnums;
+	std::vector<std::vector<int> > automation_col_offsets;
+
 	// Columns
 	Gtk::TreeViewColumn* time_column;
 	std::vector<Gtk::TreeViewColumn*> left_separator_columns;
@@ -830,7 +865,7 @@ private:
 	std::vector<std::vector<int> > pan_columns;
 
 	// List of column indices currently unassigned to an automation per midi track
-	std::vector<std::set<int>> available_automation_columns;
+	std::vector<std::set<int> > available_automation_columns;
 
 	// Colors from config
 	Gtkmm2ext::Color gtk_bases_color;
@@ -847,6 +882,11 @@ private:
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
 	PatternPhenomenalDiff _phenomenal_diff;
+
+	// Set when the schema/model is rebuilt outside of redisplay_grid() (e.g.
+	// by select_available_automation_column()).  The next redisplay_grid()
+	// must then perform a full redisplay because the model rows were dropped.
+	bool _schema_rebuilt_elsewhere;
 
 	// Stack keeping track of when to skip follow_playhead to avoid
 	// inconsistencies due to the delays between calling set_current_cursor with
