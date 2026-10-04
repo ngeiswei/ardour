@@ -17,6 +17,7 @@
  */
 
 #include <cctype>
+#include <memory>
 #include <cmath>
 #include <iterator>
 #include <map>
@@ -85,6 +86,7 @@ const std::string Grid::undisplayable_str = "***";
 
 Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
+	, capacity_tracks (0)
 	, pattern (te, true /* connect */)
 	, prev_pattern (te, false /* not connect */)
 	, current_path (1)			  // NEXT: why 1?
@@ -113,6 +115,7 @@ Grid::Grid (TrackerEditor& te)
 	, shift_pressed (false)
 	, cellfont ("Monospace")
 	, time_column (0)
+	, _schema_rebuilt_elsewhere (false)
 	, _subgrid_selector (te)
 {
 	UIConfiguration::instance().ParameterChanged.connect (sigc::mem_fun (*this, &Grid::parameter_changed));
@@ -127,14 +130,14 @@ Grid::~Grid ()
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		delete left_separator_columns[mti];
 		delete region_name_columns[mti];
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+		for (size_t cgi = 0; cgi < note_columns[mti].size (); cgi++) {
 			delete note_columns[mti][cgi];
 			delete channel_columns[mti][cgi];
 			delete velocity_columns[mti][cgi];
 			delete delay_columns[mti][cgi];
 			delete note_separator_columns[mti][cgi];
 		}
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		for (size_t cgi = 0; cgi < automation_columns[mti].size (); cgi++) {
 			delete automation_columns[mti][cgi];
 			delete automation_delay_columns[mti][cgi];
 			delete automation_separator_columns[mti][cgi];
@@ -144,19 +147,98 @@ Grid::~Grid ()
 	}
 }
 
+namespace {
+	template <class T>
+	std::vector<T>&
+	ensure_size (std::vector<T>& vec, size_t size)
+	{
+		if (vec.size () < size) {
+			vec.resize (size);
+		}
+		return vec;
+	}
+
+	template <class T>
+	std::vector<std::vector<T> >&
+	ensure_size_2d (std::vector<std::vector<T> >& vec, size_t dim1, size_t dim2)
+	{
+		ensure_size (vec, dim1);
+		for (size_t i = 0; i < dim1; i++) {
+			ensure_size (vec[i], dim2);
+		}
+		return vec;
+	}
+
+	// Round up n to a small chunk size so that minor column changes
+	// don't repeatedly rebuild the model.
+	size_t grow_chunk (size_t n)
+	{
+		const size_t chunk = 4;
+		return ((n + chunk - 1) / chunk) * chunk;
+	}
+}
+
 Grid::GridModelColumns::GridModelColumns ()
 {
-	// The background color differs when the row is on beats and
-	// bars. This is to keep track of it.
 	add (_background_color);
 	add (_family);
 	add (_time_background_color);
 	add (time);
-	for (size_t mti /* multi track index */ = 0; mti < MAX_NUMBER_OF_TRACKS; mti++) {
+}
+
+void
+Grid::GridModelColumns::ensure_tracks (size_t ntracks, size_t nnotes, size_t nauto)
+{
+	ensure_size (_left_right_separator_background_color, ntracks);
+	ensure_size (left_separator, ntracks);
+	ensure_size (region_name, ntracks);
+
+	ensure_size_2d (note_name, ntracks, nnotes);
+	ensure_size_2d (_note_background_color, ntracks, nnotes);
+	ensure_size_2d (_note_foreground_color, ntracks, nnotes);
+	ensure_size_2d (channel, ntracks, nnotes);
+	ensure_size_2d (_channel_background_color, ntracks, nnotes);
+	ensure_size_2d (_channel_foreground_color, ntracks, nnotes);
+	ensure_size_2d (_channel_attributes, ntracks, nnotes);
+	ensure_size_2d (velocity, ntracks, nnotes);
+	ensure_size_2d (_velocity_background_color, ntracks, nnotes);
+	ensure_size_2d (_velocity_foreground_color, ntracks, nnotes);
+	ensure_size_2d (_velocity_attributes, ntracks, nnotes);
+	ensure_size_2d (_velocity_alignment, ntracks, nnotes);
+	ensure_size_2d (delay, ntracks, nnotes);
+	ensure_size_2d (_delay_background_color, ntracks, nnotes);
+	ensure_size_2d (_delay_foreground_color, ntracks, nnotes);
+	ensure_size_2d (_delay_attributes, ntracks, nnotes);
+	ensure_size_2d (_note_empty, ntracks, nnotes);
+
+	ensure_size_2d (automation, ntracks, nauto);
+	ensure_size_2d (_automation_background_color, ntracks, nauto);
+	ensure_size_2d (_automation_foreground_color, ntracks, nauto);
+	ensure_size_2d (_automation_attributes, ntracks, nauto);
+	ensure_size_2d (automation_delay, ntracks, nauto);
+	ensure_size_2d (_automation_delay_background_color, ntracks, nauto);
+	ensure_size_2d (_automation_delay_foreground_color, ntracks, nauto);
+	ensure_size_2d (_automation_delay_attributes, ntracks, nauto);
+	ensure_size_2d (_automation_empty, ntracks, nauto);
+
+	ensure_size (right_separator, ntracks);
+	ensure_size (track_separator, ntracks);
+}
+
+void
+Grid::GridModelColumns::add_all_columns (size_t ntracks, size_t nnotes, size_t nauto)
+{
+	// The four global columns (_background_color, _family,
+	// _time_background_color and time) are already registered by the
+	// GridModelColumns constructor, so only the per-track columns are
+	// registered here.
+
+	for (size_t mti = 0; mti < ntracks; mti++) {
 		add (_left_right_separator_background_color[mti]);
 		add (left_separator[mti]);
 		add (region_name[mti]);
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+
+		for (size_t cgi = 0; cgi < nnotes; cgi++) {
 			add (note_name[mti][cgi]);
 			add (_note_background_color[mti][cgi]);
 			add (_note_foreground_color[mti][cgi]);
@@ -175,7 +257,8 @@ Grid::GridModelColumns::GridModelColumns ()
 			add (_delay_attributes[mti][cgi]);
 			add (_note_empty[mti][cgi]);
 		}
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+
+		for (size_t cgi = 0; cgi < nauto; cgi++) {
 			add (automation[mti][cgi]);
 			add (_automation_background_color[mti][cgi]);
 			add (_automation_foreground_color[mti][cgi]);
@@ -186,6 +269,7 @@ Grid::GridModelColumns::GridModelColumns ()
 			add (_automation_delay_attributes[mti][cgi]);
 			add (_automation_empty[mti][cgi]);
 		}
+
 		add (right_separator[mti]);
 		add (track_separator[mti]);
 	}
@@ -217,8 +301,19 @@ Grid::set_col_title (Gtk::TreeViewColumn* col, const std::string& title, const s
 int
 Grid::select_available_automation_column (int mti)
 {
+	// If this track has no free automation column, grow the automation
+	// capacity by one chunk and rebuild the schema.  This is the
+	// on-demand allocation path for automations.
+	if (mti < 0 || mti >= (int)available_automation_columns.size () ||
+	    available_automation_columns[mti].empty ()) {
+		size_t cur = capacity_automation_tracks.empty () ? 0 : capacity_automation_tracks[0];
+		rebuild_schema (grow_chunk (cur + 1));
+		_schema_rebuilt_elsewhere = true;
+	}
+
 	// Find the next available column
-	if (available_automation_columns[mti].empty()) {
+	if (mti < 0 || mti >= (int)available_automation_columns.size () ||
+	    available_automation_columns[mti].empty ()) {
 		std::cout << "Warning: no more available automation column" << std::endl;
 		return 0;
 	}
@@ -397,10 +492,8 @@ Grid::set_automation_column_visible (int mti, const IDParameter& id_param, int c
 bool
 Grid::has_visible_automation (int mti) const
 {
-	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
-		int col = automation_colnum (mti, cgi);
-		bool visible = TrackerUtils::is_in (col, visible_automation_columns);
-		if (visible) {
+	for (IndexParamBimap::left_const_iterator it = col2params[mti].left.begin (); it != col2params[mti].left.end (); ++it) {
+		if (it->first != 0 && TrackerUtils::is_in (it->first, visible_automation_columns)) {
 			return true;
 		}
 	}
@@ -533,8 +626,12 @@ Grid::update_pan_columns_visibility (int mti)
 void
 Grid::redisplay_visible_note ()
 {
-	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+	if (!tracker_editor.grid_header || tracker_editor.grid_header->track_headers.empty ()) {
+		return;
+	}
+
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < tracker_editor.grid_header->track_headers.size (); mti++) {
+		for (size_t cgi = 0; cgi < note_colnums[mti].size (); cgi++) {
 			bool visible = pattern.tps[mti]->enabled
 				&& pattern.tps[mti]->is_midi_track_pattern ()
 				&& cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks ()
@@ -559,17 +656,22 @@ Grid::redisplay_visible_note ()
 int
 Grid::mti_col_offset (int mti) const
 {
-	return 1 /* time */
-		+ mti * (1 /* left separator */ + 1 /* region name */ +
-		         MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK
-		         + MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_AUTOMATION_TRACK
-		         + 1 /* right separator */ + 1 /* track separator */);
+	int offset = 1; // time
+	for (int i = 0; i < mti; i++) {
+		offset += 1; // left separator
+		offset += 1; // region name
+		offset += note_colnums[i].size () * NUMBER_OF_COL_PER_NOTE_TRACK;
+		offset += automation_colnums[i].size () * NUMBER_OF_COL_PER_AUTOMATION_TRACK;
+		offset += 1; // right separator
+		offset += 1; // track separator
+	}
+	return offset;
 }
 
 int
 Grid::left_separator_colnum (int mti) const
 {
-	return mti_col_offset (mti) + 1 /* left separator */;
+	return left_separator_colnums[mti];
 }
 
 void
@@ -581,20 +683,24 @@ Grid::redisplay_visible_left_separator (int mti) const
 int
 Grid::region_name_colnum (int mti) const
 {
-	return left_separator_colnum (mti) + 1 /* region name */;
+	return region_name_colnums[mti];
 }
 
 int
 Grid::note_colnum (int mti, int cgi) const
 {
-	return region_name_colnum (mti) + cgi * NUMBER_OF_COL_PER_NOTE_TRACK;
+	return note_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_channel ()
 {
-	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < tracker_editor.grid_header->track_headers.size (); mti++) {
+		for (size_t cgi = 0; cgi < note_channel_colnums[mti].size (); cgi++) {
 			bool visible = pattern.tps[mti]->enabled
 				&& pattern.tps[mti]->is_midi_track_pattern ()
 				&& cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks ()
@@ -617,14 +723,18 @@ Grid::redisplay_visible_channel ()
 int
 Grid::note_channel_colnum (int mti, int cgi) const
 {
-	return note_colnum (mti, cgi) + 1 /* channel */;
+	return note_channel_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_velocity ()
 {
-	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < tracker_editor.grid_header->track_headers.size (); mti++) {
+		for (size_t cgi = 0; cgi < note_velocity_colnums[mti].size (); cgi++) {
 			bool visible = pattern.tps[mti]->enabled
 				&& pattern.tps[mti]->is_midi_track_pattern ()
 				&& cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks ()
@@ -647,14 +757,18 @@ Grid::redisplay_visible_velocity ()
 int
 Grid::note_velocity_colnum (int mti, int cgi) const
 {
-	return note_channel_colnum (mti, cgi) + 1 /* velocity */;
+	return note_velocity_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_delay ()
 {
-	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < tracker_editor.grid_header->track_headers.size (); mti++) {
+		for (size_t cgi = 0; cgi < note_delay_colnums[mti].size (); cgi++) {
 			bool visible = pattern.tps[mti]->enabled
 				&& pattern.tps[mti]->is_midi_track_pattern ()
 				&& cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks ()
@@ -677,14 +791,21 @@ Grid::redisplay_visible_delay ()
 int
 Grid::note_delay_colnum (int mti, int cgi) const
 {
-	return note_velocity_colnum (mti, cgi) + 1 /* delay */;
+	return note_delay_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_note_separator ()
 {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+		if (mti >= tracker_editor.grid_header->track_headers.size()) {
+			break;
+		}
+		for (size_t cgi = 0; cgi < note_separator_colnums[mti].size (); cgi++) {
 			bool visible = false;
 			if (pattern.tps[mti]->enabled && pattern.tps[mti]->is_midi_track_pattern ()) {
 				bool hva = has_visible_automation (mti);
@@ -703,17 +824,37 @@ Grid::redisplay_visible_note_separator ()
 int
 Grid::note_separator_colnum (int mti, int cgi) const
 {
-	return note_delay_colnum (mti, cgi) + 1 /* note group separator */;
+	return note_separator_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_automation ()
 {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		if (mti >= tracker_editor.grid_header->track_headers.size()) {
+			break;
+		}
+		for (IndexParamBimap::left_const_iterator it = col2params[mti].left.begin (); it != col2params[mti].left.end (); ++it) {
+			if (it->first == 0) {
+				continue;
+			}
+			IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (it->first);
+			if (cac_it == col2auto_cgi[mti].left.end ()) {
+				continue;
+			}
+			int cgi = cac_it->second;
 			int col = automation_colnum (mti, cgi);
 			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in (col, visible_automation_columns);
 			to_col (col)->set_visible (visible);
+		}
+		for (size_t cgi = 0; cgi < automation_colnums[mti].size (); cgi++) {
+			if (col2auto_cgi[mti].left.find (automation_colnums[mti][cgi]) == col2auto_cgi[mti].left.end ()) {
+				to_col (automation_colnum (mti, cgi))->set_visible (false);
+			}
 		}
 	}
 	redisplay_visible_automation_delay ();
@@ -725,26 +866,45 @@ Grid::redisplay_visible_automation ()
 int
 Grid::automation_col_offset (int mti) const
 {
-	return mti_col_offset (mti) + 1 /* left separator */ + 1 /* region name */
-		+ MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_NOTE_TRACK;
+	return automation_col_offsets[mti][0];
 }
 
 int
 Grid::automation_colnum (int mti, int cgi) const
 {
-	return automation_col_offset (mti) + NUMBER_OF_COL_PER_AUTOMATION_TRACK * cgi;
+	return automation_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_automation_delay ()
 {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		if (mti >= tracker_editor.grid_header->track_headers.size()) {
+			break;
+		}
+		for (IndexParamBimap::left_const_iterator it = col2params[mti].left.begin (); it != col2params[mti].left.end (); ++it) {
+			if (it->first == 0) {
+				continue;
+			}
+			IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (it->first);
+			if (cac_it == col2auto_cgi[mti].left.end ()) {
+				continue;
+			}
+			int cgi = cac_it->second;
 			int col = automation_delay_colnum (mti, cgi);
 			bool visible = pattern.tps[mti]->enabled
 				&& tracker_editor.grid_header->track_headers[mti]->track_toolbar->visible_delay
-				&& TrackerUtils::is_in (col - 1, visible_automation_columns);
+				&& TrackerUtils::is_in (automation_colnums[mti][cgi], visible_automation_columns);
 			to_col (col)->set_visible (visible);
+		}
+		for (size_t cgi = 0; cgi < automation_delay_colnums[mti].size (); cgi++) {
+			if (col2auto_cgi[mti].left.find (automation_colnums[mti][cgi]) == col2auto_cgi[mti].left.end ()) {
+				to_col (automation_delay_colnum (mti, cgi))->set_visible (false);
+			}
 		}
 	}
 
@@ -758,17 +918,24 @@ Grid::redisplay_visible_automation_delay ()
 int
 Grid::automation_delay_colnum (int mti, int cgi) const
 {
-	return automation_colnum (mti, cgi) + 1 /* delay */;
+	return automation_delay_colnums[mti][cgi];
 }
 
 void
 Grid::redisplay_visible_automation_separator ()
 {
+	if (!tracker_editor.grid_header || !tracker_editor.grid_header->track_headers.size()) {
+		return;
+	}
+
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
+		if (mti >= tracker_editor.grid_header->track_headers.size()) {
+			break;
+		}
 		int greatest_visible_col = 0;
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		for (size_t cgi = 0; cgi < automation_separator_colnums[mti].size (); cgi++) {
 			int col = automation_separator_colnum (mti, cgi);
-			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in (col - 2, visible_automation_columns);
+			bool visible = pattern.tps[mti]->enabled && TrackerUtils::is_in (automation_colnums[mti][cgi], visible_automation_columns);
 			if (visible) {
 				greatest_visible_col = std::max (greatest_visible_col, col);
 			}
@@ -786,14 +953,13 @@ Grid::redisplay_visible_automation_separator ()
 int
 Grid::automation_separator_colnum (int mti, int cgi) const
 {
-	return automation_delay_colnum (mti, cgi) + 1 /* automation group separator */;
+	return automation_separator_colnums[mti][cgi];
 }
 
 int
 Grid::right_separator_colnum (int mti) const
 {
-	return automation_col_offset (mti)
-		+ MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK * NUMBER_OF_COL_PER_AUTOMATION_TRACK;
+	return right_separator_colnums[mti];
 }
 
 void
@@ -830,28 +996,406 @@ Grid::init_columns ()
 
 		left_separator_columns.push_back (0);
 		region_name_columns.push_back (0);
-		note_columns.push_back (std::vector<NoteColumn*> (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
-		channel_columns.push_back (std::vector<ChannelColumn*> (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
-		velocity_columns.push_back (std::vector<VelocityColumn*> (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
-		delay_columns.push_back (std::vector<DelayColumn*> (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
-		note_separator_columns.push_back (std::vector<TreeViewColumn*> (MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK, 0));
-		automation_columns.push_back (std::vector<AutomationColumn*> (MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
-		automation_delay_columns.push_back (std::vector<AutomationDelayColumn*> (MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
-		automation_separator_columns.push_back (std::vector<TreeViewColumn*> (MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK, 0));
+		note_columns.push_back (std::vector<NoteColumn*> ());
+		channel_columns.push_back (std::vector<ChannelColumn*> ());
+		velocity_columns.push_back (std::vector<VelocityColumn*> ());
+		delay_columns.push_back (std::vector<DelayColumn*> ());
+		note_separator_columns.push_back (std::vector<TreeViewColumn*> ());
+		automation_columns.push_back (std::vector<AutomationColumn*> ());
+		automation_delay_columns.push_back (std::vector<AutomationDelayColumn*> ());
+		automation_separator_columns.push_back (std::vector<TreeViewColumn*> ());
 		right_separator_columns.push_back (0);
 		track_separator_columns.push_back (0);
+	}
+}
+
+bool
+Grid::ensure_schema ()
+{
+	if (editing_editable) {
+		return false;
+	}
+
+	size_t req_tracks = pattern.tps.size ();
+	size_t req_notes = 0;
+	size_t req_auto = 0;
+	for (size_t mti = 0; mti < req_tracks; mti++) {
+		if (pattern.tps[mti]->is_midi_track_pattern ()) {
+			req_notes = std::max (req_notes, (size_t)pattern.tps[mti]->midi_track_pattern ()->get_ntracks ());
+		}
+		size_t auto_count = 0;
+		if (mti < col2params.size ()) {
+			for (IndexParamBimap::left_const_iterator it = col2params[mti].left.begin ();
+			     it != col2params[mti].left.end (); ++it) {
+				if (it->first != 0) {
+					auto_count++;
+				}
+			}
+		}
+		req_auto = std::max (req_auto, auto_count);
+	}
+	req_notes = grow_chunk (req_notes);
+	req_auto = grow_chunk (req_auto);
+
+	bool need_rebuild = false;
+	if (req_tracks > capacity_tracks) {
+		need_rebuild = true;
+	}
+	for (size_t mti = 0; mti < req_tracks && !need_rebuild; mti++) {
+		if (mti >= capacity_note_tracks.size () ||
+		    req_notes > capacity_note_tracks[mti]) {
+			need_rebuild = true;
+		}
+		if (mti >= capacity_automation_tracks.size () ||
+		    req_auto > capacity_automation_tracks[mti]) {
+			need_rebuild = true;
+		}
+	}
+
+	if (!need_rebuild) {
+		return false;
+	}
+
+	rebuild_schema ();
+	return true;
+}
+
+void
+Grid::rebuild_schema (size_t nauto_hint)
+{
+	size_t ntracks = pattern.tps.size ();
+
+	// Remember logical cursor position in case TreeViewColumn pointers
+	// become invalid.
+	int saved_row_idx = current_row_idx;
+	TrackerColumn::NoteType saved_note_type = current_note_type;
+	TrackerColumn::AutomationType saved_auto_type = current_automation_type;
+	bool saved_is_note = current_is_note_type;
+	int saved_mti = current_mti;
+	int saved_cgi = current_cgi;
+
+	// Preserve automation parameter assignments by cgi.  Column indices will
+	// change after rebuild, but cgi (schema position) stays the same.
+	std::vector<std::map<int, IDParameter>> saved_cgi_to_param (ntracks);
+	for (size_t mti = 0; mti < ntracks && mti < col2params.size () && mti < col2auto_cgi.size (); mti++) {
+		for (IndexParamBimap::left_const_iterator it = col2params[mti].left.begin ();
+		     it != col2params[mti].left.end (); ++it) {
+			if (it->first == 0) {
+				continue;
+			}
+			IndexBimap::left_const_iterator cac_it = col2auto_cgi[mti].left.find (it->first);
+			if (cac_it != col2auto_cgi[mti].left.end ()) {
+				saved_cgi_to_param[mti].insert (std::make_pair (cac_it->second, it->second));
+			}
+		}
+	}
+
+	// Preserve visibility state per parameter.  After rebuild we will map each
+	// visible parameter to its new column index.
+	std::set<int> saved_visible_automation_columns = visible_automation_columns;
+	std::vector<std::set<IDParameter>> saved_visible_params (ntracks);
+	std::vector<std::vector<IDParameter>> saved_pan_params (ntracks);
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		if (mti < gain_columns.size () && gain_columns[mti] != 0 &&
+		    saved_visible_automation_columns.find (gain_columns[mti]) != saved_visible_automation_columns.end ()) {
+			saved_visible_params[mti].insert (IDParameter (PBD::ID (0), Evoral::Parameter (GainAutomation)));
+		}
+		if (mti < trim_columns.size () && trim_columns[mti] != 0 &&
+		    saved_visible_automation_columns.find (trim_columns[mti]) != saved_visible_automation_columns.end ()) {
+			saved_visible_params[mti].insert (IDParameter (PBD::ID (0), Evoral::Parameter (TrimAutomation)));
+		}
+		if (mti < mute_columns.size () && mute_columns[mti] != 0 &&
+		    saved_visible_automation_columns.find (mute_columns[mti]) != saved_visible_automation_columns.end ()) {
+			saved_visible_params[mti].insert (IDParameter (PBD::ID (0), Evoral::Parameter (MuteAutomation)));
+		}
+		if (mti < pan_columns.size () && mti < col2params.size ()) {
+			for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
+				IndexParamBimap::left_const_iterator cp_it = col2params[mti].left.find (*it);
+				if (cp_it != col2params[mti].left.end ()) {
+					saved_pan_params[mti].push_back (cp_it->second);
+					if (saved_visible_automation_columns.find (*it) != saved_visible_automation_columns.end ()) {
+						saved_visible_params[mti].insert (cp_it->second);
+					}
+				}
+			}
+		}
+		if (mti < col2params.size ()) {
+			for (IndexParamBimap::left_const_iterator it = col2params[mti].left.begin ();
+			     it != col2params[mti].left.end (); ++it) {
+				if (it->first != 0 &&
+				    saved_visible_automation_columns.find (it->first) != saved_visible_automation_columns.end ()) {
+					saved_visible_params[mti].insert (it->second);
+				}
+			}
+		}
+	}
+
+	// Drop old columns from the TreeView.
+	remove_all_columns ();
+
+	// Destroy old TreeView column widgets and clear all containers so that
+	// setup_data_columns() performs a fresh build.
+	delete time_column;
+	time_column = 0;
+	for (size_t mti = 0; mti < left_separator_columns.size (); mti++) {
+		delete left_separator_columns[mti];
+		delete region_name_columns[mti];
+		for (size_t cgi = 0; cgi < note_columns[mti].size (); cgi++) {
+			delete note_columns[mti][cgi];
+			delete channel_columns[mti][cgi];
+			delete velocity_columns[mti][cgi];
+			delete delay_columns[mti][cgi];
+			delete note_separator_columns[mti][cgi];
+		}
+		for (size_t cgi = 0; cgi < automation_columns[mti].size (); cgi++) {
+			delete automation_columns[mti][cgi];
+			delete automation_delay_columns[mti][cgi];
+			delete automation_separator_columns[mti][cgi];
+		}
+		delete right_separator_columns[mti];
+		delete track_separator_columns[mti];
+	}
+	left_separator_columns.clear ();
+	region_name_columns.clear ();
+	note_columns.clear ();
+	channel_columns.clear ();
+	velocity_columns.clear ();
+	delay_columns.clear ();
+	note_separator_columns.clear ();
+	automation_columns.clear ();
+	automation_delay_columns.clear ();
+	automation_separator_columns.clear ();
+	right_separator_columns.clear ();
+	track_separator_columns.clear ();
+	gain_columns.clear ();
+	trim_columns.clear ();
+	mute_columns.clear ();
+	col2params.clear ();
+	col2auto_cgi.clear ();
+	pan_columns.clear ();
+	available_automation_columns.clear ();
+	visible_automation_columns.clear ();
+
+	// Compute new capacities per track.
+	size_t nnotes = 0;
+	size_t nauto = 0;
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		size_t req_notes = pattern.tps[mti]->is_midi_track_pattern ()
+			? pattern.tps[mti]->midi_track_pattern ()->get_ntracks ()
+			: 0;
+		size_t req_auto = saved_cgi_to_param[mti].size ();
+		nnotes = std::max (nnotes, req_notes);
+		nauto = std::max (nauto, req_auto);
+	}
+	nnotes = grow_chunk (nnotes);
+	nauto = grow_chunk (std::max (nauto, nauto_hint));
+
+	capacity_tracks = ntracks;
+	capacity_note_tracks.assign (ntracks, nnotes);
+	capacity_automation_tracks.assign (ntracks, nauto);
+
+	// Re-create widget containers pre-sized to the new capacities so that
+	// setup_data_columns() can assign by index ([mti][cgi] = ...).
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		left_separator_columns.push_back (0);
+		region_name_columns.push_back (0);
+		note_columns.push_back (std::vector<NoteColumn*> (nnotes, 0));
+		channel_columns.push_back (std::vector<ChannelColumn*> (nnotes, 0));
+		velocity_columns.push_back (std::vector<VelocityColumn*> (nnotes, 0));
+		delay_columns.push_back (std::vector<DelayColumn*> (nnotes, 0));
+		note_separator_columns.push_back (std::vector<TreeViewColumn*> (nnotes, 0));
+		automation_columns.push_back (std::vector<AutomationColumn*> (nauto, 0));
+		automation_delay_columns.push_back (std::vector<AutomationDelayColumn*> (nauto, 0));
+		automation_separator_columns.push_back (std::vector<TreeViewColumn*> (nauto, 0));
+		right_separator_columns.push_back (0);
+		track_separator_columns.push_back (0);
+	}
+
+	// Drop the old model and column record.
+	columns.reset ();
+	model.clear ();
+
+	// The old model rows are gone, so the cached current_row is now a stale
+	// TreeModel::Row referencing freed storage.  Invalidate current_row_idx so
+	// that redisplay_row_background()/unset_underline_current_step_edit_cell()
+	// bail out via their INVALID_ROW guards instead of dereferencing it.
+	// redisplay_current_row() restores the cursor after rows are repopulated.
+	current_row = Gtk::TreeModel::Row ();
+	current_row_idx = BasePattern::INVALID_ROW;
+
+	// Create fresh model columns with the new capacities.
+	columns.reset (new GridModelColumns ());
+	columns->ensure_tracks (ntracks, nnotes, nauto);
+	columns->add_all_columns (ntracks, nnotes, nauto);
+
+	// Create model and columns.
+	model = ListStore::create (*columns);
+	set_model (model);
+
+	// Resize dynamic lookup tables.
+	ensure_size (left_separator_colnums, ntracks);
+	ensure_size (region_name_colnums, ntracks);
+	ensure_size_2d (note_colnums, ntracks, nnotes);
+	ensure_size_2d (note_channel_colnums, ntracks, nnotes);
+	ensure_size_2d (note_velocity_colnums, ntracks, nnotes);
+	ensure_size_2d (note_delay_colnums, ntracks, nnotes);
+	ensure_size_2d (note_separator_colnums, ntracks, nnotes);
+	ensure_size_2d (automation_colnums, ntracks, nauto);
+	ensure_size_2d (automation_delay_colnums, ntracks, nauto);
+	ensure_size_2d (automation_separator_colnums, ntracks, nauto);
+	ensure_size (right_separator_colnums, ntracks);
+	ensure_size_2d (automation_col_offsets, ntracks, 1);
+
+	// Rebuild TreeView columns from scratch.
+	setup_time_column ();
+	setup_data_columns ();
+
+	// Restore automation parameter assignments using the preserved
+	// cgi-to-parameter mapping.
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		for (std::map<int, IDParameter>::const_iterator it = saved_cgi_to_param[mti].begin ();
+		     it != saved_cgi_to_param[mti].end (); ++it) {
+			int cgi = it->first;
+			const IDParameter& id_param = it->second;
+			if (cgi < 0 || cgi >= (int)automation_colnums[mti].size ()) {
+				continue;
+			}
+			int new_col = automation_colnums[mti][cgi];
+			col2params[mti].insert (IndexParamBimap::value_type (new_col, id_param));
+			available_automation_columns[mti].erase (new_col);
+
+			std::string long_name = get_name (mti, id_param, false);
+			std::string short_name = get_name (mti, id_param, true);
+			Gtk::TreeViewColumn* col = to_col (new_col);
+			if (col) {
+				set_col_title (col, short_name, long_name);
+			}
+		}
+	}
+
+	// Restore main automation column variables.
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		for (IndexParamBimap::right_const_iterator it = col2params[mti].right.begin ();
+		     it != col2params[mti].right.end (); ++it) {
+			const Evoral::Parameter& param = it->first.second;
+			if (param == Evoral::Parameter (GainAutomation)) {
+				gain_columns[mti] = it->second;
+			} else if (param == Evoral::Parameter (TrimAutomation)) {
+				trim_columns[mti] = it->second;
+			} else if (param == Evoral::Parameter (MuteAutomation)) {
+				mute_columns[mti] = it->second;
+			}
+		}
+	}
+
+	// Restore pan column indices using the preserved pan parameters.
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		for (std::vector<IDParameter>::const_iterator it = saved_pan_params[mti].begin ();
+		     it != saved_pan_params[mti].end (); ++it) {
+			IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (*it);
+			if (cp_it != col2params[mti].right.end ()) {
+				pan_columns[mti].push_back (cp_it->second);
+			}
+		}
+	}
+
+	// Restore visibility using the preserved parameter set.
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		for (std::set<IDParameter>::const_iterator it = saved_visible_params[mti].begin ();
+		     it != saved_visible_params[mti].end (); ++it) {
+			IndexParamBimap::right_const_iterator cp_it = col2params[mti].right.find (*it);
+			if (cp_it != col2params[mti].right.end ()) {
+				visible_automation_columns.insert (cp_it->second);
+			}
+		}
+	}
+
+	// Re-apply visibility of all columns.
+	redisplay_visible_automation ();
+	redisplay_visible_automation_delay ();
+	redisplay_visible_automation_separator ();
+	redisplay_visible_note ();
+	redisplay_visible_channel ();
+	redisplay_visible_velocity ();
+	redisplay_visible_delay ();
+	redisplay_visible_note_separator ();
+	for (size_t mti = 0; mti < ntracks; mti++) {
+		redisplay_visible_left_separator (mti);
+		redisplay_visible_right_separator (mti);
+	}
+	redisplay_track_separator_columns ();
+
+	// Restore cursor by logical position.
+	if (saved_row_idx != BasePattern::INVALID_ROW && saved_mti >= 0) {
+		Gtk::TreeViewColumn* col = 0;
+		if (saved_is_note) {
+			switch (saved_note_type) {
+			case TrackerColumn::NoteType::NOTE:
+				col = saved_mti < (int)note_columns.size () && saved_cgi < (int)note_columns[saved_mti].size ()
+					? note_columns[saved_mti][saved_cgi] : 0;
+				break;
+			case TrackerColumn::NoteType::CHANNEL:
+				col = saved_mti < (int)channel_columns.size () && saved_cgi < (int)channel_columns[saved_mti].size ()
+					? channel_columns[saved_mti][saved_cgi] : 0;
+				break;
+			case TrackerColumn::NoteType::VELOCITY:
+				col = saved_mti < (int)velocity_columns.size () && saved_cgi < (int)velocity_columns[saved_mti].size ()
+					? velocity_columns[saved_mti][saved_cgi] : 0;
+				break;
+			case TrackerColumn::NoteType::DELAY:
+				col = saved_mti < (int)delay_columns.size () && saved_cgi < (int)delay_columns[saved_mti].size ()
+					? delay_columns[saved_mti][saved_cgi] : 0;
+				break;
+			default:
+				break;
+			}
+		} else {
+			switch (saved_auto_type) {
+			case TrackerColumn::AutomationType::AUTOMATION:
+				col = saved_mti < (int)automation_columns.size () && saved_cgi < (int)automation_columns[saved_mti].size ()
+					? automation_columns[saved_mti][saved_cgi] : 0;
+				break;
+			case TrackerColumn::AutomationType::AUTOMATION_DELAY:
+				col = saved_mti < (int)automation_delay_columns.size () && saved_cgi < (int)automation_delay_columns[saved_mti].size ()
+					? automation_delay_columns[saved_mti][saved_cgi] : 0;
+				break;
+			default:
+				break;
+			}
+		}
+		if (col) {
+			// Do NOT call set_current_cursor() here: the model has just been
+			// recreated and has no rows yet, so a full cursor restore would
+			// dereference an empty model.  Instead, only repoint the column
+			// pointer and its metadata; the row/cursor itself is restored
+			// later by redisplay_current_row() once rows are repopulated.
+			current_col = col;
+			current_col_idx = to_col_index (col);
+			current_mti = saved_mti;
+			current_cgi = saved_cgi;
+			current_note_type = saved_note_type;
+			current_automation_type = saved_auto_type;
+			current_is_note_type = saved_is_note;
+			if (saved_mti >= 0 && saved_mti < (int)pattern.tps.size ()) {
+				current_tp = pattern.tps[saved_mti];
+			}
+		} else {
+			current_col = 0;
+			current_col_idx = BasePattern::INVALID_COL;
+		}
 	}
 }
 
 void
 Grid::init_model ()
 {
-	if (!tracker_editor._first) {
+	if (!columns) {
 		return;
 	}
-
-	model = ListStore::create (columns);
-	set_model (model);
+	if (!model) {
+		model = ListStore::create (*columns);
+		set_model (model);
+	}
 }
 
 TreeViewColumn*
@@ -879,9 +1423,12 @@ Grid::setup ()
 	// pattern.
 	prev_pattern.setup ();
 	init_columns ();
+	bool schema_rebuilt = ensure_schema ();
 	init_model ();
-	setup_time_column ();
-	setup_data_columns ();
+	if (!schema_rebuilt) {
+		setup_time_column ();
+		setup_data_columns ();
+	}
 	connect_events ();
 	connect_tooltips ();
 	setup_tree_view ();
@@ -930,7 +1477,7 @@ Grid::redisplay_global_columns ()
 
 		// Time
 		Temporal::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
-		row[columns.time] = TrackerUtils::bbt_to_string (row_bbt, base ());
+		row[columns->time] = TrackerUtils::bbt_to_string (row_bbt, base ());
 
 		// If the row is on a bar, beat or otherwise, the color differs
 		Temporal::Beats row_beats = pattern.earliest_tp->beats_at_row (row_idx);
@@ -940,12 +1487,12 @@ Grid::redisplay_global_columns ()
 		                                     TrackerUtils::color_to_string (bar_background_color)
 		                                     : TrackerUtils::color_to_string (beat_background_color))
 		                                    : TrackerUtils::color_to_string (background_color));
-		row[columns._background_color] = row_background_color;
+		row[columns->_background_color] = row_background_color;
 
 		// Set font family
-		row[columns._family] = cellfont;
+		row[columns->_family] = cellfont;
 
-		row[columns._time_background_color] = row_background_color;
+		row[columns->_time_background_color] = row_background_color;
 	}
 }
 
@@ -977,6 +1524,20 @@ Grid::redisplay_grid ()
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
+
+	// Make sure the Gtk::TreeModel schema is large enough for the current
+	// pattern.  Rebuilding here creates fresh model columns and TreeView
+	// columns when pattern.update() discovers more note or automation
+	// tracks than the current schema can hold.
+	bool schema_rebuilt = ensure_schema ();
+	if (schema_rebuilt || _schema_rebuilt_elsewhere) {
+		// The old model rows and TreeView columns were destroyed (either by
+		// ensure_schema() above or by an earlier on-demand growth such as
+		// select_available_automation_column()); we must redisplay everything,
+		// not just the diff.
+		_phenomenal_diff.full = true;
+	}
+	_schema_rebuilt_elsewhere = false;
 
 	// Redisplay the grid
 	redisplay_global_columns ();
@@ -1045,16 +1606,16 @@ void
 Grid::redisplay_undefined_note (TreeModel::Row& row, int mti, int cgi)
 {
 	// cgi stands from column group index
-	row[columns.note_name[mti][cgi]] = "";
-	row[columns.channel[mti][cgi]] = "";
-	row[columns.velocity[mti][cgi]] = "";
-	row[columns.delay[mti][cgi]] = "";
+	row[columns->note_name[mti][cgi]] = "";
+	row[columns->channel[mti][cgi]] = "";
+	row[columns->velocity[mti][cgi]] = "";
+	row[columns->delay[mti][cgi]] = "";
 
 	// TODO: replace gtk_bases_color by a custom one
-	row[columns._note_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns._channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns._velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns._delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns->_note_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns->_channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns->_velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns->_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
 }
 
 void
@@ -1073,6 +1634,9 @@ Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, int mti
 	for (const Evoral::Parameter& param : ap.get_enabled_parameters ())
 	{
 		int cgi = to_cgi (mti, PBD::ID (0), param);
+		if (cgi < 0 || (size_t)cgi >= automation_colnums[mti].size ()) {
+			continue;
+		}
 		redisplay_undefined_automation (row, mti, cgi);
 	}
 }
@@ -1084,15 +1648,23 @@ Grid::redisplay_track_separator (int mti)
 }
 
 void
+Grid::redisplay_track_separator_columns ()
+{
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < track_separator_columns.size (); mti++) {
+		redisplay_track_separator (mti);
+	}
+}
+
+void
 Grid::redisplay_undefined_region_name (TreeModel::Row& row, int mti)
 {
-	row[columns.region_name[mti]] = "";
+	row[columns->region_name[mti]] = "";
 }
 
 void
 Grid::redisplay_left_right_separator_columns ()
 {
-	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < left_separator_columns.size (); mti++) {
 		redisplay_left_right_separator_columns (mti);
 	}
 }
@@ -1100,6 +1672,9 @@ Grid::redisplay_left_right_separator_columns ()
 void
 Grid::redisplay_left_right_separator_columns (int mti)
 {
+	if (!model) {
+		return;
+	}
 	TreeModel::Children::iterator row_it = model->children ().begin ();
 	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		TreeModel::Row row = *row_it++;
@@ -1110,10 +1685,14 @@ Grid::redisplay_left_right_separator_columns (int mti)
 void
 Grid::redisplay_left_right_separator (TreeModel::Row& row, int mti)
 {
+	if (mti >= (int)pattern.tps.size () || mti >= (int)left_separator_columns.size ()) {
+		return;
+	}
+
 	// TODO: fix synchronization with track toolbar
 
 	// Display track color for background
-	row[columns._left_right_separator_background_color[mti]] =
+	row[columns->_left_right_separator_background_color[mti]] =
 		gdk_color_to_string (tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color ().gobj ());
 
 	// Align with track toolbar
@@ -1134,22 +1713,22 @@ void
 Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi)
 {
 	// Set empty forground
-	row[columns.automation[mti][cgi]] = "";
-	row[columns.automation_delay[mti][cgi]] = "";
+	row[columns->automation[mti][cgi]] = "";
+	row[columns->automation_delay[mti][cgi]] = "";
 
 	// Set undefined background color
-	row[columns._automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns._automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns->_automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	row[columns->_automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
 }
 
 void
 Grid::redisplay_note_background (TreeModel::Row& row, int mti, int cgi)
 {
-	std::string row_background_color = row[columns._background_color];
-	row[columns._note_background_color[mti][cgi]] = row_background_color;
-	row[columns._channel_background_color[mti][cgi]] = row_background_color;
-	row[columns._velocity_background_color[mti][cgi]] = row_background_color;
-	row[columns._delay_background_color[mti][cgi]] = row_background_color;
+	std::string row_background_color = row[columns->_background_color];
+	row[columns->_note_background_color[mti][cgi]] = row_background_color;
+	row[columns->_channel_background_color[mti][cgi]] = row_background_color;
+	row[columns->_velocity_background_color[mti][cgi]] = row_background_color;
+	row[columns->_delay_background_color[mti][cgi]] = row_background_color;
 }
 
 void
@@ -1170,16 +1749,16 @@ Grid::redisplay_current_note_cursor (TreeModel::Row& row, int mti, int cgi)
 
 	switch (current_note_type) {
 	case TrackerColumn::NoteType::NOTE:
-		row[columns._note_background_color[mti][cgi]] = color;
+		row[columns->_note_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::NoteType::CHANNEL:
-		row[columns._channel_background_color[mti][cgi]] = color;
+		row[columns->_channel_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::NoteType::VELOCITY:
-		row[columns._velocity_background_color[mti][cgi]] = color;
+		row[columns->_velocity_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::NoteType::DELAY:
-		row[columns._delay_background_color[mti][cgi]] = color;
+		row[columns->_delay_background_color[mti][cgi]] = color;
 		break;
 	default:
 		std::cerr << "Grid::redisplay_current_note_cursor: Implementation Error!" << std::endl;
@@ -1190,24 +1769,24 @@ void
 Grid::redisplay_blank_note_foreground (TreeModel::Row& row, int mti, int cgi)
 {
 	// Fill with blank
-	row[columns.note_name[mti][cgi]] = mk_note_blank ();
-	row[columns.channel[mti][cgi]] = mk_ch_blank ();
-	row[columns.velocity[mti][cgi]] = mk_vel_blank ();
-	row[columns.delay[mti][cgi]] = mk_delay_blank ();
+	row[columns->note_name[mti][cgi]] = mk_note_blank ();
+	row[columns->channel[mti][cgi]] = mk_ch_blank ();
+	row[columns->velocity[mti][cgi]] = mk_vel_blank ();
+	row[columns->delay[mti][cgi]] = mk_delay_blank ();
 
 	// Grey out infoless cells
-	row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
-	row[columns._channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
-	row[columns._velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
-	row[columns._delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns->_channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns->_velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns->_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
 }
 
 void
 Grid::redisplay_automation_background (TreeModel::Row& row, int mti, int cgi)
 {
-	std::string row_background_color = row[columns._background_color];
-	row[columns._automation_background_color[mti][cgi]] = row_background_color;
-	row[columns._automation_delay_background_color[mti][cgi]] = row_background_color;
+	std::string row_background_color = row[columns->_background_color];
+	row[columns->_automation_background_color[mti][cgi]] = row_background_color;
+	row[columns->_automation_delay_background_color[mti][cgi]] = row_background_color;
 }
 
 void
@@ -1217,36 +1796,36 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 		// Notes off
 		NotePtr note = pattern.off_note (row_idx, mti, mri, cgi);
 		if (note) {
-			row[columns.note_name[mti][cgi]] = note_off_str;
-			row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			row[columns->note_name[mti][cgi]] = note_off_str;
+			row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			int delay = get_off_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-				row[columns._delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+				row[columns->delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
+				row[columns->_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			}
 		}
 
 		// Notes on
 		note = pattern.on_note (row_idx, mti, mri, cgi);
 		if (note) {
-			row[columns.note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note ());
-			row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
-			row[columns.channel[mti][cgi]] = TrackerUtils::channel_to_string (note->channel (), base ());
-			row[columns._channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
-			row[columns.velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity (), base (), precision ());
-			row[columns._velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
-			row[columns._velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
+			row[columns->note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note ());
+			row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			row[columns->channel[mti][cgi]] = TrackerUtils::channel_to_string (note->channel (), base ());
+			row[columns->_channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			row[columns->velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity (), base (), precision ());
+			row[columns->_velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			row[columns->_velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
 			int delay = get_on_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
-				row[columns.delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-				row[columns._delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+				row[columns->delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
+				row[columns->_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 			}
 		}
 	} else {
 		// Too many notes, not displayable
-		row[columns.note_name[mti][cgi]] = undisplayable_str;
-		row[columns._note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+		row[columns->note_name[mti][cgi]] = undisplayable_str;
+		row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 	}
 }
 
@@ -1257,10 +1836,10 @@ Grid::redisplay_current_automation_cursor (TreeModel::Row& row, int mti, int cgi
 
 	switch (current_automation_type) {
 	case TrackerColumn::AutomationType::AUTOMATION:
-		row[columns._automation_background_color[mti][cgi]] = color;
+		row[columns->_automation_background_color[mti][cgi]] = color;
 		break;
 	case TrackerColumn::AutomationType::AUTOMATION_DELAY:
-		row[columns._automation_delay_background_color[mti][cgi]] = color;
+		row[columns->_automation_delay_background_color[mti][cgi]] = color;
 		break;
 	default:
 		std::cerr << "Grid::redisplay_current_automation_cursor: Implementation Error!" << std::endl;
@@ -1281,11 +1860,11 @@ void
 Grid::redisplay_blank_automation_foreground (TreeModel::Row& row, int mti, int cgi)
 {
 	// Fill with blank
-	row[columns.automation[mti][cgi]] = mk_automation_blank ();
-	row[columns.automation_delay[mti][cgi]] = mk_delay_blank ();
+	row[columns->automation[mti][cgi]] = mk_automation_blank ();
+	row[columns->automation_delay[mti][cgi]] = mk_delay_blank ();
 
 	// Fill default foreground color
-	row[columns._automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns->_automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
 }
 
 void
@@ -1293,16 +1872,16 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 {
 	if (is_automation_displayable (row_idx, mti, mri, id_param)) {
 		double val = pattern.get_automation_value (row_idx, mti, mri, id_param).first;
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
+		row[columns->automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
 		int delay = pattern.get_automation_delay (row_idx, mti, mri, id_param).first;
 		if (delay != 0) {
-			row[columns.automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-			row[columns._automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			row[columns->automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
+			row[columns->_automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 		}
 	} else {
-		row[columns.automation[mti][cgi]] = undisplayable_str;
+		row[columns->automation[mti][cgi]] = undisplayable_str;
 	}
-	row[columns._automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+	row[columns->_automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
 }
 
 void
@@ -1310,11 +1889,11 @@ Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int 
 {
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, id_param);
 	if (is_int_param (id_param)) {
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
+		row[columns->automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
 	} else {
-		row[columns.automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
+		row[columns->automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
 	}
-	row[columns._automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	row[columns->_automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
 }
 
 void
@@ -1340,14 +1919,14 @@ void
 Grid::redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx)
 {
 	if (row_idx != BasePattern::INVALID_ROW) {
-		redisplay_row_background_color (row, row_idx, row[columns._background_color]);
+		redisplay_row_background_color (row, row_idx, row[columns->_background_color]);
 	}
 }
 
 void
 Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color)
 {
-	row[columns._time_background_color] = color;
+	row[columns->_time_background_color] = color;
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		redisplay_row_mti_background_color (row, row_idx, mti, color);
 	}
@@ -1370,11 +1949,12 @@ Grid::redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx,
 void
 Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color)
 {
-	for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks (); cgi++) {
-		row[columns._note_background_color[mti][cgi]] = color;
-		row[columns._channel_background_color[mti][cgi]] = color;
-		row[columns._velocity_background_color[mti][cgi]] = color;
-		row[columns._delay_background_color[mti][cgi]] = color;
+	size_t available = note_colnums[mti].size ();
+	for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks () && cgi < available; cgi++) {
+		row[columns->_note_background_color[mti][cgi]] = color;
+		row[columns->_channel_background_color[mti][cgi]] = color;
+		row[columns->_velocity_background_color[mti][cgi]] = color;
+		row[columns->_delay_background_color[mti][cgi]] = color;
 	}
 }
 
@@ -1383,8 +1963,11 @@ Grid::redisplay_row_mti_automations_background_color (Gtk::TreeModel::Row& row, 
 {
 	for (const IDParameter& id_param : id_params) {
 		int cgi = to_cgi (mti, id_param);
-		row[columns._automation_background_color[mti][cgi]] = color;
-		row[columns._automation_delay_background_color[mti][cgi]] = color;
+		if (cgi < 0 || (size_t)cgi >= automation_colnums[mti].size ()) {
+			continue;
+		}
+		row[columns->_automation_background_color[mti][cgi]] = color;
+		row[columns->_automation_delay_background_color[mti][cgi]] = color;
 	}
 }
 
@@ -1505,7 +2088,7 @@ void
 Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& tap, const IDParameter& id_param, const RowsPhenomenalDiff* rows_diff)
 {
 	int cgi = to_cgi (mti, id_param);
-	if (cgi < 0) {
+	if (cgi < 0 || (size_t)cgi >= automation_colnums[mti].size ()) {
 		return;
 	}
 
@@ -1568,14 +2151,17 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 void
 Grid::redisplay_region_notes (int mti, int mri, const MidiNotesPattern& mnp, const MidiNotesPatternPhenomenalDiff* mnp_diff)
 {
+	size_t available = note_colnums[mti].size ();
 	if (mnp_diff == 0 || mnp_diff->full) {
-		for (size_t cgi = 0; cgi < mnp.ntracks; cgi++) {
+		for (size_t cgi = 0; cgi < mnp.ntracks && cgi < available; cgi++) {
 			redisplay_note_column (mti, mri, cgi, mnp);
 		}
 	} else {
 		const MidiNotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff& cgi2rows_diff = mnp_diff->cgi2rows_diff;
 		for (MidiNotesPatternPhenomenalDiff::Cgi2RowsPhenomenalDiff::const_iterator it = cgi2rows_diff.begin (); it != cgi2rows_diff.end (); ++it) {
-			redisplay_note_column (mti, mri, it->first, mnp, &it->second);
+			if ((size_t)it->first < available) {
+				redisplay_note_column (mti, mri, it->first, mnp, &it->second);
+			}
 		}
 	}
 }
@@ -1611,8 +2197,7 @@ void
 Grid::redisplay_region_automation_param (int mti, int mri, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param, const RowsPhenomenalDiff* rows_diff)
 {
 	int cgi = to_cgi (mti, PBD::ID (0), param);
-
-	if (cgi < 0) {
+	if (cgi < 0 || (size_t)cgi >= automation_colnums[mti].size ()) {
 		return;
 	}
 
@@ -1736,16 +2321,16 @@ Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	switch (get_note_type (col)) {
 	case TrackerColumn::NoteType::NOTE:
-		row[columns._note_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		row[columns->_note_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::NoteType::CHANNEL:
-		row[columns._channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		row[columns->_channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::NoteType::VELOCITY:
-		row[columns._velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		row[columns->_velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::NoteType::DELAY:
-		row[columns._delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		row[columns->_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	default:
 		std::cerr << "Grid::redisplay_note_cell_selection: Implementation Error!" << std::endl;
@@ -1761,10 +2346,10 @@ Grid::redisplay_automation_cell_selection (int row_idx, const Gtk::TreeViewColum
 	Gtk::TreeModel::Row row = to_row (row_idx);
 	switch (get_automation_type (col)) {
 	case TrackerColumn::AutomationType::AUTOMATION:
-		row[columns._automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		row[columns->_automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	case TrackerColumn::AutomationType::AUTOMATION_DELAY:
-		row[columns._automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		row[columns->_automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
 		break;
 	default:
 		std::cerr << "Grid::redisplay_automation_cell_selection: Implementation Error!" << std::endl;
@@ -1808,33 +2393,33 @@ Grid::unset_underline_current_step_edit_note_cell ()
 	case TrackerColumn::NoteType::NOTE:
 		break;
 	case TrackerColumn::NoteType::CHANNEL: {
-		std::string val_str = row[columns.channel[mti][cgi]];
+		std::string val_str = row[columns->channel[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
-		row[columns.channel[mti][cgi]] = TrackerUtils::int_unpad (val_str, base ());
-		row[columns._channel_attributes[mti][cgi]] = Pango::AttrList ();
+		row[columns->channel[mti][cgi]] = TrackerUtils::int_unpad (val_str, base ());
+		row[columns->_channel_attributes[mti][cgi]] = Pango::AttrList ();
 		break;
 	}
 	case TrackerColumn::NoteType::VELOCITY: {
-		std::string val_str = row[columns.velocity[mti][cgi]];
+		std::string val_str = row[columns->velocity[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
-		row[columns.velocity[mti][cgi]] = TrackerUtils::int_unpad (val_str, base ());
-		row[columns._velocity_attributes[mti][cgi]] = Pango::AttrList ();
+		row[columns->velocity[mti][cgi]] = TrackerUtils::int_unpad (val_str, base ());
+		row[columns->_velocity_attributes[mti][cgi]] = Pango::AttrList ();
 		break;
 	}
 	case TrackerColumn::NoteType::DELAY: {
-		std::string val_str = row[columns.delay[mti][cgi]];
+		std::string val_str = row[columns->delay[mti][cgi]];
 		if (is_blank (val_str)) {
 			// For some unknown reason the attributes must be reset
-			row[columns._delay_attributes[mti][cgi]] = Pango::AttrList ();
+			row[columns->_delay_attributes[mti][cgi]] = Pango::AttrList ();
 			break;
 		}
 		bool is_null = TrackerUtils::string_to_num<int> (val_str, base ()) == 0;
-		row[columns.delay[mti][cgi]] = is_null ? mk_delay_blank () : TrackerUtils::int_unpad (val_str, base ());
-		row[columns._delay_attributes[mti][cgi]] = Pango::AttrList ();
+		row[columns->delay[mti][cgi]] = is_null ? mk_delay_blank () : TrackerUtils::int_unpad (val_str, base ());
+		row[columns->_delay_attributes[mti][cgi]] = Pango::AttrList ();
 		break;
 	}
 	default:
@@ -1850,22 +2435,22 @@ Grid::unset_underline_current_step_edit_automation_cell ()
 	int cgi = current_cgi;
 	switch (current_automation_type) {
 	case TrackerColumn::AutomationType::AUTOMATION: {
-		std::string val_str = row[columns.automation[mti][cgi]];
+		std::string val_str = row[columns->automation[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
-		row[columns.automation[mti][cgi]] = TrackerUtils::float_unpad (val_str, base (), precision ());
-		row[columns._automation_attributes[mti][cgi]] = Pango::AttrList ();
+		row[columns->automation[mti][cgi]] = TrackerUtils::float_unpad (val_str, base (), precision ());
+		row[columns->_automation_attributes[mti][cgi]] = Pango::AttrList ();
 		break;
 	}
 	case TrackerColumn::AutomationType::AUTOMATION_DELAY: {
-		std::string val_str = row[columns.automation_delay[mti][cgi]];
+		std::string val_str = row[columns->automation_delay[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
 		bool is_null = TrackerUtils::string_to_num<int> (val_str, base ()) == 0;
-		row[columns.automation_delay[mti][cgi]] = is_null ? mk_delay_blank () : TrackerUtils::int_unpad (val_str, base ());
-		row[columns._automation_delay_attributes[mti][cgi]] = Pango::AttrList ();
+		row[columns->automation_delay[mti][cgi]] = is_null ? mk_delay_blank () : TrackerUtils::int_unpad (val_str, base ());
+		row[columns->_automation_delay_attributes[mti][cgi]] = Pango::AttrList ();
 		break;
 	}
 	default:
@@ -1896,29 +2481,29 @@ Grid::set_underline_current_step_edit_note_cell ()
 	case TrackerColumn::NoteType::NOTE:
 		break;
 	case TrackerColumn::NoteType::CHANNEL: {
-		std::string val_str = row[columns.channel[mti][cgi]];
+		std::string val_str = row[columns->channel[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
 		set_current_pos (0, 1);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
-		row[columns.channel[mti][cgi]] = ul.first;
-		row[columns._channel_attributes[mti][cgi]] = ul.second;
+		row[columns->channel[mti][cgi]] = ul.first;
+		row[columns->_channel_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	case TrackerColumn::NoteType::VELOCITY: {
-		std::string val_str = row[columns.velocity[mti][cgi]];
+		std::string val_str = row[columns->velocity[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
 		set_current_pos (0, 2);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
-		row[columns.velocity[mti][cgi]] = ul.first;
-		row[columns._velocity_attributes[mti][cgi]] = ul.second;
+		row[columns->velocity[mti][cgi]] = ul.first;
+		row[columns->_velocity_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	case TrackerColumn::NoteType::DELAY: {
-		std::string val_str = row[columns.delay[mti][cgi]];
+		std::string val_str = row[columns->delay[mti][cgi]];
 		NotePtr note = get_note (row_idx, mti, cgi);
 		if (!note) {
 			break;
@@ -1928,8 +2513,8 @@ Grid::set_underline_current_step_edit_note_cell ()
 		}
 		set_current_pos (0, 3);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
-		row[columns.delay[mti][cgi]] = ul.first;
-		row[columns._delay_attributes[mti][cgi]] = ul.second;
+		row[columns->delay[mti][cgi]] = ul.first;
+		row[columns->_delay_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	default:
@@ -1947,7 +2532,7 @@ Grid::set_underline_current_step_edit_automation_cell ()
 	int cgi = current_cgi;
 	switch (current_automation_type) {
 	case TrackerColumn::AutomationType::AUTOMATION: {
-		std::string val_str = row[columns.automation[mti][cgi]];
+		std::string val_str = row[columns->automation[mti][cgi]];
 		if (is_blank (val_str)) {
 			break;
 		}
@@ -1959,12 +2544,12 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		int max_pos = std::floor (std::log10 (mlu));
 		set_current_pos (min_pos, max_pos);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
-		row[columns.automation[mti][cgi]] = ul.first;
-		row[columns._automation_attributes[mti][cgi]] = ul.second;
+		row[columns->automation[mti][cgi]] = ul.first;
+		row[columns->_automation_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	case TrackerColumn::AutomationType::AUTOMATION_DELAY: {
-		std::string val_str = row[columns.automation_delay[mti][cgi]];
+		std::string val_str = row[columns->automation_delay[mti][cgi]];
 		if (!has_automation_delay (row_idx, mti, mri, cgi)) {
 			break;
 		}
@@ -1973,8 +2558,8 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		}
 		set_current_pos (0, 3);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
-		row[columns.automation_delay[mti][cgi]] = ul.first;
-		row[columns._automation_delay_attributes[mti][cgi]] = ul.second;
+		row[columns->automation_delay[mti][cgi]] = ul.first;
+		row[columns->_automation_delay_attributes[mti][cgi]] = ul.second;
 		break;
 	}
 	default:
@@ -2136,7 +2721,7 @@ Grid::get_track_width (int mti) const
 	if (region_name_columns[mti]->get_visible ()) {
 		width += region_name_columns[mti]->get_width ();
 	}
-	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+	for (size_t cgi = 0; cgi < note_columns[mti].size (); cgi++) {
 		if (note_columns[mti][cgi]->get_visible ()) {
 			width += note_columns[mti][cgi]->get_width ();
 		}
@@ -2153,7 +2738,7 @@ Grid::get_track_width (int mti) const
 			width += note_separator_columns[mti][cgi]->get_width ();
 		}
 	}
-	for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+	for (size_t cgi = 0; cgi < automation_columns[mti].size (); cgi++) {
 		if (automation_columns[mti][cgi]->get_visible ()) {
 			width += automation_columns[mti][cgi]->get_width ();
 		}
@@ -3707,11 +4292,11 @@ Grid::setup_time_column ()
 		return;
 	}
 
-	time_column = Gtk::manage (new TreeViewColumn (_("Time"), columns.time));
+	time_column = new TreeViewColumn (_("Time"), columns->time);
 	Gtk::CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
 	// Link to color attributes
-	time_column->add_attribute (time_cellrenderer->property_cell_background (), columns._time_background_color);
+	time_column->add_attribute (time_cellrenderer->property_cell_background (), columns->_time_background_color);
 
 	append_column (*time_column);
 }
@@ -3739,8 +4324,8 @@ Grid::setup_data_columns ()
 		pan_columns.push_back (std::vector<int> ());
 		available_automation_columns.push_back (std::set<int> ());
 
-		// Instantiate note tracks
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_NOTE_TRACKS_PER_TRACK; cgi++) {
+		// Instantiate note tracks according to current schema capacity.
+		for (size_t cgi = 0; cgi < capacity_note_tracks[mti]; cgi++) {
 			setup_note_column (mti, cgi);
 			setup_note_channel_column (mti, cgi);
 			setup_note_velocity_column (mti, cgi);
@@ -3748,8 +4333,8 @@ Grid::setup_data_columns ()
 			setup_note_separator_column (mti, cgi);
 		}
 
-		// Instantiate automation tracks
-		for (size_t cgi = 0; cgi < MAX_NUMBER_OF_AUTOMATION_TRACKS_PER_TRACK; cgi++) {
+		// Instantiate automation tracks according to current schema capacity.
+		for (size_t cgi = 0; cgi < capacity_automation_tracks[mti]; cgi++) {
 			setup_automation_column (mti, cgi);
 			setup_automation_delay_column (mti, cgi);
 			setup_automation_separator_column (mti, cgi);
@@ -3789,11 +4374,12 @@ Grid::setup_init_col ()
 void
 Grid::setup_left_separator_column (int mti)
 {
-	left_separator_columns[mti] = Gtk::manage (new TreeViewColumn ("", columns.left_separator[mti]));
+	left_separator_colnums[mti] = get_columns ().size ();
+	left_separator_columns[mti] = new TreeViewColumn ("", columns->left_separator[mti]);
 	CellRenderer* left_separator_cellrenderer = left_separator_columns[mti]->get_first_cell_renderer ();
 
 	// Link to color attributes
-	left_separator_columns[mti]->add_attribute (left_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
+	left_separator_columns[mti]->add_attribute (left_separator_cellrenderer->property_cell_background (), columns->_left_right_separator_background_color[mti]);
 
 	// Set width
 	left_separator_columns[mti]->set_min_width (LEFT_RIGHT_SEPARATOR_WIDTH);
@@ -3805,13 +4391,14 @@ Grid::setup_left_separator_column (int mti)
 void
 Grid::setup_region_name_column (int mti)
 {
+	region_name_colnums[mti] = get_columns ().size ();
 	std::string label ("");
-	region_name_columns[mti] = Gtk::manage (new TreeViewColumn (label, columns.region_name[mti]));
+	region_name_columns[mti] = new TreeViewColumn (label, columns->region_name[mti]);
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		region_name_columns[mti]->add_attribute (cellrenderer_region_name->property_family (), columns._family);
+		region_name_columns[mti]->add_attribute (cellrenderer_region_name->property_family (), columns->_family);
 	}
 
 	append_column (*region_name_columns[mti]);
@@ -3822,18 +4409,19 @@ Grid::setup_region_name_column (int mti)
 void
 Grid::setup_note_column (int mti, int cgi)
 {
+	note_colnums[mti][cgi] = get_columns ().size ();
 	// TODO: maybe put the information of the mti, cgi, midi_note_type or automation_type in the TreeViewColumn
-	note_columns[mti][cgi] = Gtk::manage (new NoteColumn (columns.note_name[mti][cgi], mti, cgi));
+	note_columns[mti][cgi] = new NoteColumn (columns->note_name[mti][cgi], mti, cgi);
 	CellRendererText* note_cellrenderer = dynamic_cast<CellRendererText*> (note_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_family (), columns._family);
+		note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_family (), columns->_family);
 	}
 
 	// Link to color attributes
-	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_cell_background (), columns._note_background_color[mti][cgi]);
-	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_foreground (), columns._note_foreground_color[mti][cgi]);
+	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_cell_background (), columns->_note_background_color[mti][cgi]);
+	note_columns[mti][cgi]->add_attribute (note_cellrenderer->property_foreground (), columns->_note_foreground_color[mti][cgi]);
 
 	// Link to editing methods
 	// NEXT: refactor
@@ -3848,20 +4436,21 @@ Grid::setup_note_column (int mti, int cgi)
 void
 Grid::setup_note_channel_column (int mti, int cgi)
 {
-	channel_columns[mti][cgi] = Gtk::manage (new ChannelColumn (columns.channel[mti][cgi], mti, cgi));
+	note_channel_colnums[mti][cgi] = get_columns ().size ();
+	channel_columns[mti][cgi] = new ChannelColumn (columns->channel[mti][cgi], mti, cgi);
 	CellRendererText* channel_cellrenderer = dynamic_cast<CellRendererText*> (channel_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_family (), columns._family);
+		channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_family (), columns->_family);
 	}
 
 	// Link to color attribute
-	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_cell_background (), columns._channel_background_color[mti][cgi]);
-	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_foreground (), columns._channel_foreground_color[mti][cgi]);
+	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_cell_background (), columns->_channel_background_color[mti][cgi]);
+	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_foreground (), columns->_channel_foreground_color[mti][cgi]);
 
 	// Link attributes
-	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_attributes (), columns._channel_attributes[mti][cgi]);
+	channel_columns[mti][cgi]->add_attribute (channel_cellrenderer->property_attributes (), columns->_channel_attributes[mti][cgi]);
 
 	// Link to editing methods
 	channel_cellrenderer->signal_editing_started ().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_channel_started), mti, cgi));
@@ -3875,24 +4464,25 @@ Grid::setup_note_channel_column (int mti, int cgi)
 void
 Grid::setup_note_velocity_column (int mti, int cgi)
 {
-	velocity_columns[mti][cgi] = Gtk::manage (new VelocityColumn (columns.velocity[mti][cgi], mti, cgi));
+	note_velocity_colnums[mti][cgi] = get_columns ().size ();
+	velocity_columns[mti][cgi] = new VelocityColumn (columns->velocity[mti][cgi], mti, cgi);
 	CellRendererText* velocity_cellrenderer = dynamic_cast<CellRendererText*> (velocity_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_family (), columns._family);
+		velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_family (), columns->_family);
 	}
 
 	// Link to color attribute
-	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_cell_background (), columns._velocity_background_color[mti][cgi]);
-	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_foreground (), columns._velocity_foreground_color[mti][cgi]);
+	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_cell_background (), columns->_velocity_background_color[mti][cgi]);
+	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_foreground (), columns->_velocity_foreground_color[mti][cgi]);
 
 	// Link to attributes
-	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_attributes (), columns._velocity_attributes[mti][cgi]);
+	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_attributes (), columns->_velocity_attributes[mti][cgi]);
 
 	// Link to alignment
 	// TODO: support aligment
-	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_alignment (), columns._velocity_alignment[mti][cgi]);
+	velocity_columns[mti][cgi]->add_attribute (velocity_cellrenderer->property_alignment (), columns->_velocity_alignment[mti][cgi]);
 	// velocity_cellrenderer->property_alignment () = Pango::Alignment::ALIGN_RIGHT;
 
 	// Link to editing methods
@@ -3907,20 +4497,21 @@ Grid::setup_note_velocity_column (int mti, int cgi)
 void
 Grid::setup_note_delay_column (int mti, int cgi)
 {
-	delay_columns[mti][cgi] = Gtk::manage (new DelayColumn (columns.delay[mti][cgi], mti, cgi));
+	note_delay_colnums[mti][cgi] = get_columns ().size ();
+	delay_columns[mti][cgi] = new DelayColumn (columns->delay[mti][cgi], mti, cgi);
 	CellRendererText* delay_cellrenderer = dynamic_cast<CellRendererText*> (delay_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_family (), columns._family);
+		delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_family (), columns->_family);
 	}
 
 	// Link to color attribute
-	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_cell_background (), columns._delay_background_color[mti][cgi]);
-	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_foreground (), columns._delay_foreground_color[mti][cgi]);
+	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_cell_background (), columns->_delay_background_color[mti][cgi]);
+	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_foreground (), columns->_delay_foreground_color[mti][cgi]);
 
 	// Link attributes
-	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_attributes (), columns._delay_attributes[mti][cgi]);
+	delay_columns[mti][cgi]->add_attribute (delay_cellrenderer->property_attributes (), columns->_delay_attributes[mti][cgi]);
 
 	// Link to editing methods
 	delay_cellrenderer->signal_editing_started ().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_note_delay_started), mti, cgi));
@@ -3934,7 +4525,8 @@ Grid::setup_note_delay_column (int mti, int cgi)
 void
 Grid::setup_note_separator_column (int mti, int cgi)
 {
-	note_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._note_empty[mti][cgi]));
+	note_separator_colnums[mti][cgi] = get_columns ().size ();
+	note_separator_columns[mti][cgi] = new TreeViewColumn ("", columns->_note_empty[mti][cgi]);
 
 	// Set width
 	note_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -3946,20 +4538,21 @@ Grid::setup_note_separator_column (int mti, int cgi)
 void
 Grid::setup_automation_column (int mti, int cgi)
 {
-	automation_columns[mti][cgi] = Gtk::manage (new AutomationColumn (columns.automation[mti][cgi], mti, cgi));
+	automation_colnums[mti][cgi] = get_columns ().size ();
+	automation_columns[mti][cgi] = new AutomationColumn (columns->automation[mti][cgi], mti, cgi);
 	CellRendererText* automation_cellrenderer = dynamic_cast<CellRendererText*> (automation_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_family (), columns._family);
+		automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_family (), columns->_family);
 	}
 
 	// Link to color attributes
-	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_cell_background (), columns._automation_background_color[mti][cgi]);
-	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_foreground (), columns._automation_foreground_color[mti][cgi]);
+	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_cell_background (), columns->_automation_background_color[mti][cgi]);
+	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_foreground (), columns->_automation_foreground_color[mti][cgi]);
 
 	// Link attributes
-	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_attributes (), columns._automation_attributes[mti][cgi]);
+	automation_columns[mti][cgi]->add_attribute (automation_cellrenderer->property_attributes (), columns->_automation_attributes[mti][cgi]);
 
 	// Link to editing methods
 	automation_cellrenderer->signal_editing_started ().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_automation_started), mti, cgi));
@@ -3977,20 +4570,21 @@ Grid::setup_automation_column (int mti, int cgi)
 void
 Grid::setup_automation_delay_column (int mti, int cgi)
 {
-	automation_delay_columns[mti][cgi] = Gtk::manage (new AutomationDelayColumn (columns.automation_delay[mti][cgi], mti, cgi));
+	automation_delay_colnums[mti][cgi] = get_columns ().size ();
+	automation_delay_columns[mti][cgi] = new AutomationDelayColumn (columns->automation_delay[mti][cgi], mti, cgi);
 	CellRendererText* automation_delay_cellrenderer = dynamic_cast<CellRendererText*> (automation_delay_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
 	if (!cellfont.empty()) {
-		automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_family (), columns._family);
+		automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_family (), columns->_family);
 	}
 
 	// Link to color attributes
-	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_cell_background (), columns._automation_delay_background_color[mti][cgi]);
-	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_foreground (), columns._automation_delay_foreground_color[mti][cgi]);
+	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_cell_background (), columns->_automation_delay_background_color[mti][cgi]);
+	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_foreground (), columns->_automation_delay_foreground_color[mti][cgi]);
 
 	// Link attributes
-	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_attributes (), columns._automation_delay_attributes[mti][cgi]);
+	automation_delay_columns[mti][cgi]->add_attribute (automation_delay_cellrenderer->property_attributes (), columns->_automation_delay_attributes[mti][cgi]);
 
 	// Link to editing methods
 	automation_delay_cellrenderer->signal_editing_started ().connect (sigc::bind (sigc::mem_fun (*this, &Grid::editing_automation_delay_started), mti, cgi));
@@ -4006,7 +4600,8 @@ Grid::setup_automation_delay_column (int mti, int cgi)
 void
 Grid::setup_automation_separator_column (int mti, int cgi)
 {
-	automation_separator_columns[mti][cgi] = Gtk::manage (new TreeViewColumn ("", columns._automation_empty[mti][cgi]));
+	automation_separator_colnums[mti][cgi] = get_columns ().size ();
+	automation_separator_columns[mti][cgi] = new TreeViewColumn ("", columns->_automation_empty[mti][cgi]);
 
 	// Set width
 	automation_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -4018,11 +4613,12 @@ Grid::setup_automation_separator_column (int mti, int cgi)
 void
 Grid::setup_right_separator_column (int mti)
 {
-	right_separator_columns[mti] = Gtk::manage (new TreeViewColumn ("", columns.right_separator[mti]));
+	right_separator_colnums[mti] = get_columns ().size ();
+	right_separator_columns[mti] = new TreeViewColumn ("", columns->right_separator[mti]);
 	CellRenderer* right_separator_cellrenderer = right_separator_columns[mti]->get_first_cell_renderer ();
 
 	// Link to color attributes
-	right_separator_columns[mti]->add_attribute (right_separator_cellrenderer->property_cell_background (), columns._left_right_separator_background_color[mti]);
+	right_separator_columns[mti]->add_attribute (right_separator_cellrenderer->property_cell_background (), columns->_left_right_separator_background_color[mti]);
 
 	// Set width
 	right_separator_columns[mti]->set_min_width (LEFT_RIGHT_SEPARATOR_WIDTH);
@@ -4034,7 +4630,9 @@ Grid::setup_right_separator_column (int mti)
 void
 Grid::setup_track_separator_column (int mti)
 {
-	track_separator_columns[mti] = Gtk::manage (new TreeViewColumn ("", columns.track_separator[mti]));
+	automation_col_offsets[mti][0] = mti_col_offset (mti) + 1 /* left separator */ + 1 /* region name */
+		+ note_colnums[mti].size () * NUMBER_OF_COL_PER_NOTE_TRACK;
+	track_separator_columns[mti] = new TreeViewColumn ("", columns->track_separator[mti]);
 
 	// Set width
 	track_separator_columns[mti]->set_min_width (TRACK_SEPARATOR_WIDTH);
