@@ -203,6 +203,7 @@ public:
 	void redisplay_left_right_separator_columns ();
 	void redisplay_left_right_separator_columns (int mti);
 	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, int mti);
+	void align_left_right_separators ();
 	void redisplay_track_separator (int mti);
 	void redisplay_track_separator_columns ();
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, int mti);
