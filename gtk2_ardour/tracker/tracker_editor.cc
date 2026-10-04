@@ -202,9 +202,19 @@ TrackerEditor::unmap_handler ()
 void
 TrackerEditor::resize_width ()
 {
+	// Resize directly to the natural (preferred) width of the content instead
+	// of collapsing to 1px and letting GTK re-expand.  The old 1px trick made
+	// the window visibly flash whenever a column was added or removed.
+	Gtk::Widget* child = get_child ();
+	if (!child) {
+		// The child (vbox) is added in setup_vbox(), which runs after the
+		// first redisplay_grid_direct_call() in TrackerEditor::setup().
+		return;
+	}
+	Gtk::Requisition req = child->size_request ();
 	int width, height;
 	get_size (width, height);
-	resize (1, height);
+	resize (req.width, height);
 }
 
 void

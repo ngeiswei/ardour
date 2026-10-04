@@ -1068,6 +1068,16 @@ Grid::rebuild_schema (size_t nauto_hint)
 {
 	size_t ntracks = pattern.tps.size ();
 
+	// Freeze window updates while tearing down and rebuilding the columns
+	// and model.  This batches the remove_all_columns()/append/set_model()
+	// work into a single redraw so the TreeView doesn't visibly flash when a
+	// column is added or removed.  Freeze the whole tracker-editor window so
+	// that header/column/content/width changes are all batched together.
+	Glib::RefPtr<Gdk::Window> window = tracker_editor.get_window ();
+	if (window) {
+		window->freeze_updates ();
+	}
+
 	// Remember logical cursor position in case TreeViewColumn pointers
 	// become invalid.
 	int saved_row_idx = current_row_idx;
@@ -1387,6 +1397,11 @@ Grid::rebuild_schema (size_t nauto_hint)
 			current_col_idx = BasePattern::INVALID_COL;
 		}
 	}
+
+	// Thaw the window frozen at the top of rebuild_schema().
+	if (window) {
+		window->thaw_updates ();
+	}
 }
 
 void
@@ -1516,6 +1531,13 @@ Grid::redisplay_grid ()
 		return;
 	}
 
+	// Batch the redisplay work into a single visual update to avoid
+	// flicker when columns are shown/hidden or the schema is rebuilt.
+	Glib::RefPtr<Gdk::Window> window = tracker_editor.get_window ();
+	if (window) {
+		window->freeze_updates ();
+	}
+
 	// In case the resolution (lines per beat) has changed
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_lower (pattern.tps.front ()->delay_ticks_min ());
 	tracker_editor.main_toolbar.delay_spinner.get_adjustment ()->set_upper (pattern.tps.front ()->delay_ticks_max ());
@@ -1575,6 +1597,11 @@ Grid::redisplay_grid ()
 
 	// Save pattern to prev_pattern for subsequent phenomenal diff calculation
 	prev_pattern = pattern;
+
+	// Thaw the window frozen at the top of redisplay_grid().
+	if (window) {
+		window->thaw_updates ();
+	}
 }
 
 void
