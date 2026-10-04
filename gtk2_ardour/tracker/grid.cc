@@ -1695,17 +1695,33 @@ Grid::redisplay_left_right_separator (TreeModel::Row& row, int mti)
 	row[columns->_left_right_separator_background_color[mti]] =
 		gdk_color_to_string (tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color ().gobj ());
 
-	// Align with track toolbar
-	int track_header_width = tracker_editor.grid_header->track_headers[mti]->get_min_width ();
-	int track_width = get_track_width (mti);
-	int track_width_without_right = track_width - get_right_separator_width (mti);
-	if (track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH < track_header_width) {
-		int diff = track_header_width - track_width_without_right;
-		right_separator_columns[mti]->set_min_width (diff);
-		right_separator_columns[mti]->set_max_width (diff);
-	} else if (track_header_width < track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH) {
-		right_separator_columns[mti]->set_min_width (LEFT_RIGHT_SEPARATOR_WIDTH);
-		right_separator_columns[mti]->set_max_width (LEFT_RIGHT_SEPARATOR_WIDTH);
+	// NOTE: the separator *width* is no longer adjusted here.  It is done
+	// separately by align_left_right_separators(), which runs deferred (after
+	// the TreeView has been laid out) so that it uses the natural widths of
+	// the filled columns rather than the transient 0-width state right after
+	// a schema rebuild.
+}
+
+void
+Grid::align_left_right_separators ()
+{
+	if (!tracker_editor.grid_header) {
+		return;
+	}
+
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < left_separator_columns.size (); mti++) {
+		// Align with track toolbar
+		int track_header_width = tracker_editor.grid_header->track_headers[mti]->get_min_width ();
+		int track_width = get_track_width (mti);
+		int track_width_without_right = track_width - get_right_separator_width (mti);
+		if (track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH < track_header_width) {
+			int diff = track_header_width - track_width_without_right;
+			right_separator_columns[mti]->set_min_width (diff);
+			right_separator_columns[mti]->set_max_width (diff);
+		} else if (track_header_width < track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH) {
+			right_separator_columns[mti]->set_min_width (LEFT_RIGHT_SEPARATOR_WIDTH);
+			right_separator_columns[mti]->set_max_width (LEFT_RIGHT_SEPARATOR_WIDTH);
+		}
 	}
 }
 

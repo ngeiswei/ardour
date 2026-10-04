@@ -97,6 +97,13 @@ GridHeader::align ()
 		diff = -1;
 	}
 	set_time_header_size (diff);
+
+	// Re-adjust the track-color (right separator) columns against the
+	// post-layout column widths.  This runs deferred (from align_deferred),
+	// so it avoids the transient 0-width state seen right after a schema
+	// rebuild, which previously made these separators over-wide.
+	tracker_editor.grid.align_left_right_separators ();
+
 	for (size_t mti = 0; mti < tracker_editor.grid.pattern.tps.size (); mti++) {
 		int track_width = tracker_editor.grid.get_track_width (mti);
 		set_track_header_size (mti, track_width);
