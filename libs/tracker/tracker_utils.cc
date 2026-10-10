@@ -113,7 +113,7 @@ TrackerUtils::char_to_digit (char c, int base)
 {
 	std::string s;
 	s.push_back (c);
-	return string_to_num<int> (std::string (0, c), base);
+	return string_to_num<int> (s, base);
 }
 
 size_t
