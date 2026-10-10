@@ -60,6 +60,20 @@ public:
 	void set_rows_per_beat (uint16_t rpb, bool refresh=false);
 
 	void update ();
+
+	/**
+	 * Update only the given track (used for localized redisplay) and recompute
+	 * the cheap global aggregates (earliest track, global number of rows and
+	 * per-track row offsets).
+	 */
+	void update_track (int mti);
+
+	/**
+	 * Update only the automations of the given track (main, processor and
+	 * region automations), without re-reading the region note content.
+	 */
+	void update_track_automations (int mti);
+
 	void update_position_etc ();
 	void update_content ();
 	void update_earliest_mtp ();  // earliest midi track

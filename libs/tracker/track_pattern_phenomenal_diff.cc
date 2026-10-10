@@ -28,7 +28,7 @@ using namespace Tracker;
 bool
 TrackPatternPhenomenalDiff::empty () const
 {
-	return taap_diff.empty ();
+	return !full && taap_diff.empty ();
 }
 
 std::string

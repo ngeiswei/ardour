@@ -1619,6 +1619,113 @@ Grid::redisplay_grid_connect_call ()
 }
 
 void
+Grid::redisplay_track_scope (TrackPtr track)
+{
+	if (!tracker_editor.session || editing_editable || !redisplay_grid_connect_call_enabled) {
+		return;
+	}
+
+	int mti = -1;
+	for (size_t i = 0; i < pattern.tps.size (); i++) {
+		if (pattern.tps[i]->track == track) {
+			mti = i;
+			break;
+		}
+	}
+	if (mti < 0) {
+		return;
+	}
+
+	const int global_nrows_before = pattern.global_nrows;
+
+	pattern.update_track (mti);
+
+	// If the note-track count grew, the schema and/or the global row layout
+	// may have changed: fall back to a full redisplay.
+	if (ensure_schema ()) {
+		_schema_rebuilt_elsewhere = true;
+		redisplay_grid ();
+		return;
+	}
+	if (pattern.global_nrows != global_nrows_before) {
+		redisplay_grid ();
+		return;
+	}
+
+	TrackPatternPhenomenalDiff* tp_diff = pattern.tps[mti]->phenomenal_diff_ptr (prev_pattern.tps[mti]);
+	const bool empty = tp_diff->empty ();
+
+	if (!empty) {
+		Glib::RefPtr<Gdk::Window> window = tracker_editor.get_window ();
+		if (window) {
+			window->freeze_updates ();
+		}
+
+		redisplay_track (mti, tp_diff);
+		redisplay_current_row ();
+
+		if (window) {
+			window->thaw_updates ();
+		}
+	}
+
+	delete tp_diff;
+
+	// Refresh the previous-state snapshot for this track only.
+	prev_pattern.tps[mti]->copy_prev (*pattern.tps[mti]);
+}
+
+void
+Grid::redisplay_track_automations_scope (TrackPtr track)
+{
+	if (!tracker_editor.session || editing_editable || !redisplay_grid_connect_call_enabled) {
+		return;
+	}
+
+	int mti = -1;
+	for (size_t i = 0; i < pattern.tps.size (); i++) {
+		if (pattern.tps[i]->track == track) {
+			mti = i;
+			break;
+		}
+	}
+	if (mti < 0) {
+		return;
+	}
+
+	// Update only the automation patterns: the notes and the global time range
+	// are unaffected by an automation edit.
+	pattern.update_track_automations (mti);
+
+	Glib::RefPtr<Gdk::Window> window = tracker_editor.get_window ();
+	if (window) {
+		window->freeze_updates ();
+	}
+
+	// Repaint all the automations of this track (main, processor and, for MIDI
+	// tracks, region automations).  This is coarse, but local to the track and,
+	// crucially, avoids the expensive re-read of the region note content.
+	redisplay_track_all_automations (mti, pattern.tps[mti]->track_all_automations_pattern);
+	if (pattern.tps[mti]->is_midi_track_pattern ()) {
+		MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
+		for (size_t mri = 0; mri < mtp->mrps.size (); mri++) {
+			if (mtp->mrps[mri]->enabled) {
+				redisplay_region_automations (mti, mri, mtp->mrps[mri]->mrap);
+			}
+		}
+	}
+	redisplay_current_row ();
+
+	if (window) {
+		window->thaw_updates ();
+	}
+
+	// Refresh the previous-state automation snapshot (without cloning notes).
+	prev_pattern.tps[mti]->copy_prev_automations (*pattern.tps[mti]);
+}
+
+
+void
 Grid::redisplay_undefined_notes (TreeModel::Row& row, int mti)
 {
 	if (!pattern.tps[mti]->is_midi_track_pattern ()) {
@@ -3167,6 +3274,13 @@ Grid::editing_started (CellEditable* ed, const std::string& path, int mti, int c
 void
 Grid::clear_editables ()
 {
+	// Remember what was being edited so that we can redisplay only that,
+	// instead of the whole grid (which would re-read every track).
+	const int mti = edit_mti;
+	const int mri = edit_mri;
+	TrackPattern* mtp = edit_mtp;
+	const bool note_cell = edit_col >= 0 && is_note_type (to_col (edit_col));
+
 	edit_path.clear ();
 	edit_row_idx = BasePattern::INVALID_ROW;
 	edit_col = BasePattern::INVALID_COL;
@@ -3176,7 +3290,18 @@ Grid::clear_editables ()
 	edit_cgi = BasePattern::INVALID_CGI;
 	editing_editable = 0;
 
-	redisplay_grid_direct_call ();
+	// Redisplay only the edited region (for notes, which were updated
+	// incrementally when the command was applied) or track (for automations).
+	if (note_cell && mtp && mtp->is_midi_track_pattern () && mri >= 0) {
+		redisplay_region_incremental (mti, mri);
+	} else if (mtp) {
+		redisplay_track_automations_scope (mtp->track);
+	} else {
+		redisplay_grid_direct_call ();
+	}
+
+	// Make sure the cursor/underline are restored even if nothing changed.
+	redisplay_current_row ();
 }
 
 void
@@ -4056,10 +4181,66 @@ Grid::upper (int row_idx, int mti, const IDParameter& id_param) const
 void
 Grid::apply_command (int mti, int mri, MidiModel::NoteDiffCommand* cmd)
 {
-	// Apply change command
-	if (cmd) {
-		pattern.apply_command (mti, mri, cmd);
+	if (!cmd) {
+		return;
 	}
+
+	// Apply the command and update the region's note packing incrementally.
+	// Suppress the model ContentsChanged signal while doing so, so that it
+	// does not trigger a concurrent full re-read, then redisplay only the
+	// affected region.
+	redisplay_grid_connect_call_enabled = false;
+	pattern.apply_command (mti, mri, cmd);
+	redisplay_grid_connect_call_enabled = true;
+
+	redisplay_region_incremental (mti, mri);
+}
+
+void
+Grid::redisplay_region_incremental (int mti, int mri)
+{
+	if (!tracker_editor.session || editing_editable) {
+		return;
+	}
+	if (mti < 0 || mti >= (int)pattern.tps.size () || !pattern.tps[mti]->is_midi_track_pattern ()) {
+		redisplay_grid_direct_call ();
+		return;
+	}
+
+	MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
+	if (mri < 0 || mri >= (int)mtp->mrps.size ()) {
+		redisplay_grid_direct_call ();
+		return;
+	}
+
+	// Growing the note-track count changes the track alignment and/or the grid
+	// schema: fall back to a full redisplay in that case.
+	if (ensure_schema ()) {
+		_schema_rebuilt_elsewhere = true;
+	
+		redisplay_grid ();
+		return;
+	}
+
+	MidiRegionPattern* mrp = mtp->mrps[mri];
+	MidiRegionPatternPhenomenalDiff mrp_diff = mrp->phenomenal_diff (*prev_pattern.tps[mti]->midi_track_pattern ()->mrps[mri]);
+
+	if (!mrp_diff.empty ()) {
+		Glib::RefPtr<Gdk::Window> window = tracker_editor.get_window ();
+		if (window) {
+			window->freeze_updates ();
+		}
+
+		redisplay_midi_region (mti, mri, *mrp, &mrp_diff);
+		redisplay_current_row ();
+
+		if (window) {
+			window->thaw_updates ();
+		}
+	}
+
+	// Refresh this region's previous-state snapshot.
+	prev_pattern.tps[mti]->midi_track_pattern ()->mrps[mri]->operator= (*mrp);
 }
 
 void
@@ -5844,6 +6025,8 @@ Grid::step_editing_set_automation_value (int digit)
 
 	double nval = TrackerUtils::change_digit_or_sign (oval, digit, current_pos, base (), precision ());
 
+	TrackPtr scope_track = current_tp ? current_tp->track : TrackPtr ();
+
 	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
 	// return when such lock is taken.
 	redisplay_grid_connect_call_enabled = false;
@@ -5852,13 +6035,16 @@ Grid::step_editing_set_automation_value (int digit)
 	// Move cursor
 	vertical_move_current_cursor_default_steps (wrap(), jump());
 
-	// Redisplay model with the new value
-	// TODO: optimize
-	redisplay_grid_direct_call (); // NEXT: this shouldn't be necessary
+	// Redisplay model with the new value, scoped to the edited track.
+	redisplay_grid_connect_call_enabled = true;
+	if (scope_track) {
+		redisplay_track_automations_scope (scope_track);
+	} else {
+		redisplay_grid_direct_call ();
+	}
 	// TODO: Need to rerun because apparently redisplay_grid overwrite the
 	// underlined cell, once optimized avoid such redundancy as well.
 	set_underline_current_step_edit_cell ();
-	redisplay_grid_connect_call_enabled = true;
 
 	return true;
 }
@@ -5866,6 +6052,8 @@ Grid::step_editing_set_automation_value (int digit)
 bool
 Grid::step_editing_delete_automation ()
 {
+	TrackPtr scope_track = current_tp ? current_tp->track : TrackPtr ();
+
 	// TODO: replace by lock, and have redisplay_grid_connect_call immediately
 	// return when such lock is taken.
 	redisplay_grid_connect_call_enabled = false;
@@ -5874,13 +6062,16 @@ Grid::step_editing_delete_automation ()
 	// Move cursor
 	vertical_move_current_cursor_default_steps (wrap(), jump());
 
-	// Redisplay model with the new value
-	// TODO: optimize
-	redisplay_grid_direct_call ();
+	// Redisplay model with the new value, scoped to the edited track.
+	redisplay_grid_connect_call_enabled = true;
+	if (scope_track) {
+		redisplay_track_automations_scope (scope_track);
+	} else {
+		redisplay_grid_direct_call ();
+	}
 	// TODO: Need to rerun because apparently redisplay_grid overwrite the
 	// underlined cell, once optimized avoid such redundancy as well.
 	set_underline_current_step_edit_cell ();
-	redisplay_grid_connect_call_enabled = true;
 
 	return true;
 }
@@ -5988,6 +6179,8 @@ Grid::step_editing_set_automation_delay (int digit)
 	std::pair<int, bool> val_def = get_automation_delay (current_row_idx, current_mti, current_mri, current_cgi);
 	int old_delay = val_def.first;
 
+	TrackPtr scope_track = current_tp ? current_tp->track : TrackPtr ();
+
 	// For some unknown reason, changing the delay does not trigger a
 	// redisplay_grid_connect_call. For that reason we directly call it. But
 	// before that we have to disable connect calls.
@@ -6002,10 +6195,14 @@ Grid::step_editing_set_automation_delay (int digit)
 	// Move cursor
 	vertical_move_current_cursor_default_steps (wrap(), jump());
 
-	// TODO: this highly inefficient, optimize
-	redisplay_grid_direct_call ();
-	set_underline_current_step_edit_cell ();
+	// Scoped redisplay of the edited track
 	redisplay_grid_connect_call_enabled = true;
+	if (scope_track) {
+		redisplay_track_automations_scope (scope_track);
+	} else {
+		redisplay_grid_direct_call ();
+	}
+	set_underline_current_step_edit_cell ();
 
 	return true;
 }
@@ -6013,6 +6210,8 @@ Grid::step_editing_set_automation_delay (int digit)
 bool
 Grid::step_editing_delete_automation_delay ()
 {
+	TrackPtr scope_track = current_tp ? current_tp->track : TrackPtr ();
+
 	// For some unknown reason, changing the delay does not trigger a
 	// redisplay_grid_connect_call. For that reason we directly call it. But
 	// before that we have to disable connect calls.
@@ -6022,10 +6221,14 @@ Grid::step_editing_delete_automation_delay ()
 	// Move cursor
 	vertical_move_current_cursor_default_steps (wrap(), jump());
 
-	// TODO: this highly inefficient, optimize
-	redisplay_grid_direct_call ();
-	set_underline_current_step_edit_cell ();
+	// Scoped redisplay of the edited track
 	redisplay_grid_connect_call_enabled = true;
+	if (scope_track) {
+		redisplay_track_automations_scope (scope_track);
+	} else {
+		redisplay_grid_direct_call ();
+	}
+	set_underline_current_step_edit_cell ();
 
 	return true;
 }

@@ -53,6 +53,13 @@ public:
 
 	static void rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd);
 
+	// Map-based row diff and displayability helpers, extracted so that they can
+	// be unit tested independently from a MidiRegion / MidiModel.
+	static bool is_row_displayable (const RowToNotes& on_notes, const RowToNotes& off_notes, int row);
+	static void rows_diff (const RowToNotes& l_on, const RowToNotes& l_off,
+	                       const RowToNotes& r_on, const RowToNotes& r_off,
+	                       std::set<int>& rd);
+
 	MidiNotesPatternPhenomenalDiff phenomenal_diff (const MidiNotesPattern& prev) const;
 
 	// Build or rebuild the pattern (implement BasePattern::update)
@@ -157,6 +164,24 @@ public:
 	// know on which track idx a new note should be.
 	void add (int cgi, NotePtr note);
 
+	// Incrementally apply the effect of a note diff command to the note packing,
+	// without re-reading the whole model.  It is assumed that the added and
+	// removed notes are exactly those of the command, and that changed notes
+	// have already been mutated in place (which is what the model does).
+	void apply_note_diff (const ARDOUR::MidiModel::NoteDiffCommand::NoteList& added,
+	                      const ARDOUR::MidiModel::NoteDiffCommand::NoteList& removed,
+	                      const ARDOUR::MidiModel::NoteDiffCommand::ChangeList& changes);
+
+	// Side effect free version of apply_note_diff() operating on the packing
+	// directly, so that it can be unit tested.
+	static void apply_note_diff (std::vector<ARDOUR::MidiModel::Notes>& track_to_notes,
+	                             uint16_t& nreqtracks,
+	                             const Temporal::Beats& start_beats,
+	                             const Temporal::Beats& end_beats,
+	                             const ARDOUR::MidiModel::NoteDiffCommand::NoteList& added,
+	                             const ARDOUR::MidiModel::NoteDiffCommand::NoteList& removed,
+	                             const ARDOUR::MidiModel::NoteDiffCommand::ChangeList& changes);
+
 	// Get the bbt of an on (resp. off) note
 	Temporal::BBT_Time on_note_bbt (NotePtr note) const;
 	Temporal::BBT_Time off_note_bbt (NotePtr note) const;
@@ -220,11 +245,11 @@ private:
 	ARDOUR::MidiModel::Notes::iterator erase (ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
 	// Check if a track (cgi) is available to receive a note.
-	bool is_free (int cgi, NotePtr note) const;
+	static bool is_free (const std::vector<ARDOUR::MidiModel::Notes>& track_to_notes, int cgi, NotePtr note);
 
 	// Find the first track ready of receive a note. Return the track index
 	// (cgi) if found, -1 otherwise.
-	int find_free_track (NotePtr note) const;
+	static int find_free_track (const std::vector<ARDOUR::MidiModel::Notes>& track_to_notes, NotePtr note);
 
 	static bool overlap (NotePtr a, NotePtr b);
 

@@ -17,6 +17,7 @@
  */
 
 #include <cmath>
+#include <iterator>
 #include <map>
 
 #include "pbd/i18n.h"
@@ -131,7 +132,7 @@ AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToCo
 			const Evoral::ControlEvent& r_ce = *r_it->second;
 			if (!TrackerUtils::is_equal (l_ce, r_ce)) {
 				// Update all affected row, taking interpolation into account
-				std::pair<int, int> r = prev_next_range (r_it, l_row2ces);
+				std::pair<int, int> r = prev_next_range (l_it, l_row2ces);
 				for (int rowi = r.first; rowi <= r.second; rowi++) {
 					rows.insert (rowi);
 				}
@@ -155,9 +156,13 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 		return diff;
 	}
 
+	// Diff is partial: empty() now means "nothing to do".
+	diff.full = false;
+
 	for (ParamEnabledMap::const_iterator pe_it = param_to_enabled.begin (); pe_it != param_to_enabled.end (); ++pe_it) {
 		const Evoral::Parameter& param = pe_it->first;
 		RowsPhenomenalDiff rd;
+		rd.full = false;
 
 		// If this is disabled ignore their differences, otherwise consider full
 		// phenomenal diff if one is enabled while the other is not.
@@ -387,7 +392,7 @@ AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& na
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
 	if (actl_result.second && connect) {
-		context.connect_automation (actl);
+		context.connect_automation (actl, get_track ());
 	}
 }
 
@@ -440,6 +445,12 @@ RowToControlEventsRange
 AutomationPattern::control_events_range (int rowi, const Evoral::Parameter& param) const
 {
 	return param_to_row_to_ces.find (param)->second.equal_range (rowi);
+}
+
+TrackPtr
+AutomationPattern::get_track () const
+{
+	return TrackPtr ();
 }
 
 std::string
@@ -763,10 +774,13 @@ AutomationPattern::find_next (RowToControlEvents::const_iterator it) const
 RowToControlEvents::const_iterator
 AutomationPattern::find_prev (int row, const RowToControlEvents& r2ces) const
 {
-	RowToControlEvents::const_reverse_iterator rit =
-		std::reverse_iterator<RowToControlEvents::const_iterator> (r2ces.lower_bound (row));
-	while (rit != r2ces.rend () && rit->first == row) { ++rit; };
-	return rit != r2ces.rend () ? lattest (r2ces.equal_range (rit->first)) : rit.base ();
+	// Return the last event strictly before row, or end() if there is none.
+	RowToControlEvents::const_iterator it = r2ces.lower_bound (row);
+	if (it == r2ces.begin ()) {
+		return r2ces.end ();
+	}
+	--it;
+	return it;
 }
 
 RowToControlEvents::const_iterator
@@ -780,10 +794,21 @@ AutomationPattern::find_next (int row, const RowToControlEvents& r2ces) const
 std::pair<int, int>
 AutomationPattern::prev_next_range (RowToControlEvents::const_iterator it, const RowToControlEvents& row2ces) const
 {
-	RowToControlEvents::const_iterator p_it = find_prev (it);
-	RowToControlEvents::const_iterator n_it = find_next (it);
-	int p_row = p_it != row2ces.end () ? p_it->first : 0;
-	int n_row = n_it != row2ces.end () ? n_it->first : nrows - 1;
+	// Note: it is assumed that it points into row2ces.  Do not decrement begin().
+	// The -1 / nrows sentinels ensure that, when there is no previous (resp.
+	// next) event, row 0 (resp. the last row) is included: outside of the
+	// event range the value is clamped to the first (resp. last) event and thus
+	// may also have changed.
+	int p_row = -1;
+	if (it != row2ces.begin ()) {
+		RowToControlEvents::const_iterator p_it = std::prev (it);
+		p_row = p_it->first;
+	}
+	int n_row = nrows;
+	RowToControlEvents::const_iterator n_it = std::next (it);
+	if (n_it != row2ces.end ()) {
+		n_row = n_it->first;
+	}
 	p_row = std::min (p_row + 1, it->first);
 	n_row = std::max (n_row - 1, it->first);
 	return std::make_pair (p_row, n_row);
@@ -794,8 +819,8 @@ AutomationPattern::prev_next_range (int row, const RowToControlEvents& row2ces) 
 {
 	RowToControlEvents::const_iterator p_it = find_prev (row, row2ces);
 	RowToControlEvents::const_iterator n_it = find_next (row, row2ces);
-	int p_row = p_it != row2ces.end () ? p_it->first : 0;
-	int n_row = n_it != row2ces.end () ? n_it->first : nrows - 1;
+	int p_row = p_it != row2ces.end () ? p_it->first : -1;
+	int n_row = n_it != row2ces.end () ? n_it->first : nrows;
 	p_row = std::min (p_row + 1, row);
 	n_row = std::max (n_row - 1, row);
 	return std::make_pair (p_row, n_row);

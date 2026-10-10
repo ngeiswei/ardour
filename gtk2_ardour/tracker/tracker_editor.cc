@@ -203,15 +203,22 @@ TrackerEditor::connect_track (TrackPtr track)
 }
 
 void
-TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
+TrackerEditor::connect_midi_region (MidiRegionPtr midi_region, TrackPtr track)
 {
-	// TODO: optimize, maybe could call a more direct method than
-	// redisplay_grid_connect_call.
+	const ARDOUR::MidiModel* model = midi_region->model ().get ();
+	std::pair<const ARDOUR::MidiModel*, const ARDOUR::Track*> key (model, track.get ());
 
-	// Changing midi content re-render the grid
-	midi_region->model ()->ContentsChanged.connect (content_connections, invalidator (*this),
-	                                                boost::bind (&Grid::redisplay_grid_connect_call, &grid),
-	                                                gui_context ());
+	// A MidiModel is shared by all the regions of a track, so connect to it
+	// once per (model, track) pair: a single edit then triggers a single
+	// track-scoped redisplay instead of one per region.
+	if (connected_models.find (key) == connected_models.end ()) {
+		connected_models.insert (key);
+		midi_region->model ()->ContentsChanged.connect (content_connections, invalidator (*this),
+		                                                [this, track]() {
+			                                                grid.redisplay_track_scope (track);
+		                                                },
+		                                                gui_context ());
+	}
 
 	// Changing the region time zone re-render the grid
 	midi_region->PropertyChanged.connect (content_connections, invalidator (*this),
@@ -220,16 +227,17 @@ TrackerEditor::connect_midi_region (MidiRegionPtr midi_region)
 }
 
 void
-TrackerEditor::connect_automation (AutomationControlPtr actl)
+TrackerEditor::connect_automation (AutomationControlPtr actl, TrackPtr track)
 {
-	// TODO: call a more direct redisplay method than redisplay_grid to speed up redisplay
+	// Automation changes only need to re-render the corresponding track (Phase
+	// 2a localized redisplay).
 	AutomationListPtr alist = actl->alist ();
 	if (alist) {
 		alist->StateChanged.connect (content_connections, invalidator (*this),
-		                             std::bind (&Grid::redisplay_grid_connect_call, &grid),
+		                             [this, track]() { grid.redisplay_track_automations_scope (track); },
 		                             gui_context ());
 		alist->InterpolationChanged.connect (content_connections, invalidator (*this),
-		                                     std::bind (&Grid::redisplay_grid_connect_call, &grid),
+		                                     [this, track](Evoral::ControlList::InterpolationStyle) { grid.redisplay_track_automations_scope (track); },
 		                                     gui_context ());
 	}
 }

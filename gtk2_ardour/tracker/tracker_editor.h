@@ -20,6 +20,10 @@
 #define __ardour_tracker_tracker_editor_h_
 
 #include <cmath>
+#include <map>
+#include <memory>
+#include <set>
+#include <utility>
 
 // #include <gtkmm/box.h>
 // #include <gtkmm/scrolledwindow.h>
@@ -91,8 +95,8 @@ public:
 	void track_headers_changed ();
 
 	void connect_track (TrackPtr track);
-	void connect_midi_region (MidiRegionPtr midi_region);
-	void connect_automation (AutomationControlPtr actl);
+	void connect_midi_region (MidiRegionPtr midi_region, TrackPtr track);
+	void connect_automation (AutomationControlPtr actl, TrackPtr track);
 
 	// Build the track -> regions mapping from the current region selection.
 	// Used by the model (Pattern) without it needing to know about
@@ -121,6 +125,12 @@ public:
 	/** connection used to connect to model's ContentsChanged signal */
 	// TODO: what does it mean?
 	PBD::ScopedConnectionList content_connections;
+
+	// Remember which (MidiModel, track) pairs have already been connected, so
+	// that a change to a model shared by several regions of a track only
+	// triggers a single (track scoped) redisplay instead of one per region,
+	// while still covering the (unusual) case of two tracks sharing a model.
+	std::set<std::pair<const ARDOUR::MidiModel*, const ARDOUR::Track*> > connected_models;
 
 private:
 	void set_region_selection (const RegionSelection&);

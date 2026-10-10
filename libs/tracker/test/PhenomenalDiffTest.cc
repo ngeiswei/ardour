@@ -126,6 +126,9 @@ void
 PhenomenalDiffTest::testTrackAllAutomationsDiff ()
 {
 	TrackAllAutomationsPatternPhenomenalDiff d;
+	CPPUNIT_ASSERT (!d.empty ()); /* full by default */
+
+	d.full = false;
 	CPPUNIT_ASSERT (!d.empty ()); /* main automation diff full by default */
 
 	d.main_automation_pattern_phenomenal_diff.full = false;
@@ -142,7 +145,13 @@ void
 PhenomenalDiffTest::testTrackDiff ()
 {
 	TrackPatternPhenomenalDiff d;
+	CPPUNIT_ASSERT (!d.empty ()); /* full by default */
+
+	d.full = false;
 	CPPUNIT_ASSERT (!d.empty ()); /* taap full by default */
+
+	d.taap_diff.full = false;
+	CPPUNIT_ASSERT (!d.empty ()); /* main automation diff full by default */
 
 	d.taap_diff.main_automation_pattern_phenomenal_diff.full = false;
 	CPPUNIT_ASSERT (d.empty ());
@@ -155,7 +164,10 @@ PhenomenalDiffTest::testMidiTrackDiff ()
 	CPPUNIT_ASSERT (!d.empty ()); /* full by default */
 
 	d.full = false;
-	CPPUNIT_ASSERT (!d.empty ()); /* taap non empty */
+	CPPUNIT_ASSERT (!d.empty ()); /* taap full by default */
+
+	d.taap_diff.full = false;
+	CPPUNIT_ASSERT (!d.empty ()); /* main automation diff full by default */
 
 	d.taap_diff.main_automation_pattern_phenomenal_diff.full = false;
 	CPPUNIT_ASSERT (d.empty ());
@@ -174,7 +186,10 @@ PhenomenalDiffTest::testAudioTrackDiff ()
 	CPPUNIT_ASSERT (!d.empty ()); /* full by default */
 
 	d.full = false;
-	CPPUNIT_ASSERT (!d.empty ()); /* taap non empty */
+	CPPUNIT_ASSERT (!d.empty ()); /* taap full by default */
+
+	d.taap_diff.full = false;
+	CPPUNIT_ASSERT (!d.empty ()); /* main automation diff full by default */
 
 	d.taap_diff.main_automation_pattern_phenomenal_diff.full = false;
 	CPPUNIT_ASSERT (d.empty ());

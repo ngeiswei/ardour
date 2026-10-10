@@ -200,6 +200,16 @@ public:
 	void redisplay_grid ();
 	void redisplay_grid_direct_call ();
 	void redisplay_grid_connect_call ();
+
+	// Scoped redisplay (Phase 2a).  Update and repaint only the affected
+	// track instead of the whole grid, and locally refresh the previous-state
+	// snapshot used by the phenomenal diff.  Falls back to a full redisplay
+	// when the global row layout or the schema changes.
+	void redisplay_track_scope (TrackPtr track);
+
+	// Scoped redisplay of only the automations (main, processor and region) of
+	// the given track, without re-reading the region note content.
+	void redisplay_track_automations_scope (TrackPtr track);
 	void redisplay_left_right_separator_columns ();
 	void redisplay_left_right_separator_columns (int mti);
 	void redisplay_left_right_separator_columns (TrackPtr track);
@@ -786,6 +796,11 @@ private:
 private:
 	// Apply command at mti and mri, if not nullptr.
 	void apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
+	// Redisplay only the edited MIDI region, assuming it has already been
+	// updated incrementally (see Pattern::apply_command).  Falls back to a
+	// track-scoped or full redisplay when the schema or track alignment changed.
+	void redisplay_region_incremental (int mti, int mri);
 
 	void follow_playhead (Temporal::timepos_t);
 

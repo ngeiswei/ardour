@@ -79,14 +79,24 @@ def build(bld):
                 'test/TrackerUtilsTest.cc',
                 'test/BasePatternTest.cc',
                 'test/PhenomenalDiffTest.cc',
+                'test/RowDiffTest.cc',
+                'test/NoteDiffTest.cc',
+                'test/ScopedUpdateTest.cc',
+                'test/test_ui.cc',
+                '../ardour/test/test_util.cc',
                 ]
-        obj.includes     = ['.', '..']
+        obj.includes     = ['.', '..', '../ardour/test']
         obj.use          = ['libtracker', 'libpbd', 'libmidipp', 'libevoral', 'libtemporal', 'libardour']
         obj.uselib       = 'GLIBMM GTHREAD XML CPPUNIT'
         obj.target       = 'run-tests'
         obj.name         = 'libtracker-tests'
         obj.install_path = ''
-        obj.defines      = ['PACKAGE="libtrackertest"']
+        obj.defines      = [
+                'PACKAGE="libtrackertest"',
+                'DATA_DIR="' + autowaf.normpath(bld.env['DATADIR']) + '"',
+                'CONFIG_DIR="' + autowaf.normpath(bld.env['SYSCONFDIR']) + '"',
+                'LOCALEDIR="' + autowaf.normpath(bld.env['LOCALEDIR']) + '"',
+                ]
         if bld.env['TEST_COVERAGE']:
             obj.linkflags      = ['--coverage']
             obj.cflags         = ['--coverage']

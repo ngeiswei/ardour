@@ -189,6 +189,27 @@ Pattern::update ()
 }
 
 void
+Pattern::update_track (int mti)
+{
+	// Content edit: region positions and the global time range are unchanged,
+	// but recomputing them is cheap and keeps things in sync in case a region
+	// was moved.  Only the given track's content is rebuilt.
+	update_position_etc ();
+	set_rows_per_beat (rows_per_beat, false);
+	tps[mti]->update ();
+	update_earliest_mtp ();
+	update_global_nrows ();
+}
+
+void
+Pattern::update_track_automations (int mti)
+{
+	// Automation edit: only the automation patterns change, the notes and the
+	// global time range are unaffected.
+	tps[mti]->update_automations ();
+}
+
+void
 Pattern::update_position_etc ()
 {
 	position = TrackerUtils::get_position (regions_per_track);
@@ -503,7 +524,27 @@ Pattern::midi_region_pattern (int mti, int mri) const
 void
 Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
+	if (!cmd) {
+		return;
+	}
+
 	midi_model (mti, mri)->apply_diff_command_as_commit (context.get_session (), cmd);
+
+	// Capture the diff after applying: applying the command may add side
+	// effect removals (notes that could not be re-added).  The command is now
+	// owned by the session undo history, so it is still valid here.
+	ARDOUR::MidiModel::NoteDiffCommand::NoteList added = cmd->added_notes ();
+	ARDOUR::MidiModel::NoteDiffCommand::NoteList removed = cmd->removed_notes ();
+	ARDOUR::MidiModel::NoteDiffCommand::ChangeList changes = cmd->changes ();
+
+	// Update the note packing of the edited region incrementally instead of
+	// re-reading the whole model (the expensive path).
+	if (tps[mti]->is_midi_track_pattern ()) {
+		MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
+		if (mri >= 0 && mri < (int)mtp->mrps.size ()) {
+			mtp->mrps[mri]->mnp.apply_note_diff (added, removed, changes);
+		}
+	}
 }
 
 std::string

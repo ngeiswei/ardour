@@ -48,6 +48,9 @@ public:
 
 	MidiTrackPattern& operator= (const MidiTrackPattern& other);
 
+	void copy_prev (const TrackPattern& other) override;
+	void copy_prev_automations (const TrackPattern& other) override;
+
 	// TODO: for now do not worry about memory leaking, create a new
 	// PhenomenalDiff object at every call
 	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
@@ -78,6 +81,7 @@ public:
 
 	// Build or rebuild note and automation pattern
 	void update ();
+	void update_automations () override;
 
 	// Update midi region patterns
 	void update_midi_regions ();

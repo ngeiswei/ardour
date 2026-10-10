@@ -59,11 +59,17 @@ public:
 	/** Subscribe to a track's changes. */
 	virtual void connect_track (TrackPtr track) = 0;
 
-	/** Subscribe to a MIDI region's changes. */
-	virtual void connect_midi_region (MidiRegionPtr midi_region) = 0;
+	/**
+	 * Subscribe to a MIDI region's changes.  The owning track is passed along
+	 * so that the implementation can scope a redisplay to it.
+	 */
+	virtual void connect_midi_region (MidiRegionPtr midi_region, TrackPtr track) = 0;
 
-	/** Subscribe to an automation control's changes. */
-	virtual void connect_automation (AutomationControlPtr actl) = 0;
+	/**
+	 * Subscribe to an automation control's changes.  The owning track is passed
+	 * along so that the implementation can scope a redisplay to it.
+	 */
+	virtual void connect_automation (AutomationControlPtr actl, TrackPtr track) = 0;
 
 	/** Undo history plumbing, forwarded to the edit (public) editor. */
 	virtual void begin_reversible_command (const std::string& name) = 0;

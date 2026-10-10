@@ -4,27 +4,13 @@
 #include "tracker_context.h"
 
 #include "BasePatternTest.h"
+#include "TestTrackerContext.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION (BasePatternTest);
 
 using namespace Tracker;
 
 namespace {
-
-/** Minimal TrackerContext with no side effect, for testing the model alone. */
-class NullTrackerContext : public TrackerContext
-{
-public:
-	ARDOUR::Session* get_session () const override { return nullptr; }
-	void connect_track (TrackPtr) override {}
-	void connect_midi_region (MidiRegionPtr) override {}
-	void connect_automation (AutomationControlPtr) override {}
-	void begin_reversible_command (const std::string&) override {}
-	void commit_reversible_command () override {}
-	void add_command (PBD::Command*) override {}
-	void set_dirty () override {}
-	void track_headers_changed () override {}
-};
 
 /** Concrete BasePattern (BasePattern::update is pure virtual). */
 class TestPattern : public BasePattern
@@ -45,7 +31,7 @@ public:
 void
 BasePatternTest::setUp ()
 {
-	_context = new NullTrackerContext ();
+	_context = new TestTrackerContext (0);
 }
 
 void

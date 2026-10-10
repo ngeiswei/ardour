@@ -47,6 +47,8 @@ public:
 	// _automation_controls, and connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
 
+	TrackPtr get_track () const override;
+
 	// Return the (absolute) beats of a control event
 	virtual Temporal::Beats event2beats (const Evoral::Parameter& param, const Evoral::ControlEvent* event) const;
 

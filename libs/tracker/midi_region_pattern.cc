@@ -36,7 +36,7 @@ MidiRegionPattern::MidiRegionPattern (TrackerContext& te,
 	, midi_region (region)
 {
 	if (connect)
-		context.connect_midi_region (midi_region);
+		context.connect_midi_region (midi_region, midi_track);
 }
 
 MidiRegionPattern::~MidiRegionPattern ()
@@ -69,6 +69,7 @@ MidiRegionPattern::phenomenal_diff (const MidiRegionPattern& prev) const
 		return diff;
 	}
 
+	diff.full = false;
 	diff.mnp_diff = mnp.phenomenal_diff (prev.mnp);
 	diff.mrap_diff = mrap.phenomenal_diff (prev.mrap);
 

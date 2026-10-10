@@ -53,6 +53,19 @@ public:
 
 	TrackPattern& operator= (const TrackPattern& other);
 
+	/**
+	 * Copy the state needed by phenomenal_diff from other, polymorphically.
+	 * Used to locally refresh a previous-state snapshot (see Pattern and Grid
+	 * scoped redisplay) without deep-copying the whole pattern tree.
+	 */
+	virtual void copy_prev (const TrackPattern& other);
+
+	/**
+	 * Copy only the automation state from other, to refresh a previous-state
+	 * snapshot after an automation-only update (avoids cloning the notes).
+	 */
+	virtual void copy_prev_automations (const TrackPattern& other);
+
 	virtual TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const = 0;
 
 	MidiTrackPtr midi_track ();
@@ -78,6 +91,13 @@ public:
 
 	// Build or rebuild note and automation pattern
 	virtual void update ();
+
+	/**
+	 * Update only the automation patterns (main and processor, and for MIDI
+	 * tracks the region automations), without re-reading the region note
+	 * content.  Used for localized automation redisplay.
+	 */
+	virtual void update_automations ();
 
 	// Default implementation is for tracks not supporting regions
 	virtual Temporal::Beats region_relative_beats (int rowi, int mri, int delay) const;

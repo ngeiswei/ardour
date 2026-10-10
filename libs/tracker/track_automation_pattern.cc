@@ -46,6 +46,12 @@ TrackAutomationPattern::TrackAutomationPattern (TrackerContext& te,
 {
 }
 
+TrackPtr
+TrackAutomationPattern::get_track () const
+{
+	return track;
+}
+
 void TrackAutomationPattern::insert (const Evoral::Parameter& param)
 {
 	AutomationPattern::insert_actl (track->automation_control (param, true), track->describe_parameter (param));

@@ -54,6 +54,9 @@ TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& p
 {
 	TrackAllAutomationsPatternPhenomenalDiff diff;
 
+	// Diff is partial: empty() now means "nothing to do".
+	diff.full = false;
+
 	// Calculate phenomenal diff of main automations
 	diff.main_automation_pattern_phenomenal_diff = main_automation_pattern.phenomenal_diff (prev.main_automation_pattern);
 

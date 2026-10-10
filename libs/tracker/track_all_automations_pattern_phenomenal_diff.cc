@@ -25,6 +25,10 @@ using namespace Tracker;
 bool
 TrackAllAutomationsPatternPhenomenalDiff::empty () const
 {
+	if (full) {
+		return false;
+	}
+
 	if (!main_automation_pattern_phenomenal_diff.empty ()) {
 		return false;
 	}

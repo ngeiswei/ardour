@@ -93,6 +93,31 @@ MidiTrackPattern::operator= (const MidiTrackPattern& other)
 	return *this;
 }
 
+void
+MidiTrackPattern::copy_prev (const TrackPattern& other)
+{
+	operator= (static_cast<const MidiTrackPattern&> (other));
+}
+
+void
+MidiTrackPattern::copy_prev_automations (const TrackPattern& other)
+{
+	const MidiTrackPattern& o = static_cast<const MidiTrackPattern&> (other);
+	for (size_t mri = 0; mri < mrps.size () && mri < o.mrps.size (); mri++) {
+		mrps[mri]->mrap.operator= (o.mrps[mri]->mrap);
+	}
+	TrackPattern::copy_prev_automations (other);
+}
+
+void
+MidiTrackPattern::update_automations ()
+{
+	for (size_t mri = 0; mri < mrps.size (); mri++) {
+		mrps[mri]->mrap.update ();
+	}
+	TrackPattern::update_automations ();
+}
+
 TrackPatternPhenomenalDiff*
 MidiTrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 {
@@ -229,9 +254,22 @@ MidiTrackPattern::update ()
 	// account whether some are enabled)
 	update_enabled ();
 
-	// Set number of note tracks to its common max and re-update
-	set_ntracks (get_ntracks ());
-	update_midi_regions ();
+	// Align every region on the common max number of note tracks.  Only
+	// re-update the regions if that actually changed the number of note tracks
+	// of one of them (in the common case of a single region, or when no region
+	// needs to grow, this avoids a full second pass over all the notes).
+	const uint16_t nt = get_ntracks ();
+	bool realign = false;
+	for (size_t mri = 0; mri < mrps.size (); mri++) {
+		if (mrps[mri]->mnp.ntracks != nt) {
+			realign = true;
+			break;
+		}
+	}
+	set_ntracks (nt);
+	if (realign) {
+		update_midi_regions ();
+	}
 
 	// Update track automation pattern
 	TrackPattern::update ();

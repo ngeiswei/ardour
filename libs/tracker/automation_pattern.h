@@ -124,6 +124,13 @@ public:
 
 	virtual std::string get_name (const Evoral::Parameter& param) const;
 
+	/**
+	 * Return the track this automation pattern belongs to, or null if it does
+	 * not (yet) know.  Used by insert_actl() to scope signal connection so that
+	 * the corresponding redisplay can be localized to that track.
+	 */
+	virtual TrackPtr get_track () const;
+
 	// Return automation list associated to the given parameter. If absent
 	// return 0.
 	AutomationListPtr get_alist (const Evoral::Parameter& param);

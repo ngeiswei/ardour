@@ -9,8 +9,12 @@
 #include <cppunit/BriefTestProgressListener.h>
 
 #include "pbd/debug.h"
-#include "pbd/pbd.h"
+#include "ardour/ardour.h"
 #include "temporal/types.h"
+
+#include "test_ui.h"
+
+static const char* localedir = LOCALEDIR;
 
 int
 main(int argc, char* argv[])
@@ -42,11 +46,10 @@ main(int argc, char* argv[])
 		}
 	}
 
-	if (!PBD::init ()) {
-		return 1;
-	}
-	Temporal::init ();
+	CPPUNIT_ASSERT (ARDOUR::init (true, localedir));
 	Temporal::reset ();
+
+	TestUI* test_ui = new TestUI ();
 
 	CppUnit::TestResult testresult;
 
@@ -62,6 +65,10 @@ main(int argc, char* argv[])
 
 	CppUnit::CompilerOutputter compileroutputter (&collectedresults, std::cerr);
 	compileroutputter.write ();
+
+	delete test_ui;
+
+	ARDOUR::cleanup ();
 
 	return collectedresults.wasSuccessful () ? 0 : 1;
 }

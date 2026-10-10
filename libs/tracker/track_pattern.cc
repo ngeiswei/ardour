@@ -64,6 +64,18 @@ TrackPattern::operator= (const TrackPattern& other)
 	return *this;
 }
 
+void
+TrackPattern::copy_prev (const TrackPattern& other)
+{
+	operator= (other);
+}
+
+void
+TrackPattern::copy_prev_automations (const TrackPattern& other)
+{
+	track_all_automations_pattern.main_automation_pattern.operator= (other.track_all_automations_pattern.main_automation_pattern);
+}
+
 MidiTrackPtr
 TrackPattern::midi_track ()
 {
@@ -128,6 +140,12 @@ TrackPattern::audio_track_pattern ()
 
 void
 TrackPattern::update ()
+{
+	track_all_automations_pattern.update ();
+}
+
+void
+TrackPattern::update_automations ()
 {
 	track_all_automations_pattern.update ();
 }

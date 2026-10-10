@@ -67,6 +67,7 @@ MidiRegionAutomationPattern::phenomenal_diff (const MidiRegionAutomationPattern&
 		return diff;
 	}
 
+	diff.full = false;
 	diff.ap_diff = AutomationPattern::phenomenal_diff (prev);
 	return diff;
 }
@@ -77,6 +78,12 @@ void MidiRegionAutomationPattern::setup_automation_controls ()
 	for (set<Evoral::Parameter>::const_iterator i = midi_params.begin (); i != midi_params.end (); ++i) {
 		AutomationPattern::insert_actl (midi_model->automation_control (*i, true), midi_track->describe_parameter (*i));
 	}
+}
+
+TrackPtr
+MidiRegionAutomationPattern::get_track () const
+{
+	return midi_track;
 }
 
 void MidiRegionAutomationPattern::insert (const Evoral::Parameter& param)

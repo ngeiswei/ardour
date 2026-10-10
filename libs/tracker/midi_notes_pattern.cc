@@ -18,6 +18,9 @@
 
 #include <cmath>
 #include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "evoral/Note.h"
 #include "evoral/midi_util.h"
@@ -100,22 +103,36 @@ MidiNotesPattern::clone_note (NotePtr note) const
 	return NotePtr (new NoteType (note->channel (), note->time (), note->length (), note->note (), note->velocity ()));
 }
 
+bool
+MidiNotesPattern::is_row_displayable (const RowToNotes& on_notes, const RowToNotes& off_notes, int row)
+{
+	size_t off_notes_count = off_notes.count (row);
+	size_t on_notes_count = on_notes.count (row);
+	RowToNotes::const_iterator i_off = off_notes.find (row);
+	RowToNotes::const_iterator i_on = on_notes.find (row);
+	return off_notes_count <= 1 && on_notes_count <= 1
+		&& (off_notes_count != 1 || on_notes_count != 1
+		    || TrackerUtils::off_meets_on (i_off->second, i_on->second));
+}
+
 void
-MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd)
+MidiNotesPattern::rows_diff (const RowToNotes& l_on, const RowToNotes& l_off,
+                             const RowToNotes& r_on, const RowToNotes& r_off,
+                             std::set<int>& rd)
 {
 	// Compare left on notes with right on notes
-	for (RowToNotes::const_iterator it = mnp_l.on_notes[cgi].begin (); it != mnp_l.on_notes[cgi].end ();) {
+	for (RowToNotes::const_iterator it = l_on.begin (); it != l_on.end ();) {
 		int row = it->first;
 
 		// First, look at the difference in displayability
-		bool is_cell_displayable = mnp_l.is_displayable (row, cgi);
-		bool cell_diff = is_cell_displayable != mnp_r.is_displayable (row, cgi);
+		bool is_cell_displayable = is_row_displayable (l_on, l_off, row);
+		bool cell_diff = is_cell_displayable != is_row_displayable (r_on, r_off, row);
 		if (cell_diff) {
 			rd.insert (row);
 		}
 		if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
-			it = mnp_l.on_notes[cgi].upper_bound (row);
+			it = l_on.upper_bound (row);
 			continue;
 		}
 		if (cell_diff) {
@@ -124,8 +141,8 @@ MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiN
 		}
 
 		// Second, see if that single on note is present in other, and if it is, check if it is different
-		RowToNotes::const_iterator rit = mnp_r.on_notes[cgi].find (row);
-		if (rit == mnp_r.on_notes[cgi].end () || !TrackerUtils::is_on_equal (it->second, rit->second)) {
+		RowToNotes::const_iterator rit = r_on.find (row);
+		if (rit == r_on.end () || !TrackerUtils::is_on_equal (it->second, rit->second)) {
 			rd.insert (row);
 		}
 
@@ -133,17 +150,18 @@ MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiN
 	}
 
 	// Compare left off notes with right off notes
-	for (RowToNotes::const_iterator it = mnp_l.off_notes[cgi].begin (); it != mnp_l.off_notes[cgi].end ();) {
+	for (RowToNotes::const_iterator it = l_off.begin (); it != l_off.end ();) {
 		int row = it->first;
 
 		// First, look at the difference in displayability
-		bool is_cell_displayable = mnp_l.is_displayable (row, cgi);
-		bool cell_diff = is_cell_displayable != mnp_r.is_displayable (row, cgi);
+		bool is_cell_displayable = is_row_displayable (l_on, l_off, row);
+		bool cell_diff = is_cell_displayable != is_row_displayable (r_on, r_off, row);
 		if (cell_diff) {
 			rd.insert (row);
-		} if (!is_cell_displayable) {
+		}
+		if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
-			it = mnp_l.off_notes[cgi].upper_bound (row);
+			it = l_off.upper_bound (row);
 			continue;
 		}
 		if (cell_diff) {
@@ -154,18 +172,25 @@ MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiN
 		// Second, see if that single off note is present in other, and if it
 		// is, check if it is different, and it is not make sure no on note is
 		// present as on note can hide off note.
-		RowToNotes::const_iterator rit = mnp_r.off_notes[cgi].find (row);
-		if (rit == mnp_r.off_notes[cgi].end ()
+		RowToNotes::const_iterator rit = r_off.find (row);
+		if (rit == r_off.end ()
 		    || !TrackerUtils::is_off_equal (it->second, rit->second)
-		    || (mnp_r.on_notes[cgi].find (row) == mnp_r.on_notes[cgi].end ()
-		        && mnp_l.on_notes[cgi].find (row) != mnp_l.on_notes[cgi].end ())
-		    || (mnp_l.on_notes[cgi].find (row) == mnp_l.on_notes[cgi].end ()
-		        && mnp_r.on_notes[cgi].find (row) != mnp_r.on_notes[cgi].end ())) {
+		    || (r_on.find (row) == r_on.end ()
+		        && l_on.find (row) != l_on.end ())
+		    || (l_on.find (row) == l_on.end ()
+		        && r_on.find (row) != r_on.end ())) {
 			rd.insert (row);
 		}
 
 		++it;
 	}
+}
+
+void
+MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd)
+{
+	rows_diff (mnp_l.on_notes[cgi], mnp_l.off_notes[cgi],
+	           mnp_r.on_notes[cgi], mnp_r.off_notes[cgi], rd);
 }
 
 MidiNotesPatternPhenomenalDiff
@@ -191,6 +216,7 @@ MidiNotesPattern::phenomenal_diff (const MidiNotesPattern& prev) const
 		rows_diff (cgi, *this, prev, rows);
 		rows_diff (cgi, prev, *this, rows);
 		if (!rows.empty ()) {
+			diff.cgi2rows_diff[cgi].full = false;
 			diff.cgi2rows_diff[cgi].rows = rows;
 		}
 	}
@@ -218,13 +244,19 @@ MidiNotesPattern::update_track_to_notes ()
 	     it != notes.end () && (*it)->time () < end_beats; ++it)
 		strict_notes.insert (*it);
 
+	// Index of note ids currently in the region, for fast lookup.
+	std::unordered_set<Evoral::event_id_t> strict_ids;
+	strict_ids.reserve (strict_notes.size ());
+	for (StrictNotes::const_iterator it = strict_notes.begin (); it != strict_notes.end (); ++it) {
+		strict_ids.insert ((*it)->id ());
+	}
+
 	// Remove missing notes
 	for (size_t cgi = 0; cgi < track_to_notes.size (); ++cgi) {
 		MidiModel::Notes& track_notes = track_to_notes[cgi];
 		MidiModel::Notes::iterator track_notes_it = track_notes.begin ();
 		for (; track_notes_it != track_notes.end ();) {
-			StrictNotes::iterator notes_it = find_eq_id (strict_notes, *track_notes_it);
-			if (notes_it == strict_notes.end ()) {
+			if (strict_ids.find ((*track_notes_it)->id ()) == strict_ids.end ()) {
 				track_notes.erase (track_notes_it++);
 			} else {
 				++track_notes_it;
@@ -232,23 +264,34 @@ MidiNotesPattern::update_track_to_notes ()
 		}
 	}
 
+	// Index note id -> sub-track, so that the add/move loop below does not need
+	// to scan every sub-track for every note.
+	std::unordered_map<Evoral::event_id_t, uint16_t> id_to_cgi;
+	for (size_t cgi = 0; cgi < track_to_notes.size (); ++cgi) {
+		for (MidiModel::Notes::const_iterator it = track_to_notes[cgi].begin (); it != track_to_notes[cgi].end (); ++it) {
+			id_to_cgi[(*it)->id ()] = cgi;
+		}
+	}
+
 	// Add new notes and move existing notes
 	for (StrictNotes::const_iterator it = strict_notes.begin ();
 	     it != strict_notes.end (); ++it) {
 
-		int cgi = find_eq_id (*it);
+		std::unordered_map<Evoral::event_id_t, uint16_t>::iterator idit = id_to_cgi.find ((*it)->id ());
+		int cgi = idit != id_to_cgi.end () ? (int) idit->second : INVALID_CGI;
 		int freetrack = -1;		// index of the first free track
 		if (-1 < cgi) {
 			// The note is already in track_to_notes, remove it and check if it
 			// can be re-inserted in the same track.
 			erase_eq_id (cgi, *it);
-			if (is_free (cgi, *it)) {
+			id_to_cgi.erase (idit);
+			if (is_free (track_to_notes, cgi, *it)) {
 				freetrack = cgi;
 			}
 		}
 		// Find the first available track
 		if (freetrack < 0) {
-			freetrack = find_free_track (*it);
+			freetrack = find_free_track (track_to_notes, *it);
 		}
 		// No free track found, create a new one.
 		if (freetrack < 0) {
@@ -257,6 +300,7 @@ MidiNotesPattern::update_track_to_notes ()
 		}
 		// Insert the note in the first free track
 		track_to_notes[freetrack].insert (*it);
+		id_to_cgi[(*it)->id ()] = freetrack;
 	}
 
 	// Update nreqtracks and ntracks
@@ -647,13 +691,7 @@ MidiNotesPattern::next_off_beats (int row, int cgi) const
 bool
 MidiNotesPattern::is_displayable (int row, int cgi) const
 {
-	size_t off_notes_count = off_notes[cgi].count (row);
-	size_t on_notes_count = on_notes[cgi].count (row);
-	RowToNotes::const_iterator i_off = off_notes[cgi].find (row);
-	RowToNotes::const_iterator i_on = on_notes[cgi].find (row);
-	return off_notes_count <= 1 && on_notes_count <= 1
-		&& (off_notes_count != 1 || on_notes_count != 1
-		    || TrackerUtils::off_meets_on (i_off->second, i_on->second));
+	return is_row_displayable (on_notes[cgi], off_notes[cgi], row);
 }
 
 void
@@ -799,7 +837,7 @@ MidiNotesPattern::insert_off_note (int cgi, int row, NotePtr off_note)
 }
 
 bool
-MidiNotesPattern::is_free (int cgi, NotePtr note) const
+MidiNotesPattern::is_free (const std::vector<MidiModel::Notes>& track_to_notes, int cgi, NotePtr note)
 {
 	const MidiModel::Notes& notes = track_to_notes[cgi];
 	MidiModel::Notes::iterator it = notes.begin ();
@@ -812,14 +850,109 @@ MidiNotesPattern::is_free (int cgi, NotePtr note) const
 }
 
 int
-MidiNotesPattern::find_free_track (NotePtr note) const
+MidiNotesPattern::find_free_track (const std::vector<MidiModel::Notes>& track_to_notes, NotePtr note)
 {
 	for (int i = 0; i < (int)track_to_notes.size (); i++) {
-		if (is_free (i, note)) {
+		if (is_free (track_to_notes, i, note)) {
 			return i;
 		}
 	}
 	return INVALID_CGI;
+}
+
+void
+MidiNotesPattern::apply_note_diff (std::vector<MidiModel::Notes>& track_to_notes,
+                                   uint16_t& nreqtracks,
+                                   const Temporal::Beats& start_beats,
+                                   const Temporal::Beats& end_beats,
+                                   const MidiModel::NoteDiffCommand::NoteList& added,
+                                   const MidiModel::NoteDiffCommand::NoteList& removed,
+                                   const MidiModel::NoteDiffCommand::ChangeList& changes)
+{
+	auto find_cgi = [&] (NotePtr note) -> int {
+		for (size_t cgi = 0; cgi < track_to_notes.size (); ++cgi) {
+			for (MidiModel::Notes::iterator it = track_to_notes[cgi].begin (); it != track_to_notes[cgi].end (); ++it) {
+				if ((*it)->id () == note->id ()) {
+					return cgi;
+				}
+			}
+		}
+		return INVALID_CGI;
+	};
+
+	auto erase_note = [&] (NotePtr note) -> int {
+		int cgi = find_cgi (note);
+		if (cgi >= 0) {
+			MidiModel::Notes& notes = track_to_notes[cgi];
+			for (MidiModel::Notes::iterator it = notes.begin (); it != notes.end (); ++it) {
+				if ((*it)->id () == note->id ()) {
+					notes.erase (it);
+					break;
+				}
+			}
+		}
+		return cgi;
+	};
+
+	auto insert_note = [&] (NotePtr note, int preferred_cgi) {
+		int cgi = preferred_cgi >= 0 && is_free (track_to_notes, preferred_cgi, note)
+			? preferred_cgi : find_free_track (track_to_notes, note);
+		if (cgi < 0) {
+			cgi = track_to_notes.size ();
+			track_to_notes.push_back (MidiModel::Notes ());
+		}
+		track_to_notes[cgi].insert (note);
+	};
+
+	auto in_region = [&] (NotePtr note) {
+		return start_beats <= note->time () && note->time () < end_beats;
+	};
+
+	// Removals (removed_notes() may have grown as a side effect of applying
+	// the command, hence capturing it afterwards)
+	std::set<Evoral::event_id_t> removed_ids;
+	for (const NotePtr& note : removed) {
+		removed_ids.insert (note->id ());
+		erase_note (note);
+	}
+
+	// Additions
+	for (const NotePtr& note : added) {
+		if (!in_region (note)) {
+			continue;
+		}
+		insert_note (note, -1);
+	}
+
+	// Changes that may move a note to another sub-track (only start time and
+	// length affect the overlap relationship).  A note that was also removed
+	// (e.g. because re-adding it failed) must not be re-inserted.
+	for (const MidiModel::NoteDiffCommand::NoteChange& change : changes) {
+		if (change.property != MidiModel::NoteDiffCommand::StartTime &&
+		    change.property != MidiModel::NoteDiffCommand::Length) {
+			continue;
+		}
+		NotePtr note = change.note;
+		int cgi = erase_note (note);
+		if (removed_ids.count (note->id ())) {
+			continue;
+		}
+		if (in_region (note)) {
+			insert_note (note, cgi);
+		}
+	}
+
+	nreqtracks = track_to_notes.size ();
+}
+
+void
+MidiNotesPattern::apply_note_diff (const MidiModel::NoteDiffCommand::NoteList& added,
+                                   const MidiModel::NoteDiffCommand::NoteList& removed,
+                                   const MidiModel::NoteDiffCommand::ChangeList& changes)
+{
+	apply_note_diff (track_to_notes, nreqtracks, start_beats, end_beats, added, removed, changes);
+	ntracks = std::max (nreqtracks, ntracks);
+	update_row_to_notes ();
 }
 
 bool
