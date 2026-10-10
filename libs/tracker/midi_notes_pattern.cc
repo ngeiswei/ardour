@@ -36,7 +36,7 @@ using namespace Tracker;
 // MidiNotesPattern //
 //////////////////////
 
-MidiNotesPattern::MidiNotesPattern (TrackerEditor& te,
+MidiNotesPattern::MidiNotesPattern (TrackerContext& te,
                                     MidiRegionPtr region)
 	: BasePattern (te, region)
 	, ntracks (0)

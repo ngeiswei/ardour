@@ -37,7 +37,7 @@ namespace Tracker {
  */
 class TrackAllAutomationsPattern : public BasePattern {
 public:
-	TrackAllAutomationsPattern (TrackerEditor& te,
+	TrackAllAutomationsPattern (TrackerContext& te,
 	                            TrackPtr track,
 	                            Temporal::timepos_t position,
 	                            Temporal::timecnt_t length,

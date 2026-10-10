@@ -45,7 +45,7 @@ namespace Tracker {
  */
 class MidiNotesPattern : public BasePattern {
 public:
-	MidiNotesPattern (TrackerEditor& te,
+	MidiNotesPattern (TrackerContext& te,
 	                  MidiRegionPtr region);
 
 	MidiNotesPattern& operator= (const MidiNotesPattern& other);

@@ -34,9 +34,8 @@ namespace Tracker {
  */
 class MidiTrackPattern : public TrackPattern {
 public:
-	MidiTrackPattern (TrackerEditor& te,
+	MidiTrackPattern (TrackerContext& te,
 	                  TrackPtr track,
-	                  const std::vector<RegionView*>& region_views,
 	                  const RegionSeq& regions,
 	                  Temporal::timepos_t position,
 	                  Temporal::timecnt_t length,
@@ -182,7 +181,6 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	MidiTrackPtr midi_track;
-	std::vector<RegionView*> rvs; // to get access to device names
 	std::vector<MidiRegionPattern*> mrps;
 
 	// Keep track of enabled region automations

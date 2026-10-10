@@ -29,7 +29,7 @@ namespace Tracker {
  */
 class ProcessorAutomationPattern : public TrackAutomationPattern {
 public:
-	ProcessorAutomationPattern (TrackerEditor& te,
+	ProcessorAutomationPattern (TrackerContext& te,
 	                            TrackPtr track,
 	                            Temporal::timepos_t position,
 	                            Temporal::timecnt_t length,

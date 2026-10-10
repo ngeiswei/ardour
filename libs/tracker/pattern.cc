@@ -16,24 +16,24 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "audio_region_view.h"
-#include "midi_region_view.h"
+#include "ardour/session.h"
 
 #include "audio_track_pattern.h"
 #include "audio_track_pattern_phenomenal_diff.h"
+#include "midi_track_pattern.h"
 #include "midi_track_pattern_phenomenal_diff.h"
 #include "pattern.h"
-#include "tracker_editor.h"
 
 using namespace Tracker;
 
-Pattern::Pattern (TrackerEditor& te, bool connect)
-	: BasePattern (te,
-	               TrackerUtils::get_position (te.region_selection),
+Pattern::Pattern (TrackerContext& ctx, const TrackRegionsMap& rpt, bool connect)
+	: BasePattern (ctx,
+	               TrackerUtils::get_position (rpt),
 	               Temporal::timepos_t (),
-	               TrackerUtils::get_length (te.region_selection),
-	               TrackerUtils::get_end (te.region_selection),
-	               TrackerUtils::get_nt_last (te.region_selection))
+	               TrackerUtils::get_length (rpt),
+	               TrackerUtils::get_end (rpt),
+	               TrackerUtils::get_nt_last (rpt))
+	, regions_per_track (rpt)
 	, earliest_mti (0)
 	, earliest_tp (0)
 	, global_nrows (0)
@@ -111,36 +111,21 @@ Pattern::phenomenal_diff (const Pattern& prev) const
 }
 
 void
-Pattern::setup ()
+Pattern::setup (const TrackRegionsMap& rpt)
 {
-	setup_region_views_per_track ();
-	setup_regions_per_track ();
+	setup_regions_per_track (rpt);
 	setup_track_patterns ();
 	setup_row_offset ();
 }
 
 void
-Pattern::setup_region_views_per_track ()
+Pattern::setup_regions_per_track (const TrackRegionsMap& rpt)
 {
-	// Associate track to its region selections
-	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
-		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
-		std::vector<RegionView*>& region_views = region_views_per_track[track];
-		if (std::find (region_views.begin (), region_views.end (), *it) == region_views.end ()) {
-			region_views.push_back (*it);
-		}
-	}
-}
-
-void
-Pattern::setup_regions_per_track ()
-{
+	// Note: cannot use operator= on the map as Stripable::Sorter is not
+	// assignable (const member)
 	regions_per_track.clear ();
-	// Associate track to its regions
-	for (RegionSelection::const_iterator it = tracker_editor.region_selection.begin (); it != tracker_editor.region_selection.end (); ++it) {
-		RegionPtr region = (*it)->region ();
-		TrackPtr track = dynamic_cast<RouteTimeAxisView&> ((*it)->get_time_axis_view ()).track ();
-		regions_per_track[track].push_back (region);
+	for (TrackRegionsMap::const_iterator it = rpt.begin (); it != rpt.end (); ++it) {
+		regions_per_track[it->first] = it->second;
 	}
 }
 
@@ -171,7 +156,7 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 	MidiTrackPtr midi_track = std::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
 		// TODO: fix memory leak
-		MidiTrackPattern* mtp = new MidiTrackPattern (tracker_editor, track, region_views_per_track[midi_track], regions,
+		MidiTrackPattern* mtp = new MidiTrackPattern (context, track, regions,
 		                                              position, length, end, nt_last, _connect);
 		tps.push_back (mtp);
 	}
@@ -179,7 +164,7 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 	if (audio_track) {
 		// Only track automation (main and processor) is supported for audio
 		// tracks for now, not audio region content. See AudioTrackPattern.
-		AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
+		AudioTrackPattern* atp = new AudioTrackPattern (context, track, regions,
 		                                                position, length, end, nt_last, _connect);
 		tps.push_back (atp);
 	}
@@ -196,7 +181,7 @@ void
 Pattern::update ()
 {
 	update_position_etc ();
-	set_rows_per_beat (tracker_editor.main_toolbar.rows_per_beat, false);
+	set_rows_per_beat (rows_per_beat, false);
 	set_row_range ();
 	update_content ();
 	update_earliest_mtp ();
@@ -240,7 +225,7 @@ Pattern::update_content ()
 	// well.
 	//
 	// TODO: maybe optimize
-	tracker_editor.grid_header->setup_track_headers ();
+	context.track_headers_changed ();
 }
 
 void
@@ -518,7 +503,7 @@ Pattern::midi_region_pattern (int mti, int mri) const
 void
 Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
-	midi_model (mti, mri)->apply_diff_command_as_commit (tracker_editor.session, cmd);
+	midi_model (mti, mri)->apply_diff_command_as_commit (context.get_session (), cmd);
 }
 
 std::string

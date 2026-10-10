@@ -32,7 +32,7 @@ using namespace Tracker;
 // MidiRegionAutomationPattern //
 /////////////////////////////////
 
-MidiRegionAutomationPattern::MidiRegionAutomationPattern (TrackerEditor& te,
+MidiRegionAutomationPattern::MidiRegionAutomationPattern (TrackerContext& te,
                                                           MidiTrackPtr mt,
                                                           MidiRegionPtr mr,
                                                           bool connect)

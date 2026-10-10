@@ -37,6 +37,8 @@
 #include "midi_time_axis.h"
 #include "region_selection.h"
 
+#include "tracker_context.h"
+
 #include "audio_track_toolbar.h"
 #include "grid.h"
 #include "grid_header.h"
@@ -62,11 +64,15 @@ namespace ARDOUR {
 	class Processor;
 };
 
+namespace PBD {
+	class Command;
+}
+
 class AutomationTimeAxisView;
 
 namespace Tracker {
 
-class TrackerEditor : public ArdourWindow
+class TrackerEditor : public ArdourWindow, public TrackerContext
 {
 public:
 	TrackerEditor (ARDOUR::Session*, RegionSelection& rs);
@@ -76,9 +82,22 @@ public:
 
 	void resize_width ();
 
+	// TrackerContext interface
+	ARDOUR::Session* get_session () const;
+	void begin_reversible_command (const std::string& name);
+	void commit_reversible_command ();
+	void add_command (PBD::Command* cmd);
+	void set_dirty ();
+	void track_headers_changed ();
+
 	void connect_track (TrackPtr track);
 	void connect_midi_region (MidiRegionPtr midi_region);
 	void connect_automation (AutomationControlPtr actl);
+
+	// Build the track -> regions mapping from the current region selection.
+	// Used by the model (Pattern) without it needing to know about
+	// RegionView / RegionSelection.
+	TrackRegionsMap build_regions_per_track () const;
 
 	void connect_midi_event ();
 	void disconnect_midi_event ();
