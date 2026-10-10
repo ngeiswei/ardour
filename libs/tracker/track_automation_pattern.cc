@@ -34,7 +34,7 @@ using namespace Tracker;
 // TrackAutomationPattern //
 ////////////////////////////
 
-TrackAutomationPattern::TrackAutomationPattern (TrackerEditor& te,
+TrackAutomationPattern::TrackAutomationPattern (TrackerContext& te,
                                                 TrackPtr trk,
                                                 Temporal::timepos_t pos,
                                                 Temporal::timecnt_t len,

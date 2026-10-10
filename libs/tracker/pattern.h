@@ -24,8 +24,6 @@
 #include "ardour/stripable.h"
 #include "ardour/track.h"
 
-#include "region_view.h"
-
 #include "midi_region_pattern.h"
 #include "pattern_phenomenal_diff.h"
 #include "midi_notes_pattern.h"
@@ -34,8 +32,6 @@
 
 namespace Tracker {
 
-class TrackerEditor;
-
 /**
  * Uber pattern representing all musical data in scope.
  */
@@ -43,8 +39,9 @@ class Pattern : public BasePattern
 {
 public:
 	// Create patterns for selected regions. If connect is true then connect
-	// them to various signals to trigger grid redisplay.
-	Pattern (TrackerEditor& te, bool connect);
+	// them to various signals to trigger grid redisplay.  regions_per_track
+	// is built by the application from its own selection.
+	Pattern (TrackerContext& context, const TrackRegionsMap& regions_per_track, bool connect);
 	~Pattern ();
 
 	// Phenomenal overload of operator= (), only need to copy what is necessary
@@ -53,10 +50,9 @@ public:
 
 	PatternPhenomenalDiff phenomenal_diff (const Pattern& prev) const;
 
-	void setup ();
+	void setup (const TrackRegionsMap& regions_per_track);
 	void setup_positions ();
-	void setup_region_views_per_track ();
-	void setup_regions_per_track ();
+	void setup_regions_per_track (const TrackRegionsMap& regions_per_track);
 	void setup_track_patterns ();
 	void add_track_pattern (TrackPtr, const RegionSeq&);
 	void setup_row_offset ();
@@ -200,10 +196,6 @@ public:
 
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
-
-	// Mapping track to region views
-	typedef std::map<TrackPtr, std::vector<RegionView*>, ARDOUR::Stripable::Sorter> TrackRegionViewsMap;
-	TrackRegionViewsMap region_views_per_track;
 
 	// Mapping track to regions
 	typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;

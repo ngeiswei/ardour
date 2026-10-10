@@ -21,6 +21,9 @@
 
 #include <ytkmm/box.h>
 #include <ytkmm/separator.h>
+#include <ytkmm/menu.h>
+#include <ytkmm/checkmenuitem.h>
+#include <ytkmm/menu_elems.h>
 
 #include "widgets/ardour_button.h"
 

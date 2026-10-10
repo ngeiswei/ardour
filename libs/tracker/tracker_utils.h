@@ -37,8 +37,6 @@
 #include "evoral/Parameter.h"
 #include "temporal/bbt_time.h"
 
-#include "region_selection.h"
-
 namespace Tracker {
 
 typedef std::shared_ptr<ARDOUR::Track> TrackPtr;
@@ -377,14 +375,10 @@ public:
 	// number is missing then the default one is used.
 	static uint8_t parse_pitch (std::string text, int default_octave);
 
-	// Return a sequence of regions sorted by position
-	static RegionSeq get_sorted_regions (const RegionSelection& region_selection);
-
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the earliest one.  If empty then return 0.
 	static Temporal::timepos_t get_position (const RegionSeq& regions);
 	static Temporal::timepos_t get_position (const MidiRegionSeq& regions);
-	static Temporal::timepos_t get_position (const RegionSelection& region_selection);
 	static Temporal::timepos_t get_position (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
@@ -392,7 +386,6 @@ public:
 	// If empty then return 0.
 	static Temporal::timecnt_t get_length (const RegionSeq& regions);
 	static Temporal::timecnt_t get_length (const MidiRegionSeq& regions);
-	static Temporal::timecnt_t get_length (const RegionSelection& region_selection);
 	static Temporal::timecnt_t get_length (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
@@ -400,14 +393,12 @@ public:
 	// empty then return 0.
 	static Temporal::timepos_t get_end (const RegionSeq& regions);
 	static Temporal::timepos_t get_end (const MidiRegionSeq& regions);
-	static Temporal::timepos_t get_end (const RegionSelection& region_selection);
 	static Temporal::timepos_t get_end (const TrackRegionsMap& regions_per_track);
 
 	// Given a list of chronologically ordered, non overlapping regions, return
 	// the position of the last sample.  If empty then return 0.
 	static Temporal::timepos_t get_nt_last (const RegionSeq& regions);
 	static Temporal::timepos_t get_nt_last (const MidiRegionSeq& regions);
-	static Temporal::timepos_t get_nt_last (const RegionSelection& region_selection);
 	static Temporal::timepos_t get_nt_last (const TrackRegionsMap& regions_per_track);
 
 	// Compare if two notes have the same on note attributes
@@ -445,8 +436,9 @@ public:
 
 	static std::string id_param_to_string (const IDParameter& id_param);
 
-	// Convert Gtkmm2ext::Color to its string representation
-	static std::string color_to_string (const Gtkmm2ext::Color& color);
+	// Convert a 32 bit color (as returned by Gtkmm2ext color helpers) to its
+	// string representation
+	static std::string color_to_string (uint32_t color);
 
 	// Return initial IDParameter object with no useful information in it
 	static IDParameter defaultIDParameter ();

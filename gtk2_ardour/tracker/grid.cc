@@ -87,8 +87,8 @@ const std::string Grid::undisplayable_str = "***";
 Grid::Grid (TrackerEditor& te)
 	: tracker_editor (te)
 	, capacity_tracks (0)
-	, pattern (te, true /* connect */)
-	, prev_pattern (te, false /* not connect */)
+	, pattern (te, te.build_regions_per_track (), true /* connect */)
+	, prev_pattern (te, te.build_regions_per_track (), false /* not connect */)
 	, current_path (1)			  // NEXT: why 1?
 	, current_row_idx (BasePattern::INVALID_ROW)
 	, current_col_idx (0)
@@ -1433,13 +1433,13 @@ Grid::first_defined_col ()
 void
 Grid::setup ()
 {
-	pattern.setup ();
+	pattern.setup (tracker_editor.build_regions_per_track ());
 
 	// Setup previous pattern in order to instantiate its tracks in
 	// memory. However prev_pattern will never be updated, and only serve as
 	// buffer to calculate phenomenal differences with the current (updated)
 	// pattern.
-	prev_pattern.setup ();
+	prev_pattern.setup (tracker_editor.build_regions_per_track ());
 	init_columns ();
 	bool schema_rebuilt = ensure_schema ();
 	init_model ();

@@ -24,7 +24,7 @@ using namespace Tracker;
 // ProcessorAutomationPattern //
 ////////////////////////////////
 
-ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerEditor& te,
+ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerContext& te,
                                                         TrackPtr trk,
                                                         Temporal::timepos_t pos,
                                                         Temporal::timecnt_t len,

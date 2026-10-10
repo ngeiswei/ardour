@@ -98,6 +98,62 @@ TrackerEditor::~TrackerEditor ()
 	delete grid_header;
 }
 
+ARDOUR::Session*
+TrackerEditor::get_session () const
+{
+	return session;
+}
+
+void
+TrackerEditor::begin_reversible_command (const std::string& name)
+{
+	public_editor.begin_reversible_command (name);
+}
+
+void
+TrackerEditor::commit_reversible_command ()
+{
+	public_editor.commit_reversible_command ();
+}
+
+void
+TrackerEditor::add_command (PBD::Command* cmd)
+{
+	if (session) {
+		session->add_command (cmd);
+	}
+}
+
+void
+TrackerEditor::set_dirty ()
+{
+	if (session) {
+		session->set_dirty ();
+	}
+}
+
+void
+TrackerEditor::track_headers_changed ()
+{
+	if (grid_header) {
+		grid_header->setup_track_headers ();
+	}
+}
+
+TrackRegionsMap
+TrackerEditor::build_regions_per_track () const
+{
+	TrackRegionsMap regions_per_track;
+	for (RegionSelection::const_iterator it = region_selection.begin (); it != region_selection.end (); ++it) {
+		RegionPtr region = (*it)->region ();
+		RouteTimeAxisView* tav = dynamic_cast<RouteTimeAxisView*> (&(*it)->get_time_axis_view ());
+		if (tav) {
+			regions_per_track[tav->track ()].push_back (region);
+		}
+	}
+	return regions_per_track;
+}
+
 void TrackerEditor::setup (RegionSelection& rs)
 {
 	set_region_selection (rs);

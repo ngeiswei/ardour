@@ -24,7 +24,6 @@
 #include "ardour/tempo.h"
 
 #include "base_pattern.h"
-#include "tracker_editor.h"
 
 using namespace Tracker;
 
@@ -32,9 +31,9 @@ using namespace Tracker;
 // BasePattern //
 /////////////////
 
-BasePattern::BasePattern (TrackerEditor& te,
+BasePattern::BasePattern (TrackerContext& ctx,
                           RegionPtr region)
-	: tracker_editor (te)
+	: context (ctx)
 	, position (region->position ())
 	, start (region->start ())
 	, length (region->length ())
@@ -45,17 +44,17 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, enabled (true)
 	, selected (false)
 	, _ticks_per_row (0)
-	, _session (tracker_editor.session)
+	, _session (context.get_session ())
 {
 }
 
-BasePattern::BasePattern (TrackerEditor& te,
+BasePattern::BasePattern (TrackerContext& ctx,
                           Temporal::timepos_t pos,
                           Temporal::timepos_t sta,
                           Temporal::timecnt_t len,
                           Temporal::timepos_t ed,
                           Temporal::timepos_t ntl)
-	: tracker_editor (te)
+	: context (ctx)
 	, position (pos)
 	, start (sta)
 	, length (len)
@@ -65,7 +64,7 @@ BasePattern::BasePattern (TrackerEditor& te,
 	, nrows (0)
 	, enabled (true)
 	, _ticks_per_row (0)
-	, _session (tracker_editor.session)
+	, _session (context.get_session ())
 {
 }
 

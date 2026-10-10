@@ -33,7 +33,7 @@ namespace Tracker {
  */
 class MidiRegionPattern : public BasePattern {
 public:
-	MidiRegionPattern (TrackerEditor& te,
+	MidiRegionPattern (TrackerContext& te,
 	                   MidiTrackPtr midi_track,
 	                   MidiRegionPtr region,
 	                   bool connect);

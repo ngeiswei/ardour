@@ -22,7 +22,6 @@
 #include "pbd/i18n.h"
 
 #include "automation_pattern.h"
-#include "tracker_editor.h"
 #include "tracker_utils.h"
 
 using namespace Tracker;
@@ -31,7 +30,7 @@ using namespace Tracker;
 // AutomationPattern //
 ///////////////////////
 
-AutomationPattern::AutomationPattern (TrackerEditor& te,
+AutomationPattern::AutomationPattern (TrackerContext& te,
                                       RegionPtr region,
                                       bool cnct)
 	: BasePattern (te, region)
@@ -39,7 +38,7 @@ AutomationPattern::AutomationPattern (TrackerEditor& te,
 {
 }
 
-AutomationPattern::AutomationPattern (TrackerEditor& te,
+AutomationPattern::AutomationPattern (TrackerContext& te,
                                       Temporal::timepos_t pos,
                                       Temporal::timepos_t sta,
                                       Temporal::timecnt_t len,
@@ -388,7 +387,7 @@ AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& na
 	std::pair<ParamAutomationControlMap::iterator, bool> actl_result = param_to_actl.insert (std::make_pair (param, actl));
 	param_to_name.insert (std::make_pair (param, name));
 	if (actl_result.second && connect) {
-		tracker_editor.connect_automation (actl);
+		context.connect_automation (actl);
 	}
 }
 
@@ -743,10 +742,10 @@ AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationLi
 void
 AutomationPattern::register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after)
 {
-	tracker_editor.public_editor.begin_reversible_command (opname);
-	tracker_editor.session->add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
-	tracker_editor.public_editor.commit_reversible_command ();
-	tracker_editor.session->set_dirty ();
+	context.begin_reversible_command (opname);
+	context.add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
+	context.commit_reversible_command ();
+	context.set_dirty ();
 }
 
 RowToControlEvents::const_iterator
