@@ -25,7 +25,7 @@ using namespace Tracker;
 bool
 AudioTrackPatternPhenomenalDiff::empty () const
 {
-	return !full;
+	return !full && TrackPatternPhenomenalDiff::empty ();
 }
 
 std::string
