@@ -34,7 +34,7 @@ using namespace Tracker;
 // TrackAllAutomationsPattern //
 ////////////////////////////////
 
-TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerEditor& te,
+TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerContext& te,
                                                         TrackPtr trk,
                                                         Temporal::timepos_t pos,
                                                         Temporal::timecnt_t len,
@@ -105,7 +105,7 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 
 	// NEXT: deal with memory leak
 	id_to_processor_automation_pattern[processor->id()] =
-		new ProcessorAutomationPattern(tracker_editor, track, position, length, end, nt_last, connect, processor);
+		new ProcessorAutomationPattern(context, track, position, length, end, nt_last, connect, processor);
 }
 
 void

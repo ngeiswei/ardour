@@ -40,7 +40,7 @@ class AudioTrackPattern;
  */
 class TrackPattern : public BasePattern {
 public:
-	TrackPattern (TrackerEditor& te,
+	TrackPattern (TrackerContext& te,
 	              TrackPtr track,
 	              Temporal::timepos_t position,
 	              Temporal::timecnt_t length,

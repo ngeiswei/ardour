@@ -22,11 +22,10 @@
 #include "midi_track_pattern_phenomenal_diff.h"
 #include "track_pattern.h"
 #include "tracker_utils.h"
-#include "tracker_editor.h"
 
 using namespace Tracker;
 
-TrackPattern::TrackPattern (TrackerEditor& te,
+TrackPattern::TrackPattern (TrackerContext& te,
                             TrackPtr trk,
                             Temporal::timepos_t pos,
                             Temporal::timecnt_t len,
@@ -38,7 +37,7 @@ TrackPattern::TrackPattern (TrackerEditor& te,
 	, track_all_automations_pattern (te, trk, pos, len, ed, ntl, connect)
 {
 	if (connect)
-		tracker_editor.connect_track (track);
+		context.connect_track (track);
 }
 
 TrackPattern::~TrackPattern ()

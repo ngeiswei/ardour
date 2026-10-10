@@ -29,7 +29,7 @@ using namespace Tracker;
 // MainAutomationPattern //
 ///////////////////////////
 
-MainAutomationPattern::MainAutomationPattern (TrackerEditor& te,
+MainAutomationPattern::MainAutomationPattern (TrackerContext& te,
                                               TrackPtr trk,
                                               Temporal::timepos_t pos,
                                               Temporal::timecnt_t len,

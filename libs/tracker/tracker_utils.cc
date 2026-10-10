@@ -20,8 +20,6 @@
 
 #include "ardour/parameter_types.h"
 
-#include "audio_region_view.h"
-#include "midi_region_view.h"
 #include "tracker_utils.h"
 
 using namespace Tracker;
@@ -254,18 +252,6 @@ TrackerUtils::parse_pitch (std::string text, int default_octave)
 	return ARDOUR::ParameterDescriptor::midi_note_num (text);
 }
 
-RegionSeq
-TrackerUtils::get_sorted_regions (const RegionSelection& region_selection)
-{
-	RegionSeq regions;
-	for (RegionSelection::const_iterator it = region_selection.begin (); it != region_selection.end (); ++it) {
-		RegionPtr region = (*it)->region ();
-		regions.push_back (region);
-	}
-	std::sort (regions.begin (), regions.end (), region_position_less ());
-	return regions;
-}
-
 Temporal::timepos_t
 TrackerUtils::get_position (const RegionSeq& regions)
 {
@@ -295,12 +281,6 @@ TrackerUtils::get_position (const MidiRegionSeq& regions)
 }
 
 Temporal::timepos_t
-TrackerUtils::get_position (const RegionSelection& region_selection)
-{
-	return region_selection.start_time ();
-}
-
-Temporal::timepos_t
 TrackerUtils::get_position (const TrackRegionsMap& regions_per_track)
 {
 	if (regions_per_track.empty())
@@ -324,12 +304,6 @@ Temporal::timecnt_t
 TrackerUtils::get_length (const MidiRegionSeq& regions)
 {
 	return get_position (regions).distance (get_end (regions));
-}
-
-Temporal::timecnt_t
-TrackerUtils::get_length (const RegionSelection& region_selection)
-{
-	return get_position (region_selection).distance (get_end (region_selection));
 }
 
 Temporal::timecnt_t
@@ -362,21 +336,6 @@ TrackerUtils::get_end (const RegionSeq& regions)
 	Temporal::timepos_t end = regions[i++]->end_position ();
 	for (; i < regions.size (); i++) {
 		end = std::max (end, regions[i]->end_position ());
-	}
-	return end;
-}
-
-Temporal::timepos_t
-TrackerUtils::get_end (const RegionSelection& region_selection)
-{
-	if (region_selection.empty())
-		return Temporal::timepos_t ();
-
-	RegionSelection::const_iterator it = region_selection.begin ();
-	Temporal::timepos_t end = (*it)->region ()->end_position ();
-	++it;
-	for (; it != region_selection.end (); ++it) {
-		end = std::max (end, (*it)->region ()->end_position ());
 	}
 	return end;
 }
@@ -421,12 +380,6 @@ TrackerUtils::get_nt_last (const MidiRegionSeq& regions)
 		nt_last = std::max (nt_last, regions[i]->nt_last ());
 	}
 	return nt_last;
-}
-
-Temporal::timepos_t
-TrackerUtils::get_nt_last (const RegionSelection& region_selection)
-{
-	return region_selection.end_time ().decrement ();
 }
 
 Temporal::timepos_t
@@ -526,7 +479,7 @@ TrackerUtils::id_param_to_string (const IDParameter& id_param)
 }
 
 std::string
-TrackerUtils::color_to_string (const Gtkmm2ext::Color& color)
+TrackerUtils::color_to_string (uint32_t color)
 {
 	std::stringstream ss;
 	ss << std::hex;

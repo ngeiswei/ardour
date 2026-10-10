@@ -36,7 +36,7 @@ namespace Tracker {
  */
 class MidiRegionAutomationPattern : public AutomationPattern {
 public:
-	MidiRegionAutomationPattern (TrackerEditor& track_editor,
+	MidiRegionAutomationPattern (TrackerContext& track_editor,
                                 MidiTrackPtr midi_track,
                                 MidiRegionPtr midi_region,
                                 bool connect);
