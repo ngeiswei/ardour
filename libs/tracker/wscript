@@ -69,3 +69,31 @@ def build(bld):
     obj.defines     += [ 'PACKAGE="' + I18N_PACKAGE + '"' ]
     obj.uselib       = [ 'GLIBMM', 'XML', 'OSX' ]
     obj.use          = [ 'libpbd', 'libmidipp', 'libevoral', 'libtemporal', 'libardour' ]
+
+    if bld.env['BUILD_TESTS'] and bld.is_defined('HAVE_CPPUNIT'):
+        # Unit tests
+        obj              = bld(features = 'cxx cxxprogram')
+        obj.source       = [
+                'test/testrunner.cc',
+                'test/dummy_lxvst.cc',
+                'test/TrackerUtilsTest.cc',
+                'test/BasePatternTest.cc',
+                'test/PhenomenalDiffTest.cc',
+                ]
+        obj.includes     = ['.', '..']
+        obj.use          = ['libtracker', 'libpbd', 'libmidipp', 'libevoral', 'libtemporal', 'libardour']
+        obj.uselib       = 'GLIBMM GTHREAD XML CPPUNIT'
+        obj.target       = 'run-tests'
+        obj.name         = 'libtracker-tests'
+        obj.install_path = ''
+        obj.defines      = ['PACKAGE="libtrackertest"']
+        if bld.env['TEST_COVERAGE']:
+            obj.linkflags      = ['--coverage']
+            obj.cflags         = ['--coverage']
+            obj.cxxflags       = ['--coverage']
+
+
+def test(ctx):
+    autowaf.pre_test(ctx, APPNAME)
+    autowaf.run_tests(ctx, APPNAME, ['./run-tests'])
+    autowaf.post_test(ctx, APPNAME)
