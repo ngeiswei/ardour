@@ -18,20 +18,14 @@
 
 #include "ardour/midi_region.h"
 
-#include "midi_region_view.h"
-#include "region_view.h"
-
-#include "grid.h"
 #include "midi_track_pattern.h"
 #include "midi_track_pattern_phenomenal_diff.h"
-#include "tracker_editor.h"
 #include "tracker_utils.h"
 
 using namespace Tracker;
 
-MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
+MidiTrackPattern::MidiTrackPattern (TrackerContext& te,
                                     TrackPtr trk,
-                                    const std::vector<RegionView*>& region_views,
                                     const RegionSeq& regions,
                                     Temporal::timepos_t pos,
                                     Temporal::timecnt_t len,
@@ -40,7 +34,6 @@ MidiTrackPattern::MidiTrackPattern (TrackerEditor& te,
                                     bool connect)
 	: TrackPattern (te, trk, pos, len, ed, ntl, connect)
 	, midi_track (std::static_pointer_cast<ARDOUR::MidiTrack> (trk))
-	, rvs (region_views)
 	, row_offset (regions.size (), 0)
 {
 	setup (regions);
@@ -64,7 +57,7 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 		if (mrp) {
 			mrp->set_selected(true);
 		} else {
-			MidiRegionPattern* new_mrp = new MidiRegionPattern(tracker_editor, midi_track, midi_region, true);
+			MidiRegionPattern* new_mrp = new MidiRegionPattern(context, midi_track, midi_region, true);
 			new_mrp->set_selected(true);
 			mrps.push_back (new_mrp);
 		}
