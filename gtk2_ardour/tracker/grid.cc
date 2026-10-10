@@ -1713,6 +1713,17 @@ Grid::redisplay_left_right_separator_columns (int mti)
 }
 
 void
+Grid::redisplay_left_right_separator_columns (TrackPtr track)
+{
+	for (size_t mti = 0; mti < pattern.tps.size (); ++mti) {
+		if (pattern.tps[mti]->track == track) {
+			redisplay_left_right_separator_columns (mti);
+			return;
+		}
+	}
+}
+
+void
 Grid::redisplay_left_right_separator (TreeModel::Row& row, int mti)
 {
 	if (mti >= (int)pattern.tps.size () || mti >= (int)left_separator_columns.size ()) {
