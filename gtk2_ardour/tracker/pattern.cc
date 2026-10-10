@@ -19,6 +19,7 @@
 #include "audio_region_view.h"
 #include "midi_region_view.h"
 
+#include "audio_track_pattern.h"
 #include "audio_track_pattern_phenomenal_diff.h"
 #include "midi_track_pattern_phenomenal_diff.h"
 #include "pattern.h"
@@ -174,13 +175,14 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 		                                              position, length, end, nt_last, _connect);
 		tps.push_back (mtp);
 	}
-	// NEXT.2: re-enable
-	// AudioTrackPtr audio_track = std::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
-	// if (audio_track) {
-	// 	AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
-	// 	                                                position_sample, length_sample, first_sample, last_sample, _connect);
-	// 	tps.push_back (atp);
-	// }
+	AudioTrackPtr audio_track = std::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
+	if (audio_track) {
+		// Only track automation (main and processor) is supported for audio
+		// tracks for now, not audio region content. See AudioTrackPattern.
+		AudioTrackPattern* atp = new AudioTrackPattern (tracker_editor, track, regions,
+		                                                position, length, end, nt_last, _connect);
+		tps.push_back (atp);
+	}
 }
 
 void

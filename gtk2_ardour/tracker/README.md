@@ -1,6 +1,7 @@
 # Next
 
-- [ ] NEXT.2: reenable tracker for audio tracks
+- [x] NEXT.2: reenable tracker for audio tracks (track automation only)
+- [ ] NEXT.2b: support audio region content and region automation
 - [ ] Carefully go over all NEXT comments
 
 # Tracker Editor
