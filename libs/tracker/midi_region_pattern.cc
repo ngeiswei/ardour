@@ -17,14 +17,14 @@
  */
 
 #include "ardour/midi_region.h"
+#include "ardour/playlist.h"
 #include "ardour/session_playlists.h"
 
 #include "midi_region_pattern.h"
-#include "tracker_editor.h"
 
 using namespace Tracker;
 
-MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
+MidiRegionPattern::MidiRegionPattern (TrackerContext& te,
                                       MidiTrackPtr mt,
                                       MidiRegionPtr region,
                                       bool connect)
@@ -36,7 +36,7 @@ MidiRegionPattern::MidiRegionPattern (TrackerEditor& te,
 	, midi_region (region)
 {
 	if (connect)
-		tracker_editor.connect_midi_region (midi_region);
+		context.connect_midi_region (midi_region);
 }
 
 MidiRegionPattern::~MidiRegionPattern ()

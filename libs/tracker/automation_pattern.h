@@ -41,10 +41,10 @@ typedef std::map<AutomationControlPtr, std::string> AutomationControlStringMap;
  */
 class AutomationPattern : public BasePattern {
 public:
-	AutomationPattern (TrackerEditor& te,
+	AutomationPattern (TrackerContext& te,
 	                   RegionPtr region,
 	                   bool connect);
-	AutomationPattern (TrackerEditor& te,
+	AutomationPattern (TrackerContext& te,
 	                   Temporal::timepos_t position,
 	                   Temporal::timepos_t start,
 	                   Temporal::timecnt_t length,

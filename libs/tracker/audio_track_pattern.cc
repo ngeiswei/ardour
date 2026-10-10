@@ -18,12 +18,11 @@
 
 #include "audio_track_pattern.h"
 #include "audio_track_pattern_phenomenal_diff.h"
-#include "grid.h"
 #include "tracker_utils.h"
 
 using namespace Tracker;
 
-AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
+AudioTrackPattern::AudioTrackPattern (TrackerContext& te,
                                       TrackPtr trk,
                                       const RegionSeq& regions,
                                       Temporal::timepos_t pos,

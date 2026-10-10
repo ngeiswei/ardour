@@ -32,7 +32,7 @@ namespace Tracker {
  */
 class AudioTrackPattern : public TrackPattern {
 public:
-	AudioTrackPattern (TrackerEditor& te,
+	AudioTrackPattern (TrackerContext& te,
 	                   TrackPtr track,
 	                   const RegionSeq& regions,
 	                   Temporal::timepos_t position,
