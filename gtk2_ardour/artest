@@ -36,6 +36,7 @@ run_tests evoral
 run_tests pbd
 run_tests ardour
 run_tests temporal
+run_tests tracker
 
 if test "$ALLGOOD" != "yes"; then
 	echo ""
