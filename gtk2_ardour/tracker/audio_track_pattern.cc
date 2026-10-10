@@ -31,12 +31,32 @@ AudioTrackPattern::AudioTrackPattern (TrackerEditor& te,
                                       Temporal::timepos_t ed,
                                       Temporal::timepos_t ntl,
                                       bool connect)
-	: TrackPattern (te, trk, pos, len, end, ntl, connect)
+	: TrackPattern (te, trk, pos, len, ed, ntl, connect)
 {
+	setup (regions);
 }
 
 AudioTrackPattern::~AudioTrackPattern ()
 {
+}
+
+void
+AudioTrackPattern::setup (const RegionSeq&)
+{
+	// Audio content is not represented, only track automation, so there is
+	// nothing region-specific to set up.  We do need to mark the pattern as
+	// enabled, as Pattern::setup_track_patterns() disables every track
+	// before (re)selecting the ones that are in scope.
+	enabled = true;
+}
+
+void
+AudioTrackPattern::update ()
+{
+	// Unlike MidiTrackPattern::update() there is no region pattern to call
+	// set_row_range(), so do it here before updating the automations.
+	set_row_range ();
+	TrackPattern::update ();
 }
 
 TrackPatternPhenomenalDiff*
@@ -50,6 +70,19 @@ AudioTrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 AudioTrackPatternPhenomenalDiff
 AudioTrackPattern::phenomenal_diff (const AudioTrackPattern& prev) const
 {
-	// VT: implement
-	return AudioTrackPatternPhenomenalDiff ();
+	AudioTrackPatternPhenomenalDiff diff;
+	if (!prev.enabled && !enabled) {
+		return diff;
+	}
+
+	diff.full = prev.enabled != enabled;
+	if (diff.full) {
+		return diff;
+	}
+
+	// Only track automation (main and processor) can change the displayed
+	// content of an audio track.
+	diff.taap_diff = track_all_automations_pattern.phenomenal_diff (prev.track_all_automations_pattern);
+
+	return diff;
 }

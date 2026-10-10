@@ -42,6 +42,15 @@ public:
 	                   bool connect);
 	virtual ~AudioTrackPattern ();
 
+	// Enable the pattern and its automations (called when the track is
+	// (re)selected). Audio regions themselves are not represented, only
+	// their track automation.
+	void setup (const RegionSeq&);
+
+	// Build or rebuild the automation pattern.  Unlike MidiTrackPattern
+	// this must set the row range itself (there is no region to do it).
+	void update ();
+
 	// TODO: for now do not worry about memory leaking, create a new
 	// PhenomenalDiff object at every call
 	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
@@ -51,4 +60,4 @@ public:
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_midi_track_pattern_h_ */
+#endif /* __ardour_tracker_audio_track_pattern_h_ */

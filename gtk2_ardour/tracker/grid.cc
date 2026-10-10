@@ -2627,7 +2627,15 @@ Grid::set_underline_current_step_edit_automation_cell ()
 void
 Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioTrackPatternPhenomenalDiff* atp_diff)
 {
-	// TODO: implement
+	// Audio tracks only expose automation (main and processor), the audio
+	// content itself is not represented.  The automation pass below repaints
+	// every row of the track pattern (or only the rows that changed), so
+	// there is no need for an inter-region blanking pass as with MIDI.
+	if (atp_diff == 0 || atp_diff->full) {
+		redisplay_track_all_automations (mti, atp.track_all_automations_pattern);
+	} else {
+		redisplay_track_all_automations (mti, atp.track_all_automations_pattern, &atp_diff->taap_diff);
+	}
 }
 
 void
