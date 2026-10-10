@@ -134,6 +134,16 @@ TrackerEditor::connect_track (TrackPtr track)
 	track->playlist ()->ContentsChanged.connect (content_connections, invalidator (*this),
 	                                             boost::bind (&Grid::redisplay_grid_connect_call, &grid),
 	                                             gui_context ());
+
+	// When the track's color changes, immediately refresh the surrounding
+	// left/right separator columns so their background stays in sync.
+	track->presentation_info ().PropertyChanged.connect (content_connections, invalidator (*this),
+	                                                     [this, track] (const PBD::PropertyChange& what_changed) {
+		                                                     if (what_changed.contains (Properties::color)) {
+			                                                     grid.redisplay_left_right_separator_columns (track);
+		                                                     }
+	                                                     },
+	                                                     gui_context ());
 }
 
 void
