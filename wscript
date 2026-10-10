@@ -375,6 +375,7 @@ children = [
         'libs/backends',
         'libs/temporal',
         'libs/ardour',
+        'libs/tracker',
         'libs/gtkmm2ext',
         'libs/audiographer',
         'libs/canvas',
@@ -415,6 +416,7 @@ children = [
 i18n_children = [
         'gtk2_ardour',
         'libs/ardour',
+        'libs/tracker',
         'libs/gtkmm2ext',
         'libs/tk/ytk',
 ]

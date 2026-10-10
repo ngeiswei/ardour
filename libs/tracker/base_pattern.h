@@ -22,13 +22,9 @@
 #include "temporal/beats.h"
 #include "temporal/types.h"
 
-#include "widgets/ardour_dropdown.h"
-
 #include "ardour/session_handle.h"
 
-#include "ardour_window.h"
-#include "editing.h"
-
+#include "tracker_context.h"
 #include "tracker_utils.h"
 
 namespace ARDOUR {
@@ -38,7 +34,7 @@ namespace ARDOUR {
 
 namespace Tracker {
 
-class TrackerEditor;
+class TrackerContext;
 
 /**
  * Shared methods for storing and handling data for the midi, audio and
@@ -47,9 +43,9 @@ class TrackerEditor;
 
 class BasePattern {
 public:
-	BasePattern (TrackerEditor& te,
+	BasePattern (TrackerContext& context,
 	             RegionPtr region);
-	BasePattern (TrackerEditor& te,
+	BasePattern (TrackerContext& context,
 	             Temporal::timepos_t position,
 	             Temporal::timepos_t start, // TODO: maybe should only be present for RegionPattern
 	             Temporal::timecnt_t length,
@@ -194,8 +190,8 @@ public:
 	virtual std::string self_to_string () const;
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
-	// Reference to main tracker editor
-	TrackerEditor& tracker_editor;
+	// Reference to the application context (session, signal hookup, undo, etc.)
+	TrackerContext& context;
 
 	// Time position corresponding to typical region
 	Temporal::timepos_t position;
