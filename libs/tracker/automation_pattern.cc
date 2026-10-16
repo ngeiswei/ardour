@@ -17,6 +17,7 @@
  */
 
 #include <cmath>
+#include <iterator>
 #include <map>
 
 #include "pbd/i18n.h"
@@ -131,14 +132,14 @@ AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToCo
 			const Evoral::ControlEvent& r_ce = *r_it->second;
 			if (!TrackerUtils::is_equal (l_ce, r_ce)) {
 				// Update all affected row, taking interpolation into account
-				std::pair<int, int> r = prev_next_range (r_it, l_row2ces);
+				std::pair<int, int> r = prev_next_range (l_it, l_row2ces);
 				for (int rowi = r.first; rowi <= r.second; rowi++) {
 					rows.insert (rowi);
 				}
 			}
 		} else {
 			// Update all affected row, taking interpolation into account
-			std::pair<int, int> r = prev_next_range (row, l_row2ces);
+			std::pair<int, int> r = prev_next_range (l_it, l_row2ces);
 			for (int rowi = r.first; rowi <= r.second; rowi++) {
 				rows.insert (rowi);
 			}
@@ -780,10 +781,21 @@ AutomationPattern::find_next (int row, const RowToControlEvents& r2ces) const
 std::pair<int, int>
 AutomationPattern::prev_next_range (RowToControlEvents::const_iterator it, const RowToControlEvents& row2ces) const
 {
-	RowToControlEvents::const_iterator p_it = find_prev (it);
-	RowToControlEvents::const_iterator n_it = find_next (it);
-	int p_row = p_it != row2ces.end () ? p_it->first : 0;
-	int n_row = n_it != row2ces.end () ? n_it->first : nrows - 1;
+	// Rows before the first (resp. after the last) event are interpolated from
+	// that event, so changing the first (resp. last) event also affects every
+	// row before (resp. after) it.  The -1 / nrows sentinels account for that.
+	//
+	// std::prev/std::next are used directly (instead of find_prev/find_next)
+	// because the latter are undefined when applied to begin()/last().
+	int p_row = -1;
+	if (it != row2ces.begin ()) {
+		p_row = std::prev (it)->first;
+	}
+	int n_row = nrows;
+	RowToControlEvents::const_iterator n_it = std::next (it);
+	if (n_it != row2ces.end ()) {
+		n_row = n_it->first;
+	}
 	p_row = std::min (p_row + 1, it->first);
 	n_row = std::max (n_row - 1, it->first);
 	return std::make_pair (p_row, n_row);
