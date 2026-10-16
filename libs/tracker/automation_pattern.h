@@ -58,6 +58,17 @@ public:
 	ParamAutomationControlPair clone_param_actl (const ParamAutomationControlPair& param_name) const;
 	AutomationListPtr clone_alist (AutomationListPtr alist) const;
 
+	// Compare the row->control-event mappings of a single automation parameter
+	// and record into rd the rows whose rendition may change.  This includes:
+	//  - rows whose displayability changed (one side has more than one event on
+	//    the row), and
+	//  - the rows spanned by the interpolation around an added, removed or
+	//    modified event, bounded by its surrounding events (all rows before the
+	//    first, resp. after the last, event are interpolated from it).
+	//
+	// Only the rows of l_row2ces are visited, so callers must invoke it in both
+	// directions, accumulating into the same rd, to also catch rows that only
+	// exist in r_row2ces (see phenomenal_diff).
 	void rows_diff (const RowToControlEvents& l_row2ces, const RowToControlEvents& r_row2ces, std::set<int>& rd) const;
 
 	AutomationPatternPhenomenalDiff phenomenal_diff (const AutomationPattern& prev) const;
