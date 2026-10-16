@@ -69,6 +69,15 @@ public:
 		_map.insert (RowToControlEvents::value_type (row, &_events.back ()));
 	}
 
+	/** Simulate an in-place edit of an existing event, as ControlList::modify () does. */
+	void set_value (int row, double value)
+	{
+		RowToControlEvents::iterator it = _map.find (row);
+		if (it != _map.end ()) {
+			it->second->value = value;
+		}
+	}
+
 	const RowToControlEvents& map () const { return _map; }
 
 private:
@@ -254,4 +263,179 @@ AutomationPatternTest::testOneSidedNonDisplayable ()
 	l.add (4, 0.1); l.add (4, 0.2); l.add (8, 0.5);
 	r.add (8, 0.5);
 	assert_rows (diff_rows (*_pattern, l.map (), r.map ()), rows_from_to (4, 4));
+}
+
+void
+AutomationPatternTest::testPhenomenalDiffPartial ()
+{
+	/* A value change must yield a partial diff (full == false) carrying the
+	 * affected rows, so that the grid only repaints those. */
+	const Evoral::Parameter param (0);
+	Events l, r;
+	l.add (4, 0.2); l.add (8, 0.7); l.add (12, 0.8);
+	r.add (4, 0.2); r.add (8, 0.5); r.add (12, 0.8);
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	_pattern->nrows = 16;
+	_pattern->param_to_enabled[param] = true;
+	prev.param_to_enabled[param] = true;
+	_pattern->param_to_row_to_ces[param] = l.map ();
+	prev.param_to_row_to_ces[param] = r.map ();
+
+	AutomationPatternPhenomenalDiff diff = _pattern->phenomenal_diff (prev);
+	CPPUNIT_ASSERT (!diff.full);
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, diff.param2rows_diff.count (param));
+	const RowsPhenomenalDiff& rd = diff.param2rows_diff.find (param)->second;
+	CPPUNIT_ASSERT (!rd.full);
+	assert_rows (rd.rows, rows_from_to (5, 11));
+}
+
+void
+AutomationPatternTest::testPhenomenalDiffUnchanged ()
+{
+	/* Nothing changed: the diff is partial and empty, i.e. nothing to do. */
+	const Evoral::Parameter param (0);
+	Events l, r;
+	l.add (4, 0.2); l.add (8, 0.5); l.add (12, 0.8);
+	r.add (4, 0.2); r.add (8, 0.5); r.add (12, 0.8);
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	_pattern->nrows = 16;
+	_pattern->param_to_enabled[param] = true;
+	prev.param_to_enabled[param] = true;
+	_pattern->param_to_row_to_ces[param] = l.map ();
+	prev.param_to_row_to_ces[param] = r.map ();
+
+	AutomationPatternPhenomenalDiff diff = _pattern->phenomenal_diff (prev);
+	CPPUNIT_ASSERT (!diff.full);
+	CPPUNIT_ASSERT (diff.empty ());
+	CPPUNIT_ASSERT_EQUAL ((size_t) 0, diff.param2rows_diff.size ());
+}
+
+void
+AutomationPatternTest::testPhenomenalDiffEnabledChange ()
+{
+	/* A parameter enabled in the current pattern but not in the previous one
+	 * must request a full repaint of that parameter. */
+	const Evoral::Parameter param (0);
+	Events l;
+	l.add (4, 0.2); l.add (8, 0.5);
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	_pattern->nrows = 16;
+	_pattern->param_to_enabled[param] = true;
+	prev.param_to_enabled[param] = false;
+	_pattern->param_to_row_to_ces[param] = l.map ();
+	prev.param_to_row_to_ces[param] = l.map ();
+
+	AutomationPatternPhenomenalDiff diff = _pattern->phenomenal_diff (prev);
+	CPPUNIT_ASSERT (!diff.full);
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, diff.param2rows_diff.count (param));
+	CPPUNIT_ASSERT (diff.param2rows_diff.find (param)->second.full);
+}
+
+void
+AutomationPatternTest::testPhenomenalDiffOneSided ()
+{
+	/* The parameter has events in the current pattern but none in the previous
+	 * one: its whole column must be repainted. */
+	const Evoral::Parameter param (0);
+	Events l;
+	l.add (4, 0.2); l.add (8, 0.5);
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	_pattern->nrows = 16;
+	_pattern->param_to_enabled[param] = true;
+	prev.param_to_enabled[param] = true;
+	_pattern->param_to_row_to_ces[param] = l.map ();
+	/* prev has no row mapping for param */
+
+	AutomationPatternPhenomenalDiff diff = _pattern->phenomenal_diff (prev);
+	CPPUNIT_ASSERT (!diff.full);
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, diff.param2rows_diff.count (param));
+	CPPUNIT_ASSERT (diff.param2rows_diff.find (param)->second.full);
+}
+
+void
+AutomationPatternTest::testSnapshotCarriesEnabled ()
+{
+	/* prev_pattern = pattern must carry the enabled flags, otherwise
+	 * phenomenal_diff () sees a bogus enabled-state change and marks the whole
+	 * parameter full. */
+	const Evoral::Parameter param (0);
+	Events l;
+	l.add (4, 0.2);
+
+	TestAutomationPattern src (*_context);
+	src.nrows = 16;
+	src.param_to_enabled[param] = true;
+	src.param_to_row_to_ces[param] = l.map ();
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	prev = src;
+
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, prev.param_to_enabled.count (param));
+	CPPUNIT_ASSERT (prev.param_to_enabled[param]);
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, prev.param_to_row_to_ces.count (param));
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, prev.param_to_row_to_ces.find (param)->second.size ());
+}
+
+void
+AutomationPatternTest::testSnapshotIndependentEvents ()
+{
+	/* The snapshot must copy the control events: the live automation list is
+	 * mutated in place on edit and must not change the snapshot. */
+	const Evoral::Parameter param (0);
+	Events l;
+	l.add (4, 0.2); l.add (8, 0.5);
+
+	TestAutomationPattern src (*_context);
+	src.nrows = 16;
+	src.param_to_enabled[param] = true;
+	src.param_to_row_to_ces[param] = l.map ();
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	prev = src;
+
+	/* In-place edit of the live event */
+	l.set_value (8, 0.7);
+
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, prev.param_to_row_to_ces.count (param));
+	const RowToControlEvents& prev_events = prev.param_to_row_to_ces.find (param)->second;
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, prev_events.count (8));
+	CPPUNIT_ASSERT_EQUAL (0.5, prev_events.find (8)->second->value);
+}
+
+void
+AutomationPatternTest::testPhenomenalDiffThroughSnapshot ()
+{
+	/* End-to-end through the snapshot: an in-place value edit must produce a
+	 * partial diff with the affected interpolation rows. */
+	const Evoral::Parameter param (0);
+	Events l;
+	l.add (4, 0.2); l.add (8, 0.5); l.add (12, 0.8);
+
+	TestAutomationPattern src (*_context);
+	src.nrows = 16;
+	src.param_to_enabled[param] = true;
+	src.param_to_row_to_ces[param] = l.map ();
+
+	TestAutomationPattern prev (*_context);
+	prev.nrows = 16;
+	prev = src;
+
+	l.set_value (8, 0.7);
+
+	AutomationPatternPhenomenalDiff diff = src.phenomenal_diff (prev);
+	CPPUNIT_ASSERT (!diff.full);
+	CPPUNIT_ASSERT_EQUAL ((size_t) 1, diff.param2rows_diff.count (param));
+	const RowsPhenomenalDiff& rd = diff.param2rows_diff.find (param)->second;
+	CPPUNIT_ASSERT (!rd.full);
+	assert_rows (rd.rows, rows_from_to (5, 11));
 }

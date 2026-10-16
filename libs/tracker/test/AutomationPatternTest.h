@@ -25,6 +25,13 @@ class AutomationPatternTest : public CppUnit::TestFixture
 	CPPUNIT_TEST (testDisplayabilityChange);
 	CPPUNIT_TEST (testBothNonDisplayable);
 	CPPUNIT_TEST (testOneSidedNonDisplayable);
+	CPPUNIT_TEST (testPhenomenalDiffPartial);
+	CPPUNIT_TEST (testPhenomenalDiffUnchanged);
+	CPPUNIT_TEST (testPhenomenalDiffEnabledChange);
+	CPPUNIT_TEST (testPhenomenalDiffOneSided);
+	CPPUNIT_TEST (testSnapshotCarriesEnabled);
+	CPPUNIT_TEST (testSnapshotIndependentEvents);
+	CPPUNIT_TEST (testPhenomenalDiffThroughSnapshot);
 
 	CPPUNIT_TEST_SUITE_END ();
 
@@ -44,6 +51,13 @@ public:
 	void testDisplayabilityChange ();
 	void testBothNonDisplayable ();
 	void testOneSidedNonDisplayable ();
+	void testPhenomenalDiffPartial ();
+	void testPhenomenalDiffUnchanged ();
+	void testPhenomenalDiffEnabledChange ();
+	void testPhenomenalDiffOneSided ();
+	void testSnapshotCarriesEnabled ();
+	void testSnapshotIndependentEvents ();
+	void testPhenomenalDiffThroughSnapshot ();
 
 private:
 	Tracker::TrackerContext* _context;
