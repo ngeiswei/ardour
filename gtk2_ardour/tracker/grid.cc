@@ -116,6 +116,7 @@ Grid::Grid (TrackerEditor& te)
 	, cellfont ("Monospace")
 	, time_column (0)
 	, _schema_rebuilt_elsewhere (false)
+	, _left_right_separator_nrows (-1)
 	, _subgrid_selector (te)
 {
 	UIConfiguration::instance().ParameterChanged.connect (sigc::mem_fun (*this, &Grid::parameter_changed));
@@ -1245,6 +1246,10 @@ Grid::rebuild_schema (size_t nauto_hint)
 	model = ListStore::create (*columns);
 	set_model (model);
 
+	// The model rows were just dropped: force the left/right separator colors to
+	// be reapplied even if neither the track colors nor the row count changed.
+	_left_right_separator_nrows = -1;
+
 	// Resize dynamic lookup tables.
 	ensure_size (left_separator_colnums, ntracks);
 	ensure_size (region_name_colnums, ntracks);
@@ -1694,21 +1699,51 @@ Grid::redisplay_undefined_region_name (TreeModel::Row& row, int mti)
 void
 Grid::redisplay_left_right_separator_columns ()
 {
-	for (size_t mti = 0; mti < pattern.tps.size () && mti < left_separator_columns.size (); mti++) {
-		redisplay_left_right_separator_columns (mti);
+	if (!model) {
+		return;
 	}
+
+	// If the number of rows changed, every row must (re)get its separator
+	// color.  Otherwise only the tracks whose color changed need updating.
+	const bool force = pattern.global_nrows != _left_right_separator_nrows;
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < left_separator_columns.size (); mti++) {
+		redisplay_left_right_separator_columns (mti, force);
+	}
+	_left_right_separator_nrows = pattern.global_nrows;
 }
 
 void
-Grid::redisplay_left_right_separator_columns (int mti)
+Grid::redisplay_left_right_separator_columns (int mti, bool force)
 {
 	if (!model) {
 		return;
 	}
+	if (mti < 0 || mti >= (int)pattern.tps.size () || mti >= (int)left_separator_columns.size ()) {
+		return;
+	}
+
+	// Display track color for background.  The color is the same for every row
+	// of the track, so compute it once and remember it, so that an unchanged
+	// track can skip the whole row loop.
+	const std::string color =
+		gdk_color_to_string (tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color ().gobj ());
+	if (!force && mti < (int)_left_right_separator_color.size () && _left_right_separator_color[mti] == color) {
+		return;
+	}
+	if ((int)_left_right_separator_color.size () <= mti) {
+		_left_right_separator_color.resize (pattern.tps.size ());
+	}
+	_left_right_separator_color[mti] = color;
+
+	// NOTE: the separator *width* is no longer adjusted here.  It is done
+	// separately by align_left_right_separators(), which runs deferred (after
+	// the TreeView has been laid out) so that it uses the natural widths of
+	// the filled columns rather than the transient 0-width state right after
+	// a schema rebuild.
 	TreeModel::Children::iterator row_it = model->children ().begin ();
 	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		TreeModel::Row row = *row_it++;
-		redisplay_left_right_separator (row, mti);
+		row[columns->_left_right_separator_background_color[mti]] = color;
 	}
 }
 
@@ -1717,30 +1752,10 @@ Grid::redisplay_left_right_separator_columns (TrackPtr track)
 {
 	for (size_t mti = 0; mti < pattern.tps.size (); ++mti) {
 		if (pattern.tps[mti]->track == track) {
-			redisplay_left_right_separator_columns (mti);
+			redisplay_left_right_separator_columns (mti, true);
 			return;
 		}
 	}
-}
-
-void
-Grid::redisplay_left_right_separator (TreeModel::Row& row, int mti)
-{
-	if (mti >= (int)pattern.tps.size () || mti >= (int)left_separator_columns.size ()) {
-		return;
-	}
-
-	// TODO: fix synchronization with track toolbar
-
-	// Display track color for background
-	row[columns->_left_right_separator_background_color[mti]] =
-		gdk_color_to_string (tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color ().gobj ());
-
-	// NOTE: the separator *width* is no longer adjusted here.  It is done
-	// separately by align_left_right_separators(), which runs deferred (after
-	// the TreeView has been laid out) so that it uses the natural widths of
-	// the filled columns rather than the transient 0-width state right after
-	// a schema rebuild.
 }
 
 void
