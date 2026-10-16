@@ -280,7 +280,12 @@ TrackerEditor::resize_width ()
 	Gtk::Requisition req = child->size_request ();
 	int width, height;
 	get_size (width, height);
-	resize (req.width, height);
+	// Only resize when the required width actually differs from the current
+	// one: resize_width () is called several times per redisplay and each
+	// resize triggers a window relayout.
+	if (req.width != width) {
+		resize (req.width, height);
+	}
 }
 
 void
