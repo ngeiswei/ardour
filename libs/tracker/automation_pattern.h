@@ -19,6 +19,7 @@
 #ifndef __ardour_tracker_automation_pattern_h_
 #define __ardour_tracker_automation_pattern_h_
 
+#include <list>
 #include <set>
 
 #include "evoral/ControlList.h"
@@ -251,6 +252,12 @@ public:
 	typedef std::map<Evoral::Parameter, ControlEventToRow> ParamToControlEventToRow;
 	ParamToControlEventToRow param_to_ce_to_row;
 	ParamToControlEventToRow _prev_param_to_ce_to_row;
+
+	// Owned copies of the control events making up the previous-state snapshot
+	// (see operator=).  They are kept separate from the live automation lists,
+	// whose events are mutated in place on edit, so that phenomenal_diff ()
+	// can actually see the difference.
+	std::list<Evoral::ControlEvent> _prev_control_events;
 
 	// Map parameters to actl. See comment about the non-uniqueness of
 	// Evoral::parameter above.
