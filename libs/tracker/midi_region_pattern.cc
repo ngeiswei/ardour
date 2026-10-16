@@ -69,6 +69,9 @@ MidiRegionPattern::phenomenal_diff (const MidiRegionPattern& prev) const
 		return diff;
 	}
 
+	// Partial diff: empty () now means "nothing to do".
+	diff.full = false;
+
 	diff.mnp_diff = mnp.phenomenal_diff (prev.mnp);
 	diff.mrap_diff = mrap.phenomenal_diff (prev.mrap);
 
