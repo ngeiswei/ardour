@@ -201,9 +201,8 @@ public:
 	void redisplay_grid_direct_call ();
 	void redisplay_grid_connect_call ();
 	void redisplay_left_right_separator_columns ();
-	void redisplay_left_right_separator_columns (int mti);
+	void redisplay_left_right_separator_columns (int mti, bool force = true);
 	void redisplay_left_right_separator_columns (TrackPtr track);
-	void redisplay_left_right_separator (Gtk::TreeModel::Row& row, int mti);
 	void align_left_right_separators ();
 	void redisplay_track_separator (int mti);
 	void redisplay_track_separator_columns ();
@@ -889,6 +888,13 @@ private:
 	// by select_available_automation_column()).  The next redisplay_grid()
 	// must then perform a full redisplay because the model rows were dropped.
 	bool _schema_rebuilt_elsewhere;
+
+	// Left/right separator background color last applied per track, together
+	// with the number of rows it was applied to.  Lets
+	// redisplay_left_right_separator_columns() avoid rewriting every row when
+	// nothing changed.
+	std::vector<std::string> _left_right_separator_color;
+	int _left_right_separator_nrows;
 
 	// Stack keeping track of when to skip follow_playhead to avoid
 	// inconsistencies due to the delays between calling set_current_cursor with
