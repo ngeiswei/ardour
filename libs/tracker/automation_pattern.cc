@@ -61,20 +61,28 @@ AutomationPattern::operator= (const AutomationPattern& other)
 
 	BasePattern::operator= (other);
 
-	// Deep copy _automation_controls to be sure that changing the event doesn't
-	// change the copy
-	param_to_actl.clear ();
-	for (ParamAutomationControlMap::const_iterator it = other.param_to_actl.begin (); it != other.param_to_actl.end (); ++it) {
-		param_to_actl.insert (clone_param_actl (*it));
-	}
+	// This operator only needs to snapshot what phenomenal_diff () compares:
+	// the enabled parameters and the row -> event mapping.
+	param_to_enabled = other.param_to_enabled;
 
-	param_to_name.clear ();
-	for (ParamNameMap::const_iterator it = other.param_to_name.begin (); it != other.param_to_name.end (); ++it) {
-		param_to_name.insert (*it);
+	// Snapshot the row -> event mapping with independent copies of the control
+	// events.  The live automation lists are mutated in place on edit, so the
+	// snapshot must not alias them (otherwise a changed value compares equal to
+	// itself and no repaint is requested).
+	_prev_control_events.clear ();
+	param_to_row_to_ces.clear ();
+	param_to_ce_to_row.clear ();
+	for (ParamToRowToControlEvents::const_iterator pra_it = other.param_to_row_to_ces.begin ();
+	     pra_it != other.param_to_row_to_ces.end (); ++pra_it) {
+		const Evoral::Parameter& param = pra_it->first;
+		for (RowToControlEvents::const_iterator rit = pra_it->second.begin ();
+		     rit != pra_it->second.end (); ++rit) {
+			_prev_control_events.push_back (*rit->second);
+			Evoral::ControlEvent* ce = &_prev_control_events.back ();
+			param_to_row_to_ces[param].insert (RowToControlEvents::value_type (rit->first, ce));
+			param_to_ce_to_row[param].insert (ControlEventToRow::value_type (ce, rit->first));
+		}
 	}
-
-	// Update automations using the deep copy
-	update_automations ();
 
 	return *this;
 }
@@ -156,9 +164,16 @@ AutomationPattern::phenomenal_diff (const AutomationPattern& prev) const
 		return diff;
 	}
 
+	// Partial diff: empty () now means "nothing to do".
+	diff.full = false;
+
 	for (ParamEnabledMap::const_iterator pe_it = param_to_enabled.begin (); pe_it != param_to_enabled.end (); ++pe_it) {
 		const Evoral::Parameter& param = pe_it->first;
 		RowsPhenomenalDiff rd;
+
+		// Partial by default; the branches below set full when the whole
+		// parameter column must be repainted.
+		rd.full = false;
 
 		// If this is disabled ignore their differences, otherwise consider full
 		// phenomenal diff if one is enabled while the other is not.
