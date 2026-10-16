@@ -67,6 +67,9 @@ MidiRegionAutomationPattern::phenomenal_diff (const MidiRegionAutomationPattern&
 		return diff;
 	}
 
+	// Partial diff: empty () now means "nothing to do".
+	diff.full = false;
+
 	diff.ap_diff = AutomationPattern::phenomenal_diff (prev);
 	return diff;
 }
