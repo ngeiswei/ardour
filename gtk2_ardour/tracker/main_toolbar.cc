@@ -532,11 +532,7 @@ MainToolbar::beats_per_row_chosen (GridType st)
 	Glib::RefPtr<Gtk::RadioAction> ract = beats_per_row_action (st);
 
 	if (ract && ract->get_active ()) {
-		set_beats_per_row_to (st);
-
-		// TODO: alternatively send signal to TrackerEditor
-		tracker_editor.grid.set_rows_per_beat (rows_per_beat, true);
-		tracker_editor.grid.redisplay_grid_direct_call ();
+		set_rows_per_beat_to (st);
 	}
 }
 
@@ -583,18 +579,7 @@ MainToolbar::step_edit_press (GdkEventButton* ev)
 		return true;
 	}
 
-	step_edit = !step_edit;
-	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
-	// TODO: send signal to TrackerEditor
-	tracker_editor.grid.redisplay_grid_direct_call ();
-	if (step_edit) {
-		tracker_editor.connect_midi_event ();
-		tracker_editor.grid.set_underline_current_step_edit_cell ();
-	} else {
-		tracker_editor.disconnect_midi_event ();
-		tracker_editor.grid.unset_underline_current_step_edit_cell ();
-	}
+	toggle_step_edit ();
 	return false;
 }
 
@@ -606,9 +591,7 @@ MainToolbar::chord_mode_press (GdkEventButton* ev)
 		return true;
 	}
 
-	chord_mode = !chord_mode;
-	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
+	toggle_chord_mode ();
 	return false;
 }
 
@@ -620,9 +603,7 @@ MainToolbar::overwrite_default_press (GdkEventButton* ev)
 		return true;
 	}
 
-	overwrite_default = !overwrite_default;
-	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
+	toggle_overwrite_default ();
 	return false;
 }
 
@@ -634,9 +615,7 @@ MainToolbar::overwrite_existing_press (GdkEventButton* ev)
 		return true;
 	}
 
-	overwrite_existing = !overwrite_existing;
-	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
+	toggle_overwrite_existing ();
 	return false;
 }
 
@@ -648,9 +627,7 @@ MainToolbar::overwrite_star_press (GdkEventButton* ev)
 		return true;
 	}
 
-	overwrite_star = !overwrite_star;
-	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
+	toggle_overwrite_star ();
 	return false;
 }
 
@@ -662,15 +639,7 @@ MainToolbar::sync_playhead_press (GdkEventButton* ev)
 		return true;
 	}
 
-	sync_playhead = !sync_playhead;
-	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
-	if (sync_playhead) {
-		tracker_editor.grid.connect_clock ();
-	} else {
-		tracker_editor.grid.disconnect_clock ();
-	}
-
+	toggle_sync_playhead ();
 	return false;
 }
 
@@ -682,9 +651,7 @@ MainToolbar::jump_press (GdkEventButton* ev)
 		return true;
 	}
 
-	jump = !jump;
-	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
+	toggle_jump ();
 	return false;
 }
 
@@ -696,9 +663,7 @@ MainToolbar::wrap_press (GdkEventButton* ev)
 		return true;
 	}
 
-	wrap = !wrap;
-	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
+	toggle_wrap ();
 	return false;
 }
 
@@ -710,46 +675,35 @@ MainToolbar::hex_press (GdkEventButton* ev)
 		return true;
 	}
 
-	hex = !hex;
-	base = hex ? 16 : 10;
-	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
-	// TODO: send signal to TrackerEditor
-	// NEXT: make sure that everything is redrawn
-	tracker_editor.grid.redisplay_grid_direct_call ();
-
+	toggle_hex ();
 	return false;
 }
 
 bool
 MainToolbar::cut_press (GdkEventButton* ev)
 {
-	// TODO: maybe use signal instead of direct call
-	tracker_editor.grid._subgrid_selector.cut ();
+	cut ();
 	return true;
 }
 
 bool
 MainToolbar::copy_press (GdkEventButton* ev)
 {
-	// TODO: maybe use signal instead of direct call
-	tracker_editor.grid._subgrid_selector.copy ();
+	copy ();
 	return true;
 }
 
 bool
 MainToolbar::paste_press (GdkEventButton* ev)
 {
-	// TODO: maybe use signal instead of direct call
-	tracker_editor.grid._subgrid_selector.paste ();
+	paste ();
 	return true;
 }
 
 bool
 MainToolbar::paste_overlay_press (GdkEventButton* ev)
 {
-	// TODO: maybe use signal instead of direct call
-	tracker_editor.grid._subgrid_selector.paste_overlay ();
+	paste_overlay ();
 	return true;
 }
 
@@ -770,4 +724,117 @@ MainToolbar::change_position ()
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
 	}
+}
+
+void
+MainToolbar::toggle_step_edit ()
+{
+	step_edit = !step_edit;
+	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	tracker_editor.grid.redisplay_grid_direct_call ();
+	if (step_edit) {
+		tracker_editor.connect_midi_event ();
+		tracker_editor.grid.set_underline_current_step_edit_cell ();
+	} else {
+		tracker_editor.disconnect_midi_event ();
+		tracker_editor.grid.unset_underline_current_step_edit_cell ();
+	}
+}
+
+void
+MainToolbar::toggle_chord_mode ()
+{
+	chord_mode = !chord_mode;
+	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+}
+
+void
+MainToolbar::toggle_overwrite_default ()
+{
+	overwrite_default = !overwrite_default;
+	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+}
+
+void
+MainToolbar::toggle_overwrite_existing ()
+{
+	overwrite_existing = !overwrite_existing;
+	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+}
+
+void
+MainToolbar::toggle_overwrite_star ()
+{
+	overwrite_star = !overwrite_star;
+	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+}
+
+void
+MainToolbar::toggle_sync_playhead ()
+{
+	sync_playhead = !sync_playhead;
+	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	if (sync_playhead) {
+		tracker_editor.grid.connect_clock ();
+	} else {
+		tracker_editor.grid.disconnect_clock ();
+	}
+}
+
+void
+MainToolbar::toggle_jump ()
+{
+	jump = !jump;
+	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+}
+
+void
+MainToolbar::toggle_wrap ()
+{
+	wrap = !wrap;
+	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+}
+
+void
+MainToolbar::toggle_hex ()
+{
+	hex = !hex;
+	base = hex ? 16 : 10;
+	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+
+	tracker_editor.grid.redisplay_grid_direct_call ();
+}
+
+void
+MainToolbar::cut ()
+{
+	tracker_editor.grid._subgrid_selector.cut ();
+}
+
+void
+MainToolbar::copy ()
+{
+	tracker_editor.grid._subgrid_selector.copy ();
+}
+
+void
+MainToolbar::paste ()
+{
+	tracker_editor.grid._subgrid_selector.paste ();
+}
+
+void
+MainToolbar::paste_overlay ()
+{
+	tracker_editor.grid._subgrid_selector.paste_overlay ();
+}
+
+void
+MainToolbar::set_rows_per_beat_to (GridType st)
+{
+	set_beats_per_row_to (st);
+	tracker_editor.grid.set_rows_per_beat (rows_per_beat, true);
+	tracker_editor.grid.redisplay_grid_direct_call ();
 }
