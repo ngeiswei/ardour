@@ -262,6 +262,10 @@ MidiTrackPattern::update_enabled ()
 void
 MidiTrackPattern::update_row_offset ()
 {
+	// mrps can grow when setup () is called again on an existing track
+	// pattern (e.g. after the region selection is enlarged), so keep
+	// row_offset in sync with mrps before writing to it.
+	row_offset.resize (mrps.size ());
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		row_offset[mri] = mrps[mri]->row_distance (position_row_beats, mrps[mri]->position_row_beats);
 	}
