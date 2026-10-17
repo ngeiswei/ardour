@@ -29,6 +29,7 @@
 #include "pbd/memento_command.h"
 #include "pbd/convert.h"
 
+#include <cairomm/context.h>
 #include <pangomm/attributes.h>
 
 #include <ytkmm/cellrenderercombo.h>
@@ -123,6 +124,12 @@ Grid::Grid (TrackerEditor& te)
 	UIConfiguration::instance().ColorsChanged.connect (sigc::mem_fun (*this, &Grid::color_changed));
 	read_keyboard_layout ();
 	read_colors ();
+
+	// Overlay the region boundary lines on top of the rendered cells.  The
+	// default of Gtk::Widget::signal_expose_event().connect() is to invoke the
+	// handler after the default handler (i.e. after the tree view has drawn its
+	// cells), which is exactly what we need.
+	signal_expose_event ().connect (sigc::mem_fun (*this, &Grid::on_grid_expose));
 }
 
 Grid::~Grid ()
@@ -1607,6 +1614,9 @@ Grid::redisplay_grid ()
 	if (window) {
 		window->thaw_updates ();
 	}
+
+	// Region boundaries may have moved: refresh the overlay.
+	queue_draw ();
 }
 
 void
@@ -1753,9 +1763,126 @@ Grid::redisplay_left_right_separator_columns (TrackPtr track)
 	for (size_t mti = 0; mti < pattern.tps.size (); ++mti) {
 		if (pattern.tps[mti]->track == track) {
 			redisplay_left_right_separator_columns (mti, true);
+			// Refresh the region boundary overlay, whose colour follows the
+			// track colour.
+			queue_draw ();
 			return;
 		}
 	}
+}
+
+std::set<int>
+Grid::region_boundary_rows (int mti) const
+{
+	std::set<int> rows;
+	if (mti < 0 || mti >= (int)pattern.tps.size ()) {
+		return rows;
+	}
+	if (!pattern.tps[mti]->enabled || !pattern.tps[mti]->is_midi_track_pattern ()) {
+		return rows;
+	}
+
+	const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
+	const int row_offset = pattern.row_offset[mti];
+	for (size_t mri = 0; mri < mtp->mrps.size (); mri++) {
+		if (!mtp->mrps[mri]->enabled) {
+			continue;
+		}
+		// First row of the region
+		const int start_row = row_offset + mtp->row_offset[mri];
+		rows.insert (start_row);
+		// First row past the region (its end boundary).  When two regions are
+		// adjacent this coincides with the next region's start, so a single
+		// line is drawn at the junction.
+		rows.insert (start_row + mtp->mrps[mri]->nrows);
+	}
+	return rows;
+}
+
+bool
+Grid::on_grid_expose (GdkEventExpose* ev)
+{
+	// Only overlay the scrolling content window; expose events for the tree
+	// view's frame window must be left untouched.
+	if (!model || pattern.global_nrows == 0 ||
+	    left_separator_columns.size () < pattern.tps.size ()) {
+		return false;
+	}
+	Glib::RefPtr<Gdk::Window> bin_window = get_bin_window ();
+	if (!bin_window || ev->window != bin_window->gobj ()) {
+		return false;
+	}
+
+	// get_background_area () is only non-deprecated in its const version.
+	const Gtk::TreeView* tv = this;
+
+	// Do not query rows that the model does not hold (yet).
+	const int nrows = std::min (pattern.global_nrows, (int)model->children ().size ());
+	if (nrows <= 0) {
+		return false;
+	}
+
+	Cairo::RefPtr<Cairo::Context> cr = bin_window->create_cairo_context ();
+	cr->save ();
+	cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
+	cr->clip ();
+
+	// The x extent of a track does not depend on the row, and there is no
+	// horizontal scrolling, so it is enough to query it once, using the first
+	// row.
+	const Gtk::TreeModel::Path first_path = to_path (0);
+
+	for (size_t mti = 0; mti < pattern.tps.size () && mti < left_separator_columns.size (); mti++) {
+		const std::set<int> rows = region_boundary_rows (mti);
+		if (rows.empty ()) {
+			continue;
+		}
+
+		// Track colour, matching the left/right separator columns.
+		auto* tav = tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track);
+		if (!tav) {
+			continue;
+		}
+		const Gdk::Color color = tav->color ();
+
+		// Horizontal extent of the track.
+		Gdk::Rectangle left_rect;
+		tv->get_background_area (first_path, *left_separator_columns[mti], left_rect);
+		const double x = left_rect.get_x ();
+		const double w = get_track_width (mti);
+
+		cr->set_source_rgba (color.get_red_p (), color.get_green_p (), color.get_blue_p (), 1.0);
+		std::vector<double> dashes;
+		dashes.push_back (6.0);
+		dashes.push_back (6.0);
+		cr->set_dash (dashes, 0.0);
+		cr->set_line_width (2.0);
+
+		for (std::set<int>::const_iterator it = rows.begin (); it != rows.end (); ++it) {
+			const int row = *it;
+			Gdk::Rectangle r;
+			double y;
+			if (row < nrows) {
+				// Boundary between two rows: draw on the top edge of the row.
+				tv->get_background_area (to_path (row), *left_separator_columns[mti], r);
+				y = r.get_y () + 0.5;
+			} else if (row == nrows) {
+				// A region ending exactly at the bottom of the grid: draw on the
+				// bottom edge of the last row.
+				tv->get_background_area (to_path (nrows - 1), *left_separator_columns[mti], r);
+				y = r.get_y () + r.get_height () - 0.5;
+			} else {
+				continue;
+			}
+			cr->move_to (x, y);
+			cr->line_to (x + w, y);
+		}
+		cr->stroke ();
+	}
+
+	cr->restore ();
+
+	return false; // let the event propagate
 }
 
 void
