@@ -6486,6 +6486,14 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 bool
 Grid::key_press (GdkEventKey* ev)
 {
+	// Modified keys are reserved for Ardour's configurable key-binding system
+	// (the "Tracker" binding set).  Shift is excluded because the grid itself
+	// uses it (e.g. Shift+Tab to step across tracks).
+	const guint mod_mask = Gtkmm2ext::Keyboard::RelevantModifierKeyMask & ~(guint) Gdk::SHIFT_MASK;
+	if ((ev->state & mod_mask) != 0) {
+		return false;
+	}
+
 	bool ret = step_edit() ? step_editing_key_press (ev) : non_editing_key_press (ev);
 
 	// Store last keyval to avoid repeating note during key repeat

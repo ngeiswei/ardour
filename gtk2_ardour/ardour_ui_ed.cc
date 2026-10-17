@@ -63,6 +63,7 @@
 #include "engine_dialog.h"
 #include "editor.h"
 #include "editing.h"
+#include "tracker/main_toolbar.h"
 #include "enums_convert.h"
 #include "gui_thread.h"
 #include "actions.h"
@@ -171,6 +172,12 @@ ARDOUR_UI::update_ssc_status ()
 void
 ARDOUR_UI::install_actions ()
 {
+	/* Register the tracker editor's (configurable) shortcuts early, before any
+	 * tracker editor window exists, so that they always show up in the
+	 * Keyboard Shortcuts window.
+	 */
+	Tracker::MainToolbar::register_actions ();
+
 	Glib::RefPtr<ActionGroup> main_actions = ActionManager::create_action_group (global_bindings, X_("Main"));
 	Glib::RefPtr<ActionGroup> main_menu_actions = ActionManager::create_action_group (global_bindings, X_("Main Menu"));
 	Glib::RefPtr<Action> act;
