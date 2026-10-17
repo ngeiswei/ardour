@@ -53,3 +53,65 @@ certain elements of the grid and its parameters.
   to the ten digit, etc.  If the position is negative, then -1 corresponds on
   the tenth digit, -2 corresponds to the hundredth, etc.
 
+## Shortcut Keys
+
+The tracker editor has a number of configurable keyboard shortcuts.  They are
+active only while the tracker editor window has focus.  In the tables below,
+`Ctrl` is Ardour's `Primary` modifier and `Alt` is the `Secondary` modifier;
+on macOS these are `Command` and `Option` respectively.
+
+### Mode toggles
+
+| Shortcut | Action |
+|----------|--------|
+| `Alt+E` | Toggle step editing |
+| `Alt+C` | Toggle chord mode |
+| `Alt+D` | Toggle overwrite default |
+| `Alt+X` | Toggle overwrite existing |
+| `Alt+S` | Toggle overwrite * |
+| `Alt+P` | Toggle sync playhead |
+| `Alt+J` | Toggle jump |
+| `Alt+W` | Toggle wrap |
+| `Alt+H` | Toggle hexadecimal (Hex) display |
+
+### Value adjustments
+
+`Ctrl` increases the value, `Ctrl+Shift` decreases it.
+
+| Parameter | Increase | Decrease |
+|-----------|----------|----------|
+| Step size | `Ctrl+U` | `Ctrl+Shift+U` |
+| Octave | `Ctrl+O` | `Ctrl+Shift+O` |
+| Channel | `Ctrl+H` | `Ctrl+Shift+H` |
+| Velocity | `Ctrl+E` | `Ctrl+Shift+E` |
+| Delay | `Ctrl+D` | `Ctrl+Shift+D` |
+| Precision | `Ctrl+P` | `Ctrl+Shift+P` |
+| Position | `Ctrl+I` | `Ctrl+Shift+I` |
+| Rows per beat | `Ctrl+R` | `Ctrl+Shift+R` |
+
+The rows-per-beat shortcuts cycle through the allowed settings (1, 2, 3, 4,
+5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28 and 32 rows per beat), stopping at the
+first and last values.
+
+### Cut, copy and paste
+
+These operate on the selected subgrid (the rectangular selection made by
+Shift-clicking and dragging over the grid), not on the system clipboard.
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+X` | Cut the selected subgrid |
+| `Ctrl+C` | Copy the selected subgrid |
+| `Ctrl+V` | Paste |
+| `Ctrl+Shift+V` | Paste overlay (paste without clearing existing content) |
+
+### Changing the shortcuts
+
+The shortcuts are configurable with Ardour's keyboard shortcut system.  Open
+the **Keyboard Shortcuts** window (from the **Window** menu) and select the
+**Tracker** tab.  To change a shortcut, select the action in the list and then
+press the desired key sequence.  To remove a shortcut, select the action and
+click the **Remove shortcut** button.  The **Reset Bindings to Defaults**
+button restores all shortcuts to the defaults listed above.
+
+
