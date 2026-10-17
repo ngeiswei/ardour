@@ -72,7 +72,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 - [ ] Fix when trying to paste notes on values (add _note flag in std::string
       extension)
 - [ ] Maybe save octave value per each track, possibly more
-- [ ] Support arbitrary number of tracks (put all properties in tracker_column)
 - [ ] Fix grid focus. When click on a button, bring focus immediately back to
       the grid.
 - [ ] Fix window focus (the tracker editor window should have focus right away)
@@ -84,8 +83,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
 - [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
-- [ ] Drawn horizontal seperator to show the begin and end or a region (maybe
-      insert slim row, cause it seems one cannot alter the grid line colors).
 - [ ] Maybe only have Octave, Ch, Vel in main toolbar is there is a midi track
 - [ ] Use signals whenever possible (instead of for instance calling
       Grid::redisplay_grid) to not block. This can make ardour crash when jack
