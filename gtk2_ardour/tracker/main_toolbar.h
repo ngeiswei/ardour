@@ -58,6 +58,24 @@ public:
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::GridType st);
 	void beats_per_row_chosen (Editing::GridType st);
 	void set_beats_per_row_to (Editing::GridType st);
+	void set_rows_per_beat_to (Editing::GridType st);
+
+	/** Toggle the mode buttons.  Used by both the buttons and the keyboard shortcuts. */
+	void toggle_step_edit ();
+	void toggle_chord_mode ();
+	void toggle_overwrite_default ();
+	void toggle_overwrite_existing ();
+	void toggle_overwrite_star ();
+	void toggle_sync_playhead ();
+	void toggle_jump ();
+	void toggle_wrap ();
+	void toggle_hex ();
+
+	/** Trigger the cut/copy/paste operations. */
+	void cut ();
+	void copy ();
+	void paste ();
+	void paste_overlay ();
 
 	/**
 	 * Triggered upon step edit button press event.
