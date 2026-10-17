@@ -40,6 +40,7 @@ class MainToolbar : public Gtk::VBox
 {
 public:
 	explicit MainToolbar (TrackerEditor& te);
+	~MainToolbar ();
 	void setup ();
 
 	/**
@@ -53,7 +54,6 @@ public:
 	 */
 	void setup_beats_per_row_menu ();
 	void load_bindings ();
-	void register_actions ();
 	void beats_per_row_selection_done (Editing::GridType st);
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::GridType st);
 	void beats_per_row_chosen (Editing::GridType st);
@@ -71,11 +71,38 @@ public:
 	void toggle_wrap ();
 	void toggle_hex ();
 
+	/** Adjust the spinner values and the rows-per-beat setting. */
+	void step_size_up ();
+	void step_size_down ();
+	void octave_up ();
+	void octave_down ();
+	void channel_up ();
+	void channel_down ();
+	void velocity_up ();
+	void velocity_down ();
+	void delay_up ();
+	void delay_down ();
+	void precision_up ();
+	void precision_down ();
+	void position_up ();
+	void position_down ();
+	void rows_per_beat_up ();
+	void rows_per_beat_down ();
+
 	/** Trigger the cut/copy/paste operations. */
 	void cut ();
 	void copy ();
 	void paste ();
 	void paste_overlay ();
+
+	/**
+	 * Register all tracker actions in the "Tracker" binding set.  This is a
+	 * static method so that it can be called once at startup, before any
+	 * TrackerEditor exists, which ensures that the actions are always present
+	 * in the Keyboard Shortcuts window's "Tracker" tab.  The callbacks
+	 * forward to the current instance (there is at most one tracker editor).
+	 */
+	static void register_actions ();
 
 	/**
 	 * Triggered upon step edit button press event.
@@ -257,6 +284,43 @@ public:
 	Gtk::Label                   steps_label;
 	Gtk::Adjustment              steps_adjustment;
 	Gtk::SpinButton              steps_spinner;
+
+private:
+	/** Adjustable parameter for the increase/decrease shortcuts. */
+	enum class AdjustParam {
+		STEP_SIZE,
+		OCTAVE,
+		CHANNEL,
+		VELOCITY,
+		DELAY,
+		PRECISION,
+		POSITION,
+		ROWS_PER_BEAT
+	};
+
+	/** Forward to the current instance (no-op if none exists yet). */
+	static void adjust_action (AdjustParam, int direction);
+	static void toggle_step_edit_action ();
+	static void toggle_chord_mode_action ();
+	static void toggle_overwrite_default_action ();
+	static void toggle_overwrite_existing_action ();
+	static void toggle_overwrite_star_action ();
+	static void toggle_sync_playhead_action ();
+	static void toggle_jump_action ();
+	static void toggle_wrap_action ();
+	static void toggle_hex_action ();
+	static void cut_action ();
+	static void copy_action ();
+	static void paste_action ();
+	static void paste_overlay_action ();
+	static void beats_per_row_chosen_action (Editing::GridType st);
+
+	/** Cycle rows_per_beat among the allowed settings. */
+	void rows_per_beat_step (int direction);
+	static Editing::GridType grid_type_from_rows_per_beat (uint16_t rpb);
+
+	/** The currently alive MainToolbar (there is at most one tracker editor). */
+	static MainToolbar* _instance;
 };
 
 } // ~namespace Tracker
