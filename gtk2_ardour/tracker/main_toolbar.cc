@@ -16,6 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <algorithm>
+
 #include "pbd/error.h"
 #include "pbd/i18n.h"
 
@@ -54,6 +56,13 @@ static const gchar *_beats_per_row_strings[] = {
 	N_("28 Rows/Beat"),
 	0
 };
+
+/** Allowed rows_per_beat values, in the order of the beats-per-row menu. */
+static const uint16_t _rows_per_beat_choices[] = {
+	1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32
+};
+
+MainToolbar* MainToolbar::_instance = nullptr;
 
 MainToolbar::MainToolbar (TrackerEditor& te)
 	: tracker_editor (te)
@@ -96,6 +105,14 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, steps_adjustment (1, 0, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
 {
+	_instance = this;
+}
+
+MainToolbar::~MainToolbar ()
+{
+	if (_instance == this) {
+		_instance = nullptr;
+	}
 }
 
 void
@@ -106,8 +123,6 @@ MainToolbar::setup ()
 	setup_tooltips ();
 	setup_beats_per_row_menu ();
 	load_bindings ();
-	register_actions ();
-	set_data ("ardour-bindings", bindings);
 	set_beats_per_row_to (GridTypeBeatDiv4);
 
 	// Make sure that rows_per_beat is set before anything is redisplayed
@@ -392,49 +407,95 @@ MainToolbar::setup_beats_per_row_menu ()
 void
 MainToolbar::load_bindings ()
 {
-	bindings = Gtkmm2ext::Bindings::get_bindings (X_("Main Toolbar"));
+	bindings = Gtkmm2ext::Bindings::get_bindings (X_("Tracker"));
 }
 
 void
 MainToolbar::register_actions ()
 {
+	Gtkmm2ext::Bindings* bindings = Gtkmm2ext::Bindings::get_bindings (X_("Tracker"));
+	if (!bindings) {
+		error << _("Tracker keybindings are missing") << endmsg;
+		return;
+	}
+
+	// Beats-per-row radio actions (specific values).  These are what the
+	// beats-per-row dropdown menu uses.
 	Glib::RefPtr<Gtk::ActionGroup> beats_per_row_actions = ActionManager::create_action_group (bindings, X_("BeatsPerRow"));
 	Gtk::RadioAction::Group beats_per_row_choice_group;
 
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv32)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv32)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv28)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv28)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv24)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv24)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv20)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv20)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv16)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv16)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv14)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv14)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv12)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv12)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv10)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv10)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv8)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv8)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv7)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv7)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv6)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv6)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv5)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv5)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv4)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv4)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv3)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv3)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeatDiv2)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv2)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBeat)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeat)));
 	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"),
-	                                      (sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_chosen), Editing::GridTypeBar)));
+	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBar)));
+
+	// Keyboard shortcuts for the tracker editor.
+	Glib::RefPtr<Gtk::ActionGroup> tracker_actions = ActionManager::create_action_group (bindings, X_("Tracker"));
+
+	// Mode toggles
+	ActionManager::register_action (tracker_actions, X_("toggle-step-edit"), _("Toggle Step Edit"), sigc::ptr_fun (&MainToolbar::toggle_step_edit_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-chord-mode"), _("Toggle Chord Mode"), sigc::ptr_fun (&MainToolbar::toggle_chord_mode_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-default"), _("Toggle Overwrite Default"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_default_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-existing"), _("Toggle Overwrite Existing"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_existing_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite *"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_star_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::ptr_fun (&MainToolbar::toggle_sync_playhead_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::ptr_fun (&MainToolbar::toggle_jump_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::ptr_fun (&MainToolbar::toggle_wrap_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hex"), sigc::ptr_fun (&MainToolbar::toggle_hex_action));
+
+	// Value adjustments
+	ActionManager::register_action (tracker_actions, X_("increase-step-size"), _("Increase Step Size"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::STEP_SIZE, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-step-size"), _("Decrease Step Size"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::STEP_SIZE, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-octave"), _("Increase Octave"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::OCTAVE, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-octave"), _("Decrease Octave"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::OCTAVE, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-channel"), _("Increase Channel"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::CHANNEL, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-channel"), _("Decrease Channel"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::CHANNEL, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-velocity"), _("Increase Velocity"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::VELOCITY, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-velocity"), _("Decrease Velocity"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::VELOCITY, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-delay"), _("Increase Delay"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::DELAY, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-delay"), _("Decrease Delay"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::DELAY, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-precision"), _("Increase Precision"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::PRECISION, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-precision"), _("Decrease Precision"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::PRECISION, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-position"), _("Increase Position"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::POSITION, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-position"), _("Decrease Position"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::POSITION, -1));
+	ActionManager::register_action (tracker_actions, X_("increase-rows-per-beat"), _("Increase Rows per Beat"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::ROWS_PER_BEAT, 1));
+	ActionManager::register_action (tracker_actions, X_("decrease-rows-per-beat"), _("Decrease Rows per Beat"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::ROWS_PER_BEAT, -1));
+
+	// Cut/copy/paste
+	ActionManager::register_action (tracker_actions, X_("cut"), _("Cut"), sigc::ptr_fun (&MainToolbar::cut_action));
+	ActionManager::register_action (tracker_actions, X_("copy"), _("Copy"), sigc::ptr_fun (&MainToolbar::copy_action));
+	ActionManager::register_action (tracker_actions, X_("paste"), _("Paste"), sigc::ptr_fun (&MainToolbar::paste_action));
+	ActionManager::register_action (tracker_actions, X_("paste-overlay"), _("Paste Overlay"), sigc::ptr_fun (&MainToolbar::paste_overlay_action));
 }
 
 void
@@ -838,3 +899,217 @@ MainToolbar::set_rows_per_beat_to (GridType st)
 	tracker_editor.grid.set_rows_per_beat (rows_per_beat, true);
 	tracker_editor.grid.redisplay_grid_direct_call ();
 }
+
+void MainToolbar::step_size_up ()   { steps_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::step_size_down () { steps_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+void MainToolbar::octave_up ()      { octave_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::octave_down ()    { octave_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+void MainToolbar::channel_up ()     { channel_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::channel_down ()   { channel_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+void MainToolbar::velocity_up ()    { velocity_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::velocity_down ()  { velocity_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+void MainToolbar::delay_up ()       { delay_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::delay_down ()     { delay_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+void MainToolbar::precision_up ()   { precision_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::precision_down () { precision_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+void MainToolbar::position_up ()    { position_spinner.spin (Gtk::SPIN_STEP_FORWARD, 1.0); }
+void MainToolbar::position_down ()  { position_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
+
+void
+MainToolbar::rows_per_beat_up ()
+{
+	rows_per_beat_step (1);
+}
+
+void
+MainToolbar::rows_per_beat_down ()
+{
+	rows_per_beat_step (-1);
+}
+
+void
+MainToolbar::rows_per_beat_step (int direction)
+{
+	const size_t nchoices = sizeof (_rows_per_beat_choices) / sizeof (_rows_per_beat_choices[0]);
+	size_t idx = 0;
+	for (size_t i = 0; i < nchoices; i++) {
+		if (_rows_per_beat_choices[i] == rows_per_beat) {
+			idx = i;
+			break;
+		}
+	}
+	const int new_idx = std::min ((int) nchoices - 1, std::max (0, (int) idx + direction));
+	if ((size_t) new_idx != idx) {
+		set_rows_per_beat_to (grid_type_from_rows_per_beat (_rows_per_beat_choices[new_idx]));
+	}
+}
+
+Editing::GridType
+MainToolbar::grid_type_from_rows_per_beat (uint16_t rpb)
+{
+	switch (rpb) {
+	case 1:  return GridTypeBeat;
+	case 2:  return GridTypeBeatDiv2;
+	case 3:  return GridTypeBeatDiv3;
+	case 4:  return GridTypeBeatDiv4;
+	case 5:  return GridTypeBeatDiv5;
+	case 6:  return GridTypeBeatDiv6;
+	case 7:  return GridTypeBeatDiv7;
+	case 8:  return GridTypeBeatDiv8;
+	case 10: return GridTypeBeatDiv10;
+	case 12: return GridTypeBeatDiv12;
+	case 14: return GridTypeBeatDiv14;
+	case 16: return GridTypeBeatDiv16;
+	case 20: return GridTypeBeatDiv20;
+	case 24: return GridTypeBeatDiv24;
+	case 28: return GridTypeBeatDiv28;
+	case 32: return GridTypeBeatDiv32;
+	}
+	return GridTypeBeatDiv4;
+}
+
+void
+MainToolbar::toggle_step_edit_action ()
+{
+	if (_instance) {
+		_instance->toggle_step_edit ();
+	}
+}
+
+void
+MainToolbar::toggle_chord_mode_action ()
+{
+	if (_instance) {
+		_instance->toggle_chord_mode ();
+	}
+}
+
+void
+MainToolbar::toggle_overwrite_default_action ()
+{
+	if (_instance) {
+		_instance->toggle_overwrite_default ();
+	}
+}
+
+void
+MainToolbar::toggle_overwrite_existing_action ()
+{
+	if (_instance) {
+		_instance->toggle_overwrite_existing ();
+	}
+}
+
+void
+MainToolbar::toggle_overwrite_star_action ()
+{
+	if (_instance) {
+		_instance->toggle_overwrite_star ();
+	}
+}
+
+void
+MainToolbar::toggle_sync_playhead_action ()
+{
+	if (_instance) {
+		_instance->toggle_sync_playhead ();
+	}
+}
+
+void
+MainToolbar::toggle_jump_action ()
+{
+	if (_instance) {
+		_instance->toggle_jump ();
+	}
+}
+
+void
+MainToolbar::toggle_wrap_action ()
+{
+	if (_instance) {
+		_instance->toggle_wrap ();
+	}
+}
+
+void
+MainToolbar::toggle_hex_action ()
+{
+	if (_instance) {
+		_instance->toggle_hex ();
+	}
+}
+
+void
+MainToolbar::cut_action ()
+{
+	if (_instance) {
+		_instance->cut ();
+	}
+}
+
+void
+MainToolbar::copy_action ()
+{
+	if (_instance) {
+		_instance->copy ();
+	}
+}
+
+void
+MainToolbar::paste_action ()
+{
+	if (_instance) {
+		_instance->paste ();
+	}
+}
+
+void
+MainToolbar::paste_overlay_action ()
+{
+	if (_instance) {
+		_instance->paste_overlay ();
+	}
+}
+void
+MainToolbar::beats_per_row_chosen_action (GridType st)
+{
+	if (_instance) {
+		_instance->beats_per_row_chosen (st);
+	}
+}
+
+void
+MainToolbar::adjust_action (AdjustParam what, int direction)
+{
+	if (!_instance) {
+		return;
+	}
+	switch (what) {
+	case AdjustParam::STEP_SIZE:
+		if (direction < 0) { _instance->step_size_down (); } else { _instance->step_size_up (); }
+		break;
+	case AdjustParam::OCTAVE:
+		if (direction < 0) { _instance->octave_down (); } else { _instance->octave_up (); }
+		break;
+	case AdjustParam::CHANNEL:
+		if (direction < 0) { _instance->channel_down (); } else { _instance->channel_up (); }
+		break;
+	case AdjustParam::VELOCITY:
+		if (direction < 0) { _instance->velocity_down (); } else { _instance->velocity_up (); }
+		break;
+	case AdjustParam::DELAY:
+		if (direction < 0) { _instance->delay_down (); } else { _instance->delay_up (); }
+		break;
+	case AdjustParam::PRECISION:
+		if (direction < 0) { _instance->precision_down (); } else { _instance->precision_up (); }
+		break;
+	case AdjustParam::POSITION:
+		if (direction < 0) { _instance->position_down (); } else { _instance->position_up (); }
+		break;
+	case AdjustParam::ROWS_PER_BEAT:
+		_instance->rows_per_beat_step (direction);
+		break;
+	}
+}
+

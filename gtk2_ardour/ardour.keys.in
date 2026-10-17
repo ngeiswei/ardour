@@ -104,6 +104,8 @@ This mode provides many different operations on both regions and control points,
 
 %rec Recorder Recorder Page
 
+%tracker Tracker Tracker Editor
+
 ;; END GROUP DEFINITIONS
 
 ;; punctuation
@@ -533,3 +535,37 @@ This mode provides many different operations on both regions and control points,
 @rec|Recorder/rec-undo|                       <@PRIMARY@>z|undo
 @rec|Recorder/rec-redo|           <@PRIMARY@><@TERTIARY@>z|redo
 @rec|Recorder/alternate-rec-redo|             <@PRIMARY@>y|redo
+
+;; Tracker editor
+
+@tracker|Tracker/toggle-step-edit|                       <@SECONDARY@>e|toggle step edit
+@tracker|Tracker/toggle-chord-mode|                      <@SECONDARY@>c|toggle chord mode
+@tracker|Tracker/toggle-overwrite-default|               <@SECONDARY@>d|toggle overwrite default
+@tracker|Tracker/toggle-overwrite-existing|              <@SECONDARY@>x|toggle overwrite existing
+@tracker|Tracker/toggle-overwrite-star|                  <@SECONDARY@>s|toggle overwrite *
+@tracker|Tracker/toggle-sync-playhead|                   <@SECONDARY@>p|toggle sync playhead
+@tracker|Tracker/toggle-jump|                            <@SECONDARY@>j|toggle jump
+@tracker|Tracker/toggle-wrap|                            <@SECONDARY@>w|toggle wrap
+@tracker|Tracker/toggle-hex|                              <@SECONDARY@>h|toggle hex
+
+@tracker|Tracker/increase-step-size|                     <@PRIMARY@>u|increase step size
+@tracker|Tracker/decrease-step-size|         <@PRIMARY@><@TERTIARY@>u|decrease step size
+@tracker|Tracker/increase-octave|                         <@PRIMARY@>o|increase octave
+@tracker|Tracker/decrease-octave|             <@PRIMARY@><@TERTIARY@>o|decrease octave
+@tracker|Tracker/increase-channel|                        <@PRIMARY@>h|increase channel
+@tracker|Tracker/decrease-channel|            <@PRIMARY@><@TERTIARY@>h|decrease channel
+@tracker|Tracker/increase-velocity|                       <@PRIMARY@>e|increase velocity
+@tracker|Tracker/decrease-velocity|           <@PRIMARY@><@TERTIARY@>e|decrease velocity
+@tracker|Tracker/increase-delay|                          <@PRIMARY@>d|increase delay
+@tracker|Tracker/decrease-delay|              <@PRIMARY@><@TERTIARY@>d|decrease delay
+@tracker|Tracker/increase-precision|                      <@PRIMARY@>p|increase precision
+@tracker|Tracker/decrease-precision|          <@PRIMARY@><@TERTIARY@>p|decrease precision
+@tracker|Tracker/increase-position|                       <@PRIMARY@>i|increase position
+@tracker|Tracker/decrease-position|           <@PRIMARY@><@TERTIARY@>i|decrease position
+@tracker|Tracker/increase-rows-per-beat|                  <@PRIMARY@>r|increase rows per beat
+@tracker|Tracker/decrease-rows-per-beat|      <@PRIMARY@><@TERTIARY@>r|decrease rows per beat
+
+@tracker|Tracker/cut|                                    <@PRIMARY@>x|cut
+@tracker|Tracker/copy|                                  <@PRIMARY@>c|copy
+@tracker|Tracker/paste|                                <@PRIMARY@>v|paste
+@tracker|Tracker/paste-overlay|            <@PRIMARY@><@TERTIARY@>v|paste overlay
