@@ -394,6 +394,16 @@ private:
 	std::string on_note_tooltip_msg (NotePtr on_note, const MidiNotesPattern& mnp, int row_idx, int mti, int mri);
 	std::string note_tooltip_msg (int row_idx, int mti, int mri, int cgi);
 	std::string automation_tooltip_msg (int row_idx, int mti, int mri, int cgi);
+
+	// Draw dashed lines at the start and end of each region on top of the
+	// rendered cells.  Connected to the TreeView's expose-event signal, which
+	// runs after the default cell drawing (see Grid::Grid()).
+	bool on_grid_expose (GdkEventExpose* ev);
+
+	// Return the set of global row indices at which the regions of track mti
+	// begin or end (the end being the first row past the region).
+	std::set<int> region_boundary_rows (int mti) const;
+
 	void connect_events ();
 	void setup_tree_view ();
 	void setup_time_column ();
