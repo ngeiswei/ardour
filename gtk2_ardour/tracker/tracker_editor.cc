@@ -164,6 +164,12 @@ void TrackerEditor::setup (RegionSelection& rs)
 	setup_toolbars ();
 	setup_grid_header ();
 
+	// Make the tracker editor's configurable keybindings active while the
+	// window has focus.  Only needs to be done once.
+	if (_first && main_toolbar.bindings) {
+		set_widget_bindings (*this, *main_toolbar.bindings, ARDOUR_BINDING_KEY);
+	}
+
 	grid.redisplay_grid_direct_call ();
 
 	setup_vbox ();
