@@ -104,12 +104,14 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	  // TODO set the boundaries to not be above the number of rows
 	, steps_adjustment (1, 0, 255, 1, 4)
 	, steps_spinner (steps_adjustment)
+	, clipboard_menu (0)
 {
 	_instance = this;
 }
 
 MainToolbar::~MainToolbar ()
 {
+	delete clipboard_menu;
 	if (_instance == this) {
 		_instance = nullptr;
 	}
@@ -308,46 +310,6 @@ MainToolbar::setup_layout ()
 	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	hex_button.show ();
 	br->pack_start (hex_button, false, false);
-
-	// Cut
-	cut_separator.show ();
-	br->pack_start (cut_separator, false, false);
-	cut_button.set_name ("cut button");
-	cut_button.set_text (S_("Cut"));
-	cut_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::cut_press), false);
-	cut_button.set_active_state (Gtkmm2ext::Off);
-	cut_button.show ();
-	br->pack_start (cut_button, false, false);
-
-	// Copy
-	copy_separator.show ();
-	br->pack_start (copy_separator, false, false);
-	copy_button.set_name ("copy button");
-	copy_button.set_text (S_("Copy"));
-	copy_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::copy_press), false);
-	copy_button.set_active_state (Gtkmm2ext::Off);
-	copy_button.show ();
-	br->pack_start (copy_button, false, false);
-
-	// Paste
-	paste_separator.show ();
-	br->pack_start (paste_separator, false, false);
-	paste_button.set_name ("paste button");
-	paste_button.set_text (S_("Paste"));
-	paste_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::paste_press), false);
-	paste_button.set_active_state (Gtkmm2ext::Off);
-	paste_button.show ();
-	br->pack_start (paste_button, false, false);
-
-	// Paste Overlay
-	paste_overlay_separator.show ();
-	br->pack_start (paste_overlay_separator, false, false);
-	paste_overlay_button.set_name ("paste overlay button");
-	paste_overlay_button.set_text (S_("Paste Overlay"));
-	paste_overlay_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::paste_overlay_press), false);
-	paste_overlay_button.set_active_state (Gtkmm2ext::Off);
-	paste_overlay_button.show ();
-	br->pack_start (paste_overlay_button, false, false);
 
 	br->show ();
 	pack_start (*br, false, false);
@@ -740,34 +702,6 @@ MainToolbar::hex_press (GdkEventButton* ev)
 	return false;
 }
 
-bool
-MainToolbar::cut_press (GdkEventButton* ev)
-{
-	cut ();
-	return true;
-}
-
-bool
-MainToolbar::copy_press (GdkEventButton* ev)
-{
-	copy ();
-	return true;
-}
-
-bool
-MainToolbar::paste_press (GdkEventButton* ev)
-{
-	paste ();
-	return true;
-}
-
-bool
-MainToolbar::paste_overlay_press (GdkEventButton* ev)
-{
-	paste_overlay ();
-	return true;
-}
-
 void
 MainToolbar::change_precision ()
 {
@@ -890,6 +824,39 @@ void
 MainToolbar::paste_overlay ()
 {
 	tracker_editor.grid._subgrid_selector.paste_overlay ();
+}
+
+void
+MainToolbar::build_clipboard_menu ()
+{
+	clipboard_menu = new Gtk::Menu;
+	clipboard_menu->set_name ("ArdourContextMenu");
+
+	// The keyboard shortcuts are shown right-aligned in the standard GTK style,
+	// from the GtkAccelMap entries filled by the binding system
+	// (Bindings::push_to_gtk).  The UIManager normally installs its accel group
+	// on actions when it builds menu items from XML; since this menu is built
+	// manually, install it here so that create_menu_item() can display the
+	// accelerators.
+	clipboard_menu->set_accel_group (ActionManager::ui_manager->get_accel_group ());
+
+	static const char* const action_names[] = { "cut", "copy", "paste", "paste-overlay" };
+	for (size_t i = 0; i < sizeof (action_names) / sizeof (action_names[0]); ++i) {
+		Glib::RefPtr<Gtk::Action> act = ActionManager::get_action (X_("Tracker"), action_names[i], false);
+		if (act) {
+			act->set_accel_group (ActionManager::ui_manager->get_accel_group ());
+			clipboard_menu->append (*Gtk::manage (act->create_menu_item ()));
+		}
+	}
+}
+
+void
+MainToolbar::popup_clipboard_menu (GdkEventButton* ev)
+{
+	if (!clipboard_menu) {
+		build_clipboard_menu ();
+	}
+	clipboard_menu->popup (ev->button, ev->time);
 }
 
 void
