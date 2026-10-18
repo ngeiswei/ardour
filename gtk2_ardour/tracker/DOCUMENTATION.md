@@ -68,7 +68,7 @@ on macOS these are `Command` and `Option` respectively.
 | `Alt+C` | Toggle chord mode |
 | `Alt+D` | Toggle overwrite default |
 | `Alt+X` | Toggle overwrite existing |
-| `Alt+S` | Toggle overwrite * |
+| `Alt+S` | Toggle overwrite *** |
 | `Alt+P` | Toggle sync playhead |
 | `Alt+J` | Toggle jump |
 | `Alt+W` | Toggle wrap |

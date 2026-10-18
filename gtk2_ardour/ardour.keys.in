@@ -542,7 +542,7 @@ This mode provides many different operations on both regions and control points,
 @tracker|Tracker/toggle-chord-mode|                      <@SECONDARY@>c|toggle chord mode
 @tracker|Tracker/toggle-overwrite-default|               <@SECONDARY@>d|toggle overwrite default
 @tracker|Tracker/toggle-overwrite-existing|              <@SECONDARY@>x|toggle overwrite existing
-@tracker|Tracker/toggle-overwrite-star|                  <@SECONDARY@>s|toggle overwrite *
+@tracker|Tracker/toggle-overwrite-star|                  <@SECONDARY@>s|toggle overwrite ***
 @tracker|Tracker/toggle-sync-playhead|                   <@SECONDARY@>p|toggle sync playhead
 @tracker|Tracker/toggle-jump|                            <@SECONDARY@>j|toggle jump
 @tracker|Tracker/toggle-wrap|                            <@SECONDARY@>w|toggle wrap
