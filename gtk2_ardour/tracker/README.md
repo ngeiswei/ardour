@@ -1,6 +1,5 @@
 # Next
 
-- [x] NEXT.2: reenable tracker for audio tracks (track automation only)
 - [ ] NEXT.2b: support audio region content and region automation
 - [ ] Carefully go over all NEXT comments
 
@@ -55,36 +54,19 @@ A documentation can be found [here](DOCUMENTATION.md).
 
 ## TODO
 
-- [ ] Add popup menu with copy/paste, interpolate, etc
+- [ ] Add interpolate and such in pop-up menu.
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
-- [ ] Create shortcut key to move to automation vs note
-- [ ] Add shortcut key to cycle through group index
-- [ ] Set position when clicking on the digit position (if the cell is already selected)
-- [ ] Add row index column (very first one)
-- [ ] Fix situation when the cursor on the current track is different than the
-      selected track
-- [ ] Add option for velocity ramp
-- [ ] Handle keypressed the right way (which includes passing on space to play/stop)
-- [ ] Convert direct call to action when possible, see
-      `gtk2_ardour/editor_actions.cc`, like `nudge-later`.
 - [ ] What to do when playing and step editing is on?
 - [ ] Fix when trying to paste notes on values (add _note flag in std::string
       extension)
-- [ ] Maybe save octave value per each track, possibly more
-- [ ] Fix grid focus. When click on a button, bring focus immediately back to
-      the grid.
 - [ ] Fix window focus (the tracker editor window should have focus right away)
 - [ ] Support toggling visibility of regions and tracks
 - [ ] Add access from top menu Windows->Tracker Editor
 - [ ] Try to replace as many gtk widgets by cairo widgets
 - [ ] Support shift-tab to move from right to left
-- [ ] Add shortcut for parameters, steps, etc
 - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
 - [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
 - [ ] Maybe only have Octave, Ch, Vel in main toolbar is there is a midi track
-- [ ] Use signals whenever possible (instead of for instance calling
-      Grid::redisplay_grid) to not block. This can make ardour crash when jack
-      buffer size is too short.
 - [ ] Add play a line by pressing enter or so
