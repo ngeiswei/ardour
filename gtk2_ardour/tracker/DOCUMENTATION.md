@@ -96,7 +96,10 @@ first and last values.
 ### Cut, copy and paste
 
 These operate on the selected subgrid (the rectangular selection made by
-Shift-clicking and dragging over the grid), not on the system clipboard.
+Shift-clicking and dragging over the grid), not on the system clipboard.  They
+are also available from a popup menu, opened by right-clicking anywhere on the
+tracker editor window (except where the right-click is already used, such as in
+a cell being edited).
 
 | Shortcut | Action |
 |----------|--------|
