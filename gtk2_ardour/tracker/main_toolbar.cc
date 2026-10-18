@@ -297,23 +297,6 @@ MainToolbar::setup_layout ()
 	mr->show ();
 	pack_start (*mr, false, false);
 
-	// Bottom row
-	Gtk::HBox* br = Gtk::manage (new Gtk::HBox ());
-	br->set_spacing(spacing);
-
-	// Hex
-	hex_separator.show ();
-	br->pack_start (hex_separator, false, false);
-	hex_button.set_name ("hex button");
-	hex_button.set_text (S_("Hex"));
-	hex_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::hex_press), false);
-	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	hex_button.show ();
-	br->pack_start (hex_button, false, false);
-
-	br->show ();
-	pack_start (*br, false, false);
-
 	show ();
 }
 
@@ -329,7 +312,6 @@ MainToolbar::setup_tooltips ()
 	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
 	jump_button.set_tooltip_text (_("Jump to the next event on the same row or column while moving the cursor or step editing. If no such event exist, then fallback to regular movement."));
 	wrap_button.set_tooltip_text (_("Wrap vertical move"));
-	hex_button.set_tooltip_text (_("Input/output numbers in hexadecimal"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
@@ -690,18 +672,6 @@ MainToolbar::wrap_press (GdkEventButton* ev)
 	return false;
 }
 
-bool
-MainToolbar::hex_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_hex ();
-	return false;
-}
-
 void
 MainToolbar::change_precision ()
 {
@@ -797,7 +767,6 @@ MainToolbar::toggle_hex ()
 {
 	hex = !hex;
 	base = hex ? 16 : 10;
-	hex_button.set_active_state (hex ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 
 	tracker_editor.grid.redisplay_grid_direct_call ();
 }
@@ -859,6 +828,32 @@ MainToolbar::build_clipboard_menu ()
 			clipboard_menu->append (*Gtk::manage (act->create_menu_item ()));
 		}
 	}
+
+	// Separator, then the Hex mode toggle.
+	Gtk::SeparatorMenuItem* separator = Gtk::manage (new Gtk::SeparatorMenuItem ());
+	separator->show ();
+	clipboard_menu->append (*separator);
+
+	Gtk::CheckMenuItem* hex_item = Gtk::manage (new Gtk::CheckMenuItem (_("Hex")));
+	hex_item->set_active (hex);
+	hex_item->signal_toggled ().connect (sigc::mem_fun (*this, &MainToolbar::toggle_hex));
+	clipboard_menu->append (*hex_item);
+
+	// Give the item the same accel path as the toggle-hex action so that its
+	// shortcut (Alt+H) is shown, after refreshing the AccelMap entry from the
+	// current binding.
+	Glib::RefPtr<Gtk::Action> hex_act = ActionManager::get_action (X_("Tracker"), X_("toggle-hex"), false);
+	if (hex_act) {
+		if (bindings) {
+			Gtkmm2ext::Bindings::Operation op;
+			Gtkmm2ext::KeyboardKey key = bindings->get_binding_for_action (hex_act, op);
+			if (!(key == Gtkmm2ext::KeyboardKey::null_key ())) {
+				Gtk::AccelMap::change_entry (hex_act->get_accel_path (), key.key (), (Gdk::ModifierType) key.state (), true);
+			}
+		}
+		hex_item->set_accel_path (hex_act->get_accel_path ());
+	}
+	hex_item->show ();
 }
 
 void
