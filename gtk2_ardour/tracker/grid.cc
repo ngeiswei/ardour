@@ -116,6 +116,7 @@ Grid::Grid (TrackerEditor& te)
 	, shift_pressed (false)
 	, cellfont ("Monospace")
 	, time_column (0)
+	, _last_base (-1)
 	, _schema_rebuilt_elsewhere (false)
 	, _left_right_separator_nrows (-1)
 	, _subgrid_selector (te)
@@ -1561,6 +1562,13 @@ Grid::redisplay_grid ()
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
+
+	// Force a full redisplay when the numeric base (hex/dec) changed, since
+	// the phenomenal diff does not capture it.
+	if (base () != _last_base) {
+		_phenomenal_diff.full = true;
+		_last_base = base ();
+	}
 
 	// Make sure the Gtk::TreeModel schema is large enough for the current
 	// pattern.  Rebuilding here creates fresh model columns and TreeView
