@@ -404,7 +404,7 @@ MainToolbar::register_actions ()
 	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::ptr_fun (&MainToolbar::toggle_sync_playhead_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::ptr_fun (&MainToolbar::toggle_jump_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::ptr_fun (&MainToolbar::toggle_wrap_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hex"), sigc::ptr_fun (&MainToolbar::toggle_hex_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hexadecimal"), sigc::ptr_fun (&MainToolbar::toggle_hex_action));
 
 	// Value adjustments
 	ActionManager::register_action (tracker_actions, X_("increase-step-size"), _("Increase Step Size"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::STEP_SIZE, 1));
@@ -808,31 +808,56 @@ MainToolbar::build_clipboard_menu ()
 		}
 	}
 
-	// Separator, then the Hex mode toggle.
+	// Separator, then the mode toggles (Hexadecimal plus the edit/playback mode buttons),
+	// stacked right below each other without a further separator.
 	Gtk::SeparatorMenuItem* separator = Gtk::manage (new Gtk::SeparatorMenuItem ());
 	separator->show ();
 	clipboard_menu->append (*separator);
 
-	Gtk::CheckMenuItem* hex_item = Gtk::manage (new Gtk::CheckMenuItem (_("Hex")));
-	hex_item->set_active (hex);
-	hex_item->signal_toggled ().connect (sigc::mem_fun (*this, &MainToolbar::toggle_hex));
-	clipboard_menu->append (*hex_item);
+	struct ModeItem {
+		const char*          action;
+		const char*          label;
+		bool MainToolbar::*  state;
+		void (MainToolbar::* toggle) ();
+	};
 
-	// Give the item the same accel path as the toggle-hex action so that its
-	// shortcut (Alt+H) is shown, after refreshing the AccelMap entry from the
-	// current binding.
-	Glib::RefPtr<Gtk::Action> hex_act = ActionManager::get_action (X_("Tracker"), X_("toggle-hex"), false);
-	if (hex_act) {
+	const ModeItem mode_items[] = {
+		{ "toggle-hex", _("Hexadecimal"), &MainToolbar::hex, &MainToolbar::toggle_hex },
+		{ "toggle-chord-mode", S_("Chord Mode"), &MainToolbar::chord_mode, &MainToolbar::toggle_chord_mode },
+		{ "toggle-overwrite-default", S_("Overwrite Default"), &MainToolbar::overwrite_default, &MainToolbar::toggle_overwrite_default },
+		{ "toggle-overwrite-existing", S_("Overwrite Existing"), &MainToolbar::overwrite_existing, &MainToolbar::toggle_overwrite_existing },
+		{ "toggle-overwrite-star", S_("Overwrite ***"), &MainToolbar::overwrite_star, &MainToolbar::toggle_overwrite_star },
+		{ "toggle-sync-playhead", S_("Sync Playhead"), &MainToolbar::sync_playhead, &MainToolbar::toggle_sync_playhead },
+		{ "toggle-jump", S_("Jump"), &MainToolbar::jump, &MainToolbar::toggle_jump },
+		{ "toggle-wrap", S_("Wrap"), &MainToolbar::wrap, &MainToolbar::toggle_wrap },
+	};
+
+	for (size_t i = 0; i < sizeof (mode_items) / sizeof (mode_items[0]); ++i) {
+		Glib::RefPtr<Gtk::Action> act = ActionManager::get_action (X_("Tracker"), mode_items[i].action, false);
+		if (!act) {
+			continue;
+		}
+
+		Gtk::CheckMenuItem* item = Gtk::manage (new Gtk::CheckMenuItem (mode_items[i].label));
+		item->set_active (this->*mode_items[i].state);
+		item->signal_toggled ().connect (sigc::mem_fun (*this, mode_items[i].toggle));
+
+		// Give the item the same accel path as its action so that its shortcut is
+		// shown right-aligned, after refreshing the AccelMap entry from the current
+		// binding so that the hint reflects any change made in the Keyboard Shortcuts
+		// window.
 		if (bindings) {
 			Gtkmm2ext::Bindings::Operation op;
-			Gtkmm2ext::KeyboardKey key = bindings->get_binding_for_action (hex_act, op);
+			Gtkmm2ext::KeyboardKey key = bindings->get_binding_for_action (act, op);
 			if (!(key == Gtkmm2ext::KeyboardKey::null_key ())) {
-				Gtk::AccelMap::change_entry (hex_act->get_accel_path (), key.key (), (Gdk::ModifierType) key.state (), true);
+				Gtk::AccelMap::change_entry (act->get_accel_path (), key.key (), (Gdk::ModifierType) key.state (), true);
 			}
 		}
-		hex_item->set_accel_path (hex_act->get_accel_path ());
+		item->set_accel_path (act->get_accel_path ());
+
+		item->show ();
+		clipboard_menu->append (*item);
 	}
-	hex_item->show ();
 }
 
 void

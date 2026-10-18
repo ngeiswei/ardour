@@ -546,7 +546,7 @@ This mode provides many different operations on both regions and control points,
 @tracker|Tracker/toggle-sync-playhead|                   <@SECONDARY@>p|toggle sync playhead
 @tracker|Tracker/toggle-jump|                            <@SECONDARY@>j|toggle jump
 @tracker|Tracker/toggle-wrap|                            <@SECONDARY@>w|toggle wrap
-@tracker|Tracker/toggle-hex|                              <@SECONDARY@>h|toggle hex
+@tracker|Tracker/toggle-hex|                              <@SECONDARY@>h|toggle hexadecimal
 
 @tracker|Tracker/increase-step-size|                     <@PRIMARY@>u|increase step size
 @tracker|Tracker/decrease-step-size|         <@PRIMARY@><@TERTIARY@>u|decrease step size
