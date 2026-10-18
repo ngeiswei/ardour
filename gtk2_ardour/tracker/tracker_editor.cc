@@ -89,8 +89,16 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 {
 	set_session (s);
 
+	// The toplevel window's client-area GdkWindow is realized without
+	// GDK_BUTTON_PRESS_MASK (only the frame window gets it), so clicks on
+	// no-window children (labels, separators, empty areas) would otherwise
+	// never reach window_button_press().  Select for button press/release so
+	// that the right-click popup menu works anywhere on the window.
+	add_events (Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
+
 	signal_map ().connect (sigc::mem_fun (*this, &TrackerEditor::map_handler));
 	signal_unmap ().connect (sigc::mem_fun (*this, &TrackerEditor::unmap_handler));
+	signal_button_press_event ().connect (sigc::mem_fun (*this, &TrackerEditor::window_button_press), false);
 }
 
 TrackerEditor::~TrackerEditor ()
@@ -269,6 +277,19 @@ TrackerEditor::unmap_handler ()
 {
 	// Stop step-editing MIDI input while the window is not visible.
 	disconnect_midi_event ();
+}
+
+bool
+TrackerEditor::window_button_press (GdkEventButton* ev)
+{
+	// Show the cut/copy/paste popup menu on right click anywhere on the window.
+	// The grid handles its own right clicks, so this only fires for the areas
+	// around it (toolbar, headers, etc.).
+	if (ev->button == 3) {
+		main_toolbar.popup_clipboard_menu (ev);
+		return true;
+	}
+	return false;
 }
 
 void
