@@ -108,6 +108,12 @@ a cell being edited).
 | `Ctrl+V` | Paste |
 | `Ctrl+Shift+V` | Paste overlay (paste without clearing existing content) |
 
+### Hex mode
+
+The popup menu also contains a checkable **Hex** item, which shows whether
+hexadecimal (Hex) display is enabled and can be used to toggle it.  The same
+mode can be toggled with the `Alt+H` shortcut (see the mode toggles above).
+
 ### Changing the shortcuts
 
 The shortcuts are configurable with Ardour's keyboard shortcut system.  Open
