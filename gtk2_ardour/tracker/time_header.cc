@@ -16,21 +16,50 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "pbd/i18n.h"
+
 #include "time_header.h"
+#include "tracker_editor.h"
 
 using namespace Tracker;
 
 /**
- * Widget to place on top of Time column, contains general tools such as
- * resolution, number of steps, etc.
- *
- * Attempt to aligned with the time column.
+ * Widget placed on top of the Time column.  It holds the Step Edit button,
+ * spanning the time column width and the track headers' height.
  */
 
-TimeHeader::TimeHeader ()
+TimeHeader::TimeHeader (TrackerEditor& te)
+	: tracker_editor (te)
 {
+	step_edit_button.set_name ("step edit button");
+	step_edit_button.set_text (S_("Step Edit"));
+	step_edit_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &TimeHeader::step_edit_press), false);
+	step_edit_button.set_active_state (tracker_editor.main_toolbar.step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	step_edit_button.show ();
+
+	// Fill the (single-cell) table so the button spans the whole time header
+	// area, which GridHeader::align() sizes to the time column.
+	attach (step_edit_button, 0, 1, 0, 1);
 }
 
 TimeHeader::~TimeHeader ()
 {
+}
+
+bool
+TimeHeader::step_edit_press (GdkEventButton* ev)
+{
+	/* ignore double/triple clicks */
+	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS) {
+		return true;
+	}
+
+	tracker_editor.main_toolbar.toggle_step_edit ();
+	return false;
+}
+
+void
+TimeHeader::set_step_edit (bool step_edit)
+{
+	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }

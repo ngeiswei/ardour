@@ -140,14 +140,6 @@ MainToolbar::setup_layout ()
 	Gtk::HBox* tr = Gtk::manage (new Gtk::HBox ());
 	tr->set_spacing(spacing);
 
-	// Step edit button
-	step_edit_button.set_name ("step edit button");
-	step_edit_button.set_text (S_("Step Edit"));
-	step_edit_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::step_edit_press), false);
-	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-	step_edit_button.show ();
-	tr->pack_start (step_edit_button, false, false);
-
 	// Steps spinner
 	steps_separator.show ();
 	tr->pack_start (steps_separator, false, false);
@@ -304,7 +296,6 @@ void
 MainToolbar::setup_tooltips ()
 {
 	set_tooltip (beats_per_row_selector, _("Beats per row"));
-	step_edit_button.set_tooltip_text (_("Toggle step editing"));
 	chord_mode_button.set_tooltip_text (_("Any note entered while a note is still pressed gets entered at the same row"));
 	overwrite_default_button.set_tooltip_text (_("MIDI input events overwrite default channel and velocity"));
 	overwrite_existing_button.set_tooltip_text (_("Input events overwrite existing channel, velocity and delay"));
@@ -577,18 +568,6 @@ MainToolbar::set_beats_per_row_to (GridType st)
 }
 
 bool
-MainToolbar::step_edit_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_step_edit ();
-	return false;
-}
-
-bool
 MainToolbar::chord_mode_press (GdkEventButton* ev)
 {
 	/* ignore double/triple clicks */
@@ -695,7 +674,9 @@ void
 MainToolbar::toggle_step_edit ()
 {
 	step_edit = !step_edit;
-	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	if (tracker_editor.grid_header) {
+		tracker_editor.grid_header->time_header.set_step_edit (step_edit);
+	}
 
 	tracker_editor.grid.redisplay_grid_direct_call ();
 	if (step_edit) {
