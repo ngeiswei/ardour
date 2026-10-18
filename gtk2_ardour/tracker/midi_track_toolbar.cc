@@ -43,7 +43,7 @@ MidiTrackToolbar::MidiTrackToolbar (TrackerEditor& te, MidiTrackPattern& mtp, in
 	, midi_track (mtp.midi_track)
 	, midi_track_pattern (mtp)
 	, visible_note (true)
-	, visible_channel (false)
+	, visible_channel (true)
 	, visible_velocity (true)
 {
 	setup_processor_menu_and_curves ();
@@ -74,8 +74,8 @@ MidiTrackToolbar::setup ()
 void
 MidiTrackToolbar::setup_note ()
 {
-	// Add visible note button
-	visible_note_button.set_name ("visible note button");
+	// Add visible note button (green outline when enabled)
+	visible_note_button.set_name ("page switch button");
 	visible_note_button.set_text (S_("Note|N"));
 	update_visible_note_button ();
 	visible_note_button.show ();
@@ -86,8 +86,8 @@ MidiTrackToolbar::setup_note ()
 void
 MidiTrackToolbar::setup_channel ()
 {
-	// Add visible channel button
-	visible_channel_button.set_name ("visible channel button");
+	// Add visible channel button (green outline when enabled)
+	visible_channel_button.set_name ("page switch button");
 	visible_channel_button.set_text (S_("Channel|C"));
 	update_visible_channel_button ();
 	visible_channel_button.show ();
@@ -98,8 +98,8 @@ MidiTrackToolbar::setup_channel ()
 void
 MidiTrackToolbar::setup_velocity ()
 {
-	// Add visible velocity button
-	visible_velocity_button.set_name ("visible velocity button");
+	// Add visible velocity button (green outline when enabled)
+	visible_velocity_button.set_name ("page switch button");
 	visible_velocity_button.set_text (S_("Velocity|V"));
 	update_visible_velocity_button ();
 	visible_velocity_button.show ();
@@ -689,19 +689,19 @@ MidiTrackToolbar::hide_midi_automations ()
 void
 MidiTrackToolbar::update_visible_note_button ()
 {
-	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	visible_note_button.set_active_state (visible_note ? Gtkmm2ext::ImplicitActive : Gtkmm2ext::Off);
 }
 
 void
 MidiTrackToolbar::update_visible_channel_button ()
 {
-	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	visible_channel_button.set_active_state (visible_channel ? Gtkmm2ext::ImplicitActive : Gtkmm2ext::Off);
 }
 
 void
 MidiTrackToolbar::update_visible_velocity_button ()
 {
-	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	visible_velocity_button.set_active_state (visible_velocity ? Gtkmm2ext::ImplicitActive : Gtkmm2ext::Off);
 }
 
 void

@@ -216,8 +216,11 @@ MainToolbar::setup_layout ()
 	Gtk::HBox* mr = Gtk::manage (new Gtk::HBox ());
 	mr->set_spacing(spacing);
 
+	// The mode toggle buttons reuse the "mouse mode button" color scheme so
+	// that they turn green when enabled, like the editor's snap button.
+
 	// Chord mode buttom
-	chord_mode_button.set_name ("chord mode button");
+	chord_mode_button.set_name ("mouse mode button");
 	chord_mode_button.set_text (S_("Chord Mode"));
 	chord_mode_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::chord_mode_press), false);
 	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
@@ -227,7 +230,7 @@ MainToolbar::setup_layout ()
 	// Overwrite default button
 	overwrite_default_separator.show ();
 	mr->pack_start (overwrite_default_separator, false, false);
-	overwrite_default_button.set_name ("overwrite default button");
+	overwrite_default_button.set_name ("mouse mode button");
 	overwrite_default_button.set_text (S_("Overwrite Default"));
 	overwrite_default_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_default_press), false);
 	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
@@ -237,7 +240,7 @@ MainToolbar::setup_layout ()
 	// Overwrite existing button
 	overwrite_existing_separator.show ();
 	mr->pack_start (overwrite_existing_separator, false, false);
-	overwrite_existing_button.set_name ("overwrite existing button");
+	overwrite_existing_button.set_name ("mouse mode button");
 	overwrite_existing_button.set_text (S_("Overwrite Existing"));
 	overwrite_existing_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_existing_press), false);
 	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
@@ -247,7 +250,7 @@ MainToolbar::setup_layout ()
 	// Overwrite star button
 	overwrite_star_separator.show ();
 	mr->pack_start (overwrite_star_separator, false, false);
-	overwrite_star_button.set_name ("overwrite star button");
+	overwrite_star_button.set_name ("mouse mode button");
 	overwrite_star_button.set_text (S_("Overwrite ***"));
 	overwrite_star_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_star_press), false);
 	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
@@ -257,7 +260,7 @@ MainToolbar::setup_layout ()
 	// Sync playhead
 	sync_playhead_separator.show ();
 	mr->pack_start (sync_playhead_separator, false, false);
-	sync_playhead_button.set_name ("sync playhead button");
+	sync_playhead_button.set_name ("mouse mode button");
 	sync_playhead_button.set_text (S_("Sync Playhead"));
 	sync_playhead_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::sync_playhead_press), false);
 	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
@@ -267,7 +270,7 @@ MainToolbar::setup_layout ()
 	// Jump to next
 	jump_separator.show ();
 	mr->pack_start (jump_separator, false, false);
-	jump_button.set_name ("jump button");
+	jump_button.set_name ("mouse mode button");
 	jump_button.set_text (S_("Jump"));
 	jump_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::jump_press), false);
 	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
@@ -277,7 +280,7 @@ MainToolbar::setup_layout ()
 	// Wrap vertical move
 	wrap_separator.show ();
 	mr->pack_start (wrap_separator, false, false);
-	wrap_button.set_name ("wrap button");
+	wrap_button.set_name ("mouse mode button");
 	wrap_button.set_text (S_("Wrap"));
 	wrap_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::wrap_press), false);
 	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);

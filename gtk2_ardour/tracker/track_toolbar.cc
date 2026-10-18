@@ -126,8 +126,8 @@ TrackToolbar::setup_label ()
 void
 TrackToolbar::setup_delay ()
 {
-	// Add visible delay button
-	visible_delay_button.set_name ("visible delay button");
+	// Add visible delay button (green outline when enabled)
+	visible_delay_button.set_name ("page switch button");
 	visible_delay_button.set_text (S_("Delay|D"));
 	update_visible_delay_button ();
 	visible_delay_button.show ();
@@ -585,7 +585,7 @@ TrackToolbar::hide_processor_automations ()
 void
 TrackToolbar::update_visible_delay_button ()
 {
-	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	visible_delay_button.set_active_state (visible_delay ? Gtkmm2ext::ImplicitActive : Gtkmm2ext::Off);
 }
 
 void
