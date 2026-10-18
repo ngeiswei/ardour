@@ -11,7 +11,7 @@ any change on the pianoroll view will affect the tracker view and vice versa.
 
 ### Channel column
 
-In Dec mode, the channel column begins from 1, like in Ardour.  However, in Hex
+In Dec mode, the channel column begins from 1, like in Ardour.  However, in Hexadecimal
 mode, the channel column begins from 0.  For instance channel 1 is displayed as
 channel 0 and channel 16 is displayed as channel F.
 
@@ -72,7 +72,7 @@ on macOS these are `Command` and `Option` respectively.
 | `Alt+P` | Toggle sync playhead |
 | `Alt+J` | Toggle jump |
 | `Alt+W` | Toggle wrap |
-| `Alt+H` | Toggle hexadecimal (Hex) display |
+| `Alt+H` | Toggle hexadecimal display |
 
 ### Value adjustments
 
@@ -108,11 +108,14 @@ a cell being edited).
 | `Ctrl+V` | Paste |
 | `Ctrl+Shift+V` | Paste overlay (paste without clearing existing content) |
 
-### Hex mode
+### Popup menu mode toggles
 
-The popup menu also contains a checkable **Hex** item, which shows whether
-hexadecimal (Hex) display is enabled and can be used to toggle it.  The same
-mode can be toggled with the `Alt+H` shortcut (see the mode toggles above).
+The popup menu also contains checkable items for each mode toggle, right below
+the cut/copy/paste items: `Hexadecimal`, `Chord Mode`, `Overwrite Default`,
+`Overwrite Existing`, `Overwrite ***`, `Sync Playhead`, `Jump` and `Wrap`.
+Each item shows whether the corresponding mode is enabled, can be used to
+toggle it, and displays its shortcut (for example `Alt+H` for Hexadecimal; see the
+mode toggles above).
 
 ### Changing the shortcuts
 
