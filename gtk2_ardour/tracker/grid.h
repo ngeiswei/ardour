@@ -894,6 +894,11 @@ private:
 	// speed up redisplay_grid
 	PatternPhenomenalDiff _phenomenal_diff;
 
+	// Numeric base (10 or 16) last used to render the grid.  Toggling hex
+	// changes the base, which the phenomenal diff does not capture, so a base
+	// change forces a full redisplay in redisplay_grid().
+	int _last_base;
+
 	// Set when the schema/model is rebuilt outside of redisplay_grid() (e.g.
 	// by select_available_automation_column()).  The next redisplay_grid()
 	// must then perform a full redisplay because the model rows were dropped.
