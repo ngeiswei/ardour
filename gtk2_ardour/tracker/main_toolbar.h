@@ -111,11 +111,6 @@ public:
 	static void register_actions ();
 
 	/**
-	 * Triggered upon step edit button press event.
-	 */
-	bool step_edit_press (GdkEventButton* ev);
-
-	/**
 	 * Triggered upon chord mode button press event.
 	 */
 	bool chord_mode_press (GdkEventButton* ev);
@@ -180,7 +175,6 @@ public:
 	uint8_t                      rows_per_beat;
 
 	// Buttons
-	ArdourWidgets::ArdourButton  step_edit_button;
 	bool                         step_edit;
 
 	Gtk::VSeparator              chord_mode_separator;

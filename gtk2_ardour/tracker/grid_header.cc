@@ -27,6 +27,7 @@ using namespace Tracker;
 
 GridHeader::GridHeader (TrackerEditor& te)
 	: tracker_editor (te)
+	, time_header (te)
 {
 	time_header.show ();
 	pack_start (time_header, Gtk::PACK_SHRINK);
