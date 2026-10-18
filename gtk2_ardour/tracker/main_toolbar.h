@@ -151,11 +151,6 @@ public:
 	bool wrap_press (GdkEventButton* ev);
 
 	/**
-	 * Triggered upon hex button press event.
-	 */
-	bool hex_press (GdkEventButton* ev);
-
-	/**
 	 * Trigger when precision_spinner value is changed.
 	 */
 	void change_precision ();
@@ -216,8 +211,6 @@ public:
 	ArdourWidgets::ArdourButton  wrap_button;
 	bool                         wrap;
 
-	Gtk::VSeparator              hex_separator;
-	ArdourWidgets::ArdourButton  hex_button;
 	bool                         hex;
 	int                          base; // 16 if hex else 10
 
