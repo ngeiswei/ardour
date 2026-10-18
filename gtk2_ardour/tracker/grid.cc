@@ -6524,6 +6524,12 @@ Grid::key_release (GdkEventKey* ev)
 bool
 Grid::mouse_button_event (GdkEventButton* ev)
 {
+	if (ev->button == 3) {
+		// Right click: show the cut/copy/paste popup menu.
+		tracker_editor.main_toolbar.popup_clipboard_menu (ev);
+		return true;
+	}
+
 	if (ev->button == 1) {
 		TreeModel::Path path;
 		TreeViewColumn* col;

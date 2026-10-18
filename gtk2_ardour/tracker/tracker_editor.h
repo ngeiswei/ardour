@@ -136,6 +136,9 @@ private:
 	void map_handler ();
 	void unmap_handler ();
 
+	// Show the cut/copy/paste popup menu on right click.
+	bool window_button_press (GdkEventButton* ev);
+
 public:
 	// To not redo first time initialization when setup () is called again
 	bool _first;
