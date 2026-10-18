@@ -177,7 +177,6 @@ public:
 	// Buttons
 	bool                         step_edit;
 
-	Gtk::VSeparator              chord_mode_separator;
 	ArdourWidgets::ArdourButton  chord_mode_button;
 	bool                         chord_mode;
 

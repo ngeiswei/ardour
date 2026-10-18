@@ -140,6 +140,10 @@ MainToolbar::setup_layout ()
 	Gtk::HBox* tr = Gtk::manage (new Gtk::HBox ());
 	tr->set_spacing(spacing);
 
+	// Rows per beat selector
+	beats_per_row_selector.show ();
+	tr->pack_start (beats_per_row_selector, false, false);
+
 	// Steps spinner
 	steps_separator.show ();
 	tr->pack_start (steps_separator, false, false);
@@ -212,13 +216,7 @@ MainToolbar::setup_layout ()
 	Gtk::HBox* mr = Gtk::manage (new Gtk::HBox ());
 	mr->set_spacing(spacing);
 
-	// Add beats per row selection
-	beats_per_row_selector.show ();
-	mr->pack_start (beats_per_row_selector, false, false);
-
 	// Chord mode buttom
-	chord_mode_separator.show ();
-	mr->pack_start (chord_mode_separator, false, false);
 	chord_mode_button.set_name ("chord mode button");
 	chord_mode_button.set_text (S_("Chord Mode"));
 	chord_mode_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::chord_mode_press), false);
@@ -250,7 +248,7 @@ MainToolbar::setup_layout ()
 	overwrite_star_separator.show ();
 	mr->pack_start (overwrite_star_separator, false, false);
 	overwrite_star_button.set_name ("overwrite star button");
-	overwrite_star_button.set_text (S_("Overwrite *"));
+	overwrite_star_button.set_text (S_("Overwrite ***"));
 	overwrite_star_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_star_press), false);
 	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_star_button.show ();
@@ -402,7 +400,7 @@ MainToolbar::register_actions ()
 	ActionManager::register_action (tracker_actions, X_("toggle-chord-mode"), _("Toggle Chord Mode"), sigc::ptr_fun (&MainToolbar::toggle_chord_mode_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-default"), _("Toggle Overwrite Default"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_default_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-existing"), _("Toggle Overwrite Existing"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_existing_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite *"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_star_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite ***"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_star_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::ptr_fun (&MainToolbar::toggle_sync_playhead_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::ptr_fun (&MainToolbar::toggle_jump_action));
 	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::ptr_fun (&MainToolbar::toggle_wrap_action));
