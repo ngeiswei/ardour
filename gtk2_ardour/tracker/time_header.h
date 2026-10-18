@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019 Nil Geisweiller <ngeiswei@gmail.com>
+ * Copyright (C) 2019 Nil Geisweiller <ngeiswei@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +21,33 @@
 
 #include <ytkmm/table.h>
 
+#include "widgets/ardour_button.h"
+
 namespace Tracker {
 
-/**
- * Widget to place on top of Time column, contains general tools such as
- * resolution, number of steps, etc.
- *
- * Attempt to aligned with the time column.
- */
+class TrackerEditor;
 
+/**
+ * Widget placed on top of the Time column.  Currently it holds the Step Edit
+ * button, which spans the width of the time column and the height of the track
+ * headers.
+ */
 class TimeHeader : public Gtk::Table
 {
-	// Empty for now, it's nor clear what to put, and what not to put there ATM.
 public:
-	TimeHeader ();
+	explicit TimeHeader (TrackerEditor& te);
 	~TimeHeader ();
+
+	/** Update the Step Edit button to reflect the given step-editing mode. */
+	void set_step_edit (bool);
+
+	TrackerEditor& tracker_editor;
+	ArdourWidgets::ArdourButton step_edit_button;
+
+private:
+	bool step_edit_press (GdkEventButton* ev);
 };
 
 } // ~namespace tracker
 
-#endif /* __ardour_tracker_super_header_h_ */
+#endif /* __ardour_tracker_time_header_h_ */
