@@ -31,7 +31,8 @@ using namespace Tracker;
 TimeHeader::TimeHeader (TrackerEditor& te)
 	: tracker_editor (te)
 {
-	step_edit_button.set_name ("step edit button");
+	// Reuse the red "record enable button" color scheme.
+	step_edit_button.set_name ("record enable button");
 	step_edit_button.set_text (S_("Step Edit"));
 	step_edit_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &TimeHeader::step_edit_press), false);
 	step_edit_button.set_active_state (tracker_editor.main_toolbar.step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
