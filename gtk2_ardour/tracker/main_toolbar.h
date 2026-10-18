@@ -19,6 +19,7 @@
 #ifndef __ardour_tracker_main_toolbar_h_
 #define __ardour_tracker_main_toolbar_h_
 
+#include <ytkmm/accelmap.h>
 #include <ytkmm/adjustment.h>
 #include <ytkmm/box.h>
 #include <ytkmm/menu.h>

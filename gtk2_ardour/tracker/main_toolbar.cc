@@ -844,6 +844,17 @@ MainToolbar::build_clipboard_menu ()
 	for (size_t i = 0; i < sizeof (action_names) / sizeof (action_names[0]); ++i) {
 		Glib::RefPtr<Gtk::Action> act = ActionManager::get_action (X_("Tracker"), action_names[i], false);
 		if (act) {
+			// Refresh the AccelMap entry from the current binding so that the
+			// accelerator hint reflects any change made in the Keyboard Shortcuts
+			// window.
+			if (bindings) {
+				Gtkmm2ext::Bindings::Operation op;
+				Gtkmm2ext::KeyboardKey key = bindings->get_binding_for_action (act, op);
+				if (!(key == Gtkmm2ext::KeyboardKey::null_key ())) {
+					Gtk::AccelMap::change_entry (act->get_accel_path (), key.key (), (Gdk::ModifierType) key.state (), true);
+				}
+			}
+
 			act->set_accel_group (ActionManager::ui_manager->get_accel_group ());
 			clipboard_menu->append (*Gtk::manage (act->create_menu_item ()));
 		}
@@ -853,9 +864,11 @@ MainToolbar::build_clipboard_menu ()
 void
 MainToolbar::popup_clipboard_menu (GdkEventButton* ev)
 {
-	if (!clipboard_menu) {
-		build_clipboard_menu ();
-	}
+	// Rebuild the menu each time so that the accelerator hints reflect any
+	// shortcut change made in the Keyboard Shortcuts window.
+	delete clipboard_menu;
+	clipboard_menu = 0;
+	build_clipboard_menu ();
 	clipboard_menu->popup (ev->button, ev->time);
 }
 
