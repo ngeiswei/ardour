@@ -21,6 +21,8 @@
 
 #include <ytkmm/adjustment.h>
 #include <ytkmm/box.h>
+#include <ytkmm/menu.h>
+#include <ytkmm/menu_elems.h>
 #include <ytkmm/separator.h>
 #include <ytkmm/spinbutton.h>
 
@@ -95,6 +97,9 @@ public:
 	void paste ();
 	void paste_overlay ();
 
+	/** Show the cut/copy/paste popup menu at the given mouse event position. */
+	void popup_clipboard_menu (GdkEventButton* ev);
+
 	/**
 	 * Register all tracker actions in the "Tracker" binding set.  This is a
 	 * static method so that it can be called once at startup, before any
@@ -148,26 +153,6 @@ public:
 	 * Triggered upon hex button press event.
 	 */
 	bool hex_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon cut button press event.
-	 */
-	bool cut_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon copy button press event.
-	 */
-	bool copy_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon paste button press event.
-	 */
-	bool paste_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon paste button press event.
-	 */
-	bool paste_overlay_press (GdkEventButton* ev);
 
 	/**
 	 * Trigger when precision_spinner value is changed.
@@ -234,18 +219,6 @@ public:
 	ArdourWidgets::ArdourButton  hex_button;
 	bool                         hex;
 	int                          base; // 16 if hex else 10
-
-	Gtk::VSeparator              cut_separator;
-	ArdourWidgets::ArdourButton  cut_button;
-
-	Gtk::VSeparator              copy_separator;
-	ArdourWidgets::ArdourButton  copy_button;
-
-	Gtk::VSeparator              paste_separator;
-	ArdourWidgets::ArdourButton  paste_button;
-
-	Gtk::VSeparator              paste_overlay_separator;
-	ArdourWidgets::ArdourButton  paste_overlay_button;
 
 	// Spinners
 	Gtk::VSeparator              octave_separator;
@@ -319,8 +292,14 @@ private:
 	void rows_per_beat_step (int direction);
 	static Editing::GridType grid_type_from_rows_per_beat (uint16_t rpb);
 
+	/** Build the cut/copy/paste popup menu. */
+	void build_clipboard_menu ();
+
 	/** The currently alive MainToolbar (there is at most one tracker editor). */
 	static MainToolbar* _instance;
+
+	/** Popup menu with the cut/copy/paste operations. */
+	Gtk::Menu* clipboard_menu;
 };
 
 } // ~namespace Tracker
