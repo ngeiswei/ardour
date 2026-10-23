@@ -1588,7 +1588,11 @@ Grid::redisplay_grid ()
 	redisplay_global_columns ();
 	redisplay_pattern ();
 	redisplay_current_row ();
-	remove_unused_rows ();
+	// If the diff is partial, global_nrows is unchanged, so the model cannot
+	// contain more rows than needed and the O(nrows) scan is unnecessary.
+	if (_phenomenal_diff.full) {
+		remove_unused_rows ();
+	}
 
 	// Warning: produced by Pi+MiniMax-M3
 	//
@@ -1615,8 +1619,13 @@ Grid::redisplay_grid ()
 	redisplay_left_right_separator_columns ();
 	tracker_editor.grid_header->align_deferred ();
 
-	// Save pattern to prev_pattern for subsequent phenomenal diff calculation
-	prev_pattern = pattern;
+	// Save pattern to prev_pattern for subsequent phenomenal diff calculation.
+	// If the diff is empty the current pattern already matches the
+	// previous-state snapshot in everything the diff reads, so skip the deep
+	// copy (and the next diff will still be correct).
+	if (!_phenomenal_diff.empty ()) {
+		prev_pattern = pattern;
+	}
 
 	// Thaw the window frozen at the top of redisplay_grid().
 	if (window) {
