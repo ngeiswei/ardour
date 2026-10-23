@@ -61,7 +61,8 @@ A documentation can be found [here](DOCUMENTATION.md).
 - [ ] Fix when trying to paste notes on values (add _note flag in std::string
       extension)
 - [ ] Fix window focus (the tracker editor window should have focus right away)
-- [ ] Support toggling visibility of regions and tracks
+- [ ] Support toggling visibility of regions and tracks, as well as reordering
+      tracks and automations
 - [ ] Add access from top menu Windows->Tracker Editor
 - [ ] Try to replace as many gtk widgets by cairo widgets
 - [ ] Support shift-tab to move from right to left

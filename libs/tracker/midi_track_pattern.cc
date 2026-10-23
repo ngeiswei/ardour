@@ -229,9 +229,22 @@ MidiTrackPattern::update ()
 	// account whether some are enabled)
 	update_enabled ();
 
-	// Set number of note tracks to its common max and re-update
-	set_ntracks (get_ntracks ());
-	update_midi_regions ();
+	// Align every region on the common max number of note tracks.  Only
+	// re-update the regions if that actually changed one of them: in the common
+	// case (a single region, or no region needing to grow) the second full pass
+	// over all the notes is redundant.
+	const uint16_t nt = get_ntracks ();
+	bool realign = false;
+	for (size_t mri = 0; mri < mrps.size (); mri++) {
+		if (mrps[mri]->mnp.ntracks != nt) {
+			realign = true;
+			break;
+		}
+	}
+	set_ntracks (nt);
+	if (realign) {
+		update_midi_regions ();
+	}
 
 	// Update track automation pattern
 	TrackPattern::update ();
