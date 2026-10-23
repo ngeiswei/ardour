@@ -53,6 +53,14 @@ public:
 
 	static void rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd);
 
+	// Pure, context-free core of rows_diff (), extracted so that it can be unit
+	// tested without a MidiRegion / MidiModel.  The row maps are those of a
+	// single note column group (cgi): l_/r_ are the current and previous on/off
+	// maps.
+	static void rows_diff (const RowToNotes& l_on, const RowToNotes& l_off,
+	                       const RowToNotes& r_on, const RowToNotes& r_off,
+	                       std::set<int>& rd);
+
 	MidiNotesPatternPhenomenalDiff phenomenal_diff (const MidiNotesPattern& prev) const;
 
 	// Build or rebuild the pattern (implement BasePattern::update)
@@ -152,6 +160,9 @@ public:
 	// if there are too many notes, unless its a pair (note off, note on)
 	// perfectly contiguous, it is not displayable.
 	bool is_displayable (int row, int cgi) const;
+
+	// Context-free core of is_displayable ().
+	static bool is_row_displayable (const RowToNotes& on_notes, const RowToNotes& off_notes, int row);
 
 	// Add note in track_to_notes. Used by the grid so that the note pattern can
 	// know on which track idx a new note should be.
