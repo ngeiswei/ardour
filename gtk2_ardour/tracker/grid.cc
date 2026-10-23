@@ -3375,6 +3375,27 @@ Grid::set_note_text (int row_idx, int mti, int mri, int cgi, const std::string& 
 	}
 }
 
+void
+Grid::remove_on_notes_update_cmd (int row_idx, int mti, int mri, int cgi, MidiModel::NoteDiffCommand* cmd)
+{
+	RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
+	for (; on_rng.first != on_rng.second; ++on_rng.first) {
+		cmd->remove (on_rng.first->second);
+	}
+}
+
+NotePtr
+Grid::add_new_note (int mti, int mri, int cgi, Temporal::Beats start, Temporal::Beats length,
+                    uint8_t pitch, uint8_t ch, uint8_t vel, MidiModel::NoteDiffCommand* cmd)
+{
+	NotePtr new_note (new NoteType (ch, start, length, pitch, vel));
+	cmd->add (new_note);
+	// Pre-emptively add the note in mnp so that it knows in which track it is
+	// supposed to be.
+	pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
+	return new_note;
+}
+
 std::pair<uint8_t, uint8_t>
 Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch)
 {
@@ -3413,10 +3434,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		// when the new delay matches its current end).
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (_("overwrite note"));
 
-		RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
-		for (; on_rng.first != on_rng.second; ++on_rng.first) {
-			cmd->remove (on_rng.first->second);
-		}
+		remove_on_notes_update_cmd (row_idx, mti, mri, cgi, cmd);
 
 		Temporal::Beats here = pattern.region_relative_beats (row_idx, mti, mri, delay);
 
@@ -3427,11 +3445,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 
 		Temporal::Beats end = pattern.next_on_note_beats (row_idx, mti, mri, cgi);
 		Temporal::Beats length = end - here;
-		NotePtr new_note (new NoteType (ch, here, length, pitch, vel));
-		cmd->add (new_note);
-		// Pre-emptively add the note in mnp so that it knows in which track it is
-		// supposed to be.
-		pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
+		add_new_note (mti, mri, cgi, here, length, pitch, ch, vel, cmd);
 	} else if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
@@ -3454,16 +3468,12 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		Temporal::Beats end = pattern.next_on_note_beats (row_idx, mti, mri, cgi);
 		Temporal::Beats length = end - start;
 		// Build note using defaults
-		NotePtr new_note (new NoteType (ch, start, length, pitch, vel));
 		char const * opname = _("add note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
-		cmd->add (new_note);
+		NotePtr new_note = add_new_note (mti, mri, cgi, start, length, pitch, ch, vel, cmd);
 		if (tracker_editor.main_toolbar.overwrite_existing) {
 			set_note_delay_update_cmd (new_note, off_note, row_idx, mti, mri, delay, cmd);
 		}
-		// Pre-emptively add the note in the pattern so that it knows in which
-		// track it is supposed to be.
-		pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
 	} else {
 		// Create a new on note in an empty cell
 		// Fetch useful information for most cases
@@ -3496,11 +3506,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		if (prev_note && here < prev_end && prev_end < end)
 			end = prev_end;
 		Temporal::Beats length = end - here;
-		NotePtr new_note (new NoteType (ch, here, length, pitch, vel));
-		cmd->add (new_note);
-		// Pre-emptively add the note in mnp so that it knows in which track it is
-		// supposed to be.
-		pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
+		add_new_note (mti, mri, cgi, here, length, pitch, ch, vel, cmd);
 	}
 
 	// Apply note changes
@@ -3527,10 +3533,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 		// resizing the previous note so that it ends where the off is placed.
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (_("overwrite note"));
 
-		RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
-		for (; on_rng.first != on_rng.second; ++on_rng.first) {
-			cmd->remove (on_rng.first->second);
-		}
+		remove_on_notes_update_cmd (row_idx, mti, mri, cgi, cmd);
 
 		int delay = (off_note and !tracker_editor.main_toolbar.overwrite_existing) ?
 			get_off_note_delay (off_note, row_idx, mti, mri)
@@ -3600,11 +3603,7 @@ Grid::delete_note (int row_idx, int mti, int mri, int cgi)
 	cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 
 	// Remove all on notes
-	RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
-	for (; on_rng.first != on_rng.second; ++on_rng.first) {
-		NotePtr on_note = on_rng.first->second;
-		cmd->remove (on_note);
-	}
+	remove_on_notes_update_cmd (row_idx, mti, mri, cgi, cmd);
 
 	// Change duration of off note if necessary
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);

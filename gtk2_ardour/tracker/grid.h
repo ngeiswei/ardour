@@ -720,6 +720,15 @@ private:
 	void set_off_note (int row_idx, int mti, int mri, int cgi);
 	void delete_note (int row_idx, int mti, int mri, int cgi);
 
+	// Remove all on notes at the given cell, recording the removals in cmd.
+	void remove_on_notes_update_cmd (int row_idx, int mti, int mri, int cgi, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
+	// Create a note starting at start with the given length, add it to cmd and
+	// pre-emptively add it to the pattern so that it knows in which track it is
+	// supposed to be.  Return the new note.
+	NotePtr add_new_note (int mti, int mri, int cgi, Temporal::Beats start, Temporal::Beats length,
+	                      uint8_t pitch, uint8_t ch, uint8_t vel, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
 	void note_channel_edited (const std::string& path, const std::string& text);
 	void set_note_channel_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 	void set_note_channel (int mti, int mri, NotePtr note, int ch);
