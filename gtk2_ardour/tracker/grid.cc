@@ -3390,12 +3390,6 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 	if (skip_note_stars (row_idx, mti, mri, cgi)) {
 		return std::make_pair(ch, vel);
 	}
-	// NEXT.3: support ***
-	//
-	// More specifically: refactor delete_note into delete_note_update_cmd.
-	//
-	// - Question: should delete_note_update_cmd take a single note or a range
-	//             of notes?
 
 	uint8_t new_ch = ch;
 	uint8_t new_vel = vel;
@@ -3412,7 +3406,33 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 
 	MidiModel::NoteDiffCommand* cmd = nullptr;
 
-	if (on_note) {
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
+		// Overwrite a *** cell: drop the on note(s) hidden behind the stars and
+		// insert the new note instead.  If a previous note ends on this cell,
+		// resize it so that it ends exactly where the new note starts (a no-op
+		// when the new delay matches its current end).
+		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (_("overwrite note"));
+
+		RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
+		for (; on_rng.first != on_rng.second; ++on_rng.first) {
+			cmd->remove (on_rng.first->second);
+		}
+
+		Temporal::Beats here = pattern.region_relative_beats (row_idx, mti, mri, delay);
+
+		if (off_note && off_note->time () < here) {
+			Temporal::Beats new_length = here - off_note->time ();
+			cmd->change (off_note, MidiModel::NoteDiffCommand::Length, new_length);
+		}
+
+		Temporal::Beats end = pattern.next_on_note_beats (row_idx, mti, mri, cgi);
+		Temporal::Beats length = end - here;
+		NotePtr new_note (new NoteType (ch, here, length, pitch, vel));
+		cmd->add (new_note);
+		// Pre-emptively add the note in mnp so that it knows in which track it is
+		// supposed to be.
+		pattern.midi_notes_pattern (mti, mri).add (cgi, new_note);
+	} else if (on_note) {
 		// Change the pitch of the on note
 		char const * opname = _("change note");
 		// TODO: move the following outside of Grid.  Maybe within Pattern or
@@ -3496,14 +3516,33 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 	if (skip_note_stars (row_idx, mti, mri, cgi)) {
 		return;
 	}
-	// NEXT.3: support ***
 
 	NotePtr on_note = get_on_note (row_idx, mti, cgi);
 	NotePtr off_note = get_off_note (row_idx, mti, cgi);
 
 	MidiModel::NoteDiffCommand* cmd = nullptr;
 
-	if (on_note) {
+	if (!is_note_displayable (row_idx, mti, mri, cgi)) {
+		// Overwrite a *** cell: drop its on note(s), then place the off event,
+		// resizing the previous note so that it ends where the off is placed.
+		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (_("overwrite note"));
+
+		RowToNotesRange on_rng = pattern.on_notes_range (row_idx, mti, mri, cgi);
+		for (; on_rng.first != on_rng.second; ++on_rng.first) {
+			cmd->remove (on_rng.first->second);
+		}
+
+		int delay = (off_note and !tracker_editor.main_toolbar.overwrite_existing) ?
+			get_off_note_delay (off_note, row_idx, mti, mri)
+			: tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
+
+		Temporal::Beats here = pattern.region_relative_beats (row_idx, mti, mri, delay);
+		NotePtr prev_note = pattern.find_prev_on_note (row_idx, mti, mri, cgi);
+		if (prev_note && prev_note->time () < here) {
+			Temporal::Beats new_length = here - prev_note->time ();
+			cmd->change (prev_note, MidiModel::NoteDiffCommand::Length, new_length);
+		}
+	} else if (on_note) {
 		// Replace the on note by an off note, that is remove the on note
 		char const * opname = _("delete note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
