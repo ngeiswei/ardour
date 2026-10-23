@@ -80,6 +80,7 @@ def build(bld):
                 'test/BasePatternTest.cc',
                 'test/PhenomenalDiffTest.cc',
                 'test/AutomationPatternTest.cc',
+                'test/MidiNotesPatternTest.cc',
                 ]
         obj.includes     = ['.', '..']
         obj.use          = ['libtracker', 'libpbd', 'libmidipp', 'libevoral', 'libtemporal', 'libardour']
