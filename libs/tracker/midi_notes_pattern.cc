@@ -100,22 +100,36 @@ MidiNotesPattern::clone_note (NotePtr note) const
 	return NotePtr (new NoteType (note->channel (), note->time (), note->length (), note->note (), note->velocity ()));
 }
 
+bool
+MidiNotesPattern::is_row_displayable (const RowToNotes& on_notes, const RowToNotes& off_notes, int row)
+{
+	size_t off_notes_count = off_notes.count (row);
+	size_t on_notes_count = on_notes.count (row);
+	RowToNotes::const_iterator i_off = off_notes.find (row);
+	RowToNotes::const_iterator i_on = on_notes.find (row);
+	return off_notes_count <= 1 && on_notes_count <= 1
+		&& (off_notes_count != 1 || on_notes_count != 1
+		    || TrackerUtils::off_meets_on (i_off->second, i_on->second));
+}
+
 void
-MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd)
+MidiNotesPattern::rows_diff (const RowToNotes& l_on, const RowToNotes& l_off,
+                             const RowToNotes& r_on, const RowToNotes& r_off,
+                             std::set<int>& rd)
 {
 	// Compare left on notes with right on notes
-	for (RowToNotes::const_iterator it = mnp_l.on_notes[cgi].begin (); it != mnp_l.on_notes[cgi].end ();) {
+	for (RowToNotes::const_iterator it = l_on.begin (); it != l_on.end ();) {
 		int row = it->first;
 
 		// First, look at the difference in displayability
-		bool is_cell_displayable = mnp_l.is_displayable (row, cgi);
-		bool cell_diff = is_cell_displayable != mnp_r.is_displayable (row, cgi);
+		bool is_cell_displayable = is_row_displayable (l_on, l_off, row);
+		bool cell_diff = is_cell_displayable != is_row_displayable (r_on, r_off, row);
 		if (cell_diff) {
 			rd.insert (row);
 		}
 		if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
-			it = mnp_l.on_notes[cgi].upper_bound (row);
+			it = l_on.upper_bound (row);
 			continue;
 		}
 		if (cell_diff) {
@@ -124,8 +138,8 @@ MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiN
 		}
 
 		// Second, see if that single on note is present in other, and if it is, check if it is different
-		RowToNotes::const_iterator rit = mnp_r.on_notes[cgi].find (row);
-		if (rit == mnp_r.on_notes[cgi].end () || !TrackerUtils::is_on_equal (it->second, rit->second)) {
+		RowToNotes::const_iterator rit = r_on.find (row);
+		if (rit == r_on.end () || !TrackerUtils::is_on_equal (it->second, rit->second)) {
 			rd.insert (row);
 		}
 
@@ -133,17 +147,18 @@ MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiN
 	}
 
 	// Compare left off notes with right off notes
-	for (RowToNotes::const_iterator it = mnp_l.off_notes[cgi].begin (); it != mnp_l.off_notes[cgi].end ();) {
+	for (RowToNotes::const_iterator it = l_off.begin (); it != l_off.end ();) {
 		int row = it->first;
 
 		// First, look at the difference in displayability
-		bool is_cell_displayable = mnp_l.is_displayable (row, cgi);
-		bool cell_diff = is_cell_displayable != mnp_r.is_displayable (row, cgi);
+		bool is_cell_displayable = is_row_displayable (l_on, l_off, row);
+		bool cell_diff = is_cell_displayable != is_row_displayable (r_on, r_off, row);
 		if (cell_diff) {
 			rd.insert (row);
-		} if (!is_cell_displayable) {
+		}
+		if (!is_cell_displayable) {
 			// It means there are more than one note, jump to the next row
-			it = mnp_l.off_notes[cgi].upper_bound (row);
+			it = l_off.upper_bound (row);
 			continue;
 		}
 		if (cell_diff) {
@@ -154,18 +169,25 @@ MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiN
 		// Second, see if that single off note is present in other, and if it
 		// is, check if it is different, and it is not make sure no on note is
 		// present as on note can hide off note.
-		RowToNotes::const_iterator rit = mnp_r.off_notes[cgi].find (row);
-		if (rit == mnp_r.off_notes[cgi].end ()
+		RowToNotes::const_iterator rit = r_off.find (row);
+		if (rit == r_off.end ()
 		    || !TrackerUtils::is_off_equal (it->second, rit->second)
-		    || (mnp_r.on_notes[cgi].find (row) == mnp_r.on_notes[cgi].end ()
-		        && mnp_l.on_notes[cgi].find (row) != mnp_l.on_notes[cgi].end ())
-		    || (mnp_l.on_notes[cgi].find (row) == mnp_l.on_notes[cgi].end ()
-		        && mnp_r.on_notes[cgi].find (row) != mnp_r.on_notes[cgi].end ())) {
+		    || (r_on.find (row) == r_on.end ()
+		        && l_on.find (row) != l_on.end ())
+		    || (l_on.find (row) == l_on.end ()
+		        && r_on.find (row) != r_on.end ())) {
 			rd.insert (row);
 		}
 
 		++it;
 	}
+}
+
+void
+MidiNotesPattern::rows_diff (int cgi, const MidiNotesPattern& mnp_l, const MidiNotesPattern& mnp_r, std::set<int>& rd)
+{
+	rows_diff (mnp_l.on_notes[cgi], mnp_l.off_notes[cgi],
+	           mnp_r.on_notes[cgi], mnp_r.off_notes[cgi], rd);
 }
 
 MidiNotesPatternPhenomenalDiff
@@ -191,6 +213,8 @@ MidiNotesPattern::phenomenal_diff (const MidiNotesPattern& prev) const
 		rows_diff (cgi, *this, prev, rows);
 		rows_diff (cgi, prev, *this, rows);
 		if (!rows.empty ()) {
+			// Partial diff: empty () now means "nothing to do".
+			diff.cgi2rows_diff[cgi].full = false;
 			diff.cgi2rows_diff[cgi].rows = rows;
 		}
 	}
@@ -647,13 +671,7 @@ MidiNotesPattern::next_off_beats (int row, int cgi) const
 bool
 MidiNotesPattern::is_displayable (int row, int cgi) const
 {
-	size_t off_notes_count = off_notes[cgi].count (row);
-	size_t on_notes_count = on_notes[cgi].count (row);
-	RowToNotes::const_iterator i_off = off_notes[cgi].find (row);
-	RowToNotes::const_iterator i_on = on_notes[cgi].find (row);
-	return off_notes_count <= 1 && on_notes_count <= 1
-		&& (off_notes_count != 1 || on_notes_count != 1
-		    || TrackerUtils::off_meets_on (i_off->second, i_on->second));
+	return is_row_displayable (on_notes[cgi], off_notes[cgi], row);
 }
 
 void
