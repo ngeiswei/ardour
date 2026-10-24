@@ -668,7 +668,7 @@ Grid::redisplay_visible_note ()
 int
 Grid::mti_col_offset (int mti) const
 {
-	int offset = 1; // time
+	int offset = 0; // time column now lives in its own frozen view
 	for (int i = 0; i < mti; i++) {
 		offset += 1; // left separator
 		offset += 1; // region name
@@ -1152,8 +1152,9 @@ Grid::rebuild_schema (size_t nauto_hint)
 		}
 	}
 
-	// Drop old columns from the TreeView.
+	// Drop old columns from the TreeView (and the frozen time view).
 	remove_all_columns ();
+	time_view.remove_all_columns ();
 
 	// Destroy old TreeView column widgets and clear all containers so that
 	// setup_data_columns() performs a fresh build.
@@ -1252,7 +1253,7 @@ Grid::rebuild_schema (size_t nauto_hint)
 
 	// Create model and columns.
 	model = ListStore::create (*columns);
-	set_model (model);
+	set_models ();
 
 	// The model rows were just dropped: force the left/right separator colors to
 	// be reapplied even if neither the track colors nor the row count changed.
@@ -1425,8 +1426,15 @@ Grid::init_model ()
 	}
 	if (!model) {
 		model = ListStore::create (*columns);
-		set_model (model);
+		set_models ();
 	}
+}
+
+void
+Grid::set_models ()
+{
+	set_model (model);
+	time_view.set_model (model);
 }
 
 TreeViewColumn*
@@ -1605,7 +1613,7 @@ Grid::redisplay_grid ()
 		current_row_idx = BasePattern::INVALID_ROW;
 	}
 
-	set_model (model);
+	set_models ();
 
 	// In case tracks have been added or removed
 	redisplay_visible_note ();
@@ -1763,9 +1771,9 @@ Grid::redisplay_left_right_separator_columns (int mti, bool force)
 	_left_right_separator_color[mti] = color;
 
 	// NOTE: the separator *width* is no longer adjusted here.  It is done
-	// separately by align_left_right_separators(), which runs deferred (after
-	// the TreeView has been laid out) so that it uses the natural widths of
-	// the filled columns rather than the transient 0-width state right after
+	// separately by GridHeader::align(), which runs deferred (after the
+	// TreeView has been laid out) so that it uses the natural widths of the
+	// filled columns rather than the transient 0-width state right after
 	// a schema rebuild.
 	TreeModel::Children::iterator row_it = model->children ().begin ();
 	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
@@ -1903,26 +1911,16 @@ Grid::on_grid_expose (GdkEventExpose* ev)
 }
 
 void
-Grid::align_left_right_separators ()
+Grid::set_right_separator_width (int mti, int width)
 {
-	if (!tracker_editor.grid_header) {
-		return;
-	}
+	right_separator_columns[mti]->set_min_width (width);
+	right_separator_columns[mti]->set_max_width (width);
+}
 
-	for (size_t mti = 0; mti < pattern.tps.size () && mti < left_separator_columns.size (); mti++) {
-		// Align with track toolbar
-		int track_header_width = tracker_editor.grid_header->track_headers[mti]->get_min_width ();
-		int track_width = get_track_width (mti);
-		int track_width_without_right = track_width - get_right_separator_width (mti);
-		if (track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH < track_header_width) {
-			int diff = track_header_width - track_width_without_right;
-			right_separator_columns[mti]->set_min_width (diff);
-			right_separator_columns[mti]->set_max_width (diff);
-		} else if (track_header_width < track_width_without_right + LEFT_RIGHT_SEPARATOR_WIDTH) {
-			right_separator_columns[mti]->set_min_width (LEFT_RIGHT_SEPARATOR_WIDTH);
-			right_separator_columns[mti]->set_max_width (LEFT_RIGHT_SEPARATOR_WIDTH);
-		}
-	}
+int
+Grid::get_track_width_without_right (int mti) const
+{
+	return get_track_width (mti) - get_right_separator_width (mti);
 }
 
 void
@@ -3067,6 +3065,38 @@ Grid::scroll_to_current_row ()
 	scroll_to_row (current_path);
 }
 
+void
+Grid::scroll_to_current_col ()
+{
+	if (!current_col) {
+		return;
+	}
+
+	Gtk::Adjustment* hadj = tracker_editor.scroller.get_hadjustment ();
+	if (!hadj) {
+		return;
+	}
+
+	// The cell's x/width are in content coordinates; the adjustment value is
+	// the content x currently at the left edge of the viewport.
+	Gdk::Rectangle cell_rect;
+	get_cell_area (current_path, *current_col, cell_rect);
+
+	const double value = hadj->get_value ();
+	const double page_size = hadj->get_page_size ();
+	double new_value = value;
+
+	if (cell_rect.get_x () < value) {
+		new_value = cell_rect.get_x ();
+	} else if (cell_rect.get_x () + cell_rect.get_width () > value + page_size) {
+		new_value = cell_rect.get_x () + cell_rect.get_width () - page_size;
+	}
+
+	if (new_value != value) {
+		hadj->set_value (new_value);
+	}
+}
+
 std::string
 Grid::to_string (const std::string& indent) const
 {
@@ -3872,6 +3902,9 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	set_current_row (path, set_playhead);
 	set_current_col (col);
 
+	// Scroll horizontally so the cursor stays visible in the viewport.
+	scroll_to_current_col ();
+
 	// Set selector source or destination
 	set_selector (path, col);
 
@@ -4340,6 +4373,9 @@ Grid::connect_tooltips ()
 {
 	set_has_tooltip ();
 	signal_query_tooltip ().connect (sigc::mem_fun(*this, &Grid::set_tooltip), true);
+
+	time_view.set_has_tooltip ();
+	time_view.signal_query_tooltip ().connect (sigc::mem_fun (*this, &Grid::time_view_tooltip), true);
 }
 
 bool
@@ -4374,6 +4410,30 @@ Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::
 
 	tooltip->set_markup (_(tooltip_msg.c_str ()));
 	set_tooltip_cell(tooltip, &path, col, 0);
+	return true;
+}
+
+bool
+Grid::time_view_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip)
+{
+	Gtk::TreeModel::Path path;
+	TreeViewColumn* col;
+	int cellx, celly;
+	int binx, biny;
+
+	time_view.convert_widget_to_bin_window_coords (x, y, binx, biny);
+
+	if (!time_view.get_path_at_pos (binx, biny, path, col, cellx, celly)) {
+		return false;
+	}
+
+	std::string tooltip_msg = time_tooltip_msg (to_row_index (path));
+	if (tooltip_msg.empty ()) {
+		return false;
+	}
+
+	tooltip->set_markup (_(tooltip_msg.c_str ()));
+	time_view.set_tooltip_cell (tooltip, &path, col, 0);
 	return true;
 }
 
@@ -4545,6 +4605,14 @@ Grid::setup_tree_view ()
 	set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
 	get_selection ()->set_mode (SELECTION_NONE);
 	set_enable_search (false);
+
+	// Mirror the grid's settings on the frozen time view so its rows stay
+	// pixel-aligned when the two views scroll together vertically.
+	time_view.set_headers_visible (true);
+	time_view.set_rules_hint (true);
+	time_view.set_grid_lines (TREE_VIEW_GRID_LINES_BOTH);
+	time_view.get_selection ()->set_mode (SELECTION_NONE);
+	time_view.set_enable_search (false);
 }
 
 void
@@ -4560,7 +4628,7 @@ Grid::setup_time_column ()
 	// Link to color attributes
 	time_column->add_attribute (time_cellrenderer->property_cell_background (), columns->_time_background_color);
 
-	append_column (*time_column);
+	time_view.append_column (*time_column);
 }
 
 void

@@ -295,9 +295,14 @@ TrackerEditor::window_button_press (GdkEventButton* ev)
 void
 TrackerEditor::resize_width ()
 {
-	// Resize directly to the natural (preferred) width of the content instead
-	// of collapsing to 1px and letting GTK re-expand.  The old 1px trick made
-	// the window visibly flash whenever a column was added or removed.
+	// Only fit the window to the content width during the initial setup.
+	// After that, the user controls the width and the grid's horizontal
+	// scroller shows a scrollbar for the overflowing columns, so we must not
+	// snap the window back on later column changes.
+	if (!_first) {
+		return;
+	}
+
 	Gtk::Widget* child = get_child ();
 	if (!child) {
 		// The child (vbox) is added in setup_vbox(), which runs after the
@@ -359,8 +364,11 @@ TrackerEditor::setup_scroller ()
 	}
 
 	scroller.add (grid);
-	scroller.set_policy (POLICY_NEVER, POLICY_AUTOMATIC);
+	scroller.set_policy (POLICY_AUTOMATIC, POLICY_AUTOMATIC);
 	scroller.show ();
+
+	// Keep the frozen time column vertically in sync with the grid.
+	grid.time_view.set_vadjustment (*scroller.get_vadjustment ());
 }
 
 void
@@ -370,13 +378,34 @@ TrackerEditor::setup_vbox ()
 		return;
 	}
 
+	// Frozen time column on the left, scrollable grid on the right.
+	grid.time_view.show ();
+	body_hbox.show ();
+	body_hbox.pack_start (grid.time_view, false, false);
+
+	// Vertical line separating the time column from the track columns.
+	Gtk::VSeparator* time_separator = Gtk::manage (new Gtk::VSeparator ());
+	time_separator->show ();
+	body_hbox.pack_start (*time_separator, false, false);
+
+	body_hbox.pack_start (scroller, true, true);
+
 	vbox.show ();
 	vbox.set_spacing (6);
 	vbox.set_border_width (6);
 	vbox.pack_start (main_toolbar, false, false);
 	vbox.pack_start (*grid_header, false, false);
-	vbox.pack_start (scroller, true, true);
+	vbox.pack_start (body_hbox, true, true);
 	add (vbox);
+
+	// Keep the whole main toolbar (through the position spinner) visible: the
+	// window cannot shrink below the toolbar's natural width, while the grid's
+	// horizontal scroller shows a scrollbar for the overflowing track columns.
+	Gdk::Geometry geom;
+	Gtk::Requisition toolbar_req = main_toolbar.size_request ();
+	geom.min_width = toolbar_req.width + 2 * vbox.get_border_width ();
+	geom.min_height = -1;
+	set_geometry_hints (*this, geom, Gdk::HINT_MIN_SIZE);
 }
 
 string

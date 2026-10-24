@@ -23,6 +23,9 @@
 
 #include <sigc++/connection.h>
 
+#include <ytkmm/adjustment.h>
+#include <ytkmm/viewport.h>
+
 #include "time_header.h"
 #include "track_header.h"
 
@@ -70,6 +73,17 @@ public:
 	std::vector<TrackHeader*> track_headers;
 
 private:
+	// The track headers live in a viewport that scrolls horizontally in sync
+	// with the grid's scroller.  They use separate horizontal adjustments (each
+	// manages its own content/upper), and only the values are kept in sync, so
+	// one widget's relayout cannot corrupt the other's scroll range.
+	Gtk::Adjustment track_header_hadjustment;
+	Gtk::Adjustment track_header_vadjustment;
+	Gtk::Viewport   track_header_viewport;
+	Gtk::HBox       track_headers_hbox;
+
+	void sync_hadjustment ();
+
 	// Connection for a pending deferred alignment. Disconnects itself
 	// once it fires so the next align_deferred() schedules a fresh one.
 	sigc::connection align_deferred_connection;
@@ -80,6 +94,10 @@ private:
 	// otherwise leave the headers misaligned with the columns until
 	// the next redisplay).
 	sigc::connection grid_size_allocate_connection;
+
+	// Connection from the grid scroller's horizontal adjustment, used to
+	// mirror its scroll position on the track-header viewport.
+	sigc::connection hadjustment_connection;
 };
 
 } // ~namespace tracker
