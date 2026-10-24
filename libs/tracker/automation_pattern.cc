@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <map>
@@ -410,21 +411,14 @@ AutomationPattern::insert_actl (AutomationControlPtr actl, const std::string& na
 bool
 AutomationPattern::is_empty (const Evoral::Parameter& param) const
 {
-	return get_alist (param)->size () == 0;
+	const AutomationListPtr alist = get_alist (param);
+	return !alist || alist->size () == 0;
 }
 
 AutomationControlPtr AutomationPattern::get_actl (const Evoral::Parameter& param)
 {
-	if (!param) {
-		return nullptr;
-	}
-
-	ParamAutomationControlMap::iterator it = param_to_actl.find (param);
-	if (it != param_to_actl.end ()) {
-		return it->second;
-	}
-
-	return nullptr;
+	// Delegate to the const overload
+	return std::const_pointer_cast<ARDOUR::AutomationControl> (static_cast<const AutomationPattern*> (this)->get_actl (param));
 }
 
 const AutomationControlPtr
@@ -476,11 +470,8 @@ AutomationPattern::get_name (const Evoral::Parameter& param) const
 AutomationListPtr
 AutomationPattern::get_alist (const Evoral::Parameter& param)
 {
-	if (AutomationControlPtr actl = get_actl (param)) {
-		return actl->alist ();
-	}
-
-	return nullptr;
+	// Delegate to the const overload
+	return std::const_pointer_cast<ARDOUR::AutomationList> (static_cast<const AutomationPattern*> (this)->get_alist (param));
 }
 
 const AutomationListPtr
@@ -522,17 +513,8 @@ AutomationPattern::get_alist_iterator (int rowi, const Evoral::Parameter& param)
 Evoral::ControlEvent*
 AutomationPattern::get_control_event (int rowi, const Evoral::Parameter& param)
 {
-	ParamToRowToControlEvents::iterator it = param_to_row_to_ces.find (param);
-	if (it == param_to_row_to_ces.end ()) {
-		return nullptr;
-	}
-
-	RowToControlEvents::iterator ces_it = it->second.find (rowi);
-	if (ces_it != it->second.end ()) {
-		return ces_it->second;
-	}
-
-	return nullptr;
+	// Delegate to the const overload
+	return const_cast<Evoral::ControlEvent*> (static_cast<const AutomationPattern*> (this)->get_control_event (rowi, param));
 }
 
 const Evoral::ControlEvent*
@@ -831,29 +813,19 @@ AutomationPattern::prev_next_range (int row, const RowToControlEvents& row2ces) 
 RowToControlEvents::const_iterator
 AutomationPattern::earliest (const RowToControlEventsRange& rng) const
 {
-	RowToControlEvents::const_iterator res_it = rng.first;
-	RowToControlEvents::const_iterator it = res_it;
-	++it;
-	for (; it != rng.second; ++it) {
-		if (res_it->second->when < it->second->when) {
-			res_it = it;
-		}
-	}
-	return res_it;
+	return std::min_element (rng.first, rng.second,
+	                         [] (const RowToControlEvents::value_type& a, const RowToControlEvents::value_type& b) {
+		                         return a.second->when < b.second->when;
+	                         });
 }
 
 RowToControlEvents::const_iterator
 AutomationPattern::lattest (const RowToControlEventsRange& rng) const
 {
-	RowToControlEvents::const_iterator res_it = rng.first;
-	RowToControlEvents::const_iterator it = res_it;
-	++it;
-	for (; it != rng.second; ++it) {
-		if (it->second->when < res_it->second->when) {
-			res_it = it;
-		}
-	}
-	return res_it;
+	return std::max_element (rng.first, rng.second,
+	                         [] (const RowToControlEvents::value_type& a, const RowToControlEvents::value_type& b) {
+		                         return a.second->when < b.second->when;
+	                         });
 }
 
 void

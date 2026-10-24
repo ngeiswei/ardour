@@ -99,7 +99,9 @@ public:
 	/**
 	 * Helpers for building automation menu.
 	 */
-	void build_automation_menu ();
+	// Virtual: MidiTrackToolbar appends its own MIDI entries to the menu
+	// built by the base class, and automation_click() must dispatch to it.
+	virtual void build_automation_menu ();
 	void build_main_automation_menu (Gtk::Menu_Helpers::MenuList& items);
 	virtual void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void setup_processor_menu_and_curves ();
@@ -112,9 +114,9 @@ public:
 	/**
 	 * Helpers to update automations
 	 */
-	void show_all_automation ();
-	void show_existing_automation ();
-	void hide_all_automation ();
+	virtual void show_all_automation ();
+	virtual void show_existing_automation ();
+	virtual void hide_all_automation ();
 	// Show/hide gain, trim, mute and pan
 	void show_all_main_automations ();
 	void show_existing_main_automations ();
@@ -141,6 +143,29 @@ public:
 
 	void redisplay_grid ();
 
+private:
+	// Shared implementation of show_all_main_automations (true) and
+	// hide_main_automations (false).
+	void apply_main_automation_visibility (bool visible);
+
+	// Shared implementation of the show_existing_main_automations items:
+	// make the item reflect whether the automation is non-empty, then
+	// update the corresponding column visibility.
+	void show_existing_main_automation (Gtk::CheckMenuItem* item, const IDParameter& id_param, void (Grid::*update) (int));
+
+	// Shared implementation of the processor automation show/hide
+	// helpers.  When only_existing is true, only automations with content
+	// are shown.
+	void set_all_processor_automation_visibility (bool visible, bool only_existing);
+
+	// Shared implementation of the build_main_automation_menu items.  The
+	// slot (e.g. gain_automation_item) is published *before* set_active ()
+	// is called, because set_active () can emit toggled, whose handler reads
+	// that member: it must never observe the item of the previously built
+	// (and already deleted) menu.
+	Gtk::CheckMenuItem* build_main_automation_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, void (Grid::*update) (int), bool active, Gtk::CheckMenuItem*& slot);
+
+public:
 	TrackerEditor& tracker_editor;
 	TrackPtr track;
 	TrackPattern* track_pattern;

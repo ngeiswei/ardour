@@ -17,6 +17,8 @@
  */
 
 #include <cctype>
+#include <chrono>
+#include <cstdlib>
 #include <memory>
 #include <cmath>
 #include <iterator>
@@ -30,6 +32,7 @@
 #include "pbd/convert.h"
 
 #include <cairomm/context.h>
+#include <glibmm/main.h>
 #include <pangomm/attributes.h>
 
 #include <ytkmm/cellrenderercombo.h>
@@ -135,6 +138,7 @@ Grid::Grid (TrackerEditor& te)
 
 Grid::~Grid ()
 {
+	_redisplay_idle.disconnect ();
 	delete time_column;
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		delete left_separator_columns[mti];
@@ -187,6 +191,24 @@ namespace {
 	{
 		const size_t chunk = 4;
 		return ((n + chunk - 1) / chunk) * chunk;
+	}
+
+	// A GtkTreeModel write is expensive: it emits row-changed and makes the
+	// view re-examine (and typically redraw) the row.  A redisplay rewrites
+	// far more cells than it actually changes - a full one rewrites all of
+	// them - so compare first and skip the write when nothing moved.
+	inline void
+	set_cell (Gtk::TreeModel::Row& row, const Gtk::TreeModelColumn<std::string>& col, const std::string& value)
+	{
+		if (row.get_value (col) != value) {
+			row.set_value (col, value);
+		}
+	}
+
+	inline void
+	set_cell (Gtk::TreeModel::Row& row, const Gtk::TreeModelColumn<std::string>& col, const char* value)
+	{
+		set_cell (row, col, std::string (value));
 	}
 }
 
@@ -513,24 +535,27 @@ Grid::has_visible_automation (int mti) const
 }
 
 bool
+Grid::is_main_column_visible (int column) const
+{
+	return visible_automation_columns.find (column) != visible_automation_columns.end ();
+}
+
+bool
 Grid::is_gain_visible (int mti) const
 {
-	return visible_automation_columns.find (gain_columns[mti])
-		!= visible_automation_columns.end ();
+	return is_main_column_visible (gain_columns[mti]);
 };
 
 bool
 Grid::is_trim_visible (int mti) const
 {
-	return visible_automation_columns.find (trim_columns[mti])
-		!= visible_automation_columns.end ();
+	return is_main_column_visible (trim_columns[mti]);
 };
 
 bool
 Grid::is_mute_visible (int mti) const
 {
-	return visible_automation_columns.find (mute_columns[mti])
-		!= visible_automation_columns.end ();
+	return is_main_column_visible (mute_columns[mti]);
 };
 
 bool
@@ -538,7 +563,7 @@ Grid::is_pan_visible (int mti) const
 {
 	bool visible = !pan_columns[mti].empty();
 	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
-		visible = visible_automation_columns.find (*it) != visible_automation_columns.end ();
+		visible = is_main_column_visible (*it);
 		if (!visible) {
 			break;
 		}
@@ -547,66 +572,48 @@ Grid::is_pan_visible (int mti) const
 };
 
 void
-Grid::update_gain_column_visibility (int mti)
+Grid::update_main_automation_column_visibility (int mti, Gtk::CheckMenuItem* item, std::vector<int>& columns, const Evoral::Parameter& param)
 {
-	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->gain_automation_item->get_active ();
-
-	if (gain_columns[mti] == 0) {
-		gain_columns[mti] = add_main_automation_column (mti, Evoral::Parameter (GainAutomation));
+	// Note: add_main_automation_column () may rebuild the whole column schema,
+	// which clears and refills this vector (and can reallocate it).  Index it
+	// only after the call, never hold a reference into it across the call.
+	if (columns[mti] == 0) {
+		columns[mti] = add_main_automation_column (mti, param);
 	}
 
 	// Still no column available, abort
-	if (gain_columns[mti] == 0) {
+	if (columns[mti] == 0) {
 		return;
 	}
 
-	IDParameter id_param(PBD::ID(0), Evoral::Parameter (GainAutomation));
-	set_automation_column_visible (mti, id_param, gain_columns[mti], showit);
+	set_automation_column_visible (mti, IDParameter (PBD::ID (0), param), columns[mti], item->get_active ());
 
 	/* now trigger a redisplay */
 	redisplay_grid_direct_call ();
+}
+
+void
+Grid::update_gain_column_visibility (int mti)
+{
+	update_main_automation_column_visibility (mti,
+	                                          tracker_editor.grid_header->track_headers[mti]->track_toolbar->gain_automation_item,
+	                                          gain_columns, Evoral::Parameter (GainAutomation));
 }
 
 void
 Grid::update_trim_column_visibility (int mti)
 {
-	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->trim_automation_item->get_active ();
-
-	if (trim_columns[mti] == 0) {
-		trim_columns[mti] = add_main_automation_column (mti, Evoral::Parameter (TrimAutomation));
-	}
-
-	// Still no column available, abort
-	if (trim_columns[mti] == 0) {
-		return;
-	}
-
-	IDParameter id_param(PBD::ID(0), Evoral::Parameter (TrimAutomation));
-	set_automation_column_visible (mti, id_param, trim_columns[mti], showit);
-
-	/* now trigger a redisplay */
-	redisplay_grid_direct_call ();
+	update_main_automation_column_visibility (mti,
+	                                          tracker_editor.grid_header->track_headers[mti]->track_toolbar->trim_automation_item,
+	                                          trim_columns, Evoral::Parameter (TrimAutomation));
 }
 
 void
 Grid::update_mute_column_visibility (int mti)
 {
-	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->mute_automation_item->get_active ();
-
-	if (mute_columns[mti] == 0) {
-		mute_columns[mti] = add_main_automation_column (mti, Evoral::Parameter (MuteAutomation));
-	}
-
-	// Still no column available, abort
-	if (mute_columns[mti] == 0) {
-		return;
-	}
-
-	IDParameter id_param(PBD::ID(0), Evoral::Parameter (MuteAutomation));
-	set_automation_column_visible (mti, id_param, mute_columns[mti], showit);
-
-	/* now trigger a redisplay */
-	redisplay_grid_direct_call ();
+	update_main_automation_column_visibility (mti,
+	                                          tracker_editor.grid_header->track_headers[mti]->track_toolbar->mute_automation_item,
+	                                          mute_columns, Evoral::Parameter (MuteAutomation));
 }
 
 void
@@ -1516,7 +1523,7 @@ Grid::redisplay_global_columns ()
 
 		// Time
 		Temporal::BBT_Time row_bbt = pattern.earliest_tp->bbt_at_row (row_idx);
-		row[columns->time] = TrackerUtils::bbt_to_string (row_bbt, base ());
+		set_cell (row, columns->time, TrackerUtils::bbt_to_string (row_bbt, base ()));
 
 		// If the row is on a bar, beat or otherwise, the color differs
 		Temporal::Beats row_beats = pattern.earliest_tp->beats_at_row (row_idx);
@@ -1526,13 +1533,12 @@ Grid::redisplay_global_columns ()
 		                                     TrackerUtils::color_to_string (bar_background_color)
 		                                     : TrackerUtils::color_to_string (beat_background_color))
 		                                    : TrackerUtils::color_to_string (background_color));
-		row[columns->_background_color] = row_background_color;
+		set_cell (row, columns->_background_color, row_background_color);
 
 		// Set font family
-		row[columns->_family] = cellfont;
+		set_cell (row, columns->_family, cellfont);
 
-		row[columns->_time_background_color] = row_background_color;
-	}
+		set_cell (row, columns->_time_background_color, row_background_color);	}
 }
 
 void
@@ -1552,6 +1558,15 @@ Grid::redisplay_grid ()
 		return;
 	}
 
+	// Optional timing instrumentation: set ARDOUR_TRACKER_PROFILE=1 in the
+	// environment to have the cost of each redisplay stage logged to stderr.
+	// Used to track down redisplay regressions without a profiler.
+	static const bool profile = getenv ("ARDOUR_TRACKER_PROFILE") != nullptr;
+	std::chrono::steady_clock::time_point t_update, t_diff, t_diff2, t_paint, t_end, t_snapshot;
+	if (profile) {
+		t_update = std::chrono::steady_clock::now ();
+	}
+
 	// Batch the redisplay work into a single visual update to avoid
 	// flicker when columns are shown/hidden or the schema is rebuilt.
 	Glib::RefPtr<Gdk::Window> window = tracker_editor.get_window ();
@@ -1566,10 +1581,18 @@ Grid::redisplay_grid ()
 	// Update pattern settings and content
 	pattern.update ();
 
+	if (profile) {
+		t_diff = std::chrono::steady_clock::now ();
+	}
+
 	// After update, compare pattern and prev_pattern to come up with a list of
 	// differences to display. For now only worry about redisplaying the
 	// changed mti.
 	_phenomenal_diff = pattern.phenomenal_diff (prev_pattern);
+
+	if (profile) {
+		t_diff2 = std::chrono::steady_clock::now ();
+	}
 
 	// Force a full redisplay when the numeric base (hex/dec) changed, since
 	// the phenomenal diff does not capture it.
@@ -1595,6 +1618,11 @@ Grid::redisplay_grid ()
 	// Redisplay the grid
 	redisplay_global_columns ();
 	redisplay_pattern ();
+
+	if (profile) {
+		t_paint = std::chrono::steady_clock::now ();
+	}
+
 	redisplay_current_row ();
 	// If the diff is partial, global_nrows is unchanged, so the model cannot
 	// contain more rows than needed and the O(nrows) scan is unnecessary.
@@ -1631,8 +1659,31 @@ Grid::redisplay_grid ()
 	// If the diff is empty the current pattern already matches the
 	// previous-state snapshot in everything the diff reads, so skip the deep
 	// copy (and the next diff will still be correct).
+	if (profile) {
+		t_snapshot = std::chrono::steady_clock::now ();
+	}
+
 	if (!_phenomenal_diff.empty ()) {
 		prev_pattern = pattern;
+	}
+
+	if (profile) {
+		t_end = std::chrono::steady_clock::now ();
+		using std::chrono::duration_cast;
+		using std::chrono::microseconds;
+		std::cerr << "tracker redisplay: update="
+		          << duration_cast<microseconds> (t_diff - t_update).count ()
+		          << "us diff="
+		          << duration_cast<microseconds> (t_diff2 - t_diff).count ()
+		          << "us paint="
+		          << duration_cast<microseconds> (t_paint - t_diff2).count ()
+		          << "us post="
+		          << duration_cast<microseconds> (t_snapshot - t_paint).count ()
+		          << "us snapshot="
+		          << duration_cast<microseconds> (t_end - t_snapshot).count ()
+		          << "us (nrows=" << pattern.global_nrows
+		          << ", full=" << (_phenomenal_diff.full ? 1 : 0)
+		          << ", ntracks=" << pattern.tps.size () << ")" << std::endl;
 	}
 
 	// Thaw the window frozen at the top of redisplay_grid().
@@ -1647,13 +1698,40 @@ Grid::redisplay_grid ()
 void
 Grid::redisplay_grid_direct_call ()
 {
+	// A synchronous redisplay supersedes any coalesced one still pending.
+	_redisplay_idle.disconnect ();
 	redisplay_grid ();
 }
 
 void
 Grid::redisplay_grid_connect_call ()
 {
-	if (redisplay_grid_connect_call_enabled) {
+	if (!redisplay_grid_connect_call_enabled) {
+		return;
+	}
+
+	// Coalesce: a single edit usually emits several signals, and each
+	// redisplay runs the whole pattern update.  One redisplay per event loop
+	// turn is enough, and keeps typing responsive.
+	if (_redisplay_idle.connected ()) {
+		return;
+	}
+	_redisplay_idle = Glib::signal_idle ().connect (sigc::mem_fun (*this, &Grid::on_redisplay_idle));
+}
+
+bool
+Grid::on_redisplay_idle ()
+{
+	_redisplay_idle.disconnect ();
+	redisplay_grid ();
+	return false;
+}
+
+void
+Grid::flush_pending_redisplay ()
+{
+	if (_redisplay_idle.connected ()) {
+		_redisplay_idle.disconnect ();
 		redisplay_grid ();
 	}
 }
@@ -1676,32 +1754,23 @@ void
 Grid::redisplay_undefined_note (TreeModel::Row& row, int mti, int cgi)
 {
 	// cgi stands from column group index
-	row[columns->note_name[mti][cgi]] = "";
-	row[columns->channel[mti][cgi]] = "";
-	row[columns->velocity[mti][cgi]] = "";
-	row[columns->delay[mti][cgi]] = "";
+	set_cell (row, columns->note_name[mti][cgi], "");
+	set_cell (row, columns->channel[mti][cgi], "");
+	set_cell (row, columns->velocity[mti][cgi], "");
+	set_cell (row, columns->delay[mti][cgi], "");
 
 	// TODO: replace gtk_bases_color by a custom one
-	row[columns->_note_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns->_channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns->_velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns->_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	const std::string bases_color = TrackerUtils::color_to_string (gtk_bases_color);
+	set_cell (row, columns->_note_background_color[mti][cgi], bases_color);
+	set_cell (row, columns->_channel_background_color[mti][cgi], bases_color);
+	set_cell (row, columns->_velocity_background_color[mti][cgi], bases_color);
+	set_cell (row, columns->_delay_background_color[mti][cgi], bases_color);
 }
 
 void
-Grid::redisplay_undefined_automations (TreeModel::Row& row, int row_idx, int mti)
+Grid::redisplay_undefined_automations (TreeModel::Row& row, int mti, const ParameterSet& enabled_params)
 {
-	if (!pattern.tps[mti]->is_midi_track_pattern ()) {
-		return;
-	}
-
-	int mri = 0;              // consider the first one, all parameters
-	                          // should be the same in all other regions
-
-	// Get the AutomationPattern of the first region of the track
-	MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
-	AutomationPattern& ap = mrp.mrap;
-	for (const Evoral::Parameter& param : ap.get_enabled_parameters ())
+	for (const Evoral::Parameter& param : enabled_params)
 	{
 		int cgi = to_cgi (mti, PBD::ID (0), param);
 		if (cgi < 0 || (size_t)cgi >= automation_colnums[mti].size ()) {
@@ -1728,7 +1797,7 @@ Grid::redisplay_track_separator_columns ()
 void
 Grid::redisplay_undefined_region_name (TreeModel::Row& row, int mti)
 {
-	row[columns->region_name[mti]] = "";
+	set_cell (row, columns->region_name[mti], "");
 }
 
 void
@@ -1778,7 +1847,7 @@ Grid::redisplay_left_right_separator_columns (int mti, bool force)
 	TreeModel::Children::iterator row_it = model->children ().begin ();
 	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		TreeModel::Row row = *row_it++;
-		row[columns->_left_right_separator_background_color[mti]] = color;
+		set_cell (row, columns->_left_right_separator_background_color[mti], color);
 	}
 }
 
@@ -1927,22 +1996,23 @@ void
 Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi)
 {
 	// Set empty forground
-	row[columns->automation[mti][cgi]] = "";
-	row[columns->automation_delay[mti][cgi]] = "";
+	set_cell (row, columns->automation[mti][cgi], "");
+	set_cell (row, columns->automation_delay[mti][cgi], "");
 
 	// Set undefined background color
-	row[columns->_automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
-	row[columns->_automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (gtk_bases_color);
+	const std::string bases_color = TrackerUtils::color_to_string (gtk_bases_color);
+	set_cell (row, columns->_automation_background_color[mti][cgi], bases_color);
+	set_cell (row, columns->_automation_delay_background_color[mti][cgi], bases_color);
 }
 
 void
 Grid::redisplay_note_background (TreeModel::Row& row, int mti, int cgi)
 {
 	std::string row_background_color = row[columns->_background_color];
-	row[columns->_note_background_color[mti][cgi]] = row_background_color;
-	row[columns->_channel_background_color[mti][cgi]] = row_background_color;
-	row[columns->_velocity_background_color[mti][cgi]] = row_background_color;
-	row[columns->_delay_background_color[mti][cgi]] = row_background_color;
+	set_cell (row, columns->_note_background_color[mti][cgi], row_background_color);
+	set_cell (row, columns->_channel_background_color[mti][cgi], row_background_color);
+	set_cell (row, columns->_velocity_background_color[mti][cgi], row_background_color);
+	set_cell (row, columns->_delay_background_color[mti][cgi], row_background_color);
 }
 
 void
@@ -1983,63 +2053,67 @@ void
 Grid::redisplay_blank_note_foreground (TreeModel::Row& row, int mti, int cgi)
 {
 	// Fill with blank
-	row[columns->note_name[mti][cgi]] = mk_note_blank ();
-	row[columns->channel[mti][cgi]] = mk_ch_blank ();
-	row[columns->velocity[mti][cgi]] = mk_vel_blank ();
-	row[columns->delay[mti][cgi]] = mk_delay_blank ();
+	set_cell (row, columns->note_name[mti][cgi], mk_note_blank ());
+	set_cell (row, columns->channel[mti][cgi], mk_ch_blank ());
+	set_cell (row, columns->velocity[mti][cgi], mk_vel_blank ());
+	set_cell (row, columns->delay[mti][cgi], mk_delay_blank ());
 
 	// Grey out infoless cells
-	row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
-	row[columns->_channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
-	row[columns->_velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
-	row[columns->_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	const std::string passive_color = TrackerUtils::color_to_string (passive_foreground_color);
+	set_cell (row, columns->_note_foreground_color[mti][cgi], passive_color);
+	set_cell (row, columns->_channel_foreground_color[mti][cgi], passive_color);
+	set_cell (row, columns->_velocity_foreground_color[mti][cgi], passive_color);
+	set_cell (row, columns->_delay_foreground_color[mti][cgi], passive_color);
 }
 
 void
 Grid::redisplay_automation_background (TreeModel::Row& row, int mti, int cgi)
 {
 	std::string row_background_color = row[columns->_background_color];
-	row[columns->_automation_background_color[mti][cgi]] = row_background_color;
-	row[columns->_automation_delay_background_color[mti][cgi]] = row_background_color;
+	set_cell (row, columns->_automation_background_color[mti][cgi], row_background_color);
+	set_cell (row, columns->_automation_delay_background_color[mti][cgi], row_background_color);
 }
 
 void
 Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi)
 {
 	if (is_note_displayable (row_idx, mti, mri, cgi)) {
+		const std::string active_color = TrackerUtils::color_to_string (active_foreground_color);
+
 		// Notes off
 		NotePtr note = pattern.off_note (row_idx, mti, mri, cgi);
 		if (note) {
-			row[columns->note_name[mti][cgi]] = note_off_str;
-			row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			set_cell (row, columns->note_name[mti][cgi], note_off_str);
+			set_cell (row, columns->_note_foreground_color[mti][cgi], active_color);
 			int delay = get_off_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
-				row[columns->delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-				row[columns->_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+				set_cell (row, columns->delay[mti][cgi], TrackerUtils::num_to_string (delay, base (), precision ()));
+				set_cell (row, columns->_delay_foreground_color[mti][cgi], active_color);
 			}
 		}
 
 		// Notes on
 		note = pattern.on_note (row_idx, mti, mri, cgi);
 		if (note) {
-			row[columns->note_name[mti][cgi]] = ParameterDescriptor::midi_note_name (note->note ());
-			row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
-			row[columns->channel[mti][cgi]] = TrackerUtils::channel_to_string (note->channel (), base ());
-			row[columns->_channel_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
-			row[columns->velocity[mti][cgi]] = TrackerUtils::num_to_string ((int)note->velocity (), base (), precision ());
-			row[columns->_velocity_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			set_cell (row, columns->note_name[mti][cgi], ParameterDescriptor::midi_note_name (note->note ()));
+			set_cell (row, columns->_note_foreground_color[mti][cgi], active_color);
+			set_cell (row, columns->channel[mti][cgi], TrackerUtils::channel_to_string (note->channel (), base ()));
+			set_cell (row, columns->_channel_foreground_color[mti][cgi], active_color);
+			set_cell (row, columns->velocity[mti][cgi], TrackerUtils::num_to_string ((int)note->velocity (), base (), precision ()));
+			set_cell (row, columns->_velocity_foreground_color[mti][cgi], active_color);
 			row[columns->_velocity_alignment[mti][cgi]] = Pango::Alignment::ALIGN_RIGHT;
 
 			int delay = get_on_note_delay (note, row_idx, mti, mri);
 			if (delay != 0) {
-				row[columns->delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-				row[columns->_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+				set_cell (row, columns->delay[mti][cgi], TrackerUtils::num_to_string (delay, base (), precision ()));
+				set_cell (row, columns->_delay_foreground_color[mti][cgi], active_color);
 			}
 		}
 	} else {
 		// Too many notes, not displayable
-		row[columns->note_name[mti][cgi]] = undisplayable_str;
-		row[columns->_note_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+		set_cell (row, columns->note_name[mti][cgi], undisplayable_str);
+		set_cell (row, columns->_note_foreground_color[mti][cgi],
+		          TrackerUtils::color_to_string (active_foreground_color));
 	}
 }
 
@@ -2074,11 +2148,12 @@ void
 Grid::redisplay_blank_automation_foreground (TreeModel::Row& row, int mti, int cgi)
 {
 	// Fill with blank
-	row[columns->automation[mti][cgi]] = mk_automation_blank ();
-	row[columns->automation_delay[mti][cgi]] = mk_delay_blank ();
+	set_cell (row, columns->automation[mti][cgi], mk_automation_blank ());
+	set_cell (row, columns->automation_delay[mti][cgi], mk_delay_blank ());
 
 	// Fill default foreground color
-	row[columns->_automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	set_cell (row, columns->_automation_delay_foreground_color[mti][cgi],
+	          TrackerUtils::color_to_string (passive_foreground_color));
 }
 
 void
@@ -2086,16 +2161,18 @@ Grid::redisplay_automation (TreeModel::Row& row, int row_idx, int mti, int mri, 
 {
 	if (is_automation_displayable (row_idx, mti, mri, id_param)) {
 		double val = pattern.get_automation_value (row_idx, mti, mri, id_param).first;
-		row[columns->automation[mti][cgi]] = TrackerUtils::num_to_string (val, base (), precision ());
+		set_cell (row, columns->automation[mti][cgi], TrackerUtils::num_to_string (val, base (), precision ()));
 		int delay = pattern.get_automation_delay (row_idx, mti, mri, id_param).first;
 		if (delay != 0) {
-			row[columns->automation_delay[mti][cgi]] = TrackerUtils::num_to_string (delay, base (), precision ());
-			row[columns->_automation_delay_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+			set_cell (row, columns->automation_delay[mti][cgi], TrackerUtils::num_to_string (delay, base (), precision ()));
+			set_cell (row, columns->_automation_delay_foreground_color[mti][cgi],
+			          TrackerUtils::color_to_string (active_foreground_color));
 		}
 	} else {
-		row[columns->automation[mti][cgi]] = undisplayable_str;
+		set_cell (row, columns->automation[mti][cgi], undisplayable_str);
 	}
-	row[columns->_automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (active_foreground_color);
+	set_cell (row, columns->_automation_foreground_color[mti][cgi],
+	          TrackerUtils::color_to_string (active_foreground_color));
 }
 
 void
@@ -2103,11 +2180,12 @@ Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int 
 {
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, id_param);
 	if (is_int_param (id_param)) {
-		row[columns->automation[mti][cgi]] = TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ());
+		set_cell (row, columns->automation[mti][cgi], TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ()));
 	} else {
-		row[columns->automation[mti][cgi]] = TrackerUtils::num_to_string (inter_val, base (), precision ());
+		set_cell (row, columns->automation[mti][cgi], TrackerUtils::num_to_string (inter_val, base (), precision ()));
 	}
-	row[columns->_automation_foreground_color[mti][cgi]] = TrackerUtils::color_to_string (passive_foreground_color);
+	set_cell (row, columns->_automation_foreground_color[mti][cgi],
+	          TrackerUtils::color_to_string (passive_foreground_color));
 }
 
 void
@@ -2140,7 +2218,7 @@ Grid::redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx)
 void
 Grid::redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color)
 {
-	row[columns->_time_background_color] = color;
+	set_cell (row, columns->_time_background_color, color);
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		redisplay_row_mti_background_color (row, row_idx, mti, color);
 	}
@@ -2165,10 +2243,10 @@ Grid::redisplay_row_mti_notes_background_color (Gtk::TreeModel::Row& row, int ro
 {
 	size_t available = note_colnums[mti].size ();
 	for (size_t cgi = 0; cgi < pattern.tps[mti]->midi_track_pattern ()->get_ntracks () && cgi < available; cgi++) {
-		row[columns->_note_background_color[mti][cgi]] = color;
-		row[columns->_channel_background_color[mti][cgi]] = color;
-		row[columns->_velocity_background_color[mti][cgi]] = color;
-		row[columns->_delay_background_color[mti][cgi]] = color;
+		set_cell (row, columns->_note_background_color[mti][cgi], color);
+		set_cell (row, columns->_channel_background_color[mti][cgi], color);
+		set_cell (row, columns->_velocity_background_color[mti][cgi], color);
+		set_cell (row, columns->_delay_background_color[mti][cgi], color);
 	}
 }
 
@@ -2341,13 +2419,24 @@ Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const
 void
 Grid::redisplay_inter_midi_regions (int mti)
 {
+	// The set of region automation parameters is the same for every undefined
+	// row, and computing it walks the whole parameter map and allocates a set,
+	// so compute it once per track rather than once per row.
+	ParameterSet enabled_params;
+	if (pattern.tps[mti]->is_midi_track_pattern () &&
+	    !pattern.tps[mti]->midi_track_pattern ()->mrps.empty ()) {
+		// Consider the first region: the parameters should be the same in all
+		// other regions.
+		enabled_params = pattern.midi_region_pattern (mti, 0).mrap.get_enabled_parameters ();
+	}
+
 	TreeModel::Children::iterator row_it = model->children ().begin ();
 	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
 		// Get row
 		TreeModel::Row row = *row_it++;
 		if (!is_region_defined (row_idx, mti)) {
 			redisplay_undefined_notes (row, mti);
-			redisplay_undefined_automations (row, row_idx, mti);
+			redisplay_undefined_automations (row, mti, enabled_params);
 		}
 	}
 }
@@ -2533,18 +2622,19 @@ Grid::redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col
 	int mti = to_mti (col);
 	int cgi = to_cgi (col);
 	Gtk::TreeModel::Row row = to_row (row_idx);
+	const std::string selection_color_str = TrackerUtils::color_to_string (selection_color);
 	switch (get_note_type (col)) {
 	case TrackerColumn::NoteType::NOTE:
-		row[columns->_note_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		set_cell (row, columns->_note_background_color[mti][cgi], selection_color_str);
 		break;
 	case TrackerColumn::NoteType::CHANNEL:
-		row[columns->_channel_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		set_cell (row, columns->_channel_background_color[mti][cgi], selection_color_str);
 		break;
 	case TrackerColumn::NoteType::VELOCITY:
-		row[columns->_velocity_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		set_cell (row, columns->_velocity_background_color[mti][cgi], selection_color_str);
 		break;
 	case TrackerColumn::NoteType::DELAY:
-		row[columns->_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		set_cell (row, columns->_delay_background_color[mti][cgi], selection_color_str);
 		break;
 	default:
 		std::cerr << "Grid::redisplay_note_cell_selection: Implementation Error!" << std::endl;
@@ -2558,12 +2648,13 @@ Grid::redisplay_automation_cell_selection (int row_idx, const Gtk::TreeViewColum
 	int mti = to_mti (col);
 	int cgi = to_cgi (col);
 	Gtk::TreeModel::Row row = to_row (row_idx);
+	const std::string selection_color_str = TrackerUtils::color_to_string (selection_color);
 	switch (get_automation_type (col)) {
 	case TrackerColumn::AutomationType::AUTOMATION:
-		row[columns->_automation_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		set_cell (row, columns->_automation_background_color[mti][cgi], selection_color_str);
 		break;
 	case TrackerColumn::AutomationType::AUTOMATION_DELAY:
-		row[columns->_automation_delay_background_color[mti][cgi]] = TrackerUtils::color_to_string (selection_color);
+		set_cell (row, columns->_automation_delay_background_color[mti][cgi], selection_color_str);
 		break;
 	default:
 		std::cerr << "Grid::redisplay_automation_cell_selection: Implementation Error!" << std::endl;
@@ -3876,6 +3967,13 @@ Grid::release_note (int mti, uint8_t pitch)
 void
 Grid::send_live_midi_event (int mti, const uint8_t* buf)
 {
+	// Only a MIDI track can emit live events; on an audio track pattern
+	// midi_track () is null (and the cursor can sit on such a track's
+	// automation cells, from where playing a note is still possible).
+	if (mti < 0 || mti >= (int) pattern.tps.size () || !pattern.tps[mti]->is_midi_track_pattern ()) {
+		return;
+	}
+
 	pattern.tps[mti]->midi_track ()->write_immediate_event (Evoral::LIVE_MIDI_EVENT, 3, buf);
 }
 
@@ -3890,6 +3988,11 @@ Grid::set_current_cursor (int row_idx, TreeViewColumn* col, bool set_playhead)
 void
 Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool set_playhead)
 {
+	// This reads the pattern (cell definitions, row ranges), so make sure a
+	// redisplay coalesced from the model signals of the edit that just
+	// happened has been applied first.
+	flush_pending_redisplay ();
+
 	// NEXT: maybe make sure not to recall if current already set
 
 	// Make sure the cell is defined
@@ -5435,6 +5538,14 @@ Grid::step_editing_check_midi_event ()
 	if (!is_current_cursor_defined ())
 		return true;
 
+	// Step editing only applies to MIDI tracks.  The cursor may well sit on an
+	// audio track (its automation columns are editable cells too), and such a
+	// pattern has no MIDI track at all, so midi_track () returns a null
+	// pointer: dereferencing it used to fault at a small offset address.
+	if (!current_tp || !current_tp->is_midi_track_pattern ()) {
+		return true;
+	}
+
 	ARDOUR::MidiRingBuffer<samplepos_t>& incoming (current_tp->midi_track ()->step_edit_ring_buffer());
 	uint8_t* buf;
 	uint32_t bufsize = 32;       // Only 32???
@@ -5662,10 +5773,8 @@ Grid::step_editing_delete_note ()
 }
 
 bool
-Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
+Grid::step_editing_typed_key_press (GdkEventKey* ev, StepDigitFn set_digit, bool allow_sign, StepVoidFn delete_fn)
 {
-	bool ret = false;
-
 	switch (ev->keyval) {
 
 	// Num keys
@@ -5701,7 +5810,23 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_E:
 	case GDK_f:
 	case GDK_F:
-		ret = step_editing_set_note_channel_digit (digit_key_press (ev));
+		return (this->*set_digit) (digit_key_press (ev));
+
+	// Minus
+	case GDK_minus:
+	case GDK_underscore:
+		if (allow_sign) {
+			// Change sign
+			return (this->*set_digit) (-1);
+		}
+		break;
+
+	// Plus
+	case GDK_plus:
+	case GDK_equal:
+		if (allow_sign) {
+			return (this->*set_digit) (100);
+		}
 		break;
 
 	// Cursor movements
@@ -5718,26 +5843,37 @@ Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
 	case GDK_Page_Down:
 	case GDK_Home:
 	case GDK_End:
-		ret = move_current_cursor_key_press (ev);
-		break;
+		return move_current_cursor_key_press (ev);
 
 	// Set shift modifier (TODO: very hacky way)
 	case GDK_Shift_L:
 	case GDK_Shift_R:
-		ret = shift_key_press ();
+		return shift_key_press ();
+
+	// Delete cell content, if supported for that column
+	case GDK_BackSpace:
+	case GDK_Delete:
+		if (delete_fn) {
+			return (this->*delete_fn) ();
+		}
 		break;
 
 	// Cell edit
 	case GDK_Return:
 		set_cursor (current_path, *to_col (current_col_idx), true);
-		ret = true;
-		break;
+		return true;
 
 	default:
 		break;
 	}
 
-	return ret;
+	return false;
+}
+
+bool
+Grid::step_editing_note_channel_key_press (GdkEventKey* ev)
+{
+	return step_editing_typed_key_press (ev, &Grid::step_editing_set_note_channel_digit, false, nullptr);
 }
 
 bool
@@ -5767,80 +5903,7 @@ Grid::step_editing_set_note_channel (uint8_t ch)
 bool
 Grid::step_editing_note_velocity_key_press (GdkEventKey* ev)
 {
-	bool ret = false;
-
-	switch (ev->keyval) {
-
-	// Num keys
-	case GDK_0:
-	case GDK_parenright:
-	case GDK_1:
-	case GDK_exclam:
-	case GDK_2:
-	case GDK_at:
-	case GDK_3:
-	case GDK_numbersign:
-	case GDK_4:
-	case GDK_dollar:
-	case GDK_5:
-	case GDK_percent:
-	case GDK_6:
-	case GDK_caret:
-	case GDK_7:
-	case GDK_ampersand:
-	case GDK_8:
-	case GDK_asterisk:
-	case GDK_9:
-	case GDK_parenleft:
-	case GDK_a:
-	case GDK_A:
-	case GDK_b:
-	case GDK_B:
-	case GDK_c:
-	case GDK_C:
-	case GDK_d:
-	case GDK_D:
-	case GDK_e:
-	case GDK_E:
-	case GDK_f:
-	case GDK_F:
-		ret = step_editing_set_note_velocity_digit (digit_key_press (ev));
-		break;
-
-	// Cursor movements
-	case GDK_Up:
-	case GDK_uparrow:
-	case GDK_Down:
-	case GDK_downarrow:
-	case GDK_Left:
-	case GDK_leftarrow:
-	case GDK_Right:
-	case GDK_rightarrow:
-	case GDK_Tab:
-	case GDK_Page_Up:
-	case GDK_Page_Down:
-	case GDK_Home:
-	case GDK_End:
-		ret = move_current_cursor_key_press (ev);
-		break;
-
-	// Set shift modifier (TODO: very hacky way)
-	case GDK_Shift_L:
-	case GDK_Shift_R:
-		ret = shift_key_press ();
-		break;
-
-	// Cell edit
-	case GDK_Return:
-		set_cursor (current_path, *to_col (current_col_idx), true);
-		ret = true;
-		break;
-
-	default:
-		break;
-	}
-
-	return ret;
+	return step_editing_typed_key_press (ev, &Grid::step_editing_set_note_velocity_digit, false, nullptr);
 }
 
 bool
@@ -5870,99 +5933,7 @@ Grid::step_editing_set_note_velocity (uint8_t vel)
 bool
 Grid::step_editing_note_delay_key_press (GdkEventKey* ev)
 {
-	bool ret = false;
-
-	switch (ev->keyval) {
-
-	// Num keys
-	case GDK_0:
-	case GDK_parenright:
-	case GDK_1:
-	case GDK_exclam:
-	case GDK_2:
-	case GDK_at:
-	case GDK_3:
-	case GDK_numbersign:
-	case GDK_4:
-	case GDK_dollar:
-	case GDK_5:
-	case GDK_percent:
-	case GDK_6:
-	case GDK_caret:
-	case GDK_7:
-	case GDK_ampersand:
-	case GDK_8:
-	case GDK_asterisk:
-	case GDK_9:
-	case GDK_parenleft:
-	case GDK_a:
-	case GDK_A:
-	case GDK_b:
-	case GDK_B:
-	case GDK_c:
-	case GDK_C:
-	case GDK_d:
-	case GDK_D:
-	case GDK_e:
-	case GDK_E:
-	case GDK_f:
-	case GDK_F:
-		ret = step_editing_set_note_delay (digit_key_press (ev));
-		break;
-
-	// Minus
-	case GDK_minus:
-	case GDK_underscore:
-		ret = step_editing_set_note_delay (-1);
-		break;
-
-	// Plus
-	case GDK_plus:
-	case GDK_equal:
-		ret = step_editing_set_note_delay (100);
-		break;
-
-	// Cursor movements
-	case GDK_Up:
-	case GDK_uparrow:
-	case GDK_Down:
-	case GDK_downarrow:
-	case GDK_Left:
-	case GDK_leftarrow:
-	case GDK_Right:
-	case GDK_rightarrow:
-	case GDK_Tab:
-	case GDK_Page_Up:
-	case GDK_Page_Down:
-	case GDK_Home:
-	case GDK_End:
-		ret = move_current_cursor_key_press (ev);
-		break;
-
-	// Set shift modifier (TODO: very hacky way)
-	case GDK_Shift_L:
-	case GDK_Shift_R:
-		ret = shift_key_press ();
-		break;
-
-	// Delete note delay
-	case GDK_BackSpace:
-	case GDK_Delete:
-		ret = step_editing_delete_note_delay ();
-		break;
-
-	// Cell edit
-	case GDK_Return:
-		// TODO: when leaving text editing underline should be reset
-		set_cursor (current_path, *to_col (current_col_idx), true);
-		ret = true;
-		break;
-
-	default:
-		break;
-	}
-
-	return ret;
+	return step_editing_typed_key_press (ev, &Grid::step_editing_set_note_delay, true, &Grid::step_editing_delete_note_delay);
 }
 
 bool
@@ -5999,100 +5970,7 @@ Grid::step_editing_delete_note_delay ()
 bool
 Grid::step_editing_automation_key_press (GdkEventKey* ev)
 {
-	bool ret = false;
-
-	switch (ev->keyval) {
-
-	// Num keys
-	case GDK_0:
-	case GDK_parenright:
-	case GDK_1:
-	case GDK_exclam:
-	case GDK_2:
-	case GDK_at:
-	case GDK_3:
-	case GDK_numbersign:
-	case GDK_4:
-	case GDK_dollar:
-	case GDK_5:
-	case GDK_percent:
-	case GDK_6:
-	case GDK_caret:
-	case GDK_7:
-	case GDK_ampersand:
-	case GDK_8:
-	case GDK_asterisk:
-	case GDK_9:
-	case GDK_parenleft:
-	case GDK_a:
-	case GDK_A:
-	case GDK_b:
-	case GDK_B:
-	case GDK_c:
-	case GDK_C:
-	case GDK_d:
-	case GDK_D:
-	case GDK_e:
-	case GDK_E:
-	case GDK_f:
-	case GDK_F:
-		ret = step_editing_set_automation_value (digit_key_press (ev));
-		break;
-
-	// Minus
-	case GDK_minus:
-	case GDK_underscore:
-		// Change sign
-		ret = step_editing_set_automation_value (-1);
-		break;
-
-	// Plus
-	case GDK_plus:
-	case GDK_equal:
-		// Delete automation
-		ret = step_editing_set_automation_value (100);
-		break;
-
-	// Cursor movements
-	case GDK_Up:
-	case GDK_uparrow:
-	case GDK_Down:
-	case GDK_downarrow:
-	case GDK_Left:
-	case GDK_leftarrow:
-	case GDK_Right:
-	case GDK_rightarrow:
-	case GDK_Tab:
-	case GDK_Page_Up:
-	case GDK_Page_Down:
-	case GDK_Home:
-	case GDK_End:
-		ret = move_current_cursor_key_press (ev);
-		break;
-
-	// Set shift modifier (TODO: very hacky way)
-	case GDK_Shift_L:
-	case GDK_Shift_R:
-		ret = shift_key_press ();
-		break;
-
-	// Delete automation
-	case GDK_BackSpace:
-	case GDK_Delete:
-		ret = step_editing_delete_automation ();
-		break;
-
-	// Cell edit
-	case GDK_Return:
-		set_cursor (current_path, *to_col (current_col_idx), true);
-		ret = true;
-		break;
-
-	default:
-		break;
-	}
-
-	return ret;
+	return step_editing_typed_key_press (ev, &Grid::step_editing_set_automation_value, true, &Grid::step_editing_delete_automation);
 }
 
 bool
@@ -6153,98 +6031,7 @@ Grid::step_editing_delete_automation ()
 bool
 Grid::step_editing_automation_delay_key_press (GdkEventKey* ev)
 {
-	bool ret = false;
-
-	switch (ev->keyval) {
-
-	// Num keys
-	case GDK_0:
-	case GDK_parenright:
-	case GDK_1:
-	case GDK_exclam:
-	case GDK_2:
-	case GDK_at:
-	case GDK_3:
-	case GDK_numbersign:
-	case GDK_4:
-	case GDK_dollar:
-	case GDK_5:
-	case GDK_percent:
-	case GDK_6:
-	case GDK_caret:
-	case GDK_7:
-	case GDK_ampersand:
-	case GDK_8:
-	case GDK_asterisk:
-	case GDK_9:
-	case GDK_parenleft:
-	case GDK_a:
-	case GDK_A:
-	case GDK_b:
-	case GDK_B:
-	case GDK_c:
-	case GDK_C:
-	case GDK_d:
-	case GDK_D:
-	case GDK_e:
-	case GDK_E:
-	case GDK_f:
-	case GDK_F:
-		ret = step_editing_set_automation_delay (digit_key_press (ev));
-		break;
-
-	// Minus
-	case GDK_minus:
-	case GDK_underscore:
-		ret = step_editing_set_automation_delay (-1);
-		break;
-
-	// Plus
-	case GDK_plus:
-	case GDK_equal:
-		ret = step_editing_set_automation_delay (100);
-		break;
-
-	// Cursor movements
-	case GDK_Up:
-	case GDK_uparrow:
-	case GDK_Down:
-	case GDK_downarrow:
-	case GDK_Left:
-	case GDK_leftarrow:
-	case GDK_Right:
-	case GDK_rightarrow:
-	case GDK_Tab:
-	case GDK_Page_Up:
-	case GDK_Page_Down:
-	case GDK_Home:
-	case GDK_End:
-		ret = move_current_cursor_key_press (ev);
-		break;
-
-	// Set shift modifier (TODO: very hacky way)
-	case GDK_Shift_L:
-	case GDK_Shift_R:
-		ret = shift_key_press ();
-		break;
-
-	// Delete automation delay
-	case GDK_BackSpace:
-	case GDK_Delete:
-		ret = step_editing_delete_automation_delay ();
-		break;
-
-	// Cell edit
-	case GDK_Return:
-		set_cursor (current_path, *to_col (current_col_idx), true);
-		ret = true;
-		break;
-
-	default:
-		break;
-	}
-
-	return ret;
+	return step_editing_typed_key_press (ev, &Grid::step_editing_set_automation_delay, true, &Grid::step_editing_delete_automation_delay);
 }
 
 bool

@@ -19,6 +19,7 @@
 #ifndef __ardour_tracker_tracker_utils_h_
 #define __ardour_tracker_tracker_utils_h_
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <regex>
@@ -230,6 +231,11 @@ public:
 	template <typename Num>
 	static bool is_number (const std::string& str, int base=10)
 	{
+		// The regex below matches empty integer and fractional parts, so
+		// require at least one digit for the string to count as a number.
+		if (str.find_first_of (base == 16 ? "0123456789abcdefABCDEF" : "0123456789") == std::string::npos) {
+			return false;
+		}
 		const std::string sign = "(\\+|-)?";
 		const std::string digit = base == 16 ? "[0-9a-fA-F]" : "[0-9]";
 		const std::string digits = "(" + digit + "*)";
@@ -359,14 +365,6 @@ public:
 		return padded_val_str;
 	}
 
-	// Make it up for the lack of C++11 support
-	template<typename T> static std::string to_string (const T& v)
-	{
-		std::stringstream ss;
-		ss << v;
-		return ss.str ();
-	}
-
 	// Calculate the midi note pitch given the octave and the number of
 	// semitones within this octave
 	static uint8_t pitch (uint8_t semitones, int octave);
@@ -375,30 +373,62 @@ public:
 	// number is missing then the default one is used.
 	static uint8_t parse_pitch (std::string text, int default_octave);
 
-	// Given a list of chronologically ordered, non overlapping regions, return
-	// the position of the earliest one.  If empty then return 0.
-	static Temporal::timepos_t get_position (const RegionSeq& regions);
-	static Temporal::timepos_t get_position (const MidiRegionSeq& regions);
+	// Given a sequence of chronologically ordered, non overlapping regions,
+	// return the position of the earliest one.  If empty then return 0.
+	template <typename Seq>
+	static Temporal::timepos_t get_position (const Seq& regions)
+	{
+		if (regions.empty ())
+			return Temporal::timepos_t ();
+
+		Temporal::timepos_t position = regions.front ()->position ();
+		for (typename Seq::const_reference r : regions) {
+			position = std::min (position, r->position ());
+		}
+		return position;
+	}
 	static Temporal::timepos_t get_position (const TrackRegionsMap& regions_per_track);
 
-	// Given a list of chronologically ordered, non overlapping regions, return
-	// the length between the very first position of the position very last + 1.
-	// If empty then return 0.
-	static Temporal::timecnt_t get_length (const RegionSeq& regions);
-	static Temporal::timecnt_t get_length (const MidiRegionSeq& regions);
+	// Given a sequence of chronologically ordered, non overlapping regions,
+	// return the length between the very first position and the position of
+	// the very last + 1.  If empty then return 0.
+	template <typename Seq>
+	static Temporal::timecnt_t get_length (const Seq& regions)
+	{
+		return get_position (regions).distance (get_end (regions));
+	}
 	static Temporal::timecnt_t get_length (const TrackRegionsMap& regions_per_track);
 
-	// Given a list of chronologically ordered, non overlapping regions, return
-	// the very first sample (it looks identical to get_regions_position).  If
-	// empty then return 0.
-	static Temporal::timepos_t get_end (const RegionSeq& regions);
-	static Temporal::timepos_t get_end (const MidiRegionSeq& regions);
+	// Given a sequence of chronologically ordered, non overlapping regions,
+	// return the very last position.  If empty then return 0.
+	template <typename Seq>
+	static Temporal::timepos_t get_end (const Seq& regions)
+	{
+		if (regions.empty ())
+			return Temporal::timepos_t ();
+
+		Temporal::timepos_t end = regions.front ()->end_position ();
+		for (typename Seq::const_reference r : regions) {
+			end = std::max (end, r->end_position ());
+		}
+		return end;
+	}
 	static Temporal::timepos_t get_end (const TrackRegionsMap& regions_per_track);
 
-	// Given a list of chronologically ordered, non overlapping regions, return
-	// the position of the last sample.  If empty then return 0.
-	static Temporal::timepos_t get_nt_last (const RegionSeq& regions);
-	static Temporal::timepos_t get_nt_last (const MidiRegionSeq& regions);
+	// Given a sequence of chronologically ordered, non overlapping regions,
+	// return the position of the last sample.  If empty then return 0.
+	template <typename Seq>
+	static Temporal::timepos_t get_nt_last (const Seq& regions)
+	{
+		if (regions.empty ())
+			return Temporal::timepos_t ();
+
+		Temporal::timepos_t nt_last = regions.front ()->nt_last ();
+		for (typename Seq::const_reference r : regions) {
+			nt_last = std::max (nt_last, r->nt_last ());
+		}
+		return nt_last;
+	}
 	static Temporal::timepos_t get_nt_last (const TrackRegionsMap& regions_per_track);
 
 	// Compare if two notes have the same on note attributes

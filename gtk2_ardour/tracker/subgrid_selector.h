@@ -89,6 +89,12 @@ public:
 
 	std::string to_string (std::string indent="") const;
 
+private:
+	// Return the leftmost column index >= col_idx that is both editable
+	// and visible, or the grid's column count when none qualifies.
+	int next_data_col (int col_idx) const;
+
+public:
 	TrackerEditor& tracker_editor;
 
 	// Source cell location (first selected cell). Negative means undefined.

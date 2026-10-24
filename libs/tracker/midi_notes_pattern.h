@@ -196,6 +196,33 @@ public:
 	std::vector<RowToNotes> off_notes;
 
 private:
+	// Return the row of the on (resp. off) occurrence of the note
+	// designated by inote, located by the given row selector.  Rows of off
+	// notes located before the on row of the note are rejected and
+	// INVALID_ROW is returned instead.  INVALID_ROW is also returned if
+	// inote is invalid.
+	//
+	// The selector is a plain enum (rather than a pointer to member
+	// function) so that this stays a direct, inlinable call: it sits in the
+	// innermost loop of update_row_to_notes ().
+	enum class RowSelector {
+		CENTERED,  // row_at_beats
+		PREVIOUS,  // row_at_beats_max_delay
+		NEXT       // row_at_beats_min_delay
+	};
+	int row_at_note_time (uint16_t cgi, ARDOUR::MidiModel::Notes::iterator inote, bool on, RowSelector sel) const;
+
+	// Given candidate rows centered, previous and next around a note, and
+	// the row that note used to occupy (INVALID_ROW if none), return the
+	// row placement candidate of the given rank (0 to 2, INVALID_ROW if
+	// out of range).
+	int ranked_row_suggestion (int cent_row, int prev_row, int next_row, int prev_note_row, int rank) const;
+
+	// Find the previous (resp. next) note of a given row in the given
+	// row-to-notes map.  Return a null pointer if there is none.
+	NotePtr find_prev_note (const RowToNotes& r2n, int row) const;
+	NotePtr find_next_note (const RowToNotes& r2n, int row) const;
+
 	// Given a range of notes gotten from RowToNotesRange, return a pointer to
 	// the earliest (resp. lattest) note.
 	NotePtr earliest (const RowToNotesRange& rng) const;
@@ -239,10 +266,15 @@ private:
 
 	static bool overlap (NotePtr a, NotePtr b);
 
-	// Used to temporarily save the state of on_notes and off_notes during
-	// update
-	std::vector<RowToNotes> _prev_on_notes;
-	std::vector<RowToNotes> _prev_off_notes;
+	// Owned note clones from the previous snapshot, keyed by the event id of
+	// the live note they were taken from.  Lets operator= only allocate a
+	// clone for the notes that actually changed.
+	std::map<Evoral::event_id_t, NotePtr> _snapshot_notes;
+
+	// Return the clone to use in a snapshot for the given (live) note,
+	// reusing the clone already owned from the previous snapshot when its
+	// attributes - the ones the phenomenal diff compares - are unchanged.
+	NotePtr snapshot_note (NotePtr note) const;
 
 	// Mapping from on note pointer to row per cgi.  Used to minimize the amount
 	// of movements of a note.
