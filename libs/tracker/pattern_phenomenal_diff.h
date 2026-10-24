@@ -28,11 +28,24 @@ namespace Tracker {
 // Represent the differences that may impact grid rendition. For now only a
 // set of mti that have changed.
 struct PatternPhenomenalDiff : public BasePatternPhenomenalDiff {
+	PatternPhenomenalDiff () = default;
+	// Non-copyable but movable: mti2tp_diff owns raw pointers.
+	PatternPhenomenalDiff (const PatternPhenomenalDiff&) = delete;
+	PatternPhenomenalDiff& operator= (const PatternPhenomenalDiff&) = delete;
+	PatternPhenomenalDiff (PatternPhenomenalDiff&&) = default;
+	// Defined out of line: it must release the previously owned diffs.
+	PatternPhenomenalDiff& operator= (PatternPhenomenalDiff&& other);
+	~PatternPhenomenalDiff ();
+
 	typedef std::map<int, TrackPatternPhenomenalDiff*> Mti2TrackPatternDiff;
+	// Owned by this diff, see ~PatternPhenomenalDiff
 	Mti2TrackPatternDiff mti2tp_diff;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
+
+private:
+	void release ();
 };
 
 } // ~namespace Tracker

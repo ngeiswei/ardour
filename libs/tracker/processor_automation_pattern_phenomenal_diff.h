@@ -19,15 +19,8 @@
 #ifndef __ardour_tracker_processor_pattern_phenomenal_diff_h_
 #define __ardour_tracker_processor_pattern_phenomenal_diff_h_
 
-#include "automation_pattern_phenomenal_diff.h"
-
-namespace Tracker {
-
-// Represent the differences that may impact grid rendition.
-struct ProcessorAutomationPatternPhenomenalDiff : public AutomationPatternPhenomenalDiff
-{
-};
-
-} // ~namespace Tracker
+/* ProcessorAutomationPatternPhenomenalDiff used to be defined here as an
+ * empty subclass of AutomationPatternPhenomenalDiff.  It has been removed
+ * as redundant; use AutomationPatternPhenomenalDiff directly instead. */
 
 #endif /* __ardour_tracker_processor_pattern_phenomenal_diff_h_ */

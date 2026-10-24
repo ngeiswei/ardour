@@ -22,6 +22,8 @@
 #include <memory>
 #include <vector>
 
+#include <sigc++/connection.h>
+
 #include <boost/bimap/bimap.hpp>
 
 #include <ydkmm/color.h>
@@ -38,6 +40,10 @@
 #include "tracker_column.h"
 #include "tracker_utils.h"
 #include "subgrid_selector.h"
+
+namespace Gtk {
+class CheckMenuItem;
+}
 
 namespace Tracker {
 
@@ -140,6 +146,9 @@ public:
 	// Return true iff there exists some automation in that mti that is visible
 	bool has_visible_automation (int mti) const;
 
+	// Return true if the given column is currently visible
+	bool is_main_column_visible (int column) const;
+
 	// Return true if the gain column is visible
 	bool is_gain_visible (int mti) const;
 	bool is_trim_visible (int mti) const;
@@ -149,6 +158,16 @@ public:
 	void update_trim_column_visibility (int mti);
 	void update_mute_column_visibility (int mti);
 	void update_pan_columns_visibility (int mti);
+
+private:
+	// Shared implementation of update_{gain,trim,mute}_column_visibility:
+	// allocate a column for param if needed, then set its visibility from
+	// the menu item state and redisplay.  The column store is passed (rather
+	// than one of its elements by reference) because add_main_automation_column
+	// may rebuild the schema, which clears and refills these vectors.
+	void update_main_automation_column_visibility (int mti, Gtk::CheckMenuItem* item, std::vector<int>& columns, const Evoral::Parameter& param);
+
+public:
 
 	////////////////////////
 	// Display Pattern    //
@@ -209,7 +228,7 @@ public:
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, int mti);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, int mti); // Display undefined notes at row and mti
 	void redisplay_undefined_note (Gtk::TreeModel::Row& row, int mti, int cgi); // Display undefined note at row, mti and cgi
-	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int row_idx, int mti);
+	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int mti, const ParameterSet& enabled_params);
 	void redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_note_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_current_note_cursor (Gtk::TreeModel::Row& row, int mti, int cgi);
@@ -456,6 +475,16 @@ private:
 	void horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int s, bool group, bool track, bool jump=false);
 
 	int digit_key_press (GdkEventKey* ev);
+
+	// Shared implementation of the step editing key handlers for columns
+	// holding a numerical value (channel, velocity, delay, automation value
+	// and automation delay): digits call set_digit, minus/plus are
+	// optionally mapped to set_digit (-1) / set_digit (100), cursor keys
+	// move the cursor, Return enters cell editing and BackSpace/Delete call
+	// delete_fn when provided.
+	typedef bool (Grid::*StepDigitFn) (int);
+	typedef bool (Grid::*StepVoidFn) ();
+	bool step_editing_typed_key_press (GdkEventKey* ev, StepDigitFn set_digit, bool allow_sign, StepVoidFn delete_fn);
 	uint8_t pitch_key (GdkEventKey* ev);
 
 	/////////////////////////
@@ -909,6 +938,18 @@ private:
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
 	PatternPhenomenalDiff _phenomenal_diff;
+
+	// A single edit typically emits several model signals (ContentsChanged,
+	// PropertyChanged, StateChanged, ...), and every one of them used to run
+	// the whole pattern update.  redisplay_grid_connect_call() only schedules
+	// one redisplay per event loop turn instead.
+	sigc::connection _redisplay_idle;
+	bool on_redisplay_idle ();
+
+	// Run a scheduled coalesced redisplay right away, if any, so that code
+	// which is about to read the pattern (cursor moves, cell lookups) sees an
+	// up to date model.
+	void flush_pending_redisplay ();
 
 	// Numeric base (10 or 16) last used to render the grid.  Toggling hex
 	// changes the base, which the phenomenal diff does not capture, so a base

@@ -49,6 +49,13 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerContext& te,
 	setup_processors_automation_controls ();
 }
 
+TrackAllAutomationsPattern::~TrackAllAutomationsPattern ()
+{
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		delete idpap.second;
+	}
+}
+
 TrackAllAutomationsPatternPhenomenalDiff
 TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& prev) const
 {
@@ -106,7 +113,10 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 		return;
 	}
 
-	// NEXT: deal with memory leak
+	// Owned by id_to_processor_automation_pattern, see
+	// ~TrackAllAutomationsPattern.  Delete any pre-existing pattern for
+	// that processor to remain leak-free if setup is run twice.
+	delete id_to_processor_automation_pattern[processor->id ()];
 	id_to_processor_automation_pattern[processor->id()] =
 		new ProcessorAutomationPattern(context, track, position, length, end, nt_last, connect, processor);
 }
@@ -138,287 +148,142 @@ TrackAllAutomationsPattern::update ()
 	}
 }
 
+AutomationPattern*
+TrackAllAutomationsPattern::automation_pattern (const PBD::ID& id)
+{
+	// Delegate to the const overload
+	return const_cast<AutomationPattern*> (static_cast<const TrackAllAutomationsPattern*> (this)->automation_pattern (id));
+}
+
+const AutomationPattern*
+TrackAllAutomationsPattern::automation_pattern (const PBD::ID& id) const
+{
+	if (id == 0) {
+		return &main_automation_pattern;
+	}
+	auto it = id_to_processor_automation_pattern.find (id);
+	if (it != id_to_processor_automation_pattern.end ()) {
+		return it->second;
+	}
+	std::cerr << "Cannot find processor in TrackAllAutomationsPattern (id=" << id.to_s () << ")" << std::endl;
+	return nullptr;
+}
+
 void
 TrackAllAutomationsPattern::insert (const IDParameter& id_param)
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		main_automation_pattern.insert (param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			it->second->insert (param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::insert (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-		}
+	if (AutomationPattern* ap = automation_pattern (id_param.first)) {
+		ap->insert (id_param.second);
 	}
 }
 
 bool
 TrackAllAutomationsPattern::is_empty (const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.is_empty (param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->is_empty (param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return false;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->is_empty (id_param.second) : false;
 }
 
 bool
 TrackAllAutomationsPattern::is_displayable (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.is_displayable (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->is_displayable (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_empty (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return false;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->is_displayable (rowi, id_param.second) : false;
 }
 
 size_t
 TrackAllAutomationsPattern::control_events_count (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.control_events_count (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->control_events_count (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::control_events_count (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return 0;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->control_events_count (rowi, id_param.second) : 0;
 }
 
 std::vector<Temporal::BBT_Time>
 TrackAllAutomationsPattern::get_automation_bbt_seq (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_automation_bbt_seq (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_automation_bbt_seq (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_bbt_seq (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return std::vector<Temporal::BBT_Time>();
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_automation_bbt_seq (rowi, id_param.second) : std::vector<Temporal::BBT_Time> ();
 }
 
 std::pair<double, bool>
 TrackAllAutomationsPattern::get_automation_value (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_automation_value (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_automation_value (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_value (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return std::pair<double, bool>();
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_automation_value (rowi, id_param.second) : std::pair<double, bool> ();
 }
 
 std::vector<double>
 TrackAllAutomationsPattern::get_automation_value_seq (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_automation_value_seq (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_automation_value_seq (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_value_seq (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return std::vector<double>();
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_automation_value_seq (rowi, id_param.second) : std::vector<double> ();
 }
 
 double
 TrackAllAutomationsPattern::get_automation_interpolation_value (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_automation_interpolation_value (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_automation_interpolation_value (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_interpolation_value (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return 0.0;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_automation_interpolation_value (rowi, id_param.second) : 0.0;
 }
 
 void
 TrackAllAutomationsPattern::set_automation_value (double val, int rowi, const IDParameter& id_param, int delay)
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		main_automation_pattern.set_automation_value (val, rowi, param, delay);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			it->second->set_automation_value (val, rowi, param, delay);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_automation_value (val=" << val << ", rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ", delay=" << delay << ")" << std::endl;
-		}
+	if (AutomationPattern* ap = automation_pattern (id_param.first)) {
+		ap->set_automation_value (val, rowi, id_param.second, delay);
 	}
 }
 
 void
 TrackAllAutomationsPattern::delete_automation_value (int rowi, const IDParameter& id_param)
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		main_automation_pattern.delete_automation_value (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			it->second->delete_automation_value (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::delete_automation_value (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-		}
+	if (AutomationPattern* ap = automation_pattern (id_param.first)) {
+		ap->delete_automation_value (rowi, id_param.second);
 	}
 }
 
 std::pair<int, bool>
 TrackAllAutomationsPattern::get_automation_delay (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_automation_delay (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_automation_delay (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_delay (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return std::pair<int, bool>();
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_automation_delay (rowi, id_param.second) : std::pair<int, bool> ();
 }
 
 std::vector<int>
 TrackAllAutomationsPattern::get_automation_delay_seq (int rowi, const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_automation_delay_seq (rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_automation_delay_seq (rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_automation_delay_seq (rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return std::vector<int>();
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_automation_delay_seq (rowi, id_param.second) : std::vector<int> ();
 }
 
 void
 TrackAllAutomationsPattern::set_automation_delay (int delay, int rowi, const IDParameter& id_param)
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		main_automation_pattern.set_automation_delay (delay, rowi, param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			it->second->set_automation_delay (delay, rowi, param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_automation_delay (delay=" << delay << ", rowi=" << rowi << ", id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-		}
+	if (AutomationPattern* ap = automation_pattern (id_param.first)) {
+		ap->set_automation_delay (delay, rowi, id_param.second);
 	}
 }
 
 std::string
 TrackAllAutomationsPattern::get_name (const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.get_name (param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->get_name (param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::get_name (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return "";
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->get_name (id_param.second) : "";
 }
 
 void
 TrackAllAutomationsPattern::set_param_enabled (const IDParameter& id_param, bool enabled)
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		main_automation_pattern.set_param_enabled (param, enabled);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			it->second->set_param_enabled (param, enabled);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::set_param_enabled (id_param=" << TrackerUtils::id_param_to_string (id_param) << ", enabled=" << enabled << ")" << std::endl;
-		}
+	if (AutomationPattern* ap = automation_pattern (id_param.first)) {
+		ap->set_param_enabled (id_param.second, enabled);
 	}
 }
 
 bool
 TrackAllAutomationsPattern::is_param_enabled (const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.is_param_enabled (param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->is_param_enabled (param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::is_param_enabled (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return false;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->is_param_enabled (id_param.second) : false;
 }
 
 IDParameterSet
@@ -441,37 +306,15 @@ TrackAllAutomationsPattern::get_enabled_parameters () const
 double
 TrackAllAutomationsPattern::lower (const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.lower (param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->lower (param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::lower (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return 0.0;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->lower (id_param.second) : 0.0;
 }
 
 double
 TrackAllAutomationsPattern::upper (const IDParameter& id_param) const
 {
-	const PBD::ID& id = id_param.first;
-	const Evoral::Parameter& param = id_param.second;
-	if (id == 0) {
-		return main_automation_pattern.upper (param);
-	} else {
-		auto it = id_to_processor_automation_pattern.find (id);
-		if (it != id_to_processor_automation_pattern.end()) {
-			return it->second->upper (param);
-		} else {
-			std::cerr << "Cannot find processor in TrackAllAutomationsPattern::upper (id_param=" << TrackerUtils::id_param_to_string (id_param) << ")" << std::endl;
-			return 0.0;
-		}
-	}
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap ? ap->upper (id_param.second) : 0.0;
 }
 
 std::string

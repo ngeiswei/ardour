@@ -16,6 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "pbd/error.h"
+
 #include "ardour/session.h"
 
 #include "audio_track_pattern.h"
@@ -69,7 +71,7 @@ Pattern::operator= (const Pattern& other)
 			assert (other.tps[mti]->is_audio_track_pattern ());
 			tps[mti]->audio_track_pattern ()->operator= (*other.tps[mti]->audio_track_pattern ());
 		} else {
-			std::cout << "Not implemented" << std::endl;
+			PBD::error << "Pattern::operator=: track pattern type not implemented" << endmsg;
 		}
 	}
 	earliest_mti = other.earliest_mti;
@@ -101,10 +103,13 @@ Pattern::phenomenal_diff (const Pattern& prev) const
 
 	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		// TODO: take care of the memory leak
+		// The returned diff object is either stored in mti2tp_diff (which
+		// owns it), or destroyed if empty.
 		TrackPatternPhenomenalDiff* tp_diff = tps[mti]->phenomenal_diff_ptr (prev.tps[mti]);
 		if (!tp_diff->empty ()) {
 			diff.mti2tp_diff[mti] = tp_diff;
+		} else {
+			delete tp_diff;
 		}
 	}
 	return diff;
@@ -155,7 +160,7 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
 	MidiTrackPtr midi_track = std::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
-		// TODO: fix memory leak
+		// Owned by tps, see ~Pattern
 		MidiTrackPattern* mtp = new MidiTrackPattern (context, track, regions,
 		                                              position, length, end, nt_last, _connect);
 		tps.push_back (mtp);
@@ -326,7 +331,7 @@ Pattern::is_note_displayable (int rowi, int mti, int mri, int cgi) const
 NotePtr
 Pattern::off_note (int rowi, int mti, int mri, int cgi) const
 {
-	if ((int)tps.size () <= mti)
+	if (mti < 0 || (int)tps.size () <= mti)
 		return nullptr;
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	if (!mtp or (int)mtp->mrps.size () <= mri)
@@ -345,7 +350,7 @@ Pattern::off_note (int rowi, int mti, int mri, int cgi) const
 NotePtr
 Pattern::on_note (int rowi, int mti, int mri, int cgi) const
 {
-	if (mti < 0 && (int)tps.size () <= mti)
+	if (mti < 0 || (int)tps.size () <= mti)
 		return nullptr;
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	if (!mtp or (int)mtp->mrps.size () <= mri)
@@ -364,7 +369,7 @@ Pattern::on_note (int rowi, int mti, int mri, int cgi) const
 RowToNotesRange
 Pattern::off_notes_range (int row_idx, int mti, int mri, int cgi) const
 {
-	if (mti < 0 && (int)tps.size () <= mti)
+	if (mti < 0 || (int)tps.size () <= mti)
 		return RowToNotesRange ();
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	if (!mtp or (int)mtp->mrps.size () <= mri)
@@ -379,7 +384,7 @@ Pattern::off_notes_range (int row_idx, int mti, int mri, int cgi) const
 RowToNotesRange
 Pattern::on_notes_range (int row_idx, int mti, int mri, int cgi) const
 {
-	if (mti < 0 && (int)tps.size () <= mti)
+	if (mti < 0 || (int)tps.size () <= mti)
 		return RowToNotesRange ();
 	const MidiTrackPattern* mtp = tps[mti]->midi_track_pattern ();
 	if (!mtp or (int)mtp->mrps.size () <= mri)

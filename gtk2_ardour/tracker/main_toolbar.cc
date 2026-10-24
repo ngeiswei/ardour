@@ -222,7 +222,7 @@ MainToolbar::setup_layout ()
 	// Chord mode buttom
 	chord_mode_button.set_name ("mouse mode button");
 	chord_mode_button.set_text (S_("Chord Mode"));
-	chord_mode_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::chord_mode_press), false);
+	chord_mode_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_chord_mode), false);
 	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	chord_mode_button.show ();
 	mr->pack_start (chord_mode_button, false, false);
@@ -232,7 +232,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (overwrite_default_separator, false, false);
 	overwrite_default_button.set_name ("mouse mode button");
 	overwrite_default_button.set_text (S_("Overwrite Default"));
-	overwrite_default_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_default_press), false);
+	overwrite_default_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_overwrite_default), false);
 	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_default_button.show ();
 	mr->pack_start (overwrite_default_button, false, false);
@@ -242,7 +242,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (overwrite_existing_separator, false, false);
 	overwrite_existing_button.set_name ("mouse mode button");
 	overwrite_existing_button.set_text (S_("Overwrite Existing"));
-	overwrite_existing_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_existing_press), false);
+	overwrite_existing_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_overwrite_existing), false);
 	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_existing_button.show ();
 	mr->pack_start (overwrite_existing_button, false, false);
@@ -252,7 +252,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (overwrite_star_separator, false, false);
 	overwrite_star_button.set_name ("mouse mode button");
 	overwrite_star_button.set_text (S_("Overwrite ***"));
-	overwrite_star_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::overwrite_star_press), false);
+	overwrite_star_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_overwrite_star), false);
 	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	overwrite_star_button.show ();
 	mr->pack_start (overwrite_star_button, false, false);
@@ -262,7 +262,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (sync_playhead_separator, false, false);
 	sync_playhead_button.set_name ("mouse mode button");
 	sync_playhead_button.set_text (S_("Sync Playhead"));
-	sync_playhead_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::sync_playhead_press), false);
+	sync_playhead_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_sync_playhead), false);
 	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	sync_playhead_button.show ();
 	mr->pack_start (sync_playhead_button, false, false);
@@ -272,7 +272,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (jump_separator, false, false);
 	jump_button.set_name ("mouse mode button");
 	jump_button.set_text (S_("Jump"));
-	jump_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::jump_press), false);
+	jump_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_jump), false);
 	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	jump_button.show ();
 	mr->pack_start (jump_button, false, false);
@@ -282,7 +282,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (wrap_separator, false, false);
 	wrap_button.set_name ("mouse mode button");
 	wrap_button.set_text (S_("Wrap"));
-	wrap_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &MainToolbar::wrap_press), false);
+	wrap_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_wrap), false);
 	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 	wrap_button.show ();
 	mr->pack_start (wrap_button, false, false);
@@ -399,15 +399,15 @@ MainToolbar::register_actions ()
 	Glib::RefPtr<Gtk::ActionGroup> tracker_actions = ActionManager::create_action_group (bindings, X_("Tracker"));
 
 	// Mode toggles
-	ActionManager::register_action (tracker_actions, X_("toggle-step-edit"), _("Toggle Step Edit"), sigc::ptr_fun (&MainToolbar::toggle_step_edit_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-chord-mode"), _("Toggle Chord Mode"), sigc::ptr_fun (&MainToolbar::toggle_chord_mode_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-default"), _("Toggle Overwrite Default"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_default_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-existing"), _("Toggle Overwrite Existing"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_existing_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite ***"), sigc::ptr_fun (&MainToolbar::toggle_overwrite_star_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::ptr_fun (&MainToolbar::toggle_sync_playhead_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::ptr_fun (&MainToolbar::toggle_jump_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::ptr_fun (&MainToolbar::toggle_wrap_action));
-	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hexadecimal"), sigc::ptr_fun (&MainToolbar::toggle_hex_action));
+	ActionManager::register_action (tracker_actions, X_("toggle-step-edit"), _("Toggle Step Edit"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_step_edit));
+	ActionManager::register_action (tracker_actions, X_("toggle-chord-mode"), _("Toggle Chord Mode"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_chord_mode));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-default"), _("Toggle Overwrite Default"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_overwrite_default));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-existing"), _("Toggle Overwrite Existing"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_overwrite_existing));
+	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite ***"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_overwrite_star));
+	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_sync_playhead));
+	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_jump));
+	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_wrap));
+	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hexadecimal"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_hex));
 
 	// Value adjustments
 	ActionManager::register_action (tracker_actions, X_("increase-step-size"), _("Increase Step Size"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::STEP_SIZE, 1));
@@ -428,10 +428,10 @@ MainToolbar::register_actions ()
 	ActionManager::register_action (tracker_actions, X_("decrease-rows-per-beat"), _("Decrease Rows per Beat"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::ROWS_PER_BEAT, -1));
 
 	// Cut/copy/paste
-	ActionManager::register_action (tracker_actions, X_("cut"), _("Cut"), sigc::ptr_fun (&MainToolbar::cut_action));
-	ActionManager::register_action (tracker_actions, X_("copy"), _("Copy"), sigc::ptr_fun (&MainToolbar::copy_action));
-	ActionManager::register_action (tracker_actions, X_("paste"), _("Paste"), sigc::ptr_fun (&MainToolbar::paste_action));
-	ActionManager::register_action (tracker_actions, X_("paste-overlay"), _("Paste Overlay"), sigc::ptr_fun (&MainToolbar::paste_overlay_action));
+	ActionManager::register_action (tracker_actions, X_("cut"), _("Cut"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::cut));
+	ActionManager::register_action (tracker_actions, X_("copy"), _("Copy"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::copy));
+	ActionManager::register_action (tracker_actions, X_("paste"), _("Paste"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::paste));
+	ActionManager::register_action (tracker_actions, X_("paste-overlay"), _("Paste Overlay"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::paste_overlay));
 }
 
 void
@@ -569,87 +569,22 @@ MainToolbar::set_beats_per_row_to (GridType st)
 }
 
 bool
-MainToolbar::chord_mode_press (GdkEventButton* ev)
+MainToolbar::toggle_press (GdkEventButton* ev, void (MainToolbar::*toggle) ())
 {
 	/* ignore double/triple clicks */
 	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
 		return true;
 	}
 
-	toggle_chord_mode ();
+	(this->*toggle) ();
 	return false;
 }
 
-bool
-MainToolbar::overwrite_default_press (GdkEventButton* ev)
+void
+MainToolbar::toggle_mode_button (bool& flag, ArdourWidgets::ArdourButton& button)
 {
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_overwrite_default ();
-	return false;
-}
-
-bool
-MainToolbar::overwrite_existing_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_overwrite_existing ();
-	return false;
-}
-
-bool
-MainToolbar::overwrite_star_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_overwrite_star ();
-	return false;
-}
-
-bool
-MainToolbar::sync_playhead_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_sync_playhead ();
-	return false;
-}
-
-bool
-MainToolbar::jump_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_jump ();
-	return false;
-}
-
-bool
-MainToolbar::wrap_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	toggle_wrap ();
-	return false;
+	flag = !flag;
+	button.set_active_state (flag ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }
 
 void
@@ -692,29 +627,25 @@ MainToolbar::toggle_step_edit ()
 void
 MainToolbar::toggle_chord_mode ()
 {
-	chord_mode = !chord_mode;
-	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	toggle_mode_button (chord_mode, chord_mode_button);
 }
 
 void
 MainToolbar::toggle_overwrite_default ()
 {
-	overwrite_default = !overwrite_default;
-	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	toggle_mode_button (overwrite_default, overwrite_default_button);
 }
 
 void
 MainToolbar::toggle_overwrite_existing ()
 {
-	overwrite_existing = !overwrite_existing;
-	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	toggle_mode_button (overwrite_existing, overwrite_existing_button);
 }
 
 void
 MainToolbar::toggle_overwrite_star ()
 {
-	overwrite_star = !overwrite_star;
-	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	toggle_mode_button (overwrite_star, overwrite_star_button);
 }
 
 void
@@ -733,15 +664,13 @@ MainToolbar::toggle_sync_playhead ()
 void
 MainToolbar::toggle_jump ()
 {
-	jump = !jump;
-	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	toggle_mode_button (jump, jump_button);
 }
 
 void
 MainToolbar::toggle_wrap ()
 {
-	wrap = !wrap;
-	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	toggle_mode_button (wrap, wrap_button);
 }
 
 void
@@ -951,108 +880,13 @@ MainToolbar::grid_type_from_rows_per_beat (uint16_t rpb)
 }
 
 void
-MainToolbar::toggle_step_edit_action ()
+MainToolbar::call_instance_method (void (MainToolbar::*fn) ())
 {
 	if (_instance) {
-		_instance->toggle_step_edit ();
+		(_instance->*fn) ();
 	}
 }
 
-void
-MainToolbar::toggle_chord_mode_action ()
-{
-	if (_instance) {
-		_instance->toggle_chord_mode ();
-	}
-}
-
-void
-MainToolbar::toggle_overwrite_default_action ()
-{
-	if (_instance) {
-		_instance->toggle_overwrite_default ();
-	}
-}
-
-void
-MainToolbar::toggle_overwrite_existing_action ()
-{
-	if (_instance) {
-		_instance->toggle_overwrite_existing ();
-	}
-}
-
-void
-MainToolbar::toggle_overwrite_star_action ()
-{
-	if (_instance) {
-		_instance->toggle_overwrite_star ();
-	}
-}
-
-void
-MainToolbar::toggle_sync_playhead_action ()
-{
-	if (_instance) {
-		_instance->toggle_sync_playhead ();
-	}
-}
-
-void
-MainToolbar::toggle_jump_action ()
-{
-	if (_instance) {
-		_instance->toggle_jump ();
-	}
-}
-
-void
-MainToolbar::toggle_wrap_action ()
-{
-	if (_instance) {
-		_instance->toggle_wrap ();
-	}
-}
-
-void
-MainToolbar::toggle_hex_action ()
-{
-	if (_instance) {
-		_instance->toggle_hex ();
-	}
-}
-
-void
-MainToolbar::cut_action ()
-{
-	if (_instance) {
-		_instance->cut ();
-	}
-}
-
-void
-MainToolbar::copy_action ()
-{
-	if (_instance) {
-		_instance->copy ();
-	}
-}
-
-void
-MainToolbar::paste_action ()
-{
-	if (_instance) {
-		_instance->paste ();
-	}
-}
-
-void
-MainToolbar::paste_overlay_action ()
-{
-	if (_instance) {
-		_instance->paste_overlay ();
-	}
-}
 void
 MainToolbar::beats_per_row_chosen_action (GridType st)
 {
