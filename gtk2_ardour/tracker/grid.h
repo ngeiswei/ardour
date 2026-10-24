@@ -203,7 +203,7 @@ public:
 	void redisplay_left_right_separator_columns ();
 	void redisplay_left_right_separator_columns (int mti, bool force = true);
 	void redisplay_left_right_separator_columns (TrackPtr track);
-	void align_left_right_separators ();
+	void set_right_separator_width (int mti, int width);
 	void redisplay_track_separator (int mti);
 	void redisplay_track_separator_columns ();
 	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, int mti);
@@ -273,6 +273,7 @@ public:
 	int get_time_width () const;
 	int get_track_width (int mti) const;
 	int get_right_separator_width (int mti) const;
+	int get_track_width_without_right (int mti) const;
 	int get_track_separator_width () const;
 
 	std::string get_name (int mti, const IDParameter& id_param, bool shorten=true) const;
@@ -293,6 +294,7 @@ public:
 	void color_changed ();
 
 	void scroll_to_current_row ();
+	void scroll_to_current_col ();
 
 	// Output the string represention of the current Grid object
 	std::string to_string (const std::string& indent = std::string ()) const;
@@ -329,6 +331,9 @@ public:
 
 	std::unique_ptr<GridModelColumns> columns;
 	Glib::RefPtr<Gtk::ListStore> model;
+
+	// Frozen view of the time column, kept vertically in sync with the grid.
+	Gtk::TreeView time_view;
 
 	// Location associated to current cursor
 	Temporal::Beats current_beats;
@@ -387,8 +392,10 @@ private:
 
 	void init_columns ();
 	void init_model ();
+	void set_models ();
 	void connect_tooltips ();
 	bool set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
+	bool time_view_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 	std::string time_tooltip_msg (int row_idx) const;
 	std::string off_note_tooltip_msg (NotePtr off_note, const MidiNotesPattern& mnp, int row_idx, int mti, int mri);
 	std::string on_note_tooltip_msg (NotePtr on_note, const MidiNotesPattern& mnp, int row_idx, int mti, int mri);
