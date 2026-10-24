@@ -17,10 +17,37 @@
  */
 
 #include <sstream>
+#include <utility>
 
 #include "pattern_phenomenal_diff.h"
 
 using namespace Tracker;
+
+void
+PatternPhenomenalDiff::release ()
+{
+	for (Mti2TrackPatternDiff::iterator it = mti2tp_diff.begin (); it != mti2tp_diff.end (); ++it) {
+		delete it->second;
+	}
+	mti2tp_diff.clear ();
+}
+
+PatternPhenomenalDiff& 
+PatternPhenomenalDiff::operator= (PatternPhenomenalDiff&& other)
+{
+	if (this != &other) {
+		release ();
+		mti2tp_diff = std::move (other.mti2tp_diff);
+		other.mti2tp_diff.clear ();
+		full = other.full;
+	}
+	return *this;
+}
+
+PatternPhenomenalDiff::~PatternPhenomenalDiff ()
+{
+	release ();
+}
 
 bool
 PatternPhenomenalDiff::empty () const

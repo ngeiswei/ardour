@@ -214,31 +214,33 @@ TrackToolbar::build_automation_menu ()
 void
 TrackToolbar::build_main_automation_menu (Menu_Helpers::MenuList& items)
 {
-	using namespace Menu_Helpers;
-
-	if (true) {
-		items.push_back (CheckMenuElem (_("Fader"), sigc::bind (sigc::mem_fun (grid, &Grid::update_gain_column_visibility), track_index)));
-		gain_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		gain_automation_item->set_active (grid.is_gain_visible (track_index));
-	}
+	build_main_automation_menu_item (items, _("Fader"), &Grid::update_gain_column_visibility, grid.is_gain_visible (track_index), gain_automation_item);
 
 	if (is_audio_track_toolbar () /*trim_track*/) {
-		items.push_back (CheckMenuElem (_("Trim"), sigc::bind (sigc::mem_fun (grid, &Grid::update_trim_column_visibility), track_index)));
-		trim_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		trim_automation_item->set_active (grid.is_trim_visible (track_index));
+		build_main_automation_menu_item (items, _("Trim"), &Grid::update_trim_column_visibility, grid.is_trim_visible (track_index), trim_automation_item);
 	}
 
-	if (true /*mute_track*/) {
-		items.push_back (CheckMenuElem (_("Mute"), sigc::bind (sigc::mem_fun (grid, &Grid::update_mute_column_visibility), track_index)));
-		mute_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		mute_automation_item->set_active (grid.is_mute_visible (track_index));
-	}
+	build_main_automation_menu_item (items, _("Mute"), &Grid::update_mute_column_visibility, grid.is_mute_visible (track_index), mute_automation_item);
 
-	if (true /*pan_tracks*/) {
-		items.push_back (CheckMenuElem (_("Pan"), sigc::bind (sigc::mem_fun (grid, &Grid::update_pan_columns_visibility), track_index)));
-		pan_automation_item = dynamic_cast<CheckMenuItem*> (&items.back ());
-		pan_automation_item->set_active (grid.is_pan_visible (track_index));
-	}
+	build_main_automation_menu_item (items, _("Pan"), &Grid::update_pan_columns_visibility, grid.is_pan_visible (track_index), pan_automation_item);
+}
+
+Gtk::CheckMenuItem*
+TrackToolbar::build_main_automation_menu_item (Menu_Helpers::MenuList& items, const std::string& label, void (Grid::*update) (int), bool active, Gtk::CheckMenuItem*& slot)
+{
+	using namespace Menu_Helpers;
+
+	items.push_back (CheckMenuElem (label, sigc::bind (sigc::mem_fun (grid, update), track_index)));
+	Gtk::CheckMenuItem* item = dynamic_cast<Gtk::CheckMenuItem*> (&items.back ());
+
+	// Publish the new item before set_active (): set_active () emits toggled
+	// when the state actually changes, and the handler reads this member.  If
+	// it were still pointing at the item of the previous (already deleted)
+	// menu, that would be a use-after-free.
+	slot = item;
+
+	item->set_active (active);
+	return item;
 }
 
 void
@@ -438,49 +440,39 @@ TrackToolbar::hide_all_automation ()
 void
 TrackToolbar::show_all_main_automations ()
 {
-	// Gain
-	gain_automation_item->set_active (true);
+	apply_main_automation_visibility (true);
+}
+
+void
+TrackToolbar::apply_main_automation_visibility (bool visible)
+{
+	gain_automation_item->set_active (visible);
 	grid.update_gain_column_visibility (track_index);
 
-	// Trim
 	if (is_audio_track_toolbar ()) {
-		trim_automation_item->set_active (true);
+		trim_automation_item->set_active (visible);
 		grid.update_trim_column_visibility (track_index);
 	}
 
-	// Mute
-	mute_automation_item->set_active (true);
+	mute_automation_item->set_active (visible);
 	grid.update_mute_column_visibility (track_index);
 
-	// Pan
-	pan_automation_item->set_active (true);
+	pan_automation_item->set_active (visible);
 	grid.update_pan_columns_visibility (track_index);
 }
 
 void
 TrackToolbar::show_existing_main_automations ()
 {
-	// Gain
-	IDParameter gain_id_param(PBD::ID (0), Evoral::Parameter (GainAutomation));
-	bool gain_visible = !track_pattern->is_empty (gain_id_param);
-	gain_automation_item->set_active (gain_visible);
-	grid.update_gain_column_visibility (track_index);
+	show_existing_main_automation (gain_automation_item, IDParameter (PBD::ID (0), Evoral::Parameter (GainAutomation)), &Grid::update_gain_column_visibility);
 
-	// Trim
 	if (is_audio_track_toolbar ()) {
-		IDParameter trim_id_param(PBD::ID (0), Evoral::Parameter (TrimAutomation));
-		bool trim_visible = !track_pattern->is_empty (trim_id_param);
-		trim_automation_item->set_active (trim_visible);
-		grid.update_trim_column_visibility (track_index);
+		show_existing_main_automation (trim_automation_item, IDParameter (PBD::ID (0), Evoral::Parameter (TrimAutomation)), &Grid::update_trim_column_visibility);
 	}
 
-	// Mute
-	IDParameter mute_id_param(PBD::ID (0), Evoral::Parameter (MuteAutomation));
-	bool mute_visible = !track_pattern->is_empty (mute_id_param);
-	mute_automation_item->set_active (mute_visible);
-	grid.update_mute_column_visibility (track_index);
+	show_existing_main_automation (mute_automation_item, IDParameter (PBD::ID (0), Evoral::Parameter (MuteAutomation)), &Grid::update_mute_column_visibility);
 
-	// Pan
+	// Pan: visible iff any pannable parameter is non-empty
 	bool pan_visible = false;
 	ParameterSet const & pan_params = track->pannable ()->what_can_be_automated ();
 	for (ParameterSetConstIt p = pan_params.begin (); p != pan_params.end (); ++p) {
@@ -495,89 +487,63 @@ TrackToolbar::show_existing_main_automations ()
 }
 
 void
+TrackToolbar::show_existing_main_automation (Gtk::CheckMenuItem* item, const IDParameter& id_param, void (Grid::*update) (int))
+{
+	item->set_active (!track_pattern->is_empty (id_param));
+	(grid.*update) (track_index);
+}
+
+void
 TrackToolbar::hide_main_automations ()
 {
-	// Gain
-	gain_automation_item->set_active (false);
-	grid.update_gain_column_visibility (track_index);
-
-	// Trim
-	if (is_audio_track_toolbar ()) {
-		trim_automation_item->set_active (false);
-		grid.update_trim_column_visibility (track_index);
-	}
-
-	// Mute
-	mute_automation_item->set_active (false);
-	grid.update_mute_column_visibility (track_index);
-
-	// Pan
-	pan_automation_item->set_active (false);
-	grid.update_pan_columns_visibility (track_index);
+	apply_main_automation_visibility (false);
 }
 
 void
 TrackToolbar::show_all_processor_automations ()
 {
-	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
-		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-			int& column = (*ii)->column;
-			if (column == 0) {
-				grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->parameter);
-			}
-
-			// Still no column available, skip
-			if (column == 0) {
-				continue;
-			}
-
-			IDParameter id_param((*ii)->processor->id(), (*ii)->parameter);
-			grid.set_automation_column_visible (track_index, id_param, column, true);
-
-			(*ii)->menu_item->set_active (true);
-		}
-	}
+	set_all_processor_automation_visibility (true, false);
 }
 
 void
 TrackToolbar::show_existing_processor_automations ()
 {
-	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
-		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-			int& column = (*ii)->column;
-			IDParameter id_param((*i)->processor->id (), (*ii)->parameter);
-			bool exist = !track_pattern->is_empty (id_param);
-
-			// Create automation column if necessary
-			if (exist) {
-				if (column == 0) {
-					grid.add_processor_automation_column (track_index, (*i)->processor, (*ii)->parameter);
-				}
-			}
-
-			// Still no column available, skip
-			if (column == 0) {
-				continue;
-			}
-
-			grid.set_automation_column_visible (track_index, id_param, column, exist);
-
-			(*ii)->menu_item->set_active (exist);
-		}
-	}
+	set_all_processor_automation_visibility (true, true);
 }
 
 void
 TrackToolbar::hide_processor_automations ()
 {
+	set_all_processor_automation_visibility (false, false);
+}
+
+void
+TrackToolbar::set_all_processor_automation_visibility (bool visible, bool only_existing)
+{
 	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
 		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-			int column = (*ii)->column;
-			if (column != 0) {
-				IDParameter id_param((*ii)->processor->id(), (*ii)->parameter);
-				grid.set_automation_column_visible (track_index, id_param, column, false);
-				(*ii)->menu_item->set_active (false);
+			ProcessorAutomationNode* node = *ii;
+
+			// When only_existing is set, only show automations with content
+			bool show = visible;
+			if (only_existing) {
+				IDParameter id_param (node->processor->id (), node->parameter);
+				show = !track_pattern->is_empty (id_param);
 			}
+
+			// Create automation column if necessary
+			if (show && node->column == 0) {
+				grid.add_processor_automation_column (track_index, node->processor, node->parameter);
+			}
+
+			// Still no column available, skip
+			if (node->column == 0) {
+				continue;
+			}
+
+			IDParameter id_param (node->processor->id (), node->parameter);
+			grid.set_automation_column_visible (track_index, id_param, node->column, show);
+			node->menu_item->set_active (show);
 		}
 	}
 }

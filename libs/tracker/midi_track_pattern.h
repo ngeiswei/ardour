@@ -48,8 +48,8 @@ public:
 
 	MidiTrackPattern& operator= (const MidiTrackPattern& other);
 
-	// TODO: for now do not worry about memory leaking, create a new
-	// PhenomenalDiff object at every call
+	// Create a new PhenomenalDiff object at every call; ownership is
+	// passed to the caller.
 	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
 
 	MidiTrackPatternPhenomenalDiff phenomenal_diff (const MidiTrackPattern& prev) const;
@@ -188,6 +188,14 @@ public:
 
 	// Associate each mri to row_offset
 	std::vector<int> row_offset;
+
+private:
+	// If id_param designates a region automation parameter, return the
+	// corresponding MidiRegionAutomationPattern and convert rowi to the
+	// region-relative row index in rrri.  Otherwise return 0 and leave
+	// rrri untouched.
+	const MidiRegionAutomationPattern* region_automation_pattern (int& rrri, int rowi, int mri, const IDParameter& id_param) const;
+	MidiRegionAutomationPattern* region_automation_pattern (int& rrri, int rowi, int mri, const IDParameter& id_param);
 };
 
 } // ~namespace Tracker

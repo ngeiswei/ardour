@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 
@@ -58,17 +59,27 @@ MidiNotesPattern::operator= (const MidiNotesPattern& other)
 	ntracks = other.ntracks;
 	nreqtracks = other.nreqtracks;
 
+	// Build this snapshot out of note clones.  Clones owned from the previous
+	// snapshot are reused for every note whose relevant attributes did not
+	// change, so a single edit only allocates for the notes it touched rather
+	// than for every note in the region.
+	std::map<Evoral::event_id_t, NotePtr> snapshot;
+
 	// Clone other.track_to_notes into track_to_notes
 	track_to_notes.clear ();
 	track_to_notes.resize (other.track_to_notes.size ());
 	std::vector<std::map<NotePtr, NotePtr> > to_clone (track_to_notes.size ());
 	for (size_t i = 0; i < track_to_notes.size (); i++) {
 		for (ARDOUR::MidiModel::Notes::const_iterator it = other.track_to_notes[i].begin (); it != other.track_to_notes[i].end (); ++it) {
-			NotePtr clone = clone_note (*it);
+			NotePtr clone = snapshot_note (*it);
 			track_to_notes[i].insert (clone);
 			to_clone[i][*it] = clone;
+			snapshot[(*it)->id ()] = clone;
 		}
 	}
+
+	// Install the new clone set, dropping the clones that are no longer used
+	_snapshot_notes.swap (snapshot);
 
 	// Copy other.on_notes using cloned notes
 	on_notes.clear ();
@@ -98,6 +109,22 @@ MidiNotesPattern::clone_note (NotePtr note) const
 {
 	// Recreate the note instead of copying it to avoid calling next_event_id
 	return NotePtr (new NoteType (note->channel (), note->time (), note->length (), note->note (), note->velocity ()));
+}
+
+NotePtr
+MidiNotesPattern::snapshot_note (NotePtr note) const
+{
+	// is_on_equal () covers channel, time, note and velocity and
+	// is_off_equal () covers the end time (i.e. the length), which is
+	// exactly what clone_note () copies: when both hold, the clone already
+	// owned from the previous snapshot is indistinguishable from a fresh one.
+	std::map<Evoral::event_id_t, NotePtr>::const_iterator it = _snapshot_notes.find (note->id ());
+	if (it != _snapshot_notes.end () &&
+	    TrackerUtils::is_on_equal (it->second, note) &&
+	    TrackerUtils::is_off_equal (it->second, note)) {
+		return it->second;
+	}
+	return clone_note (note);
 }
 
 bool
@@ -242,16 +269,33 @@ MidiNotesPattern::update_track_to_notes ()
 	     it != notes.end () && (*it)->time () < end_beats; ++it)
 		strict_notes.insert (*it);
 
+	// Index the notes in scope by id.  Testing membership by scanning
+	// strict_notes (as find_eq_id () does) made this quadratic in the number
+	// of notes; the index keeps it at N log N.
+	std::set<Evoral::event_id_t> live_ids;
+	for (StrictNotes::const_iterator it = strict_notes.begin (); it != strict_notes.end (); ++it) {
+		live_ids.insert ((*it)->id ());
+	}
+
+	// Index the notes already placed by id, so that the track a note used to
+	// belong to is found directly instead of by scanning every track.
+	std::map<Evoral::event_id_t, int> id_to_cgi;
+	for (size_t cgi = 0; cgi < track_to_notes.size (); ++cgi) {
+		for (MidiModel::Notes::const_iterator it = track_to_notes[cgi].begin (); it != track_to_notes[cgi].end (); ++it) {
+			id_to_cgi[(*it)->id ()] = cgi;
+		}
+	}
+
 	// Remove missing notes
 	for (size_t cgi = 0; cgi < track_to_notes.size (); ++cgi) {
 		MidiModel::Notes& track_notes = track_to_notes[cgi];
 		MidiModel::Notes::iterator track_notes_it = track_notes.begin ();
 		for (; track_notes_it != track_notes.end ();) {
-			StrictNotes::iterator notes_it = find_eq_id (strict_notes, *track_notes_it);
-			if (notes_it == strict_notes.end ()) {
-				track_notes.erase (track_notes_it++);
-			} else {
+			if (TrackerUtils::is_in ((*track_notes_it)->id (), live_ids)) {
 				++track_notes_it;
+			} else {
+				id_to_cgi.erase ((*track_notes_it)->id ());
+				track_notes.erase (track_notes_it++);
 			}
 		}
 	}
@@ -260,7 +304,8 @@ MidiNotesPattern::update_track_to_notes ()
 	for (StrictNotes::const_iterator it = strict_notes.begin ();
 	     it != strict_notes.end (); ++it) {
 
-		int cgi = find_eq_id (*it);
+		std::map<Evoral::event_id_t, int>::const_iterator id_cgi_it = id_to_cgi.find ((*it)->id ());
+		int cgi = id_cgi_it == id_to_cgi.end () ? INVALID_CGI : id_cgi_it->second;
 		int freetrack = -1;		// index of the first free track
 		if (-1 < cgi) {
 			// The note is already in track_to_notes, remove it and check if it
@@ -281,6 +326,7 @@ MidiNotesPattern::update_track_to_notes ()
 		}
 		// Insert the note in the first free track
 		track_to_notes[freetrack].insert (*it);
+		id_to_cgi[(*it)->id ()] = freetrack;
 	}
 
 	// Update nreqtracks and ntracks
@@ -291,12 +337,6 @@ MidiNotesPattern::update_track_to_notes ()
 void
 MidiNotesPattern::update_row_to_notes ()
 {
-	// Temporarily save the state of on_notes and off_notes to keep track of
-	// which row holds delayed events
-	// TODO: optimize
-	_prev_on_notes = on_notes;
-	_prev_off_notes = off_notes;
-
 	// Clear on_notes and off_notes
 	on_notes.clear ();
 	on_notes.resize (ntracks);
@@ -387,61 +427,60 @@ MidiNotesPattern::on_row_gte (uint16_t cgi, MidiModel::Notes::iterator inote, in
 }
 
 int
+MidiNotesPattern::row_at_note_time (uint16_t cgi, MidiModel::Notes::iterator inote, bool on, RowSelector sel) const
+{
+	if (!is_valid (cgi, inote)) {
+		return INVALID_ROW;
+	}
+
+	const Temporal::Beats when = on ? (*inote)->time () : (*inote)->end_time ();
+	const Temporal::Beats beats = _midi_region->source_beats_to_absolute_beats (when);
+
+	int row;
+	switch (sel) {
+	case RowSelector::CENTERED: row = row_at_beats (beats); break;
+	case RowSelector::PREVIOUS: row = row_at_beats_max_delay (beats); break;
+	case RowSelector::NEXT:     row = row_at_beats_min_delay (beats); break;
+	default:                    return INVALID_ROW;
+	}
+
+	return on ? row : (on_row_gte (cgi, inote, row) ? row : INVALID_ROW);
+}
+
+int
 MidiNotesPattern::centered_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (is_valid (cgi, inote)) {
-		int rab = row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
-		return rab;
-	}
-	return INVALID_ROW;
+	return row_at_note_time (cgi, inote, true, RowSelector::CENTERED);
 }
 
 int
 MidiNotesPattern::centered_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (is_valid (cgi, inote)) {
-		int row = row_at_beats (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
-		return on_row_gte (cgi, inote, row) ? row : -1;
-	}
-	return INVALID_ROW;
+	return row_at_note_time (cgi, inote, false, RowSelector::CENTERED);
 }
 
 int
 MidiNotesPattern::previous_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (is_valid (cgi, inote)) {
-		return row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
-	}
-	return INVALID_ROW;
+	return row_at_note_time (cgi, inote, true, RowSelector::PREVIOUS);
 }
 
 int
 MidiNotesPattern::previous_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (is_valid (cgi, inote)) {
-		int row = row_at_beats_max_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
-		return on_row_gte (cgi, inote, row) ? row : -1;
-	}
-	return INVALID_ROW;
+	return row_at_note_time (cgi, inote, false, RowSelector::PREVIOUS);
 }
 
 int
 MidiNotesPattern::next_on_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (is_valid (cgi, inote)) {
-		return row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->time ()));
-	}
-	return INVALID_ROW;
+	return row_at_note_time (cgi, inote, true, RowSelector::NEXT);
 }
 
 int
 MidiNotesPattern::next_off_row (uint16_t cgi, MidiModel::Notes::iterator inote) const
 {
-	if (is_valid (cgi, inote)) {
-		int row = row_at_beats_min_delay (_midi_region->source_beats_to_absolute_beats ((*inote)->end_time ()));
-		return on_row_gte (cgi, inote, row) ? row : -1;
-	}
-	return INVALID_ROW;
+	return row_at_note_time (cgi, inote, false, RowSelector::NEXT);
 }
 
 bool
@@ -492,34 +531,21 @@ MidiNotesPattern::is_off_row_available (uint16_t cgi, int row, MidiModel::Notes:
 }
 
 int
-MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
+MidiNotesPattern::ranked_row_suggestion (int cent_row, int prev_row, int next_row, int prev_note_row, int rank) const
 {
-	if (inote == track_to_notes[cgi].end ()) {
-		return INVALID_ROW;
-	}
-	// Evaluate possible rows
-	int cent_row = centered_on_row (cgi, inote);
-	int prev_row = previous_on_row (cgi, inote);
-	int next_row = next_on_row (cgi, inote);
 	// Default ranking
 	int ranked_row[3];
 	ranked_row[0] = cent_row;
 	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
-	// Overwrite ranking according to previous _on_note_to_row
-	if (cgi < _prev_on_note_to_row.size ()) {
-		auto it = _prev_on_note_to_row[cgi].find (*inote);
-		if (it != _prev_on_note_to_row[cgi].end ()) {
-			int note_row = it->second;
-			if (note_row == prev_row && prev_row < cent_row) {
-				ranked_row[0] = prev_row;
-				ranked_row[1] = cent_row;
-			} else if (note_row == next_row && cent_row < next_row) {
-				ranked_row[0] = next_row;
-				ranked_row[1] = cent_row;
-				ranked_row[2] = prev_row < cent_row ? prev_row : INVALID_ROW;
-			}
-		}
+	// Overwrite ranking according to the row the note used to belong to
+	if (prev_note_row == prev_row && prev_row < cent_row) {
+		ranked_row[0] = prev_row;
+		ranked_row[1] = cent_row;
+	} else if (prev_note_row == next_row && cent_row < next_row) {
+		ranked_row[0] = next_row;
+		ranked_row[1] = cent_row;
+		ranked_row[2] = prev_row < cent_row ? prev_row : INVALID_ROW;
 	}
 	// Select row according to its ranking
 	repair_ranked_row (ranked_row);
@@ -527,38 +553,41 @@ MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator in
 }
 
 int
-MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
+MidiNotesPattern::on_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
 {
-	if (inote == track_to_notes[cgi].end ()) {
+	if (!is_valid (cgi, inote)) {
 		return INVALID_ROW;
 	}
-	// Evaluate possible rows
-	int prev_row = previous_off_row (cgi, inote);
-	int cent_row = centered_off_row (cgi, inote);
-	int next_row = next_off_row (cgi, inote);
-	// Default ranking
-	int ranked_row[3];
-	ranked_row[0] = cent_row;
-	ranked_row[1] = prev_row < cent_row ? prev_row : INVALID_ROW;
-	ranked_row[2] = cent_row < next_row ? next_row : INVALID_ROW;
-	// Overwrite ranking according to previous _off_beats_to_row
-	if (cgi < _prev_off_beats_to_row.size ()) {
-		auto it = _prev_off_beats_to_row[cgi].find ((*inote)->end_time());
-		if (it != _prev_off_beats_to_row[cgi].end ()) {
-			int note_row = it->second;
-			if (note_row == prev_row && prev_row < cent_row) {
-				ranked_row[0] = prev_row;
-				ranked_row[1] = cent_row;
-			} else if (note_row == next_row && cent_row < next_row) {
-				ranked_row[0] = next_row;
-				ranked_row[1] = cent_row;
-				ranked_row[2] = prev_row < cent_row ? prev_row : INVALID_ROW;
-			}
+
+	// Row the note used to belong to, if any
+	int prev_note_row = INVALID_ROW;
+	if (cgi < _prev_on_note_to_row.size ()) {
+		NoteToRow::const_iterator it = _prev_on_note_to_row[cgi].find (*inote);
+		if (it != _prev_on_note_to_row[cgi].end ()) {
+			prev_note_row = it->second;
 		}
 	}
-	// Select row according to its ranking
-	repair_ranked_row (ranked_row);
-	return rank < 3 ? ranked_row[rank] : INVALID_ROW;
+
+	return ranked_row_suggestion (centered_on_row (cgi, inote), previous_on_row (cgi, inote), next_on_row (cgi, inote), prev_note_row, rank);
+}
+
+int
+MidiNotesPattern::off_row_suggestion (uint16_t cgi, MidiModel::Notes::iterator inote, int rank) const
+{
+	if (!is_valid (cgi, inote)) {
+		return INVALID_ROW;
+	}
+
+	// Row the off note used to belong to, if any
+	int prev_note_row = INVALID_ROW;
+	if (cgi < _prev_off_beats_to_row.size ()) {
+		BeatsToRow::const_iterator it = _prev_off_beats_to_row[cgi].find ((*inote)->end_time ());
+		if (it != _prev_off_beats_to_row[cgi].end ()) {
+			prev_note_row = it->second;
+		}
+	}
+
+	return ranked_row_suggestion (centered_off_row (cgi, inote), previous_off_row (cgi, inote), next_off_row (cgi, inote), prev_note_row, rank);
 }
 
 int
@@ -616,42 +645,44 @@ MidiNotesPattern::dec_ntracks ()
 }
 
 NotePtr
-MidiNotesPattern::find_prev_on (int row, int cgi) const
+MidiNotesPattern::find_prev_note (const RowToNotes& r2n, int row) const
 {
-	const RowToNotes& r2n = on_notes[cgi];
 	RowToNotes::const_reverse_iterator rit =
 		std::reverse_iterator<RowToNotes::const_iterator> (r2n.lower_bound (row));
 	while (rit != r2n.rend () && rit->first == row) { ++rit; };
 	return rit != r2n.rend () ? lattest (r2n.equal_range (rit->first)) : NotePtr ();
+}
+
+NotePtr
+MidiNotesPattern::find_next_note (const RowToNotes& r2n, int row) const
+{
+	RowToNotes::const_iterator it = r2n.upper_bound (row);
+	while (it != r2n.end () && it->first == row) { ++it; };
+	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NotePtr ();
+}
+
+NotePtr
+MidiNotesPattern::find_prev_on (int row, int cgi) const
+{
+	return find_prev_note (on_notes[cgi], row);
 }
 
 NotePtr
 MidiNotesPattern::find_next_on (int row, int cgi) const
 {
-	const RowToNotes& r2n = on_notes[cgi];
-	RowToNotes::const_iterator it = r2n.upper_bound (row);
-	while (it != r2n.end () && it->first == row) { ++it; };
-	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NotePtr ();
+	return find_next_note (on_notes[cgi], row);
 }
 
 NotePtr
 MidiNotesPattern::find_prev_off (int row, int cgi) const
 {
-	// TODO: implementation could simplified with a template of something
-	const RowToNotes& r2n = off_notes[cgi];
-	RowToNotes::const_reverse_iterator rit =
-		std::reverse_iterator<RowToNotes::const_iterator> (r2n.lower_bound (row));
-	while (rit != r2n.rend () && rit->first == row) { ++rit; };
-	return rit != r2n.rend () ? lattest (r2n.equal_range (rit->first)) : NotePtr ();
+	return find_prev_note (off_notes[cgi], row);
 }
 
 NotePtr
 MidiNotesPattern::find_next_off (int row, int cgi) const
 {
-	const RowToNotes& r2n = off_notes[cgi];
-	RowToNotes::const_iterator it = r2n.upper_bound (row);
-	while (it != r2n.end () && it->first == row) { ++it; };
-	return it != r2n.end () ? earliest (r2n.equal_range (it->first)) : NotePtr ();
+	return find_next_note (off_notes[cgi], row);
 }
 
 Temporal::Beats
@@ -746,25 +777,25 @@ MidiNotesPattern::to_string (const std::string& indent) const
 NotePtr
 MidiNotesPattern::earliest (const RowToNotesRange& rng) const
 {
-	NotePtr result;
-	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
-		if (!result || it->second->time () < result->time ()) {
-			result = it->second;
-		}
+	if (rng.first == rng.second) {
+		return NotePtr ();
 	}
-	return result;
+	return std::min_element (rng.first, rng.second,
+	                         [] (const RowToNotes::value_type& a, const RowToNotes::value_type& b) {
+		                         return a.second->time () < b.second->time ();
+	                         })->second;
 }
 
 NotePtr
 MidiNotesPattern::lattest (const RowToNotesRange& rng) const
 {
-	NotePtr result;
-	for (RowToNotes::const_iterator it = rng.first; it != rng.second; ++it) {
-		if (!result || result->time () < it->second->time ()) {
-			result = it->second;
-		}
+	if (rng.first == rng.second) {
+		return NotePtr ();
 	}
-	return result;
+	return std::max_element (rng.first, rng.second,
+	                         [] (const RowToNotes::value_type& a, const RowToNotes::value_type& b) {
+		                         return a.second->time () < b.second->time ();
+	                         })->second;
 }
 
 int

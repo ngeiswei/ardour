@@ -32,4 +32,4 @@ struct AudioTrackPatternPhenomenalDiff : public TrackPatternPhenomenalDiff
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_midi_track_pattern_h_ */
+#endif /* __ardour_tracker_audio_track_pattern_phenomenal_diff_h_ */

@@ -71,8 +71,5 @@ MainAutomationPattern::self_to_string () const
 std::string
 MainAutomationPattern::to_string (const std::string& indent) const
 {
-	std::stringstream ss;
-	ss << TrackAutomationPattern::to_string (indent) << std::endl;
-	std::string header = indent + self_to_string () + " ";
-	return ss.str ();
+	return TrackAutomationPattern::to_string (indent);
 }

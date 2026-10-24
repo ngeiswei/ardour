@@ -54,7 +54,6 @@ public:
 	void setup_channel ();
 	void setup_velocity ();
 	void setup_rm_add_note_col ();
-	void setup_automation ();
 	void setup_tooltips ();
 
 	/**
@@ -64,7 +63,6 @@ public:
 	bool visible_channel_press (GdkEventButton*);
 	bool visible_velocity_press (GdkEventButton*);
 	bool visible_delay_press (GdkEventButton*);
-	void automation_click ();
 	bool remove_note_column_press (GdkEventButton* ev);
 	bool add_note_column_press (GdkEventButton* ev);
 
@@ -72,7 +70,6 @@ public:
 	 * Helpers for building automation menu.
 	 */
 	void build_automation_menu ();
-	void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void build_midi_automation_menu ();
 	void build_controller_menu ();
 	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items,
@@ -103,7 +100,6 @@ public:
 	void update_visible_velocity_button ();
 	void update_remove_note_column_button ();
 	void update_add_note_column_button ();
-	void update_automation_button ();
 
 	void print_widths () const;
 	int get_min_width () const;

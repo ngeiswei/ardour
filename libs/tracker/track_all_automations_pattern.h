@@ -44,6 +44,7 @@ public:
 	                            Temporal::timepos_t end,
 	                            Temporal::timepos_t nt_last,
 	                            bool connect);
+	virtual ~TrackAllAutomationsPattern ();
 
 	TrackAllAutomationsPatternPhenomenalDiff phenomenal_diff (const TrackAllAutomationsPattern& prev) const;
 
@@ -105,6 +106,14 @@ public:
 
 	// Whether the pattern is supposed to connect to the tracker editor
 	bool connect;
+
+private:
+	// Return the automation pattern in charge of the given processor id:
+	// main_automation_pattern when id is 0, otherwise the processor
+	// automation pattern registered under id, or 0 if there is none (an
+	// error is logged in that case).
+	AutomationPattern* automation_pattern (const PBD::ID& id);
+	const AutomationPattern* automation_pattern (const PBD::ID& id) const;
 };
 
 } // ~namespace tracker

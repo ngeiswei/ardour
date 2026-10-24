@@ -42,4 +42,4 @@ struct TrackAllAutomationsPatternPhenomenalDiff : public BasePatternPhenomenalDi
 
 } // ~namespace Tracker
 
-#endif /* __ardour_tracker_automation_pattern_phenomenal_diff_h_ */
+#endif /* __ardour_tracker_track_all_automations_pattern_phenomenal_diff_h_ */

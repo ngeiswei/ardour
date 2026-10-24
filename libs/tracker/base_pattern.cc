@@ -43,6 +43,7 @@ BasePattern::BasePattern (TrackerContext& ctx,
 	, nrows (0)
 	, enabled (true)
 	, selected (false)
+	, refresh (true)
 	, _ticks_per_row (0)
 	, _session (context.get_session ())
 {
@@ -63,6 +64,8 @@ BasePattern::BasePattern (TrackerContext& ctx,
 	, rows_per_beat (0)
 	, nrows (0)
 	, enabled (true)
+	, selected (false)
+	, refresh (true)
 	, _ticks_per_row (0)
 	, _session (context.get_session ())
 {
@@ -81,7 +84,7 @@ BasePattern::operator= (const BasePattern& other)
 	}
 
 	position = other.position;
-	start = other.position;
+	start = other.start;
 	length = other.length;
 	end = other.end;
 	nt_last = other.nt_last;
@@ -148,7 +151,7 @@ BasePattern::repair_ranked_row (int ranked_row[3]) const
 void
 BasePattern::set_refresh (bool r)
 {
-	refresh = true;
+	refresh = r;
 }
 
 void

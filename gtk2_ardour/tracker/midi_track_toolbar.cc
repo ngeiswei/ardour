@@ -129,21 +129,6 @@ MidiTrackToolbar::setup_rm_add_note_col ()
 }
 
 void
-MidiTrackToolbar::setup_automation ()
-{
-	// Separator
-	pack_start (automation_separator, false, false);
-	automation_separator.show ();
-
-	// Add automation button
-	automation_button.set_name ("automation button");
-	automation_button.set_text (S_("Automation|A"));
-	update_automation_button ();
-	automation_button.show ();
-	pack_start (automation_button, false, false);
-}
-
-void
 MidiTrackToolbar::setup_tooltips ()
 {
 	set_tooltip (visible_note_button, _("Toggle note visibility"));
@@ -201,13 +186,6 @@ MidiTrackToolbar::visible_velocity_press (GdkEventButton* ev)
 	return false;
 }
 
-void
-MidiTrackToolbar::automation_click ()
-{
-	build_automation_menu ();
-	automation_action_menu->popup (1, gtk_get_current_event_time ());
-}
-
 bool
 MidiTrackToolbar::remove_note_column_press (GdkEventButton* ev)
 {
@@ -245,20 +223,6 @@ MidiTrackToolbar::build_automation_menu ()
 {
 	TrackToolbar::build_automation_menu ();
 	build_midi_automation_menu ();
-}
-
-void
-MidiTrackToolbar::build_show_hide_automations (Menu_Helpers::MenuList& items)
-{
-	using namespace Menu_Helpers;
-	items.push_back (MenuElem (_("Show All Automation"),
-	                           sigc::mem_fun (*this, &MidiTrackToolbar::show_all_automation)));
-
-	items.push_back (MenuElem (_("Show Existing Automation"),
-	                           sigc::mem_fun (*this, &MidiTrackToolbar::show_existing_automation)));
-
-	items.push_back (MenuElem (_("Hide All Automation"),
-	                           sigc::mem_fun (*this, &MidiTrackToolbar::hide_all_automation)));
 }
 
 void
@@ -714,12 +678,6 @@ void
 MidiTrackToolbar::update_add_note_column_button ()
 {
 	add_note_column_button.set_sensitive (true);
-}
-
-void
-MidiTrackToolbar::update_automation_button ()
-{
-	automation_button.signal_clicked.connect (sigc::mem_fun (*this, &MidiTrackToolbar::automation_click));
 }
 
 void
