@@ -116,6 +116,7 @@ public:
 	Grid                         grid;
 	MainToolbar                  main_toolbar;
 	GridHeader*                  grid_header;
+	Gtk::HBox                    body_hbox;
 	Gtk::VBox                    vbox;
 
 	/** connection used to connect to model's ContentsChanged signal */
