@@ -55,6 +55,17 @@ SubgridSelector::SubgridSelector (TrackerEditor& te)
 {
 }
 
+int
+SubgridSelector::next_data_col (int col_idx) const
+{
+	int global_ncols = tracker_editor.grid.get_columns ().size ();
+	while (col_idx < global_ncols &&
+	       (!tracker_editor.grid.is_editable (col_idx) || !tracker_editor.grid.is_visible (col_idx))) {
+		col_idx++;
+	}
+	return col_idx;
+}
+
 void
 SubgridSelector::set_source (int row_idx, int col_idx)
 {
@@ -124,11 +135,7 @@ SubgridSelector::clear_subgrid ()
 	int col_idx = left_col_idx;
 	for (unsigned rgtr_col_idx = 0; rgtr_col_idx < reg.width; rgtr_col_idx++, col_idx++) {
 		// Column does not hold data or is not visible, skip it
-		while (!tracker_editor.grid.is_editable (col_idx) or
-				 !tracker_editor.grid.is_visible (col_idx)) {
-			col_idx++;
-			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
-		}
+		col_idx = next_data_col (col_idx);
 		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 
 		// Paste empty cells
@@ -204,11 +211,7 @@ SubgridSelector::paste ()
 	Register::Data::const_iterator rgtr_col_it = reg.data.begin ();
 	for (unsigned rgtr_col_idx = 0; rgtr_col_idx < reg.width; rgtr_col_idx++) {
 		// Column does not hold data or is not visible, skip it
-		while (!tracker_editor.grid.is_editable (col_idx) or
-				 !tracker_editor.grid.is_visible (col_idx)) {
-			col_idx++;
-			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
-		}
+		col_idx = next_data_col (col_idx);
 		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 
 		// Column has no record, paste empty cells
@@ -259,11 +262,7 @@ SubgridSelector::paste_overlay ()
 	Register::Data::const_iterator rgtr_col_it = reg.data.begin ();
 	for (unsigned rgtr_col_idx = 0; rgtr_col_idx <= max_rgtr_col_idx; rgtr_col_idx++) {
 		// Column does not hold data or is not visible, skip it
-		while (!tracker_editor.grid.is_editable (col_idx) or
-				 !tracker_editor.grid.is_visible (col_idx)) {
-			col_idx++;
-			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
-		}
+		col_idx = next_data_col (col_idx);
 		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 
 		// Column has nothing to paste, skip it

@@ -34,7 +34,6 @@ tracker_sources = [
     'automation_pattern_phenomenal_diff.cc',
     'main_automation_pattern.cc',
     'processor_automation_pattern.cc',
-    'processor_automation_pattern_phenomenal_diff.cc',
     'track_automation_pattern.cc',
     'track_all_automations_pattern.cc',
     'track_all_automations_pattern_phenomenal_diff.cc',

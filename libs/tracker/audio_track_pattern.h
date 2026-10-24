@@ -51,8 +51,8 @@ public:
 	// this must set the row range itself (there is no region to do it).
 	void update ();
 
-	// TODO: for now do not worry about memory leaking, create a new
-	// PhenomenalDiff object at every call
+	// Create a new PhenomenalDiff object at every call; ownership is
+	// passed to the caller.
 	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
 
 	AudioTrackPatternPhenomenalDiff phenomenal_diff (const AudioTrackPattern& prev) const;
