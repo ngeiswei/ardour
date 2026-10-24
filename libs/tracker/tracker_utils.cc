@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <cstdio>
 #include <cstdlib>
 
 #include "ardour/parameter_types.h"
@@ -75,31 +76,33 @@ TrackerUtils::rm_point_zeros (const std::string& str)
 std::string
 TrackerUtils::num_to_string (int n, int base, int precision)
 {
-	std::stringstream ss;
+	// This sits in the per-cell redisplay path (velocity, delay, automation
+	// values for every visible row), so avoid building a stringstream.
+	char buf[32];
 	if (base == 16) {
-		ss << std::uppercase << std::hex;
+		snprintf (buf, sizeof (buf), "%s%llX", n < 0 ? "-" : "",
+		          (unsigned long long) std::llabs ((long long) n));
+	} else {
+		snprintf (buf, sizeof (buf), "%d", n);
 	}
-	if (n < 0) {
-		ss << "-";
-	}
-	ss << std::abs(n);
-	return ss.str();
+	return buf;
 }
 
 // TODO: bug if precision is above 6
 std::string
 TrackerUtils::num_to_string (double n, int base, int precision)
 {
-	std::stringstream ss;
 	if (base == 10) {
-		ss << std::fixed << std::setprecision (precision) << n;
-	} else {
-		int numerator = std::round(n * std::pow(base, precision));
-		std::string numerator_str = num_to_string (numerator, base);
-		int pos = (int)numerator_str.size () - precision;
-		ss << insert_point (numerator_str, pos);
+		// Hot path: see num_to_string (int).
+		char buf[64];
+		snprintf (buf, sizeof (buf), "%.*f", precision, n);
+		return rm_point_zeros (buf);
 	}
-	return rm_point_zeros (ss.str ());
+
+	int numerator = std::round (n * std::pow (base, precision));
+	std::string numerator_str = num_to_string (numerator, base);
+	int pos = (int)numerator_str.size () - precision;
+	return rm_point_zeros (insert_point (numerator_str, pos));
 }
 
 char
@@ -245,39 +248,11 @@ TrackerUtils::parse_pitch (std::string text, int default_octave)
 {
 	// Add default octave, if the octave digit is missing
 	if (!text.empty () && !std::isdigit (*text.rbegin ())) {
-		text += to_string (default_octave);
+		text += std::to_string (default_octave);
 	}
 
 	// Parse the note per se
 	return ARDOUR::ParameterDescriptor::midi_note_num (text);
-}
-
-Temporal::timepos_t
-TrackerUtils::get_position (const RegionSeq& regions)
-{
-	if (regions.empty ())
-		return Temporal::timepos_t ();
-
-	size_t i = 0;
-	Temporal::timepos_t position = regions[i++]->position ();
-	for (; i < regions.size (); i++) {
-		position = std::min (position, regions[i]->position ());
-	}
-	return position;
-}
-
-Temporal::timepos_t
-TrackerUtils::get_position (const MidiRegionSeq& regions)
-{
-	if (regions.empty ())
-		return Temporal::timepos_t ();
-
-	size_t i = 0;
-	Temporal::timepos_t position = regions[i++]->position ();
-	for (; i < regions.size (); i++) {
-		position = std::min (position, regions[i]->position ());
-	}
-	return position;
 }
 
 Temporal::timepos_t
@@ -295,49 +270,9 @@ TrackerUtils::get_position (const TrackRegionsMap& regions_per_track)
 }
 
 Temporal::timecnt_t
-TrackerUtils::get_length (const RegionSeq& regions)
-{
-	return get_position (regions).distance (get_end (regions));
-}
-
-Temporal::timecnt_t
-TrackerUtils::get_length (const MidiRegionSeq& regions)
-{
-	return get_position (regions).distance (get_end (regions));
-}
-
-Temporal::timecnt_t
 TrackerUtils::get_length (const TrackRegionsMap& regions_per_track)
 {
 	return get_position (regions_per_track).distance (get_end (regions_per_track));
-}
-
-Temporal::timepos_t
-TrackerUtils::get_end (const MidiRegionSeq& regions)
-{
-	if (regions.empty())
-		return Temporal::timepos_t ();
-
-	size_t i = 0;
-	Temporal::timepos_t end = regions[i++]->end_position ();
-	for (; i < regions.size (); i++) {
-		end = std::max (end, regions[i]->end_position ());
-	}
-	return end;
-}
-
-Temporal::timepos_t
-TrackerUtils::get_end (const RegionSeq& regions)
-{
-	if (regions.empty())
-		return Temporal::timepos_t ();
-
-	size_t i = 0;
-	Temporal::timepos_t end = regions[i++]->end_position ();
-	for (; i < regions.size (); i++) {
-		end = std::max (end, regions[i]->end_position ());
-	}
-	return end;
 }
 
 Temporal::timepos_t
@@ -352,34 +287,6 @@ TrackerUtils::get_end (const TrackRegionsMap& regions_per_track)
 		end = std::max (end, get_end (it->second));
 	}
 	return end;
-}
-
-Temporal::timepos_t
-TrackerUtils::get_nt_last (const RegionSeq& regions)
-{
-	if (regions.empty())
-		return Temporal::timepos_t ();
-
-	size_t i = 0;
-	Temporal::timepos_t nt_last = regions[i++]->nt_last ();
-	for (; i < regions.size (); i++) {
-		nt_last = std::max (nt_last, regions[i]->nt_last ());
-	}
-	return nt_last;
-}
-
-Temporal::timepos_t
-TrackerUtils::get_nt_last (const MidiRegionSeq& regions)
-{
-	if (regions.empty())
-		return Temporal::timepos_t ();
-
-	size_t i = 0;
-	Temporal::timepos_t nt_last = regions[i++]->nt_last ();
-	for (; i < regions.size (); i++) {
-		nt_last = std::max (nt_last, regions[i]->nt_last ());
-	}
-	return nt_last;
 }
 
 Temporal::timepos_t
@@ -481,10 +388,17 @@ TrackerUtils::id_param_to_string (const IDParameter& id_param)
 std::string
 TrackerUtils::color_to_string (uint32_t color)
 {
-	std::stringstream ss;
-	ss << std::hex;
-	ss << "#" << std::setw (6) << std::setfill ('0') << (color >> 8);
-	return ss.str();
+	// Called for every cell background/foreground colour of every row; a
+	// stringstream costs far more than the conversion itself.
+	static const char hex[] = "0123456789abcdef";
+	uint32_t rgb = (color >> 8) & 0xffffff;
+	char buf[8];
+	buf[0] = '#';
+	for (int i = 6; i >= 1; --i) {
+		buf[i] = hex[rgb & 0xf];
+		rgb >>= 4;
+	}
+	return std::string (buf, 7);
 }
 
 IDParameter

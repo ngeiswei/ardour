@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "processor_automation_pattern_phenomenal_diff.h"
-
-using namespace Tracker;
+/* This translation unit was removed from the build (see wscript): the
+ * ProcessorAutomationPatternPhenomenalDiff class it hosted was an empty
+ * subclass of AutomationPatternPhenomenalDiff and has been dropped.  The
+ * file is kept only as a tombstone and intentionally defines nothing. */

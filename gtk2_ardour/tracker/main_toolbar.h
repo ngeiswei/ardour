@@ -111,39 +111,15 @@ public:
 	static void register_actions ();
 
 	/**
-	 * Triggered upon chord mode button press event.
+	 * Generic mode-button press handler: ignores double/triple clicks,
+	 * then calls the given toggle method.  Connected in setup_layout via
+	 * sigc::bind with the toggle to call.
 	 */
-	bool chord_mode_press (GdkEventButton* ev);
+	bool toggle_press (GdkEventButton* ev, void (MainToolbar::*toggle) ());
 
-	/**
-	 * Triggered upon overwrite default button press event.
-	 */
-	bool overwrite_default_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon overwrite existing button press event.
-	 */
-	bool overwrite_existing_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon overwrite star button press event.
-	 */
-	bool overwrite_star_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon sync playhead button press event.
-	 */
-	bool sync_playhead_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon jump to next button press event.
-	 */
-	bool jump_press (GdkEventButton* ev);
-
-	/**
-	 * Triggered upon wrap button press event.
-	 */
-	bool wrap_press (GdkEventButton* ev);
+	/** Shared implementation of the pure mode toggles: flip the flag and
+	 * update the button state. */
+	void toggle_mode_button (bool& flag, ArdourWidgets::ArdourButton& button);
 
 	/**
 	 * Trigger when precision_spinner value is changed.
@@ -260,19 +236,8 @@ private:
 
 	/** Forward to the current instance (no-op if none exists yet). */
 	static void adjust_action (AdjustParam, int direction);
-	static void toggle_step_edit_action ();
-	static void toggle_chord_mode_action ();
-	static void toggle_overwrite_default_action ();
-	static void toggle_overwrite_existing_action ();
-	static void toggle_overwrite_star_action ();
-	static void toggle_sync_playhead_action ();
-	static void toggle_jump_action ();
-	static void toggle_wrap_action ();
-	static void toggle_hex_action ();
-	static void cut_action ();
-	static void copy_action ();
-	static void paste_action ();
-	static void paste_overlay_action ();
+	/** Invoke fn on the current instance (no-op if none exists yet). */
+	static void call_instance_method (void (MainToolbar::*fn) ());
 	static void beats_per_row_chosen_action (Editing::GridType st);
 
 	/** Cycle rows_per_beat among the allowed settings. */

@@ -84,4 +84,4 @@ public:
 
 } // ~namespace tracker
 
-#endif /* __ardour_tracker_midi_track_pattern_h_ */
+#endif /* __ardour_tracker_midi_region_pattern_h_ */
