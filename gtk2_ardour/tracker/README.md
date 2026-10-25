@@ -6,7 +6,7 @@ The Tracker editor is a [music tracker](https://en.wikipedia.org/wiki/Music_trac
 integrated into Ardour. It allows to visualize and edit midi notes, controls and
 plugin automations with a tracker style interface.
 
-![Ardour + Tracker Editor Snap Shot](https://github.com/ngeiswei/ardour/blob/tracker-editor-wip/gtk2_ardour/tracker/pics/Tracker%20Editor%20-%20Snapshot%20-%202025-10-25.png)
+![Ardour + Tracker Editor Snap Shot](pics/Tracker%20Editor%20-%20Snapshot%20-%202025-10-25.png)
 
 ## Videos
 
