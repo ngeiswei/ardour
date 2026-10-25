@@ -1,8 +1,3 @@
-# Next
-
-- [ ] NEXT.2b: support audio region content and region automation
-- [ ] Carefully go over all NEXT comments
-
 # Tracker Editor
 
 ## Overview
@@ -11,22 +6,7 @@ The Tracker editor is a [music tracker](https://en.wikipedia.org/wiki/Music_trac
 integrated into Ardour. It allows to visualize and edit midi notes, controls and
 plugin automations with a tracker style interface.
 
-## Architecture
-
-The tracker is split in two layers:
-
-- `libs/tracker` (`libtracker`): the model and logic. This holds the pattern
-  classes (`Pattern`, `MidiTrackPattern`, `AudioTrackPattern`,
-  `MidiRegionPattern`, `MidiNotesPattern`, automation patterns...) and the
-  whole `*_phenomenal_diff` incremental redisplay machinery. It is free of any
-  GTK / gtk2_ardour dependency; it talks back to the application through the
-  small `TrackerContext` interface.
-- `gtk2_ardour/tracker` (this directory): the GTK UI. This holds the `Grid`
-  (`Gtk::TreeView`), the toolbars, the aligned headers, the `TrackerEditor`
-  window (which implements `TrackerContext`) and the `SubgridSelector`.
-
-The editor and the model therefore remain in sync only through
-`TrackerContext` (session access, signal hookup, undo, redisplay requests).
+![Ardour + Tracker Editor Snap Shot](pics/Tracker Editor - Snapshot - 2025-10-25.png)
 
 ## Videos
 
