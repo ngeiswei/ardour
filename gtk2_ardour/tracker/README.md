@@ -8,6 +8,15 @@ plugin automations with a tracker style interface.
 
 ![Ardour + Tracker Editor Snap Shot](pics/Tracker%20Editor%20-%20Snapshot%20-%202025-10-25.png)
 
+## Features
+
+- Arbitrary temporal precision, number of rows per beat is not fixed.
+- Positive and negative delay.
+- Key bindings for all actions.
+- Unlimited number of tracks, notes and automations.
+- MIDI and audio tracks.
+- Copy/paste.
+
 ## Videos
 
 - [Tracker Demo (a call for help)-Jan 2022](https://odysee.com/@ngeiswei:d/ardour-tracker-interface-on-2022-01-24-17-37:9)
