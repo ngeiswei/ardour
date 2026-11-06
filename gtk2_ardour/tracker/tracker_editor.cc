@@ -104,7 +104,21 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 
 TrackerEditor::~TrackerEditor ()
 {
+	// Stop callbacks that could otherwise reach the grid while it is being
+	// torn down.
+	midi_event_connection.disconnect ();
+	content_connections.drop_connections ();
+
 	delete grid_header;
+}
+
+bool
+TrackerEditor::on_delete_event (GdkEventAny*)
+{
+	// Keep the object alive: Editor owns it and reuses it the next time the
+	// tracker is opened.  It is deleted on session change or editor teardown.
+	hide ();
+	return true;
 }
 
 ARDOUR::Session*

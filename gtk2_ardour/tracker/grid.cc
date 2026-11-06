@@ -140,6 +140,7 @@ Grid::Grid (TrackerEditor& te)
 Grid::~Grid ()
 {
 	_redisplay_idle.disconnect ();
+	disconnect_clock ();
 	delete time_column;
 	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
 		delete left_separator_columns[mti];
@@ -1853,11 +1854,22 @@ Grid::redisplay_left_right_separator_columns (int mti, bool force)
 		return;
 	}
 
+	// A track pattern from a previous session (or a previously selected track)
+	// may still be present but disabled.  Do not try to look up its time axis
+	// view in the current editor: it does not exist there.
+	if (!pattern.tps[mti]->enabled || !pattern.tps[mti]->track) {
+		return;
+	}
+
 	// Display track color for background.  The color is the same for every row
 	// of the track, so compute it once and remember it, so that an unchanged
 	// track can skip the whole row loop.
-	const std::string color =
-		gdk_color_to_string (tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track)->color ().gobj ());
+	TimeAxisView* tav =
+		tracker_editor.public_editor.time_axis_view_from_stripable (pattern.tps[mti]->track);
+	if (!tav) {
+		return;
+	}
+	const std::string color = gdk_color_to_string (tav->color ().gobj ());
 	if (!force && mti < (int)_left_right_separator_color.size () && _left_right_separator_color[mti] == color) {
 		return;
 	}
@@ -5620,7 +5632,15 @@ Grid::is_automation_type (const Gtk::TreeViewColumn* col) const
 void
 Grid::select_current_track ()
 {
+	if (!current_tp) {
+		return;
+	}
+
 	TimeAxisView* tav = tracker_editor.public_editor.time_axis_view_from_stripable (current_tp->track);
+	if (!tav) {
+		// The track may belong to a session that is no longer displayed.
+		return;
+	}
 	tracker_editor.public_editor.get_selection ().set (tav);
 }
 
