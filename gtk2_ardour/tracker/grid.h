@@ -242,7 +242,6 @@ public:
 	void redisplay_automation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param);
 	void redisplay_automation_interpolation (Gtk::TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param);
 	void redisplay_cell_background (int row_idx, int col_idx);
-	void redisplay_cell_background (Gtk::TreeModel::Row& row, int mti, int cgi);
 	void redisplay_row_background (Gtk::TreeModel::Row& row, int row_idx);
 	void redisplay_row_background_color (Gtk::TreeModel::Row& row, int row_idx, const std::string& color);
 	void redisplay_row_mti_background_color (Gtk::TreeModel::Row& row, int row_idx, int mti, const std::string& color);
@@ -636,6 +635,12 @@ private:
 	// contains no datum. Warning: cannot be const due to is_cell_defined.
 	bool is_cell_blank (int row_idx, const Gtk::TreeViewColumn* col);
 	bool is_cell_blank (const Gtk::TreeModel::Path& path, const Gtk::TreeViewColumn* col);
+
+	// Return true iff the given note/automation column indices address an
+	// allocated model column.  Used to make redisplay_* robust against
+	// separator / non-data columns and stale indices.
+	bool is_valid_note_column (int mti, int cgi) const;
+	bool is_valid_automation_column (int mti, int cgi) const;
 
 	// Return mti corresponding col, or -1 if invalid
 	int to_mti (const Gtk::TreeViewColumn* col) const;
