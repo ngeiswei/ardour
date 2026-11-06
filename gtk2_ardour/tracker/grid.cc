@@ -2984,14 +2984,49 @@ Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioT
 	}
 }
 
-void
-Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
+ColumnContentType
+Grid::column_content_type (const Gtk::TreeViewColumn* col) const
 {
-	if (!is_cell_defined (row_idx, col_idx)) {
-		return;
+	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
+	if (!tc) {
+		return ColumnContentType::EMPTY;
 	}
 
-	const TreeViewColumn* col = to_col (col_idx);
+	if (tc->note_type == TrackerColumn::NoteType::NOTE) {
+		return ColumnContentType::NOTE;
+	}
+
+	if (tc->is_note_type () || tc->is_automation_type ()) {
+		return ColumnContentType::VALUE;
+	}
+
+	return ColumnContentType::EMPTY;
+}
+
+ColumnContentType
+Grid::column_content_type (int col_idx) const
+{
+	return column_content_type (to_col (col_idx));
+}
+
+bool
+Grid::is_cell_content_compatible (const Gtk::TreeViewColumn* col, ColumnContentType type) const
+{
+	return column_content_type_compatible (type, column_content_type (col));
+}
+
+bool
+Grid::set_cell_content (int row_idx, int col_idx, const std::string& text, ColumnContentType type)
+{
+	if (!is_cell_defined (row_idx, col_idx)) {
+		return false;
+	}
+
+	Gtk::TreeViewColumn* col = to_col (col_idx);
+	if (!is_cell_content_compatible (col, type)) {
+		return false;
+	}
+
 	Gtk::TreeModel::Path path = to_path (row_idx);
 	int mti = to_mti (col);
 	int cgi = to_cgi (col);
@@ -3013,6 +3048,7 @@ Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 			break;
 		default:
 			std::cerr << "Grid::set_cell_content: Implementation Error!" << std::endl;
+			return false;
 		}
 	} else { // Auto type
 		switch (get_automation_type (col)) {
@@ -3024,8 +3060,11 @@ Grid::set_cell_content (int row_idx, int col_idx, const std::string& text)
 			break;
 		default:
 			std::cerr << "Grid::set_cell_content: Implementation Error!" << std::endl;
+			return false;
 		}
 	}
+
+	return true;
 }
 
 // TODO: this somewhat duplicates Grid::redisplay_note_foreground.  Is there a

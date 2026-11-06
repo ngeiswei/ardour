@@ -22,6 +22,8 @@
 #include <map>
 #include <string>
 
+#include "column_content_type.h"
+
 namespace Tracker {
 
 class TrackerEditor;
@@ -40,9 +42,19 @@ public:
 	// the selection only considering visible columns in the grid).  The second
 	// unsigned is the row index (relative to the top border of the selection).
 	// The mapped string is the verbatim content of the cell at this relative
-	// location.
+	// location.  Its type is carried by Column::type.
 	typedef std::map<unsigned, std::string> ColumnData;
-	typedef std::map<unsigned, ColumnData> Data;
+
+	struct Column {
+		Column () : type (ColumnContentType::EMPTY) {}
+
+		// Type of the source column, used to reject pasting note cells into
+		// numeric columns and vice versa.
+		ColumnContentType type;
+		ColumnData     cells;
+	};
+
+	typedef std::map<unsigned, Column> Data;
 	Data data;
 
 	// Clear the register

@@ -7,6 +7,7 @@
 #include "temporal/bbt_time.h"
 
 #include "tracker_utils.h"
+#include "column_content_type.h"
 
 #include "TrackerUtilsTest.h"
 
@@ -227,6 +228,26 @@ TrackerUtilsTest::testNoteAndEventEquality ()
 	CPPUNIT_ASSERT (TrackerUtils::is_equal (e1, e2));
 	CPPUNIT_ASSERT (!TrackerUtils::is_equal (e1, e3));
 	CPPUNIT_ASSERT (!TrackerUtils::is_equal (e1, e4));
+}
+
+void
+TrackerUtilsTest::testColumnContentType ()
+{
+	// Empty content clears any column.
+	CPPUNIT_ASSERT (column_content_type_compatible (ColumnContentType::EMPTY, ColumnContentType::NOTE));
+	CPPUNIT_ASSERT (column_content_type_compatible (ColumnContentType::EMPTY, ColumnContentType::VALUE));
+
+	// Note content only goes into note columns.
+	CPPUNIT_ASSERT (column_content_type_compatible (ColumnContentType::NOTE, ColumnContentType::NOTE));
+	CPPUNIT_ASSERT (!column_content_type_compatible (ColumnContentType::NOTE, ColumnContentType::VALUE));
+
+	// Value content only goes into numeric columns.
+	CPPUNIT_ASSERT (column_content_type_compatible (ColumnContentType::VALUE, ColumnContentType::VALUE));
+	CPPUNIT_ASSERT (!column_content_type_compatible (ColumnContentType::VALUE, ColumnContentType::NOTE));
+
+	// Neither note nor value content can target a non-data column.
+	CPPUNIT_ASSERT (!column_content_type_compatible (ColumnContentType::NOTE, ColumnContentType::EMPTY));
+	CPPUNIT_ASSERT (!column_content_type_compatible (ColumnContentType::VALUE, ColumnContentType::EMPTY));
 }
 
 void
