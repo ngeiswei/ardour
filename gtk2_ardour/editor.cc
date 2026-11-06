@@ -800,6 +800,11 @@ Editor::Editor ()
 
 Editor::~Editor()
 {
+	// The tracker editor holds references to this editor and to the session's
+	// tracks/regions; destroy it before tearing anything else down.
+	delete _tracker_editor;
+	_tracker_editor = 0;
+
 	delete own_bindings;
 	delete tempo_marker_menu;
 	delete meter_marker_menu;
@@ -5485,6 +5490,13 @@ Editor::super_rapid_screen_update ()
 void
 Editor::session_going_away ()
 {
+	// The tracker editor belongs to the outgoing session: its patterns and
+	// track patterns reference tracks, regions and time axis views that are
+	// about to disappear.  Destroy it now, otherwise reopening it on the next
+	// session would use stale pointers (and its window would stay open).
+	delete _tracker_editor;
+	_tracker_editor = 0;
+
 	_have_idled = false;
 
 	_session_connections.drop_connections ();

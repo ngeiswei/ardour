@@ -126,6 +126,12 @@ public:
 	// TODO: what does it mean?
 	PBD::ScopedConnectionList content_connections;
 
+protected:
+	// Hide instead of destroying the window, so that Editor::_tracker_editor
+	// remains a valid pointer.  The window is deleted when the session goes
+	// away, or when the Editor is destroyed.
+	bool on_delete_event (GdkEventAny*) override;
+
 private:
 	void set_region_selection (const RegionSelection&);
 	void setup_toolbars ();

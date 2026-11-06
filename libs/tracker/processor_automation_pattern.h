@@ -38,6 +38,11 @@ public:
 	                            bool connect,
 	                            ProcessorPtr processor);
 
+	// Create an independent snapshot of other, without connecting to the
+	// processor's signals or holding its automation controls.
+	ProcessorAutomationPattern (TrackerContext& te,
+	                            const ProcessorAutomationPattern& other);
+
 	// Insert the automation control corresponding to param in _processor, and
 	// connect it to the grid for connect changes.
 	void insert (const Evoral::Parameter& param);
