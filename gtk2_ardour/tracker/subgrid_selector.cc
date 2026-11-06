@@ -149,7 +149,7 @@ SubgridSelector::clear_subgrid ()
 
 		// Paste empty cells
 		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
-			tracker_editor.grid.set_cell_content(row_idx, col_idx, "");
+			tracker_editor.grid.set_cell_content(row_idx, col_idx, "", ColumnContentType::EMPTY);
 		}
 	}
 }
@@ -181,8 +181,15 @@ SubgridSelector::copy ()
 			continue;
 		}
 
+		// Only note-name and numeric columns carry copyable data.
+		ColumnContentType col_type = tracker_editor.grid.column_content_type (col_idx);
+		if (col_type == ColumnContentType::EMPTY) {
+			continue;
+		}
+
 		// Fill register column
-		std::map<unsigned, std::string> rgtr_col;
+		Register::Column rgtr_col;
+		rgtr_col.type = col_type;
 		unsigned rgtr_row_idx = 0;
 		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
 			// Cell does not hold data, skip it
@@ -195,7 +202,7 @@ SubgridSelector::copy ()
 				rgtr_row_idx++;
 				continue;
 			}
-			rgtr_col[rgtr_row_idx] = content;
+			rgtr_col.cells[rgtr_row_idx] = content;
 			rgtr_row_idx++;
 		}
 		reg.data[rgtr_col_idx] = rgtr_col;
@@ -229,25 +236,35 @@ SubgridSelector::paste ()
 		// Column has no record, paste empty cells
 		if (rgtr_col_it == reg.data.end () or rgtr_col_idx < rgtr_col_it->first) {
 			for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
-				tracker_editor.grid.set_cell_content(row_idx, col_idx, "");
+				tracker_editor.grid.set_cell_content(row_idx, col_idx, "", ColumnContentType::EMPTY);
 			}
 			col_idx++;
 			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
 			continue;
 		}
 
+		const Register::Column& reg_col = rgtr_col_it->second;
+		if (!column_content_type_compatible (reg_col.type, tracker_editor.grid.column_content_type (col_idx))) {
+			// Type mismatch (e.g. note cells into an automation column): leave
+			// the destination column completely untouched.
+			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+			++rgtr_col_it;
+			continue;
+		}
+
 		// Paste the column
-		const Register::ColumnData& col_data = rgtr_col_it->second;
+		const Register::ColumnData& col_data = reg_col.cells;
 		Register::ColumnData::const_iterator row_it = col_data.begin ();
 		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; ++row_it, row_idx++) {
 			// Paste empty cells between recorded values
 			while (row_it == col_data.end () or row_idx < (int)row_it->first + top_row_idx) {
-				tracker_editor.grid.set_cell_content(row_idx, col_idx, "");
+				tracker_editor.grid.set_cell_content(row_idx, col_idx, "", ColumnContentType::EMPTY);
 				row_idx++;
 				if (bottom_row_idx < row_idx) break; // Avoid vertical overflow
 			}
 			if (bottom_row_idx < row_idx) break; // Avoid vertical overflow
-			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
+			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second, reg_col.type);
 		}
 		col_idx++;
 		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
@@ -287,12 +304,21 @@ SubgridSelector::paste_overlay ()
 		}
 
 		// Paste the column
-		const Register::ColumnData& col_data = rgtr_col_it->second;
+		const Register::Column& reg_col = rgtr_col_it->second;
+		if (!column_content_type_compatible (reg_col.type, tracker_editor.grid.column_content_type (col_idx))) {
+			// Type mismatch: leave the destination column untouched.
+			col_idx++;
+			if (global_ncols <= col_idx) break; // Avoid horizontal overflow
+			++rgtr_col_it;
+			continue;
+		}
+
+		const Register::ColumnData& col_data = reg_col.cells;
 		Register::ColumnData::const_iterator row_it = col_data.begin ();
 		for (; row_it != col_data.end (); ++row_it) {
 			int row_idx = row_it->first + top_row_idx;
 			if (global_nrows <= row_idx) break; // Avoid vertical overflow
-			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second);
+			tracker_editor.grid.set_cell_content(row_idx, col_idx, row_it->second, reg_col.type);
 		}
 		col_idx++;
 		if (global_ncols <= col_idx) break; // Avoid horizontal overflow
@@ -373,9 +399,11 @@ SubgridSelector::to_string (std::string indent) const
 	Register::Data::const_iterator col_it = reg.data.begin ();
 	for (; col_it != reg.data.end (); ++col_it) {
 		unsigned col_idx = col_it->first;
-		const Register::ColumnData& col_data = col_it->second;
-		Register::ColumnData::const_iterator row_it = col_data.begin ();
-		for (; row_it != col_data.end (); ++row_it) {
+		const Register::Column& col = col_it->second;
+		ss << indent << "  " << "reg[col_idx=" << col_idx << "] type = "
+		   << column_content_type_to_string (col.type) << std::endl;
+		Register::ColumnData::const_iterator row_it = col.cells.begin ();
+		for (; row_it != col.cells.end (); ++row_it) {
 			unsigned row_idx = row_it->first;
 			ss << indent << "    " << "reg[col_idx=" << col_idx << "][row_idx="
 				<< row_idx << "] = " << row_it->second << std::endl;
