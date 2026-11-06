@@ -961,10 +961,11 @@ private:
 	// change forces a full redisplay in redisplay_grid().
 	int _last_base;
 
-	// Set when the schema/model is rebuilt outside of redisplay_grid() (e.g.
-	// by select_available_automation_column()).  The next redisplay_grid()
-	// must then perform a full redisplay because the model rows were dropped.
-	bool _schema_rebuilt_elsewhere;
+	// Set when the next redisplay_grid() must repaint everything because the
+	// model rows were dropped or the previous-pattern snapshot no longer matches
+	// the displayed content (e.g. after Grid::setup() when the edited region
+	// selection changes).
+	bool _force_full_redisplay;
 
 	// Left/right separator background color last applied per track, together
 	// with the number of rows it was applied to.  Lets

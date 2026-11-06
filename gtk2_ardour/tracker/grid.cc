@@ -121,7 +121,7 @@ Grid::Grid (TrackerEditor& te)
 	, cellfont ("Monospace")
 	, time_column (0)
 	, _last_base (-1)
-	, _schema_rebuilt_elsewhere (false)
+	, _force_full_redisplay (false)
 	, _left_right_separator_nrows (-1)
 	, _subgrid_selector (te)
 {
@@ -343,7 +343,7 @@ Grid::select_available_automation_column (int mti)
 	    available_automation_columns[mti].empty ()) {
 		size_t cur = capacity_automation_tracks.empty () ? 0 : capacity_automation_tracks[0];
 		rebuild_schema (grow_chunk (cur + 1));
-		_schema_rebuilt_elsewhere = true;
+		_force_full_redisplay = true;
 	}
 
 	// Find the next available column
@@ -1476,6 +1476,16 @@ Grid::setup ()
 		setup_time_column ();
 		setup_data_columns ();
 	}
+
+	// setup() is also called when the tracker is reopened on another region
+	// selection.  The model still holds the previous selection's rows and
+	// prev_pattern has just been re-setup with the new selection, so it is no
+	// longer a snapshot of what is displayed.  Force the next redisplay to
+	// rebuild every row instead of trusting a (possibly partial) phenomenal
+	// diff - and in particular when ensure_schema() above just created an
+	// empty model.
+	_force_full_redisplay = true;
+
 	connect_events ();
 	connect_tooltips ();
 	setup_tree_view ();
@@ -1559,6 +1569,10 @@ Grid::redisplay_grid ()
 		return;
 	}
 
+	if (!model) {
+		return;
+	}
+
 	// Optional timing instrumentation: set ARDOUR_TRACKER_PROFILE=1 in the
 	// environment to have the cost of each redisplay stage logged to stderr.
 	// Used to track down redisplay regressions without a profiler.
@@ -1607,14 +1621,16 @@ Grid::redisplay_grid ()
 	// columns when pattern.update() discovers more note or automation
 	// tracks than the current schema can hold.
 	bool schema_rebuilt = ensure_schema ();
-	if (schema_rebuilt || _schema_rebuilt_elsewhere) {
+	if (schema_rebuilt || _force_full_redisplay ||
+	    (int)model->children ().size () < pattern.global_nrows) {
 		// The old model rows and TreeView columns were destroyed (either by
-		// ensure_schema() above or by an earlier on-demand growth such as
-		// select_available_automation_column()); we must redisplay everything,
-		// not just the diff.
+		// ensure_schema() above, by an earlier on-demand growth such as
+		// select_available_automation_column(), or by Grid::setup()), or the
+		// model does not hold all the rows of the pattern yet.  We must
+		// redisplay everything, not just the diff.
 		_phenomenal_diff.full = true;
 	}
-	_schema_rebuilt_elsewhere = false;
+	_force_full_redisplay = false;
 
 	// Redisplay the grid
 	redisplay_global_columns ();
@@ -1846,8 +1862,9 @@ Grid::redisplay_left_right_separator_columns (int mti, bool force)
 	// filled columns rather than the transient 0-width state right after
 	// a schema rebuild.
 	TreeModel::Children::iterator row_it = model->children ().begin ();
-	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
-		TreeModel::Row row = *row_it++;
+	const int nrows = std::min (pattern.global_nrows, (int)model->children ().size ());
+	for (int row_idx = 0; row_idx < nrows; row_idx++, ++row_it) {
+		Gtk::TreeModel::Row row = *row_it;
 		set_cell (row, columns->_left_right_separator_background_color[mti], color);
 	}
 }
@@ -2478,9 +2495,10 @@ Grid::redisplay_inter_midi_regions (int mti)
 	}
 
 	TreeModel::Children::iterator row_it = model->children ().begin ();
-	for (int row_idx = 0; row_idx < pattern.global_nrows; row_idx++) {
+	const int nrows = std::min (pattern.global_nrows, (int)model->children ().size ());
+	for (int row_idx = 0; row_idx < nrows; row_idx++, ++row_it) {
 		// Get row
-		TreeModel::Row row = *row_it++;
+		TreeModel::Row row = *row_it;
 		if (!is_region_defined (row_idx, mti)) {
 			redisplay_undefined_notes (row, mti);
 			redisplay_undefined_automations (row, mti, enabled_params);
@@ -2741,6 +2759,9 @@ Grid::redisplay_automation_cell_selection (int row_idx, const Gtk::TreeViewColum
 void
 Grid::remove_unused_rows ()
 {
+	if (!model || pattern.global_nrows >= (int)model->children ().size ()) {
+		return;
+	}
 	TreeModel::Children::const_iterator row_it = model->children ().begin ();
 	std::advance (row_it, pattern.global_nrows);
 	for (; row_it != model->children ().end ();) {
