@@ -38,6 +38,15 @@ ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerContext& te,
 	setup_processor_automation_control ();
 }
 
+ProcessorAutomationPattern::ProcessorAutomationPattern (TrackerContext& te,
+                                                        const ProcessorAutomationPattern& other)
+	: TrackAutomationPattern (te, other.track, other.position, other.length, other.end, other.nt_last, false)
+	, _processor (other._processor)
+{
+	AutomationPattern::operator= (other);
+	track = other.track;
+}
+
 void
 ProcessorAutomationPattern::insert(const Evoral::Parameter& param)
 {

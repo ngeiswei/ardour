@@ -46,6 +46,11 @@ public:
 	                            bool connect);
 	virtual ~TrackAllAutomationsPattern ();
 
+	// Snapshot assignment used by Pattern::operator=.  Deep-copies the
+	// processor automation patterns so that the snapshot owns independent
+	// objects (the live pattern must not share them).
+	TrackAllAutomationsPattern& operator= (const TrackAllAutomationsPattern& other);
+
 	TrackAllAutomationsPatternPhenomenalDiff phenomenal_diff (const TrackAllAutomationsPattern& prev) const;
 
 	// Fill id_to_processor_automation_pattern
