@@ -4502,7 +4502,29 @@ Grid::apply_command (int mti, int mri, MidiModel::NoteDiffCommand* cmd)
 		return;
 	}
 
+	// A command that adds/removes a note or changes its start/length can move
+	// notes between rows, and therefore invalidates the derived on/off maps.
+	bool structural = cmd->adds_or_removes ();
+	if (!structural) {
+		for (const MidiModel::NoteDiffCommand::NoteChange& change : cmd->changes ()) {
+			if (change.property == MidiModel::NoteDiffCommand::StartTime ||
+			    change.property == MidiModel::NoteDiffCommand::Length) {
+				structural = true;
+				break;
+			}
+		}
+	}
+
 	pattern.apply_command (mti, mri, cmd);
+
+	// During a multi-cell edit (cut/paste), keep the pattern's derived note
+	// maps in sync with the model.  Normally the deferred redisplay does this,
+	// but the paste loop needs to see the notes it has just inserted when
+	// processing the next cell (otherwise every note looks like the last note
+	// in the region and all off-note cells become no-ops).
+	if (structural && tracker_editor.bulk_edit_in_progress ()) {
+		pattern.midi_notes_pattern (mti, mri).update ();
+	}
 }
 
 void

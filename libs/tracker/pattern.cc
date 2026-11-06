@@ -508,7 +508,24 @@ Pattern::midi_region_pattern (int mti, int mri) const
 void
 Pattern::apply_command (int mti, int mri, ARDOUR::MidiModel::NoteDiffCommand* cmd)
 {
-	midi_model (mti, mri)->apply_diff_command_as_commit (context.get_session (), cmd);
+	if (!cmd) {
+		return;
+	}
+
+	ARDOUR::Session* session = context.get_session ();
+	if (!session) {
+		delete cmd;
+		return;
+	}
+
+	MidiModelPtr model = midi_model (mti, mri);
+	if (context.bulk_edit_in_progress ()) {
+		// Join the transaction opened by the bulk edit (e.g. cut/paste)
+		// instead of creating one undo step per cell.
+		model->apply_diff_command_as_subcommand (*session, cmd);
+	} else {
+		model->apply_diff_command_as_commit (*session, cmd);
+	}
 }
 
 std::string

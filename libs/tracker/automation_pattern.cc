@@ -740,9 +740,18 @@ AutomationPattern::erase_automation_point (AutomationListPtr alist, AutomationLi
 void
 AutomationPattern::register_automation_undo (AutomationListPtr alist, const std::string& opname, XMLNode& before, XMLNode& after)
 {
-	context.begin_reversible_command (opname);
-	context.add_command (new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after));
-	context.commit_reversible_command ();
+	PBD::Command* cmd = new MementoCommand<ARDOUR::AutomationList> (*alist.get (), &before, &after);
+
+	if (context.bulk_edit_in_progress ()) {
+		// Join the transaction opened by the bulk edit (e.g. cut/paste)
+		// instead of creating one undo step per cell.
+		context.add_command (cmd);
+	} else {
+		context.begin_reversible_command (opname);
+		context.add_command (cmd);
+		context.commit_reversible_command ();
+	}
+
 	context.set_dirty ();
 }
 
