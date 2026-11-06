@@ -1250,9 +1250,19 @@ Grid::rebuild_schema (size_t nauto_hint)
 	// TreeModel::Row referencing freed storage.  Invalidate current_row_idx so
 	// that redisplay_row_background()/unset_underline_current_step_edit_cell()
 	// bail out via their INVALID_ROW guards instead of dereferencing it.
-	// redisplay_current_row() restores the cursor after rows are repopulated.
+	// Likewise, current_col points into the old TreeViewColumn set which is
+	// about to be deleted: clear it so that a cursor with no restorable row
+	// cannot leave a dangling column pointer behind.  The code below restores
+	// the column if the saved logical cursor position is still valid.
 	current_row = Gtk::TreeModel::Row ();
 	current_row_idx = BasePattern::INVALID_ROW;
+	current_col = 0;
+	current_col_idx = BasePattern::INVALID_COL;
+	current_mti = -1;
+	current_cgi = BasePattern::INVALID_CGI;
+	current_note_type = TrackerColumn::NoteType::NOTE;
+	current_automation_type = TrackerColumn::AutomationType::AUTOMATION_SEPARATOR;
+	current_is_note_type = true;
 
 	// Create fresh model columns with the new capacities.
 	columns.reset (new GridModelColumns ());
@@ -4178,7 +4188,13 @@ Grid::set_current_cursor_undefined ()
 bool
 Grid::is_current_col_defined () const
 {
-	return current_col != 0;
+	// Besides being non-null, the column must still be the one currently
+	// registered at current_col_idx.  This catches a stale pointer left over
+	// from a schema rebuild even if some future code path forgets to
+	// invalidate it.
+	return current_col != 0 &&
+		current_col_idx != BasePattern::INVALID_COL &&
+		to_col (current_col_idx) == current_col;
 }
 
 bool
