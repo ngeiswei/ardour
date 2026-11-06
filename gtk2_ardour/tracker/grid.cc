@@ -17,6 +17,7 @@
  */
 
 #include <cctype>
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <memory>
@@ -2008,11 +2009,33 @@ Grid::redisplay_undefined_automation (Gtk::TreeModel::Row& row, int mti, int cgi
 void
 Grid::redisplay_note_background (TreeModel::Row& row, int mti, int cgi)
 {
+	if (!is_valid_note_column (mti, cgi)) {
+		return;
+	}
+
 	std::string row_background_color = row[columns->_background_color];
 	set_cell (row, columns->_note_background_color[mti][cgi], row_background_color);
 	set_cell (row, columns->_channel_background_color[mti][cgi], row_background_color);
 	set_cell (row, columns->_velocity_background_color[mti][cgi], row_background_color);
 	set_cell (row, columns->_delay_background_color[mti][cgi], row_background_color);
+}
+
+bool
+Grid::is_valid_note_column (int mti, int cgi) const
+{
+	if (!columns || mti < 0 || (size_t)mti >= columns->note_name.size ()) {
+		return false;
+	}
+	return 0 <= cgi && (size_t)cgi < columns->note_name[mti].size ();
+}
+
+bool
+Grid::is_valid_automation_column (int mti, int cgi) const
+{
+	if (!columns || mti < 0 || (size_t)mti >= columns->automation.size ()) {
+		return false;
+	}
+	return 0 <= cgi && (size_t)cgi < columns->automation[mti].size ();
 }
 
 void
@@ -2029,6 +2052,10 @@ Grid::redisplay_current_row_background ()
 void
 Grid::redisplay_current_note_cursor (TreeModel::Row& row, int mti, int cgi)
 {
+	if (!is_valid_note_column (mti, cgi)) {
+		return;
+	}
+
 	std::string color = TrackerUtils::color_to_string (cursor_color);
 
 	switch (current_note_type) {
@@ -2069,6 +2096,10 @@ Grid::redisplay_blank_note_foreground (TreeModel::Row& row, int mti, int cgi)
 void
 Grid::redisplay_automation_background (TreeModel::Row& row, int mti, int cgi)
 {
+	if (!is_valid_automation_column (mti, cgi)) {
+		return;
+	}
+
 	std::string row_background_color = row[columns->_background_color];
 	set_cell (row, columns->_automation_background_color[mti][cgi], row_background_color);
 	set_cell (row, columns->_automation_delay_background_color[mti][cgi], row_background_color);
@@ -2120,6 +2151,10 @@ Grid::redisplay_note_foreground (TreeModel::Row& row, int row_idx, int mti, int 
 void
 Grid::redisplay_current_automation_cursor (TreeModel::Row& row, int mti, int cgi)
 {
+	if (!is_valid_automation_column (mti, cgi)) {
+		return;
+	}
+
 	std::string color = TrackerUtils::color_to_string (cursor_color);
 
 	switch (current_automation_type) {
@@ -2137,6 +2172,10 @@ Grid::redisplay_current_automation_cursor (TreeModel::Row& row, int mti, int cgi
 void
 Grid::redisplay_current_cursor ()
 {
+	if (current_row_idx == BasePattern::INVALID_ROW) {
+		return;
+	}
+
 	if (current_is_note_type) {
 		redisplay_current_note_cursor (current_row, current_mti, current_cgi);
 	} else {
@@ -2191,18 +2230,26 @@ Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int 
 void
 Grid::redisplay_cell_background (int row_idx, int col_idx)
 {
-	int mti = to_mti (to_col (col_idx));
-	int cgi = to_cgi (to_col (col_idx));
-	Gtk::TreeModel::Row row = to_row (row_idx);
-	redisplay_cell_background (row, mti, cgi);
-}
+	Gtk::TreeViewColumn* col = to_col (col_idx);
+	if (!col) {
+		return;
+	}
 
-void
-Grid::redisplay_cell_background (TreeModel::Row& row, int mti, int cgi)
-{
-	if (current_is_note_type) {
+	int mti = to_mti (col);
+	int cgi = to_cgi (col);
+	if (mti < 0 || cgi < 0) {
+		// Separator / region name / any non-data column.
+		return;
+	}
+
+	if (row_idx < 0 || pattern.global_nrows <= row_idx) {
+		return;
+	}
+
+	Gtk::TreeModel::Row row = to_row (row_idx);
+	if (is_note_type (col)) {
 		redisplay_note_background (row, mti, cgi);
-	} else {
+	} else if (is_automation_type (col)) {
 		redisplay_automation_background (row, mti, cgi);
 	}
 }
@@ -2576,12 +2623,35 @@ Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const MidiNotesPat
 void
 Grid::redisplay_selection ()
 {
+	if (!model) {
+		return;
+	}
+
+	// The model may temporarily hold more rows than the pattern (old rows are
+	// removed after the redisplay), but it must never hold fewer.  Clamp to
+	// both so that to_row() cannot run past the end of the model.
+	const int model_nrows = (int)model->children ().size ();
+	const int max_row_idx = std::min (pattern.global_nrows, model_nrows) - 1;
+	if (max_row_idx < 0) {
+		return;
+	}
+
+	const int max_col_idx = (int)get_columns ().size () - 1;
+
 	if (_subgrid_selector.has_prev_selection ()) {
-		int max_row_idx = std::min(_subgrid_selector.prev_bottom_row_idx, pattern.global_nrows);
-		int max_col_idx = _subgrid_selector.prev_right_col_idx;
+		int top_row_idx = std::max (_subgrid_selector.prev_top_row_idx, 0);
+		int bottom_row_idx = std::min (_subgrid_selector.prev_bottom_row_idx, max_row_idx);
+		int left_col_idx = std::max (_subgrid_selector.prev_left_col_idx, 0);
+		int right_col_idx = std::min (_subgrid_selector.prev_right_col_idx, max_col_idx);
 		// Undisplay selection
-		for (int row_idx = _subgrid_selector.prev_top_row_idx; row_idx <= max_row_idx; row_idx++) {
-			for (int col_idx = _subgrid_selector.prev_left_col_idx; col_idx <= max_col_idx; col_idx++) {
+		for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
+			for (int col_idx = left_col_idx; col_idx <= right_col_idx; col_idx++) {
+				Gtk::TreeViewColumn* col = to_col (col_idx);
+				if (!is_note_type (col) && !is_automation_type (col)) {
+					// The selection rectangle may span separators, the
+					// region name column, etc.  They hold no cell data.
+					continue;
+				}
 				redisplay_cell_background (row_idx, col_idx);
 			}
 		}
@@ -2592,9 +2662,13 @@ Grid::redisplay_selection ()
 	}
 	if (_subgrid_selector.has_selection ()) {
 		if (_subgrid_selector.has_destination ()) {
+			int top_row_idx = std::max (_subgrid_selector.top_row_idx, 0);
+			int bottom_row_idx = std::min (_subgrid_selector.bottom_row_idx, max_row_idx);
+			int left_col_idx = std::max (_subgrid_selector.left_col_idx, 0);
+			int right_col_idx = std::min (_subgrid_selector.right_col_idx, max_col_idx);
 			// Display selection
-			for (int row_idx = _subgrid_selector.top_row_idx; row_idx <= _subgrid_selector.bottom_row_idx; row_idx++) {
-				for (int col_idx = _subgrid_selector.left_col_idx; col_idx <= _subgrid_selector.right_col_idx; col_idx++) {
+			for (int row_idx = top_row_idx; row_idx <= bottom_row_idx; row_idx++) {
+				for (int col_idx = left_col_idx; col_idx <= right_col_idx; col_idx++) {
 					redisplay_cell_selection (row_idx, col_idx);
 				}
 			}
@@ -2606,6 +2680,9 @@ void
 Grid::redisplay_cell_selection (int row_idx, int col_idx)
 {
 	Gtk::TreeViewColumn* col = to_col (col_idx);
+	if (!is_note_type (col) && !is_automation_type (col)) {
+		return;
+	}
 	if (is_cell_defined (row_idx, col)) {
 		if (is_note_type (col)) {
 			redisplay_note_cell_selection (row_idx, col);
@@ -4389,10 +4466,22 @@ Grid::upper (int row_idx, int mti, const IDParameter& id_param) const
 void
 Grid::apply_command (int mti, int mri, MidiModel::NoteDiffCommand* cmd)
 {
-	// Apply change command
-	if (cmd) {
-		pattern.apply_command (mti, mri, cmd);
+	if (!cmd) {
+		return;
 	}
+
+	// Several edit paths (e.g. delete_note on an empty cell during a cut or a
+	// paste) create a command with nothing to do.  Applying it would emit a
+	// model change (and therefore schedule a redisplay) and create an empty
+	// undo step for nothing.
+	if (cmd->changes ().empty () &&
+	    cmd->added_notes ().empty () &&
+	    cmd->removed_notes ().empty ()) {
+		delete cmd;
+		return;
+	}
+
+	pattern.apply_command (mti, mri, cmd);
 }
 
 void
