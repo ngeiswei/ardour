@@ -86,6 +86,7 @@ TrackerEditor::TrackerEditor (Session* s, RegionSelection& rs)
 	, main_toolbar (*this)
 	, grid_header (0)
 	, _first (true)
+	, _bulk_edit (false)
 {
 	set_session (s);
 
@@ -138,6 +139,39 @@ TrackerEditor::set_dirty ()
 	if (session) {
 		session->set_dirty ();
 	}
+}
+
+void
+TrackerEditor::begin_bulk_edit (const std::string& name)
+{
+	if (_bulk_edit) {
+		return;
+	}
+	_bulk_edit = true;
+	begin_reversible_command (name);
+}
+
+void
+TrackerEditor::end_bulk_edit ()
+{
+	if (!_bulk_edit) {
+		return;
+	}
+	_bulk_edit = false;
+
+	// Editor::commit_reversible_command() always adds a SelectionMemento, so
+	// an empty edit would otherwise create a useless undo step.
+	if (session && !session->collected_undo_commands ()) {
+		public_editor.abort_reversible_command ();
+	} else {
+		commit_reversible_command ();
+	}
+}
+
+bool
+TrackerEditor::bulk_edit_in_progress () const
+{
+	return _bulk_edit;
 }
 
 void

@@ -72,10 +72,55 @@ public:
 	virtual void set_dirty () = 0;
 
 	/**
+	 * Begin grouping all edit primitives into a single undo/redo step.
+	 * Must be paired with end_bulk_edit ().
+	 */
+	virtual void begin_bulk_edit (const std::string& name) = 0;
+	virtual void end_bulk_edit () = 0;
+
+	/**
+	 * True while a bulk edit is in progress.  Edit primitives must then add
+	 * their commands to the current transaction instead of opening and
+	 * committing one of their own.
+	 */
+	virtual bool bulk_edit_in_progress () const = 0;
+
+	/**
 	 * Called after a pattern update when tracks may have been added,
 	 * removed or (re)enabled, so that the UI can refresh its track headers.
 	 */
 	virtual void track_headers_changed () = 0;
+};
+
+/**
+ * RAII helper to delimit a bulk edit.  Nested scopes join the outermost one
+ * rather than committing it prematurely.
+ */
+class BulkEdit
+{
+public:
+	BulkEdit (TrackerContext& context, const std::string& name)
+		: _context (context)
+		, _owner (!context.bulk_edit_in_progress ())
+	{
+		if (_owner) {
+			_context.begin_bulk_edit (name);
+		}
+	}
+
+	~BulkEdit ()
+	{
+		if (_owner) {
+			_context.end_bulk_edit ();
+		}
+	}
+
+	BulkEdit (const BulkEdit&) = delete;
+	BulkEdit& operator= (const BulkEdit&) = delete;
+
+private:
+	TrackerContext& _context;
+	bool _owner;
 };
 
 } // ~namespace Tracker

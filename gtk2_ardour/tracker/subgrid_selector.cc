@@ -24,6 +24,8 @@
 
 #include "tracker_editor.h"
 
+#include "pbd/i18n.h"
+
 using namespace Tracker;
 
 void Register::clear ()
@@ -115,6 +117,10 @@ SubgridSelector::has_destination () const
 void
 SubgridSelector::cut ()
 {
+	if (not has_selection ())
+		return;
+
+	BulkEdit bulk (tracker_editor, _("cut"));
 	copy ();
 	clear_subgrid ();
 }
@@ -124,6 +130,9 @@ SubgridSelector::clear_subgrid ()
 {
 	if (reg.empty ())
 		return;
+
+	// When called from cut(), this joins the outer "cut" transaction.
+	BulkEdit bulk (tracker_editor, _("clear"));
 
 	// Maximum number of columns and rows in the pattern
 	int global_ncols = tracker_editor.grid.get_columns ().size ();
@@ -148,11 +157,12 @@ SubgridSelector::clear_subgrid ()
 void
 SubgridSelector::copy ()
 {
+	// Clear register even when there is no selection, so that a following
+	// cut/paste cannot reuse stale copied data.
+	reg.clear ();
+
 	if (not has_selection ())
 		return;
-
-	// Clear register
-	reg.clear ();
 
 	// Set height
 	int top_row_idx = this->top_row_idx; // Mask attribute in case it changes
@@ -199,6 +209,8 @@ SubgridSelector::paste ()
 {
 	if (reg.empty ())
 		return;
+
+	BulkEdit bulk (tracker_editor, _("paste"));
 
 	// Maximum number of columns and rows in the pattern
 	int global_ncols = tracker_editor.grid.get_columns ().size ();
@@ -248,6 +260,8 @@ SubgridSelector::paste_overlay ()
 {
 	if (reg.empty ())
 		return;
+
+	BulkEdit bulk (tracker_editor, _("paste overlay"));
 
 	// Maximum number of columns and rows in the pattern
 	int global_ncols = tracker_editor.grid.get_columns ().size ();
