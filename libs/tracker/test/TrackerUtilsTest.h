@@ -22,6 +22,7 @@ class TrackerUtilsTest : public CppUnit::TestFixture
 	CPPUNIT_TEST (testFormatting);
 	CPPUNIT_TEST (testNoteAndEventEquality);
 	CPPUNIT_TEST (testContainerAndClampHelpers);
+	CPPUNIT_TEST (testColumnContentType);
 
 	CPPUNIT_TEST_SUITE_END ();
 
@@ -40,6 +41,7 @@ public:
 	void testFormatting ();
 	void testNoteAndEventEquality ();
 	void testContainerAndClampHelpers ();
+	void testColumnContentType ();
 };
 
 #endif /* __ardour_tracker_test_tracker_utils_test_h_ */

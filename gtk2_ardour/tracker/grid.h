@@ -39,6 +39,7 @@
 #include "track_automation_pattern.h"
 #include "tracker_column.h"
 #include "tracker_utils.h"
+#include "column_content_type.h"
 #include "subgrid_selector.h"
 
 namespace Gtk {
@@ -281,7 +282,13 @@ public:
 	void set_underline_current_step_edit_automation_cell ();
 
 	// Modifier/Accessor
-	void set_cell_content (int row_idx, int col_idx, const std::string& text);
+	// Return false if the cell is not defined or if the content type does not
+	// match the destination column.
+	bool set_cell_content (int row_idx, int col_idx, const std::string& text, ColumnContentType type);
+
+	// Return the type of content accepted by the given column: NOTE for the
+	// note-name column, VALUE for the numeric columns, EMPTY otherwise.
+	ColumnContentType column_content_type (int col_idx) const;
 
 	// Return the content of a cell or an empty string if it is blank, *** or
 	// interpolated.  Used for copy/cut/paste.
@@ -641,6 +648,12 @@ private:
 	// separator / non-data columns and stale indices.
 	bool is_valid_note_column (int mti, int cgi) const;
 	bool is_valid_automation_column (int mti, int cgi) const;
+
+	// Return the content type accepted by the given column.
+	ColumnContentType column_content_type (const Gtk::TreeViewColumn* col) const;
+
+	// Return true iff the content can be pasted into the given column.
+	bool is_cell_content_compatible (const Gtk::TreeViewColumn* col, ColumnContentType type) const;
 
 	// Return mti corresponding col, or -1 if invalid
 	int to_mti (const Gtk::TreeViewColumn* col) const;
