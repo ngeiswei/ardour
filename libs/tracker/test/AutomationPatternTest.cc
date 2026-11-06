@@ -38,6 +38,9 @@ public:
 	void commit_reversible_command () override {}
 	void add_command (PBD::Command*) override {}
 	void set_dirty () override {}
+	void begin_bulk_edit (const std::string&) override {}
+	void end_bulk_edit () override {}
+	bool bulk_edit_in_progress () const override { return false; }
 	void track_headers_changed () override {}
 };
 

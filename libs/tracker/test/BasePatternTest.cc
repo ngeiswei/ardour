@@ -23,7 +23,25 @@ public:
 	void commit_reversible_command () override {}
 	void add_command (PBD::Command*) override {}
 	void set_dirty () override {}
+	void begin_bulk_edit (const std::string&) override {}
+	void end_bulk_edit () override {}
+	bool bulk_edit_in_progress () const override { return false; }
 	void track_headers_changed () override {}
+};
+
+/** TrackerContext that records bulk-edit begin/end calls. */
+class CountingTrackerContext : public NullTrackerContext
+{
+public:
+	CountingTrackerContext () : begins (0), ends (0), in_progress (false) {}
+
+	void begin_bulk_edit (const std::string&) override { ++begins; in_progress = true; }
+	void end_bulk_edit () override { ++ends; in_progress = false; }
+	bool bulk_edit_in_progress () const override { return in_progress; }
+
+	int  begins;
+	int  ends;
+	bool in_progress;
 };
 
 /** Concrete BasePattern (BasePattern::update is pure virtual). */
@@ -186,4 +204,33 @@ BasePatternTest::testRankedRowHelpers ()
 	CPPUNIT_ASSERT_EQUAL (1, r4[0]);
 	CPPUNIT_ASSERT_EQUAL (-1, r4[1]);
 	CPPUNIT_ASSERT_EQUAL (-1, r4[2]);
+}
+
+void
+BasePatternTest::testBulkEdit ()
+{
+	CountingTrackerContext ctx;
+
+	CPPUNIT_ASSERT (!ctx.bulk_edit_in_progress ());
+
+	{
+		BulkEdit outer (ctx, "outer");
+		CPPUNIT_ASSERT (ctx.bulk_edit_in_progress ());
+		CPPUNIT_ASSERT_EQUAL (1, ctx.begins);
+
+		{
+			// A nested scope joins the outer transaction instead of
+			// committing it.
+			BulkEdit inner (ctx, "inner");
+			CPPUNIT_ASSERT (ctx.bulk_edit_in_progress ());
+			CPPUNIT_ASSERT_EQUAL (1, ctx.begins);
+		}
+
+		CPPUNIT_ASSERT (ctx.bulk_edit_in_progress ());
+		CPPUNIT_ASSERT_EQUAL (0, ctx.ends);
+	}
+
+	CPPUNIT_ASSERT (!ctx.bulk_edit_in_progress ());
+	CPPUNIT_ASSERT_EQUAL (1, ctx.begins);
+	CPPUNIT_ASSERT_EQUAL (1, ctx.ends);
 }
