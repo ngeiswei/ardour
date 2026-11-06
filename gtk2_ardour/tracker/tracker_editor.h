@@ -88,6 +88,9 @@ public:
 	void commit_reversible_command ();
 	void add_command (PBD::Command* cmd);
 	void set_dirty ();
+	void begin_bulk_edit (const std::string& name);
+	void end_bulk_edit ();
+	bool bulk_edit_in_progress () const;
 	void track_headers_changed ();
 
 	void connect_track (TrackPtr track);
@@ -143,6 +146,11 @@ private:
 public:
 	// To not redo first time initialization when setup () is called again
 	bool _first;
+
+private:
+	// True while a multi-cell edit (cut/paste) is being applied as one undo
+	// transaction.
+	bool _bulk_edit;
 };
 
 // Determine the window name of a selection of regions.

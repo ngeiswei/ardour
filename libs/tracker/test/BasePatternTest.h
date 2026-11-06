@@ -17,6 +17,7 @@ class BasePatternTest : public CppUnit::TestFixture
 	CPPUNIT_TEST (testIsDefined);
 	CPPUNIT_TEST (testRegionRelativeBeats);
 	CPPUNIT_TEST (testRankedRowHelpers);
+	CPPUNIT_TEST (testBulkEdit);
 
 	CPPUNIT_TEST_SUITE_END ();
 
@@ -31,6 +32,7 @@ public:
 	void testIsDefined ();
 	void testRegionRelativeBeats ();
 	void testRankedRowHelpers ();
+	void testBulkEdit ();
 
 private:
 	Tracker::TrackerContext* _context;
