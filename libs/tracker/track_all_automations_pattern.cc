@@ -56,6 +56,39 @@ TrackAllAutomationsPattern::~TrackAllAutomationsPattern ()
 	}
 }
 
+TrackAllAutomationsPattern&
+TrackAllAutomationsPattern::operator= (const TrackAllAutomationsPattern& other)
+{
+	if (this == &other) {
+		return *this;
+	}
+
+	if (!other.enabled) {
+		enabled = false;
+		return *this;
+	}
+
+	BasePattern::operator= (other);
+	track = other.track;
+	main_automation_pattern.operator= (other.main_automation_pattern);
+	connect = other.connect;
+
+	// The processor automation patterns are owned by this object.  Release the
+	// previous snapshots, then create independent copies of the new state so
+	// that this snapshot and the live pattern never share pointers.
+	for (auto& id_p : id_to_processor_automation_pattern) {
+		delete id_p.second;
+	}
+	id_to_processor_automation_pattern.clear ();
+
+	for (const auto& id_p : other.id_to_processor_automation_pattern) {
+		id_to_processor_automation_pattern[id_p.first] =
+			new ProcessorAutomationPattern (context, *id_p.second);
+	}
+
+	return *this;
+}
+
 TrackAllAutomationsPatternPhenomenalDiff
 TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& prev) const
 {
