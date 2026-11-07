@@ -99,6 +99,12 @@ public:
 	void paste ();
 	void paste_overlay ();
 
+	/** Interpolate the values in the current subgrid selection. */
+	void interpolate ();
+
+	/** Keep the Interpolate action sensitive only when a subgrid is selected. */
+	void update_interpolate_sensitivity ();
+
 	/** Show the cut/copy/paste popup menu at the given mouse event position. */
 	void popup_clipboard_menu (GdkEventButton* ev);
 

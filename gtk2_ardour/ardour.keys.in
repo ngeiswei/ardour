@@ -570,3 +570,4 @@ This mode provides many different operations on both regions and control points,
 @tracker|Tracker/copy|                                  <@PRIMARY@>c|copy
 @tracker|Tracker/paste|                                <@PRIMARY@>v|paste
 @tracker|Tracker/paste-overlay|            <@PRIMARY@><@TERTIARY@>v|paste overlay
+@tracker|Tracker/interpolate|                            <@PRIMARY@>l|interpolate

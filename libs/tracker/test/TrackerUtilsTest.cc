@@ -231,6 +231,30 @@ TrackerUtilsTest::testNoteAndEventEquality ()
 }
 
 void
+TrackerUtilsTest::testInterpolation ()
+{
+	// Endpoints, midpoint and a non-unit row distance.
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (0.0, TrackerUtils::interpolate (0, 10, 0, 10, 0), 1e-9);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (5.0, TrackerUtils::interpolate (0, 10, 0, 10, 5), 1e-9);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (10.0, TrackerUtils::interpolate (0, 10, 0, 10, 10), 1e-9);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (8.0, TrackerUtils::interpolate (10, 0, 0, 10, 2), 1e-9);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (10.0, TrackerUtils::interpolate (0, 20, 10, 20, 15), 1e-9);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (5.0, TrackerUtils::interpolate (5, 5, 0, 10, 7), 1e-9);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (-6.0, TrackerUtils::interpolate (-10, -2, 0, 4, 2), 1e-9);
+
+	// A degenerate row range falls back to the first value.
+	CPPUNIT_ASSERT_DOUBLES_EQUAL (3.0, TrackerUtils::interpolate (3, 7, 4, 4, 4), 1e-9);
+
+	// Integer interpolation rounds to nearest and clamps.
+	CPPUNIT_ASSERT_EQUAL (5, TrackerUtils::interpolate_int (0, 10, 0, 10, 5, 0, 127));
+	CPPUNIT_ASSERT_EQUAL (1, TrackerUtils::interpolate_int (0, 1, 0, 2, 1, 0, 127));
+	CPPUNIT_ASSERT_EQUAL (5, TrackerUtils::interpolate_int (0, 10, 0, 10, 10, 0, 5));
+	CPPUNIT_ASSERT_EQUAL (1, TrackerUtils::interpolate_int (0, 10, 0, 10, 0, 1, 127));
+	CPPUNIT_ASSERT_EQUAL (0, TrackerUtils::interpolate_int (-10, 10, 0, 10, 0, 0, 127));
+	CPPUNIT_ASSERT_EQUAL (3, TrackerUtils::interpolate_int (3, 7, 4, 4, 4, 0, 10));
+}
+
+void
 TrackerUtilsTest::testColumnContentType ()
 {
 	// Empty content clears any column.

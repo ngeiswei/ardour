@@ -3206,6 +3206,199 @@ Grid::get_cell_content (int row_idx, int col_idx) const
 	return "";
 }
 
+void
+Grid::interpolate_selection ()
+{
+	if (!model) {
+		return;
+	}
+
+	SubgridSelector& selector = _subgrid_selector;
+	if (!selector.has_selection ()) {
+		return;
+	}
+
+	const int nrows = std::min (pattern.global_nrows, (int)model->children ().size ());
+	const int top_row_idx = selector.top_row_idx;
+	const int bottom_row_idx = selector.bottom_row_idx;
+	const int ncols = (int)get_columns ().size ();
+
+	// Interpolation needs two rows: the top and bottom rows define the
+	// endpoints, and their selected columns must contain existing values.
+	if (top_row_idx < 0 || bottom_row_idx < 0 ||
+	    top_row_idx >= bottom_row_idx || bottom_row_idx >= nrows) {
+		return;
+	}
+
+	const int left_col_idx = std::max (0, selector.left_col_idx);
+	const int right_col_idx = std::min (ncols - 1, selector.right_col_idx);
+	if (right_col_idx < left_col_idx) {
+		return;
+	}
+
+	{
+		BulkEdit bulk (tracker_editor, _("interpolate"));
+
+		for (int col_idx = left_col_idx; col_idx <= right_col_idx; ++col_idx) {
+			if (!is_editable (col_idx) || !is_visible (col_idx)) {
+				continue;
+			}
+
+			Gtk::TreeViewColumn* col = to_col (col_idx);
+			if (!col || column_content_type (col_idx) == ColumnContentType::EMPTY) {
+				continue;
+			}
+
+			const int mti = to_mti (col);
+			const int cgi = to_cgi (col);
+			if (mti < 0 || cgi < 0) {
+				continue;
+			}
+
+			if (is_note_type (col)) {
+				const TrackerColumn::NoteType note_type = get_note_type (col);
+				if (note_type == TrackerColumn::NoteType::NOTE ||
+				    note_type == TrackerColumn::NoteType::SEPARATOR) {
+					continue;
+				}
+
+				int mri_top, mri_bottom;
+				NotePtr on_top, off_top, on_bottom, off_bottom;
+				double value_top, value_bottom;
+				if (!note_interpolation_value (top_row_idx, col, mti, cgi, note_type,
+				                               mri_top, on_top, off_top, value_top) ||
+				    !note_interpolation_value (bottom_row_idx, col, mti, cgi, note_type,
+				                               mri_bottom, on_bottom, off_bottom, value_bottom)) {
+					continue;
+				}
+
+				struct NoteDelayEdit {
+					int row_idx;
+					int mri;
+					NotePtr on_note;
+					NotePtr off_note;
+					int value;
+				};
+				std::vector<NoteDelayEdit> delay_edits;
+
+				for (int row_idx = top_row_idx + 1; row_idx < bottom_row_idx; ++row_idx) {
+					int mri;
+					NotePtr on_note, off_note;
+					double value;
+					if (!note_interpolation_value (row_idx, col, mti, cgi, note_type,
+					                               mri, on_note, off_note, value)) {
+						continue;
+					}
+
+					int int_value;
+					if (note_type == TrackerColumn::NoteType::CHANNEL) {
+						int_value = TrackerUtils::interpolate_int (value_top, value_bottom,
+						                                           top_row_idx, bottom_row_idx, row_idx, 0, 15);
+					} else if (note_type == TrackerColumn::NoteType::VELOCITY) {
+						int_value = TrackerUtils::interpolate_int (value_top, value_bottom,
+						                                           top_row_idx, bottom_row_idx, row_idx, 0, 127);
+					} else { // DELAY
+						const MidiRegionPattern& mrp = pattern.midi_region_pattern (mti, mri);
+						int_value = TrackerUtils::interpolate_int (value_top, value_bottom,
+						                                           top_row_idx, bottom_row_idx, row_idx,
+						                                           mrp.delay_ticks_min (), mrp.delay_ticks_max ());
+					}
+
+					if (note_type == TrackerColumn::NoteType::DELAY) {
+						// Structural note edits are applied after collecting all
+						// targets, so moving a note cannot invalidate the row lookups
+						// for the remaining targets.
+						delay_edits.push_back ({row_idx, mri, on_note, off_note, int_value});
+					} else {
+						set_interpolated_note_value (row_idx, mti, mri, cgi, note_type,
+						                             on_note, off_note, int_value);
+					}
+				}
+
+				for (const NoteDelayEdit& edit : delay_edits) {
+					set_interpolated_note_value (edit.row_idx, mti, edit.mri, cgi, note_type,
+					                             edit.on_note, edit.off_note, edit.value);
+				}
+
+			} else if (is_automation_type (col)) {
+				const IDParameter id_param = get_id_param (mti, cgi);
+				if (id_param == TrackerUtils::defaultIDParameter ()) {
+					continue;
+				}
+
+				const TrackerColumn::AutomationType automation_type = get_automation_type (col);
+
+				if (automation_type == TrackerColumn::AutomationType::AUTOMATION) {
+					int mri_top, mri_bottom;
+					bool has_event_top, has_event_bottom;
+					double value_top, value_bottom;
+					if (!automation_interpolation_value (top_row_idx, col, mti, cgi, id_param,
+					                                     mri_top, has_event_top, value_top) ||
+					    !has_event_top ||
+					    !automation_interpolation_value (bottom_row_idx, col, mti, cgi, id_param,
+					                                     mri_bottom, has_event_bottom, value_bottom) ||
+					    !has_event_bottom) {
+						continue;
+					}
+
+					for (int row_idx = top_row_idx + 1; row_idx < bottom_row_idx; ++row_idx) {
+						int mri;
+						bool has_event;
+						double value;
+						if (!automation_interpolation_value (row_idx, col, mti, cgi, id_param,
+						                                     mri, has_event, value)) {
+							continue;
+						}
+
+						double interpolated = TrackerUtils::interpolate (value_top, value_bottom,
+						                                                 top_row_idx, bottom_row_idx, row_idx);
+						if (is_int_param (id_param)) {
+							const int lower_bound = (int)std::lround (lower (row_idx, mti, id_param));
+							const int upper_bound = (int)std::lround (upper (row_idx, mti, id_param));
+							interpolated = TrackerUtils::interpolate_int (value_top, value_bottom,
+							                                               top_row_idx, bottom_row_idx, row_idx,
+							                                               lower_bound, upper_bound);
+						}
+
+						// Create an event on an empty cell at the row position (no
+						// delay), or update the existing event's value in place.
+						pattern.set_automation_value (interpolated, row_idx, mti, mri, id_param, 0);
+					}
+
+				} else if (automation_type == TrackerColumn::AutomationType::AUTOMATION_DELAY) {
+					int mri_top, mri_bottom;
+					int delay_top, delay_bottom;
+					if (!automation_interpolation_delay (top_row_idx, col, mti, cgi, id_param,
+					                                     mri_top, delay_top) ||
+					    !automation_interpolation_delay (bottom_row_idx, col, mti, cgi, id_param,
+					                                     mri_bottom, delay_bottom)) {
+						continue;
+					}
+
+					for (int row_idx = top_row_idx + 1; row_idx < bottom_row_idx; ++row_idx) {
+						int mri, delay;
+						if (!automation_interpolation_delay (row_idx, col, mti, cgi, id_param,
+						                                     mri, delay)) {
+							continue;
+						}
+
+						const int interpolated = TrackerUtils::interpolate_int (delay_top, delay_bottom,
+						                                                        top_row_idx, bottom_row_idx, row_idx,
+						                                                        pattern.tps[mti]->delay_ticks_min (),
+						                                                        pattern.tps[mti]->delay_ticks_max ());
+
+						// Delays are attributes of existing events, so never create
+						// new automation events here.
+						pattern.set_automation_delay (interpolated, row_idx, mti, mri, id_param);
+					}
+				}
+			}
+		}
+	}
+
+	redisplay_grid_direct_call ();
+}
+
 int
 Grid::get_time_width () const
 {
@@ -4125,6 +4318,127 @@ Grid::set_note_delay_update_cmd (NotePtr on_note,  NotePtr off_note, int row_idx
 	}
 }
 
+bool
+Grid::note_interpolation_value (int row_idx, const Gtk::TreeViewColumn* col,
+                                int mti, int cgi,
+                                TrackerColumn::NoteType note_type,
+                                int& mri, NotePtr& on_note, NotePtr& off_note,
+                                double& value)
+{
+	if (!is_cell_defined (row_idx, col)) {
+		return false;
+	}
+
+	mri = pattern.to_mri (row_idx, mti);
+	if (mri < 0 || !is_note_displayable (row_idx, mti, mri, cgi)) {
+		return false;
+	}
+
+	on_note = get_on_note (row_idx, mti, cgi);
+	off_note = get_off_note (row_idx, mti, cgi);
+
+	switch (note_type) {
+	case TrackerColumn::NoteType::CHANNEL:
+		if (!on_note) {
+			return false;
+		}
+		value = on_note->channel ();
+		return true;
+	case TrackerColumn::NoteType::VELOCITY:
+		if (!on_note) {
+			return false;
+		}
+		value = on_note->velocity ();
+		return true;
+	case TrackerColumn::NoteType::DELAY:
+		if (on_note) {
+			value = get_on_note_delay (on_note, row_idx, mti, mri);
+			return true;
+		}
+		if (off_note) {
+			value = get_off_note_delay (off_note, row_idx, mti, mri);
+			return true;
+		}
+		return false;
+	default:
+		return false;
+	}
+}
+
+void
+Grid::set_interpolated_note_value (int row_idx, int mti, int mri, int cgi,
+                                   TrackerColumn::NoteType note_type,
+                                   NotePtr on_note, NotePtr off_note, int value)
+{
+	switch (note_type) {
+	case TrackerColumn::NoteType::CHANNEL:
+		set_note_channel (mti, mri, on_note, value);
+		break;
+	case TrackerColumn::NoteType::VELOCITY:
+		set_note_velocity (mti, mri, on_note, value);
+		break;
+	case TrackerColumn::NoteType::DELAY: {
+		if (!on_note && !off_note) {
+			break;
+		}
+		MidiModel::NoteDiffCommand* cmd =
+			pattern.midi_model (mti, mri)->new_note_diff_command (_("interpolate note delay"));
+		set_note_delay_update_cmd (on_note, off_note, row_idx, mti, mri, value, cmd);
+		apply_command (mti, mri, cmd);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+bool
+Grid::automation_interpolation_value (int row_idx, const Gtk::TreeViewColumn* col,
+                                      int mti, int cgi, const IDParameter& id_param,
+                                      int& mri, bool& has_event, double& value)
+{
+	if (!is_cell_defined (row_idx, col)) {
+		return false;
+	}
+
+	mri = pattern.to_mri (row_idx, mti);
+	if (!is_automation_displayable (row_idx, mti, mri, id_param)) {
+		return false;
+	}
+
+	const std::pair<double, bool> value_defined =
+		pattern.get_automation_value (row_idx, mti, mri, id_param);
+	has_event = value_defined.second;
+	value = has_event ? value_defined.first :
+		pattern.get_automation_interpolation_value (row_idx, mti, mri, id_param);
+
+	return true;
+}
+
+bool
+Grid::automation_interpolation_delay (int row_idx, const Gtk::TreeViewColumn* col,
+                                      int mti, int cgi, const IDParameter& id_param,
+                                      int& mri, int& delay)
+{
+	if (!is_cell_defined (row_idx, col)) {
+		return false;
+	}
+
+	mri = pattern.to_mri (row_idx, mti);
+	if (!is_automation_displayable (row_idx, mti, mri, id_param)) {
+		return false;
+	}
+
+	const std::pair<int, bool> delay_defined =
+		pattern.get_automation_delay (row_idx, mti, mri, id_param);
+	if (!delay_defined.second) {
+		return false;
+	}
+
+	delay = delay_defined.first;
+	return true;
+}
+
 void
 Grid::play_note (int mti, uint8_t pitch)
 {
@@ -4384,6 +4698,7 @@ Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 		_subgrid_selector.set_source (row_idx, col_idx);
 	}
 	redisplay_selection ();
+	tracker_editor.main_toolbar.update_interpolate_sensitivity ();
 }
 
 IDParameter
