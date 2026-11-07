@@ -78,6 +78,7 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, sync_playhead (false)
 	, jump (false)
 	, wrap (false)
+	, follow (false)
 	, hex (true)
 	, base (16)
 	, octave_label (_("Octave"))
@@ -287,6 +288,16 @@ MainToolbar::setup_layout ()
 	wrap_button.show ();
 	mr->pack_start (wrap_button, false, false);
 
+	// Follow the current row, keeping it vertically centered
+	follow_separator.show ();
+	mr->pack_start (follow_separator, false, false);
+	follow_button.set_name ("mouse mode button");
+	follow_button.set_text (S_("Follow"));
+	follow_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_follow), false);
+	follow_button.set_active_state (follow ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	follow_button.show ();
+	mr->pack_start (follow_button, false, false);
+
 	mr->show ();
 	pack_start (*mr, false, false);
 
@@ -304,6 +315,7 @@ MainToolbar::setup_tooltips ()
 	sync_playhead_button.set_tooltip_text (_("Synchronize current row and playhead"));
 	jump_button.set_tooltip_text (_("Jump to the next event on the same row or column while moving the cursor or step editing. If no such event exist, then fallback to regular movement."));
 	wrap_button.set_tooltip_text (_("Wrap vertical move"));
+	follow_button.set_tooltip_text (_("Keep the current row vertically centered while the cursor moves"));
 	octave_spinner.set_tooltip_text (_("Default octave"));
 	channel_spinner.set_tooltip_text (_("Default channel"));
 	velocity_spinner.set_tooltip_text (_("Default velocity"));
@@ -407,6 +419,7 @@ MainToolbar::register_actions ()
 	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_sync_playhead));
 	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_jump));
 	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_wrap));
+	ActionManager::register_action (tracker_actions, X_("toggle-follow"), _("Toggle Follow"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_follow));
 	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hexadecimal"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_hex));
 
 	// Value adjustments
@@ -432,6 +445,20 @@ MainToolbar::register_actions ()
 	ActionManager::register_action (tracker_actions, X_("copy"), _("Copy"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::copy));
 	ActionManager::register_action (tracker_actions, X_("paste"), _("Paste"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::paste));
 	ActionManager::register_action (tracker_actions, X_("paste-overlay"), _("Paste Overlay"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::paste_overlay));
+
+	// Ardour creates the per-user keybinding file only once; new default
+	// bindings added in later revisions are not merged into an existing user
+	// file.  Install the Follow shortcut in memory when the loaded bindings
+	// predate it, so both Alt+F and the popup menu hint work without forcing
+	// the user to reset all their shortcuts.  An existing binding (including
+	// a user-customized one) always wins.
+	Gtkmm2ext::KeyboardKey follow_key;
+	if (!bindings->is_registered (Gtkmm2ext::Bindings::Press, "Tracker/toggle-follow") &&
+	    !bindings->is_registered (Gtkmm2ext::Bindings::Release, "Tracker/toggle-follow") &&
+	    Gtkmm2ext::KeyboardKey::make_key ("Secondary-f", follow_key)) {
+		bindings->add (follow_key, Gtkmm2ext::Bindings::Press,
+		               "Tracker/toggle-follow", 0, false);
+	}
 }
 
 void
@@ -674,6 +701,17 @@ MainToolbar::toggle_wrap ()
 }
 
 void
+MainToolbar::toggle_follow ()
+{
+	toggle_mode_button (follow, follow_button);
+	if (follow) {
+		// Center the current row immediately, without waiting for the next
+		// cursor move.
+		tracker_editor.grid.scroll_to_current_row ();
+	}
+}
+
+void
 MainToolbar::toggle_hex ()
 {
 	hex = !hex;
@@ -762,6 +800,7 @@ MainToolbar::build_clipboard_menu ()
 		{ "toggle-sync-playhead", S_("Sync Playhead"), &MainToolbar::sync_playhead, &MainToolbar::toggle_sync_playhead },
 		{ "toggle-jump", S_("Jump"), &MainToolbar::jump, &MainToolbar::toggle_jump },
 		{ "toggle-wrap", S_("Wrap"), &MainToolbar::wrap, &MainToolbar::toggle_wrap },
+		{ "toggle-follow", S_("Follow"), &MainToolbar::follow, &MainToolbar::toggle_follow },
 	};
 
 	for (size_t i = 0; i < sizeof (mode_items) / sizeof (mode_items[0]); ++i) {

@@ -619,6 +619,9 @@ private:
 	// Check if jump is enabled
 	bool jump() const;
 
+	// Check if follow (keep the current row vertically centered) is enabled
+	bool follow() const;
+
 	// Check whether a given column is editable. Note, due to technical reasons
 	// outside of our control col cannot be const.
 public:

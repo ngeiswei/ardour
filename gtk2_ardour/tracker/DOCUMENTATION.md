@@ -74,6 +74,7 @@ on macOS these are `Command` and `Option` respectively.
 | `Alt+P` | Toggle sync playhead |
 | `Alt+J` | Toggle jump |
 | `Alt+W` | Toggle wrap |
+| `Alt+F` | Toggle follow |
 | `Alt+H` | Toggle hexadecimal display |
 
 ### Value adjustments
@@ -114,7 +115,8 @@ a cell being edited).
 
 The popup menu also contains checkable items for each mode toggle, right below
 the cut/copy/paste items: `Hexadecimal`, `Chord Mode`, `Overwrite Default`,
-`Overwrite Existing`, `Overwrite ***`, `Sync Playhead`, `Jump` and `Wrap`.
+`Overwrite Existing`, `Overwrite ***`, `Sync Playhead`, `Jump`, `Wrap` and
+`Follow`.
 Each item shows whether the corresponding mode is enabled, can be used to
 toggle it, and displays its shortcut (for example `Alt+H` for Hexadecimal; see the
 mode toggles above).
