@@ -72,6 +72,7 @@ public:
 	void toggle_sync_playhead ();
 	void toggle_jump ();
 	void toggle_wrap ();
+	void toggle_follow ();
 	void toggle_hex ();
 
 	/** Adjust the spinner values and the rows-per-beat setting. */
@@ -179,6 +180,10 @@ public:
 	Gtk::VSeparator              wrap_separator;
 	ArdourWidgets::ArdourButton  wrap_button;
 	bool                         wrap;
+
+	Gtk::VSeparator              follow_separator;
+	ArdourWidgets::ArdourButton  follow_button;
+	bool                         follow;
 
 	bool                         hex;
 	int                          base; // 16 if hex else 10
