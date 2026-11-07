@@ -4900,6 +4900,10 @@ Grid::connect_events ()
 
 	// Connect to mouse button events
 	signal_button_press_event ().connect (sigc::mem_fun (*this, &Grid::mouse_button_event), false);
+
+	// Clicking the frozen time column moves the cursor row, without
+	// touching the current column.
+	time_view.signal_button_press_event ().connect (sigc::mem_fun (*this, &Grid::time_view_button_event), false);
 	// Scroll event is disabled for now because it doesn't work properly
 	// signal_scroll_event ().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
@@ -6697,6 +6701,50 @@ Grid::mouse_button_event (GdkEventButton* ev)
 		grab_focus ();
 	}
 
+	return true;
+}
+
+bool
+Grid::time_view_button_event (GdkEventButton* ev)
+{
+	if (ev->button != 1) {
+		return false;
+	}
+
+	if (ev->type == GDK_BUTTON_PRESS) {
+		// The frozen time view has the same row model/adjustment as the
+		// grid.  Only handle clicks in its bin window (i.e. on a row), not
+		// on the column header or other child windows.  As with
+		// Grid::mouse_button_event, the event coordinates are already
+		// relative to the bin window, which is what get_path_at_pos()
+		// expects.
+		Glib::RefPtr<Gdk::Window> bin_window = time_view.get_bin_window ();
+		if (bin_window && ev->window == bin_window->gobj ()) {
+			TreeModel::Path path;
+			TreeViewColumn* col = 0;
+			int cell_x, cell_y;
+			if (time_view.get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y)) {
+				// Move the row only: set_current_row() leaves
+				// current_col/current_col_idx untouched, so the horizontal
+				// cursor position is preserved.
+				set_current_row (path, true);
+
+				// set_current_row() only redraws the row background; the
+				// cursor cell background and its step-edit underline are
+				// drawn by set_current_col().  Repaint them if the cell at
+				// the unchanged column is valid on the new row.
+				if (is_current_col_defined () && is_cell_defined (path, current_col)) {
+					set_current_col (current_col);
+				}
+			}
+		}
+	}
+
+	// Keep keyboard focus on the grid, otherwise clicking the time column
+	// would send subsequent arrow keys to the (passive) time view.  Consume
+	// the event even for a header/empty-area click so the default TreeView
+	// handler does not steal the focus back.
+	grab_focus ();
 	return true;
 }
 
