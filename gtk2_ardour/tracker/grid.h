@@ -526,6 +526,7 @@ private:
 	bool key_press (GdkEventKey*);
 	bool key_release (GdkEventKey*);
 	bool mouse_button_event (GdkEventButton*);
+	bool time_view_button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
 	// Hack until proper dealing with shortcut keys
