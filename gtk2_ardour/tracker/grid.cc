@@ -3312,6 +3312,9 @@ Grid::color_changed ()
 void
 Grid::scroll_to_current_row ()
 {
+	if (!model || current_path.empty () || current_row_idx == BasePattern::INVALID_ROW) {
+		return;
+	}
 	scroll_to_row (current_path);
 }
 
@@ -4226,7 +4229,22 @@ Grid::set_current_row (int row_idx, bool set_playhead)
 void
 Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 {
-	// NEXT: maybe make sure not to recall if current already set
+	// A click in the empty area below the last row (or a path left over from
+	// a previous, larger pattern after the rows-per-beat was reduced) yields
+	// an empty path.  A path pointing past the last row can also come from
+	// row_at_beats() when the cursor is exactly on the end of the pattern.
+	// Never store such a path: current_path must always address an existing
+	// row, otherwise the next vertical move dereferences a null GtkTreePath
+	// (--path[0] in vertical_move()).
+	if (!model || path.empty ()) {
+		return;
+	}
+	const int path_row_idx = to_row_index (path);
+	if (path_row_idx < 0 ||
+	    path_row_idx >= pattern.global_nrows ||
+	    path_row_idx >= (int) model->children ().size ()) {
+		return;
+	}
 
 	// Reset background color over the previous row
 	redisplay_row_background (current_row, current_row_idx);
@@ -4236,13 +4254,7 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 
 	// Update current row
 	current_path = path;
-	current_row_idx = to_row_index (path);
-
-	// Abort if current_row_idx is negative.  This may happen if the user clicks
-	// on an area with no row.
-	if (current_row_idx < 0) {
-		return;
-	}
+	current_row_idx = path_row_idx;
 
 	current_beats = pattern.beats_at_row (current_row_idx);
 	current_row = to_row (current_row_idx);
@@ -5276,6 +5288,13 @@ Grid::setup_track_separator_column (int mti)
 void
 Grid::vertical_move (TreeModel::Path& path, const TreeViewColumn* col, int steps, bool wrap, bool jump)
 {
+	// Defensive: current_path used to be able to become empty after clicking
+	// below the last row, and the callers copy it here (see
+	// set_current_row()).
+	if (path.empty ()) {
+		return;
+	}
+
 	TreeModel::Path init_path = path;
 	TreeModel::Path last_def_path = path;
 	int init_steps = steps;
@@ -6649,9 +6668,14 @@ Grid::mouse_button_event (GdkEventButton* ev)
 
 	if (ev->button == 1) {
 		TreeModel::Path path;
-		TreeViewColumn* col;
+		TreeViewColumn* col = 0;
 		int cell_x, cell_y;
-		get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y);
+		if (!get_path_at_pos (ev->x, ev->y, path, col, cell_x, cell_y)) {
+			// Click outside any row (e.g. below the last row): keep the
+			// cursor where it is instead of clearing it with an empty path.
+			grab_focus ();
+			return true;
+		}
 
 		if (ev->type == GDK_2BUTTON_PRESS) {
 			if (is_cell_defined (path, col)) {
