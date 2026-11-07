@@ -2801,6 +2801,17 @@ Grid::unset_underline_current_step_edit_cell ()
 	if (current_row_idx == BasePattern::INVALID_ROW) {
 		return;
 	}
+
+	// The cursor may have been moved to a row where the current cell is
+	// undefined: follow_playhead() and time-column clicks call
+	// set_current_row() without going through set_current_cursor() when the
+	// cell is not valid.  Nothing was underlined there, and running the
+	// unset code on the empty cell string used to write the blank marker
+	// (e.g. "----" for the delay column) into the grid, leaving a trace.
+	if (!is_current_cursor_defined ()) {
+		return;
+	}
+
 	if (current_is_note_type) {
 		unset_underline_current_step_edit_note_cell ();
 	} else {
@@ -2886,6 +2897,13 @@ Grid::unset_underline_current_step_edit_automation_cell ()
 void
 Grid::set_underline_current_step_edit_cell ()
 {
+	// Only cells that exist can carry the step-edit underline.  In particular
+	// current_row/current_col can point to an undefined cell after
+	// follow_playhead() has moved the cursor over an inter-region gap.
+	if (!is_current_cursor_defined ()) {
+		return;
+	}
+
 	if (step_edit()) {
 		if (current_is_note_type) {
 			set_underline_current_step_edit_note_cell ();
@@ -4679,7 +4697,10 @@ Grid::skip_automation_stars (int row_idx, int mti, int mri, int cgi) const
 bool
 Grid::is_blank (const std::string& str)
 {
-	return str.back () == blank_char;
+	// Undefined cells (outside a region, or in an inter-region gap) are
+	// rendered with an empty string, so make sure not to call back() on an
+	// empty string (that is undefined behaviour).
+	return !str.empty () && str.back () == blank_char;
 }
 
 void
