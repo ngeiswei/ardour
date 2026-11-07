@@ -20,6 +20,7 @@
 #define __ardour_tracker_tracker_editor_h_
 
 #include <cmath>
+#include <vector>
 
 // #include <gtkmm/box.h>
 // #include <gtkmm/scrolledwindow.h>
@@ -141,6 +142,11 @@ private:
 	void setup_scroller ();
 	void setup_vbox ();
 
+	// Keep the grid and the frozen time column painting in the same frame
+	// while the shared vertical adjustment changes.
+	void freeze_scroll_updates ();
+	void thaw_scroll_updates ();
+
 	// bool on_key_press_event (GdkEventKey* event);
 
 	void map_handler ();
@@ -157,6 +163,9 @@ private:
 	// True while a multi-cell edit (cut/paste) is being applied as one undo
 	// transaction.
 	bool _bulk_edit;
+
+	// Windows frozen by freeze_scroll_updates(), in nesting order.
+	std::vector<Glib::RefPtr<Gdk::Window> > _frozen_scroll_windows;
 };
 
 // Determine the window name of a selection of regions.

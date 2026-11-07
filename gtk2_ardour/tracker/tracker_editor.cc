@@ -411,12 +411,48 @@ TrackerEditor::setup_scroller ()
 		return;
 	}
 
+	// The grid and the frozen time column are two separate GtkTreeViews
+	// sharing the same vertical adjustment.  GTK processes each TreeView's
+	// scroll/paint immediately from its value-changed handler, which can
+	// paint the grid one frame before the time column.  Freeze the toplevel
+	// window for the duration of the adjustment signal (including all of
+	// GTK's own handlers) and thaw it afterwards, so both views are painted
+	// together by the next GDK update pass.
+	//
+	// The freeze handler must be connected before scroller.add(grid), which
+	// is what connects the grid's own value-changed handler.
+	Gtk::Adjustment* vadjustment = scroller.get_vadjustment ();
+	vadjustment->signal_value_changed ().connect (sigc::mem_fun (*this, &TrackerEditor::freeze_scroll_updates), false);
+	vadjustment->signal_value_changed ().connect (sigc::mem_fun (*this, &TrackerEditor::thaw_scroll_updates), true);
+
 	scroller.add (grid);
 	scroller.set_policy (POLICY_AUTOMATIC, POLICY_AUTOMATIC);
 	scroller.show ();
 
 	// Keep the frozen time column vertically in sync with the grid.
-	grid.time_view.set_vadjustment (*scroller.get_vadjustment ());
+	grid.time_view.set_vadjustment (*vadjustment);
+}
+
+void
+TrackerEditor::freeze_scroll_updates ()
+{
+	Glib::RefPtr<Gdk::Window> window = get_window ();
+	if (window) {
+		window->freeze_updates ();
+		_frozen_scroll_windows.push_back (window);
+	}
+}
+
+void
+TrackerEditor::thaw_scroll_updates ()
+{
+	if (_frozen_scroll_windows.empty ()) {
+		return;
+	}
+
+	Glib::RefPtr<Gdk::Window> window = _frozen_scroll_windows.back ();
+	_frozen_scroll_windows.pop_back ();
+	window->thaw_updates ();
 }
 
 void
