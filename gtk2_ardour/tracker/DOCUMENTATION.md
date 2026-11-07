@@ -110,6 +110,38 @@ a cell being edited).
 | `Ctrl+C` | Copy the selected subgrid |
 | `Ctrl+V` | Paste |
 | `Ctrl+Shift+V` | Paste overlay (paste without clearing existing content) |
+| `Ctrl+L` | Interpolate the selected subgrid |
+
+### Interpolation
+
+The **Interpolate** entry in the popup menu linearly interpolates the numeric
+values in the current subgrid selection.  It is always visible and is enabled
+when there is a selection; a selection spanning fewer than two rows does
+nothing.
+
+Each selected column is interpolated independently.  For a column to be
+processed, its **top and bottom selected rows must both contain an existing
+value**: a note for channel, velocity and delay columns, or an automation event
+for automation and automation-delay columns.  If either boundary is empty, that
+column is left untouched.
+
+- **Channel, velocity and delay** columns update only notes that already exist
+  between the boundary notes.  No notes are created.  Note names/pitches are not
+  interpolated.
+- **Automation value** columns update existing events and create new events on
+  empty cells between the boundary events.  New events are placed at the row
+  position, without delay.
+- **Automation delay** columns update the delay of existing automation events
+  between the boundary events.  They never create new events, since a delay has
+  no meaning without an automation value.
+
+Values are interpolated linearly by row index, not by wall-clock time.  Integer
+values (channel, velocity, delays and integer automation parameters) are rounded
+to the nearest integer and clamped to their valid range.  Undefined cells,
+cells showing `***`, and columns that are not visible or editable are skipped.
+
+Finally, note that this interpolation is independent of a dynamical
+interpolation that an automation may have.
 
 ### Popup menu mode toggles
 

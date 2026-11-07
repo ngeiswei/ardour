@@ -159,6 +159,22 @@ public:
 	}
 
 	/**
+	 * Linearly interpolate between first (at first_row) and last (at
+	 * last_row), evaluated at row.  If last_row <= first_row, first is
+	 * returned (the caller is expected to require two distinct rows).
+	 */
+	static double interpolate (double first, double last,
+	                           int first_row, int last_row, int row);
+
+	/**
+	 * Like interpolate() but round to the nearest integer and clamp the result
+	 * to [lower, upper].
+	 */
+	static int interpolate_int (double first, double last,
+	                            int first_row, int last_row, int row,
+	                            int lower, int upper);
+
+	/**
 	 * Give a string representing a floating point number, remove all zeros
 	 * after a point, and trailing point if any. For instance
 	 *

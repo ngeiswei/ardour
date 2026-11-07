@@ -55,6 +55,27 @@ TrackerUtils::is_region_automation (const Evoral::Parameter& param)
 	return ARDOUR::parameter_is_midi ((ARDOUR::AutomationType)param.type ());
 }
 
+double
+TrackerUtils::interpolate (double first, double last,
+                           int first_row, int last_row, int row)
+{
+	if (last_row <= first_row) {
+		return first;
+	}
+
+	const double t = (double)(row - first_row) / (double)(last_row - first_row);
+	return first + (last - first) * t;
+}
+
+int
+TrackerUtils::interpolate_int (double first, double last,
+                               int first_row, int last_row, int row,
+                               int lower, int upper)
+{
+	return clamp ((int)std::lround (interpolate (first, last, first_row, last_row, row)),
+	              lower, upper);
+}
+
 std::string
 TrackerUtils::rm_point_zeros (const std::string& str)
 {
