@@ -115,9 +115,7 @@ a cell being edited).
 ### Interpolation
 
 The **Interpolate** entry in the popup menu linearly interpolates the numeric
-values in the current subgrid selection.  It is always visible and is enabled
-when there is a selection; a selection spanning fewer than two rows does
-nothing.
+values in the current subgrid selection.
 
 Each selected column is interpolated independently.  For a column to be
 processed, its **top and bottom selected rows must both contain an existing
@@ -136,12 +134,12 @@ column is left untouched.
   no meaning without an automation value.
 
 Values are interpolated linearly by row index, not by wall-clock time.  Integer
-values (channel, velocity, delays and integer automation parameters) are rounded
-to the nearest integer and clamped to their valid range.  Undefined cells,
-cells showing `***`, and columns that are not visible or editable are skipped.
+values (channel, velocity, delays and integer automation parameters) are
+rounded to the nearest integer.  Undefined cells, cells showing `***`, and
+columns that are not visible or editable are skipped.
 
-Finally, note that this interpolation is independent of a dynamical
-interpolation that an automation may have.
+Finally, note that this interpolation is independent of dynamical interpolation
+that automations may have.
 
 ### Popup menu mode toggles
 
