@@ -19,6 +19,8 @@ Please beware that the spinner for the default channel will remain in Dec mode.
 
 ### Note column
 
+### Time column
+
 ### Hints
 
 The Tracker Editor provides a number of hints when the mouse cursor hovers over
