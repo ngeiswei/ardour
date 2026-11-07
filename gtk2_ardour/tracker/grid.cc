@@ -624,9 +624,17 @@ Grid::update_pan_columns_visibility (int mti)
 	const bool showit = tracker_editor.grid_header->track_headers[mti]->track_toolbar->pan_automation_item->get_active ();
 
 	if (pan_columns[mti].empty()) {
-		std::set<Evoral::Parameter> const & params = pattern.tps[mti]->track->panner ()->what_can_be_automated ();
-		for (std::set<Evoral::Parameter>::const_iterator p = params.begin (); p != params.end (); ++p) {
-			pan_columns[mti].push_back (add_main_automation_column (mti, *p));
+		// Route::panner() may be null (for instance when no panner is
+		// configured for the track's main output).  Pannable falls back to
+		// its own automatable parameters when there is no panner, and is
+		// also what TrackToolbar uses to decide whether pan automation
+		// exists.
+		std::shared_ptr<ARDOUR::Pannable> pannable = pattern.tps[mti]->track->pannable ();
+		if (pannable) {
+			std::set<Evoral::Parameter> const & params = pannable->what_can_be_automated ();
+			for (std::set<Evoral::Parameter>::const_iterator p = params.begin (); p != params.end (); ++p) {
+				pan_columns[mti].push_back (add_main_automation_column (mti, *p));
+			}
 		}
 	}
 
@@ -637,6 +645,9 @@ Grid::update_pan_columns_visibility (int mti)
 
 	for (std::vector<int>::const_iterator it = pan_columns[mti].begin (); it != pan_columns[mti].end (); ++it) {
 		IndexParamBimap::left_const_iterator c2p_it = col2params[mti].left.find (*it);
+		if (c2p_it == col2params[mti].left.end ()) {
+			continue;
+		}
 		set_automation_column_visible (mti, c2p_it->second, *it, showit);
 	}
 
