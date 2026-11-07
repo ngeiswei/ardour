@@ -294,6 +294,11 @@ public:
 	// interpolated.  Used for copy/cut/paste.
 	std::string get_cell_content (int row_idx, int col_idx) const;
 
+	// Interpolate the values in the current subgrid selection.  This is a no-op
+	// unless the selection spans at least two rows and each processed column
+	// has values at both the top and bottom selected rows.
+	void interpolate_selection ();
+
 	// To align grid header
 	int get_time_width () const;
 	int get_track_width (int mti) const;
@@ -799,6 +804,24 @@ private:
 	void set_note_delay_text (int row_idx, int mti, int mri, int cgi, const std::string& text);
 	void set_note_delay (int row_idx, int mti, int mri, int cgi, int delay);
 	void set_note_delay_update_cmd (NotePtr on_note,  NotePtr off_note, int row_idx, int mti, int mri, int delay, ARDOUR::MidiModel::NoteDiffCommand* cmd);
+
+	// Interpolation helpers.  The note helper returns false when the cell is
+	// not defined, not displayable, or has no note; the automation helpers
+	// return false when the cell is undefined or not displayable.
+	bool note_interpolation_value (int row_idx, const Gtk::TreeViewColumn* col,
+	                               int mti, int cgi,
+	                               TrackerColumn::NoteType note_type,
+	                               int& mri, NotePtr& on_note, NotePtr& off_note,
+	                               double& value);
+	void set_interpolated_note_value (int row_idx, int mti, int mri, int cgi,
+	                                  TrackerColumn::NoteType note_type,
+	                                  NotePtr on_note, NotePtr off_note, int value);
+	bool automation_interpolation_value (int row_idx, const Gtk::TreeViewColumn* col,
+	                                     int mti, int cgi, const IDParameter& id_param,
+	                                     int& mri, bool& has_event, double& value);
+	bool automation_interpolation_delay (int row_idx, const Gtk::TreeViewColumn* col,
+	                                     int mti, int cgi, const IDParameter& id_param,
+	                                     int& mri, int& delay);
 
 	// Return parameter at mti and automation cgi. Return the empty parameter if
 	// undefined.

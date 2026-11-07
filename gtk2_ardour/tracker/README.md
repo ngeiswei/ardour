@@ -43,7 +43,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 
 ## TODO
 
-- [ ] Add interpolate and such in pop-up menu.
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] What to do when playing and step editing is on?

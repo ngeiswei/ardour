@@ -62,6 +62,27 @@ static const uint16_t _rows_per_beat_choices[] = {
 	1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32
 };
 
+/**
+ * Ardour creates the per-user keybinding file only once; new default bindings
+ * added in later revisions are not merged into an existing user file.  Install
+ * a default binding in memory when the loaded bindings predate the action, so
+ * both the shortcut and the popup menu hint work without forcing the user to
+ * reset all their shortcuts.  An existing binding (including a user-customized
+ * one) always wins.
+ */
+static void
+ensure_default_tracker_binding (Gtkmm2ext::Bindings* bindings,
+                                 const char* action_name,
+                                 const char* key_name)
+{
+	Gtkmm2ext::KeyboardKey key;
+	if (!bindings->is_registered (Gtkmm2ext::Bindings::Press, action_name) &&
+	    !bindings->is_registered (Gtkmm2ext::Bindings::Release, action_name) &&
+	    Gtkmm2ext::KeyboardKey::make_key (key_name, key)) {
+		bindings->add (key, Gtkmm2ext::Bindings::Press, action_name, 0, false);
+	}
+}
+
 MainToolbar* MainToolbar::_instance = nullptr;
 
 MainToolbar::MainToolbar (TrackerEditor& te)
@@ -130,6 +151,8 @@ MainToolbar::setup ()
 
 	// Make sure that rows_per_beat is set before anything is redisplayed
 	tracker_editor.grid.set_rows_per_beat (rows_per_beat, true);
+
+	update_interpolate_sensitivity ();
 }
 
 void
@@ -445,20 +468,12 @@ MainToolbar::register_actions ()
 	ActionManager::register_action (tracker_actions, X_("copy"), _("Copy"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::copy));
 	ActionManager::register_action (tracker_actions, X_("paste"), _("Paste"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::paste));
 	ActionManager::register_action (tracker_actions, X_("paste-overlay"), _("Paste Overlay"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::paste_overlay));
+	ActionManager::register_action (tracker_actions, X_("interpolate"), _("Interpolate"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::interpolate));
 
-	// Ardour creates the per-user keybinding file only once; new default
-	// bindings added in later revisions are not merged into an existing user
-	// file.  Install the Follow shortcut in memory when the loaded bindings
-	// predate it, so both Alt+F and the popup menu hint work without forcing
-	// the user to reset all their shortcuts.  An existing binding (including
-	// a user-customized one) always wins.
-	Gtkmm2ext::KeyboardKey follow_key;
-	if (!bindings->is_registered (Gtkmm2ext::Bindings::Press, "Tracker/toggle-follow") &&
-	    !bindings->is_registered (Gtkmm2ext::Bindings::Release, "Tracker/toggle-follow") &&
-	    Gtkmm2ext::KeyboardKey::make_key ("Secondary-f", follow_key)) {
-		bindings->add (follow_key, Gtkmm2ext::Bindings::Press,
-		               "Tracker/toggle-follow", 0, false);
-	}
+	// New defaults for existing user key files (see
+	// ensure_default_tracker_binding()).
+	ensure_default_tracker_binding (bindings, "Tracker/toggle-follow", "Secondary-f");
+	ensure_default_tracker_binding (bindings, "Tracker/interpolate", "Primary-l");
 }
 
 void
@@ -745,6 +760,21 @@ MainToolbar::paste_overlay ()
 }
 
 void
+MainToolbar::interpolate ()
+{
+	tracker_editor.grid.interpolate_selection ();
+}
+
+void
+MainToolbar::update_interpolate_sensitivity ()
+{
+	Glib::RefPtr<Gtk::Action> act = ActionManager::get_action (X_("Tracker"), X_("interpolate"), false);
+	if (act) {
+		act->set_sensitive (tracker_editor.grid._subgrid_selector.has_selection ());
+	}
+}
+
+void
 MainToolbar::build_clipboard_menu ()
 {
 	clipboard_menu = new Gtk::Menu;
@@ -758,7 +788,9 @@ MainToolbar::build_clipboard_menu ()
 	// accelerators.
 	clipboard_menu->set_accel_group (ActionManager::ui_manager->get_accel_group ());
 
-	static const char* const action_names[] = { "cut", "copy", "paste", "paste-overlay" };
+	update_interpolate_sensitivity ();
+
+	static const char* const action_names[] = { "cut", "copy", "paste", "paste-overlay", "interpolate" };
 	for (size_t i = 0; i < sizeof (action_names) / sizeof (action_names[0]); ++i) {
 		Glib::RefPtr<Gtk::Action> act = ActionManager::get_action (X_("Tracker"), action_names[i], false);
 		if (act) {
