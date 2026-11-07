@@ -1658,15 +1658,15 @@ Grid::redisplay_grid ()
 		remove_unused_rows ();
 	}
 
-	// Warning: produced by Pi+MiniMax-M3
-	//
-	// If current_row was just erased by remove_unused_rows, current_row holds a
-	// dangling Gtk::TreeModel::Row reference even though current_row_idx still
-	// looks valid. Drop the stale reference so subsequent calls to
-	// redisplay_row_background, unset_underline_current_step_edit_cell, etc.,
-	// bail out via their INVALID_ROW guard instead of dereferencing it.
+	// remove_unused_rows() may have just erased the row referenced by
+	// current_row, leaving it dangling while current_row_idx still looks
+	// valid.  Invalidate the index and drop the stale row so the guards in
+	// redisplay_row_background(), unset_underline_current_step_edit_cell(),
+	// etc. do not dereference it before set_current_row() installs a fresh
+	// row.
 	if (current_row_idx >= pattern.global_nrows) {
 		current_row_idx = BasePattern::INVALID_ROW;
+		current_row = Gtk::TreeModel::Row ();
 	}
 
 	set_models ();
@@ -2794,10 +2794,8 @@ Grid::remove_unused_rows ()
 void
 Grid::unset_underline_current_step_edit_cell ()
 {
-	// Warning: produced by Pi+MiniMax-M3
-	//
-	// Bail out if current_row holds a stale reference (e.g. after the row at
-	// current_row_idx was erased by remove_unused_rows).
+	// remove_unused_rows() invalidates current_row_idx when it erases the
+	// cached row.  Bail out rather than dereferencing the stale current_row.
 	if (current_row_idx == BasePattern::INVALID_ROW) {
 		return;
 	}
@@ -5655,10 +5653,10 @@ TrackerColumn::NoteType
 Grid::get_note_type (const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
-	// Warning: produced by Pi+MiniMax-M3
-	//
-	// SEPARATOR is the "inactive" sentinel (per tracker_column.h); non-Tracker
-	// columns aren't note columns, so consumers' switch defaults handle it safely.
+	// Separator and time columns are plain Gtk::TreeViewColumns, not
+	// TrackerColumns, so the cast can fail.  SEPARATOR is the inactive
+	// sentinel, making callers treat the column as neither note nor
+	// automation.
 	return tc ? tc->note_type : TrackerColumn::NoteType::SEPARATOR;
 }
 
@@ -5666,10 +5664,9 @@ TrackerColumn::AutomationType
 Grid::get_automation_type (const Gtk::TreeViewColumn* col) const
 {
 	const TrackerColumn* tc = dynamic_cast<const TrackerColumn*> (col);
-	// Warning: produced by Pi+MiniMax-M3
-	//
-	// AUTOMATION_SEPARATOR is the "inactive" sentinel (per tracker_column.h);
-	// non-Tracker columns aren't automation columns either.
+	// Separator and time columns are plain Gtk::TreeViewColumns, not
+	// TrackerColumns, so the cast can fail.  AUTOMATION_SEPARATOR is the
+	// inactive sentinel for automation columns.
 	return tc ? tc->automation_type : TrackerColumn::AutomationType::AUTOMATION_SEPARATOR;
 }
 
