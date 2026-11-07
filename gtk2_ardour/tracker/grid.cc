@@ -3333,7 +3333,15 @@ Grid::scroll_to_current_row ()
 	if (!model || current_path.empty () || current_row_idx == BasePattern::INVALID_ROW) {
 		return;
 	}
-	scroll_to_row (current_path);
+
+	if (follow ()) {
+		// Center the current row.  GTK clamps the destination, so the first
+		// and last rows stay at the top/bottom, and nothing scrolls when the
+		// whole grid fits in the viewport.
+		scroll_to_row (current_path, 0.5);
+	} else {
+		scroll_to_row (current_path);
+	}
 }
 
 void
@@ -5495,6 +5503,12 @@ bool
 Grid::jump() const
 {
 	return tracker_editor.main_toolbar.jump;
+}
+
+bool
+Grid::follow() const
+{
+	return tracker_editor.main_toolbar.follow;
 }
 
 bool
