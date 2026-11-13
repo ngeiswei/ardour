@@ -4516,8 +4516,9 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	set_current_row (path, set_playhead);
 	set_current_col (col);
 
-	// Scroll horizontally so the cursor stays visible in the viewport.
-	scroll_to_current_col ();
+	// Horizontal scrolling is handled by horizontal_move_current_cursor ()
+	// only.  Vertical moves, playhead following and redisplays must not move
+	// the horizontal scrollbar.
 
 	// Set selector source or destination
 	set_selector (path, col);
@@ -6702,6 +6703,9 @@ Grid::horizontal_move_current_cursor (int steps, bool group, bool track)
 	horizontal_move (colnum, current_path, steps, group, track);
 	TreeViewColumn* col = to_col (colnum);
 	set_current_cursor (path, col);
+
+	// Only horizontal cursor movement should follow the cursor horizontally.
+	scroll_to_current_col ();
 }
 
 bool
