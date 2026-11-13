@@ -46,8 +46,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 - [ ] Have the playhead move only stop notes coming from the tracks, not the
       notes coming from midi input
 - [ ] What to do when playing and step editing is on?
-- [ ] Fix when trying to paste notes on values (add _note flag in std::string
-      extension)
 - [ ] Fix window focus (the tracker editor window should have focus right away)
 - [ ] Support toggling visibility of regions and tracks, as well as reordering
       tracks and automations
