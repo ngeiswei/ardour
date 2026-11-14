@@ -232,6 +232,10 @@ namespace {
 
 	RedisplayProfileData redisplay_profile;
 
+	// True while a full redisplay is in progress: every cell is going to be
+	// written anyway, so set_cell can skip the compare-before-write.
+	bool paint_full = false;
+
 	inline ProfileClock::time_point
 	profile_start ()
 	{
@@ -253,7 +257,7 @@ namespace {
 	inline void
 	set_cell (Gtk::TreeModel::Row& row, const Gtk::TreeModelColumn<std::string>& col, const std::string& value)
 	{
-		if (row.get_value (col) != value) {
+		if (paint_full || row.get_value (col) != value) {
 			row.set_value (col, value);
 		}
 	}
@@ -1724,6 +1728,7 @@ Grid::redisplay_grid ()
 	_force_full_redisplay = false;
 
 	// Redisplay the grid
+	paint_full = _phenomenal_diff.full;
 	ProfileClock::time_point t_global = profile_start ();
 	redisplay_global_columns ();
 	profile_add (redisplay_profile.global, t_global);
@@ -1731,6 +1736,7 @@ Grid::redisplay_grid ()
 	ProfileClock::time_point t_pattern = profile_start ();
 	redisplay_pattern ();
 	profile_add (redisplay_profile.pattern, t_pattern);
+	paint_full = false;
 
 	if (profile) {
 		t_paint = std::chrono::steady_clock::now ();
@@ -2758,8 +2764,25 @@ Grid::redisplay_note_column (int mti, int mri, int cgi, const MidiNotesPattern& 
 {
 	int row_offset = get_row_offset (mti, mri);
 	if (rows_diff == 0 || rows_diff->full) {
-		for (int rrrow_idx = 0; rrrow_idx < get_row_size (mti, mri); rrrow_idx++) {
-			redisplay_note (mti, mri, cgi, row_offset + rrrow_idx, mnp);
+		const int row_size = get_row_size (mti, mri);
+
+		// Fetch the first row once, then walk the model sequentially.  The
+		// previous code called to_row() for every row of every note column
+		// group, which was needlessly expensive even with the get_iter()
+		// optimization.
+		Gtk::TreeModel::iterator row_it = model->get_iter (to_path (row_offset));
+		if (!row_it) {
+			error << string_compose (
+				_("programming error: tracker row %1 does not exist in the grid model"),
+				row_offset) << endmsg;
+			assert (row_it);
+			return;
+		}
+
+		for (int rrrow_idx = 0; rrrow_idx < row_size; rrrow_idx++) {
+			Gtk::TreeModel::Row row = *row_it;
+			redisplay_note_row (row, mti, mri, cgi, row_offset + rrrow_idx, mnp);
+			++row_it;
 		}
 	} else {
 		for (std::set<int>::const_iterator row_it = rows_diff->rows.begin (); row_it != rows_diff->rows.end (); ++row_it) {
@@ -2771,9 +2794,13 @@ Grid::redisplay_note_column (int mti, int mri, int cgi, const MidiNotesPattern& 
 void
 Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp)
 {
-	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
+	redisplay_note_row (row, mti, mri, cgi, row_idx, mnp);
+}
 
+void
+Grid::redisplay_note_row (Gtk::TreeModel::Row& row, int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp)
+{
 	// Fill background colors
 	// TODO: optimize, should only need to redisplay note bg once
 	redisplay_note_background (row, mti, cgi);
