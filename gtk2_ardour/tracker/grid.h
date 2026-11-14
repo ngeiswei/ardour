@@ -269,6 +269,7 @@ public:
 	void redisplay_region_automation_param_row (int mti, int mri, int cgi, int row_idx, const MidiRegionAutomationPattern& mrap, const Evoral::Parameter& param);
 	void redisplay_note_column (int mti, int mri, int cgi, const MidiNotesPattern& mnp, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_note (int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp);
+	void redisplay_note_row (Gtk::TreeModel::Row& row, int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp);
 	void redisplay_selection ();
 	void redisplay_cell_selection (int row_idx, int col_idx);
 	void redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
