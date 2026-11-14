@@ -902,11 +902,11 @@ private:
 	/**
 	 * Create blank strings for note, channel, velocity, delay and automation
 	 */
-	std::string mk_note_blank () const;
-	std::string mk_ch_blank () const;
-	std::string mk_vel_blank () const;
-	std::string mk_delay_blank () const;
-	std::string mk_automation_blank () const;
+	const std::string& mk_note_blank () const;
+	const std::string& mk_ch_blank () const;
+	const std::string& mk_vel_blank () const;
+	const std::string& mk_delay_blank () const;
+	const std::string& mk_automation_blank () const;
 
 	/**
 	 * Skip processing a note cell if it is filled with *** and the feature to
