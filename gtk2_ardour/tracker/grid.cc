@@ -195,6 +195,57 @@ namespace {
 		return ((n + chunk - 1) / chunk) * chunk;
 	}
 
+	// Optional paint-phase profiling, enabled with ARDOUR_TRACKER_PROFILE.
+	// Only used from the GUI thread.
+	using ProfileClock = std::chrono::steady_clock;
+	using ProfileDuration = ProfileClock::duration;
+
+	struct RedisplayProfileData {
+		RedisplayProfileData ()
+			: active (false)
+			, global (ProfileDuration ())
+			, pattern (ProfileDuration ())
+			, inter (ProfileDuration ())
+			, notes (ProfileDuration ())
+			, region_auto (ProfileDuration ())
+			, track_auto (ProfileDuration ())
+			, tracks (0)
+			, regions (0)
+			, note_groups (0)
+			, notes_count (0)
+			, visible_autos (0)
+		{}
+
+		bool            active;
+		ProfileDuration global;
+		ProfileDuration pattern;
+		ProfileDuration inter;
+		ProfileDuration notes;
+		ProfileDuration region_auto;
+		ProfileDuration track_auto;
+		int             tracks;
+		int             regions;
+		int             note_groups;
+		int             notes_count;
+		int             visible_autos;
+	};
+
+	RedisplayProfileData redisplay_profile;
+
+	inline ProfileClock::time_point
+	profile_start ()
+	{
+		return redisplay_profile.active ? ProfileClock::now () : ProfileClock::time_point ();
+	}
+
+	inline void
+	profile_add (ProfileDuration& duration, const ProfileClock::time_point& start)
+	{
+		if (redisplay_profile.active) {
+			duration += ProfileClock::now () - start;
+		}
+	}
+
 	// A GtkTreeModel write is expensive: it emits row-changed and makes the
 	// view re-examine (and typically redraw) the row.  A redisplay rewrites
 	// far more cells than it actually changes - a full one rewrites all of
@@ -1601,6 +1652,24 @@ Grid::redisplay_grid ()
 	static const bool profile = getenv ("ARDOUR_TRACKER_PROFILE") != nullptr;
 	std::chrono::steady_clock::time_point t_update, t_diff, t_diff2, t_paint, t_end, t_snapshot;
 	if (profile) {
+		redisplay_profile = RedisplayProfileData ();
+		redisplay_profile.active = true;
+		redisplay_profile.tracks = pattern.tps.size ();
+		for (size_t mti = 0; mti < pattern.tps.size (); ++mti) {
+			if (!pattern.tps[mti]->is_midi_track_pattern ()) {
+				continue;
+			}
+			const MidiTrackPattern* mtp = pattern.tps[mti]->midi_track_pattern ();
+			redisplay_profile.regions += mtp->mrps.size ();
+			redisplay_profile.note_groups = std::max (redisplay_profile.note_groups, (int) mtp->get_ntracks ());
+			for (size_t mri = 0; mri < mtp->mrps.size (); ++mri) {
+				MidiModelPtr model = pattern.midi_model (mti, mri);
+				if (model) {
+					redisplay_profile.notes_count += model->notes ().size ();
+				}
+			}
+		}
+		redisplay_profile.visible_autos = visible_automation_columns.size ();
 		t_update = std::chrono::steady_clock::now ();
 	}
 
@@ -1655,8 +1724,13 @@ Grid::redisplay_grid ()
 	_force_full_redisplay = false;
 
 	// Redisplay the grid
+	ProfileClock::time_point t_global = profile_start ();
 	redisplay_global_columns ();
+	profile_add (redisplay_profile.global, t_global);
+
+	ProfileClock::time_point t_pattern = profile_start ();
 	redisplay_pattern ();
+	profile_add (redisplay_profile.pattern, t_pattern);
 
 	if (profile) {
 		t_paint = std::chrono::steady_clock::now ();
@@ -1723,6 +1797,37 @@ Grid::redisplay_grid ()
 		          << "us (nrows=" << pattern.global_nrows
 		          << ", full=" << (_phenomenal_diff.full ? 1 : 0)
 		          << ", ntracks=" << pattern.tps.size () << ")" << std::endl;
+
+		const ProfileDuration categorized =
+			redisplay_profile.inter + redisplay_profile.notes +
+			redisplay_profile.region_auto + redisplay_profile.track_auto;
+		const ProfileDuration other =
+			redisplay_profile.pattern > categorized
+			? redisplay_profile.pattern - categorized
+			: ProfileDuration (0);
+
+		std::cerr << "tracker paint breakdown: global="
+		          << duration_cast<microseconds> (redisplay_profile.global).count ()
+		          << "us pattern="
+		          << duration_cast<microseconds> (redisplay_profile.pattern).count ()
+		          << "us inter="
+		          << duration_cast<microseconds> (redisplay_profile.inter).count ()
+		          << "us notes="
+		          << duration_cast<microseconds> (redisplay_profile.notes).count ()
+		          << "us region_auto="
+		          << duration_cast<microseconds> (redisplay_profile.region_auto).count ()
+		          << "us track_auto="
+		          << duration_cast<microseconds> (redisplay_profile.track_auto).count ()
+		          << "us other="
+		          << duration_cast<microseconds> (other).count ()
+		          << "us (tracks=" << redisplay_profile.tracks
+		          << ", regions=" << redisplay_profile.regions
+		          << ", note_groups=" << redisplay_profile.note_groups
+		          << ", notes=" << redisplay_profile.notes_count
+		          << ", visible_autos=" << redisplay_profile.visible_autos
+		          << ")" << std::endl;
+
+		redisplay_profile.active = false;
 	}
 
 	// Thaw the window frozen at the top of redisplay_grid().
@@ -2411,19 +2516,27 @@ void
 Grid::redisplay_midi_track (int mti, const MidiTrackPattern& mtp, const MidiTrackPatternPhenomenalDiff* mtp_diff)
 {
 	if (mtp_diff == 0 || mtp_diff->full) {
+		ProfileClock::time_point t_inter = profile_start ();
 		redisplay_inter_midi_regions (mti);
+		profile_add (redisplay_profile.inter, t_inter);
 		for (size_t mri = 0; mri < mtp.mrps.size (); mri++) {
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri]);
 		}
+		ProfileClock::time_point t_track_auto = profile_start ();
 		redisplay_track_all_automations (mti, mtp.track_all_automations_pattern);
+		profile_add (redisplay_profile.track_auto, t_track_auto);
 	} else {
 		// TODO: optimize redisplay_inter_midi_regions so that it only redisplay new inter midi regions
+		ProfileClock::time_point t_inter = profile_start ();
 		redisplay_inter_midi_regions (mti);
+		profile_add (redisplay_profile.inter, t_inter);
 		for (const MidiTrackPatternPhenomenalDiff::Mri2MidiRegionPatternDiff::value_type& mri_rpd : mtp_diff->mri2mrp_diff) {
 			size_t mri = mri_rpd.first;
 			redisplay_midi_region (mti, mri, *mtp.mrps[mri], &mri_rpd.second);
 		}
+		ProfileClock::time_point t_track_auto = profile_start ();
 		redisplay_track_all_automations (mti, mtp.track_all_automations_pattern, &mtp_diff->taap_diff);
+		profile_add (redisplay_profile.track_auto, t_track_auto);
 	}
 }
 
@@ -2545,8 +2658,13 @@ Grid::redisplay_midi_region (int mti, int mri, const MidiRegionPattern& mrp, con
 	if (!pattern.midi_region_pattern (mti, mri).enabled)
 		return;
 
+	ProfileClock::time_point t_notes = profile_start ();
 	redisplay_region_notes (mti, mri, mrp.mnp, mrp_diff ? &mrp_diff->mnp_diff : 0);
+	profile_add (redisplay_profile.notes, t_notes);
+
+	ProfileClock::time_point t_region_auto = profile_start ();
 	redisplay_region_automations (mti, mri, mrp.mrap, mrp_diff ? &mrp_diff->mrap_diff : 0);
+	profile_add (redisplay_profile.region_auto, t_region_auto);
 }
 
 void
@@ -3027,9 +3145,13 @@ Grid::redisplay_audio_track (int mti, const AudioTrackPattern& atp, const AudioT
 	// every row of the track pattern (or only the rows that changed), so
 	// there is no need for an inter-region blanking pass as with MIDI.
 	if (atp_diff == 0 || atp_diff->full) {
+		ProfileClock::time_point t_track_auto = profile_start ();
 		redisplay_track_all_automations (mti, atp.track_all_automations_pattern);
+		profile_add (redisplay_profile.track_auto, t_track_auto);
 	} else {
+		ProfileClock::time_point t_track_auto = profile_start ();
 		redisplay_track_all_automations (mti, atp.track_all_automations_pattern, &atp_diff->taap_diff);
+		profile_add (redisplay_profile.track_auto, t_track_auto);
 	}
 }
 
