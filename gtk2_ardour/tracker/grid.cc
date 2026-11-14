@@ -3644,16 +3644,21 @@ Grid::get_row_size (int mti, int mri) const
 Gtk::TreeModel::Row
 Grid::to_row (int row_idx) const
 {
-	// TODO: can probably be optimized by using
+	if (!model || row_idx < 0) {
+		return Gtk::TreeModel::Row ();
+	}
 
-	// const Gtk::TreeIter iter(m_scopeModel->get_iter(path));
-	// if(!iter)
-	// 	return false;
-	// const auto row = *iter;
+	// Gtk::ListStore stores its rows in a GSequence, so get_iter() is
+	// O(log n) rather than the O(n) std::advance() over the whole model
+	// that this used to do.  The gtkmm wrapper ignores the underlying
+	// gboolean, so check the iterator itself: TreeIter::operator bool ()
+	// verifies the stamp and the end flag.
+	Gtk::TreeModel::iterator iter = model->get_iter (to_path (row_idx));
+	if (!iter) {
+		return Gtk::TreeModel::Row ();
+	}
 
-	TreeModel::Children::const_iterator row_it = model->children ().begin ();
-	std::advance (row_it, row_idx);
-	return *row_it;
+	return *iter;
 }
 
 int
