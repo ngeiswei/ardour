@@ -4988,34 +4988,43 @@ Grid::mk_blank (size_t n)
 	return std::string (n, blank_char);
 }
 
-std::string
+const std::string&
 Grid::mk_note_blank () const
 {
-	return mk_blank (4);
+	static const std::string s (4, blank_char);
+	return s;
 }
 
-std::string
+const std::string&
 Grid::mk_ch_blank () const
 {
-	return mk_blank (is_hex () ? 1 : 2);
+	static const std::string hex (1, blank_char);
+	static const std::string dec (2, blank_char);
+	return is_hex () ? hex : dec;
 }
 
-std::string
+const std::string&
 Grid::mk_vel_blank () const
 {
-	return mk_blank (is_hex () ? 2 : 3);
+	static const std::string hex (2, blank_char);
+	static const std::string dec (3, blank_char);
+	return is_hex () ? hex : dec;
 }
 
-std::string
+const std::string&
 Grid::mk_delay_blank () const
 {
-	return mk_blank(is_hex() ? HEX_DELAY_DIGITS : DEC_DELAY_DIGITS);
+	static const std::string hex (HEX_DELAY_DIGITS, blank_char);
+	static const std::string dec (DEC_DELAY_DIGITS, blank_char);
+	return is_hex () ? hex : dec;
 }
 
-std::string
+const std::string&
 Grid::mk_automation_blank () const
 {
-	return mk_blank (is_hex () ? 3 : 4);
+	static const std::string hex (3, blank_char);
+	static const std::string dec (4, blank_char);
+	return is_hex () ? hex : dec;
 }
 
 bool
