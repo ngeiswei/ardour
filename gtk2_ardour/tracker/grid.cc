@@ -122,6 +122,7 @@ Grid::Grid (TrackerEditor& te)
 	, time_column (0)
 	, _last_base (-1)
 	, _force_full_redisplay (false)
+	, _fresh_rows (false)
 	, _left_right_separator_nrows (-1)
 	, _subgrid_selector (te)
 {
@@ -1338,6 +1339,7 @@ Grid::rebuild_schema (size_t nauto_hint)
 
 	// Create model and columns.
 	model = ListStore::create (*columns);
+	_fresh_rows = true;
 	set_models ();
 
 	// The model rows were just dropped: force the left/right separator colors to
@@ -1511,6 +1513,7 @@ Grid::init_model ()
 	}
 	if (!model) {
 		model = ListStore::create (*columns);
+		_fresh_rows = true;
 		set_models ();
 	}
 }
@@ -1737,6 +1740,7 @@ Grid::redisplay_grid ()
 	redisplay_pattern ();
 	profile_add (redisplay_profile.pattern, t_pattern);
 	paint_full = false;
+	_fresh_rows = false;
 
 	if (profile) {
 		t_paint = std::chrono::steady_clock::now ();
@@ -2801,18 +2805,93 @@ Grid::redisplay_note (int mti, int mri, int cgi, int row_idx, const MidiNotesPat
 void
 Grid::redisplay_note_row (Gtk::TreeModel::Row& row, int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp)
 {
-	// Fill background colors
-	// TODO: optimize, should only need to redisplay note bg once
-	redisplay_note_background (row, mti, cgi);
+	// On a freshly built model, leave empty note cells empty.  The note
+	// column cell-data function renders the blank placeholder, passive
+	// foreground and row background on demand, for visible rows only.  This
+	// avoids writing ~12 TreeModel cells for every row and column group.
+	if (!_fresh_rows) {
+		// Fill background colors
+		// TODO: optimize, should only need to redisplay note bg once
+		redisplay_note_background (row, mti, cgi);
 
-	// Fill with blank foreground text and colors
-	redisplay_blank_note_foreground (row, mti, cgi);
+		// Fill with blank foreground text and colors
+		redisplay_blank_note_foreground (row, mti, cgi);
+	}
 
 	// Display note
 	size_t off_notes_count = pattern.off_notes_count (row_idx, mti, mri, cgi);
 	size_t on_notes_count = pattern.on_notes_count (row_idx, mti, mri, cgi);
 	if (0 < on_notes_count || 0 < off_notes_count) {
 		redisplay_note_foreground (row, row_idx, mti, mri, cgi);
+	}
+}
+
+void
+Grid::note_cell_data (Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter, int mti, int cgi, TrackerColumn::NoteType type)
+{
+	CellRendererText* text_renderer = dynamic_cast<CellRendererText*> (renderer);
+	if (!text_renderer) {
+		return;
+	}
+
+	const Gtk::TreeModelColumn<std::string>* text_col = 0;
+	const Gtk::TreeModelColumn<std::string>* foreground_col = 0;
+	const Gtk::TreeModelColumn<std::string>* background_col = 0;
+	const std::string* blank = 0;
+
+	switch (type) {
+	case TrackerColumn::NoteType::NOTE:
+		text_col = &columns->note_name[mti][cgi];
+		foreground_col = &columns->_note_foreground_color[mti][cgi];
+		background_col = &columns->_note_background_color[mti][cgi];
+		blank = &mk_note_blank ();
+		break;
+	case TrackerColumn::NoteType::CHANNEL:
+		text_col = &columns->channel[mti][cgi];
+		foreground_col = &columns->_channel_foreground_color[mti][cgi];
+		background_col = &columns->_channel_background_color[mti][cgi];
+		blank = &mk_ch_blank ();
+		break;
+	case TrackerColumn::NoteType::VELOCITY:
+		text_col = &columns->velocity[mti][cgi];
+		foreground_col = &columns->_velocity_foreground_color[mti][cgi];
+		background_col = &columns->_velocity_background_color[mti][cgi];
+		blank = &mk_vel_blank ();
+		break;
+	case TrackerColumn::NoteType::DELAY:
+		text_col = &columns->delay[mti][cgi];
+		foreground_col = &columns->_delay_foreground_color[mti][cgi];
+		background_col = &columns->_delay_background_color[mti][cgi];
+		blank = &mk_delay_blank ();
+		break;
+	default:
+		return;
+	}
+
+	Gtk::TreeModel::Row row = *iter;
+	std::string text = row[*text_col];
+	std::string background = row[*background_col];
+
+	// Undefined cells (outside any region) intentionally have no content.  They
+	// are marked with the gtk_bases background colour by
+	// redisplay_undefined_note().  Do not turn them into blank placeholders.
+	if (text.empty () && !background.empty () &&
+	    background == TrackerUtils::color_to_string (gtk_bases_color)) {
+		return;
+	}
+
+	if (text.empty ()) {
+		text_renderer->property_text () = *blank;
+	}
+
+	if (std::string (row[*foreground_col]).empty ()) {
+		text_renderer->property_foreground () =
+			TrackerUtils::color_to_string (passive_foreground_color);
+	}
+
+	if (background.empty ()) {
+		std::string row_background = row[columns->_background_color];
+		text_renderer->property_cell_background () = row_background;
 	}
 }
 
@@ -5595,6 +5674,9 @@ Grid::setup_note_column (int mti, int cgi)
 	note_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::note_edited));
 	note_cellrenderer->property_editable () = true;
 
+	note_columns[mti][cgi]->set_cell_data_func (*note_cellrenderer,
+		sigc::bind (sigc::mem_fun (*this, &Grid::note_cell_data), mti, cgi, TrackerColumn::NoteType::NOTE));
+
 	append_column (*note_columns[mti][cgi]);
 }
 
@@ -5622,6 +5704,9 @@ Grid::setup_note_channel_column (int mti, int cgi)
 	channel_cellrenderer->signal_editing_canceled ().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
 	channel_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::note_channel_edited));
 	channel_cellrenderer->property_editable () = true;
+
+	channel_columns[mti][cgi]->set_cell_data_func (*channel_cellrenderer,
+		sigc::bind (sigc::mem_fun (*this, &Grid::note_cell_data), mti, cgi, TrackerColumn::NoteType::CHANNEL));
 
 	append_column (*channel_columns[mti][cgi]);
 }
@@ -5656,6 +5741,9 @@ Grid::setup_note_velocity_column (int mti, int cgi)
 	velocity_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::note_velocity_edited));
 	velocity_cellrenderer->property_editable () = true;
 
+	velocity_columns[mti][cgi]->set_cell_data_func (*velocity_cellrenderer,
+		sigc::bind (sigc::mem_fun (*this, &Grid::note_cell_data), mti, cgi, TrackerColumn::NoteType::VELOCITY));
+
 	append_column (*velocity_columns[mti][cgi]);
 }
 
@@ -5683,6 +5771,9 @@ Grid::setup_note_delay_column (int mti, int cgi)
 	delay_cellrenderer->signal_editing_canceled ().connect (sigc::mem_fun (*this, &Grid::editing_canceled));
 	delay_cellrenderer->signal_edited ().connect (sigc::mem_fun (*this, &Grid::note_delay_edited));
 	delay_cellrenderer->property_editable () = true;
+
+	delay_columns[mti][cgi]->set_cell_data_func (*delay_cellrenderer,
+		sigc::bind (sigc::mem_fun (*this, &Grid::note_cell_data), mti, cgi, TrackerColumn::NoteType::DELAY));
 
 	append_column (*delay_columns[mti][cgi]);
 }

@@ -270,6 +270,7 @@ public:
 	void redisplay_note_column (int mti, int mri, int cgi, const MidiNotesPattern& mnp, const RowsPhenomenalDiff* rows_diff = 0);
 	void redisplay_note (int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp);
 	void redisplay_note_row (Gtk::TreeModel::Row& row, int mti, int mri, int cgi, int row_idx, const MidiNotesPattern& mnp);
+	void note_cell_data (Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter, int mti, int cgi, TrackerColumn::NoteType type);
 	void redisplay_selection ();
 	void redisplay_cell_selection (int row_idx, int col_idx);
 	void redisplay_note_cell_selection (int row_idx, const Gtk::TreeViewColumn* col);
@@ -1007,6 +1008,12 @@ private:
 	// the displayed content (e.g. after Grid::setup() when the edited region
 	// selection changes).
 	bool _force_full_redisplay;
+
+	// True while the model has just been created and its rows have not yet
+	// been fully painted.  Note cells can then be left empty and rendered by
+	// note_cell_data (), rather than writing blank/default values for every
+	// row and column group.
+	bool _fresh_rows;
 
 	// Left/right separator background color last applied per track, together
 	// with the number of rows it was applied to.  Lets
