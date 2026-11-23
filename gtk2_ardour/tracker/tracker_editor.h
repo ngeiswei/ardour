@@ -103,6 +103,15 @@ public:
 	// RegionView / RegionSelection.
 	TrackRegionsMap build_regions_per_track () const;
 
+	/** Give Ardour's binding system a chance to handle a key event.
+	 *
+	 * Used by Grid when its own note/navigation handling did not consume the
+	 * key.  Checks bindings on the focused widget hierarchy, then the tracker
+	 * window bindings, then Ardour's global bindings.  This does not propagate
+	 * the event back to the focus widget, because Grid has already seen it.
+	 */
+	bool activate_ardour_binding (GdkEventKey* ev);
+
 	void connect_midi_event ();
 	void disconnect_midi_event ();
 

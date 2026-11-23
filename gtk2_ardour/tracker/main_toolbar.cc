@@ -68,19 +68,47 @@ static const uint16_t _rows_per_beat_choices[] = {
  * a default binding in memory when the loaded bindings predate the action, so
  * both the shortcut and the popup menu hint work without forcing the user to
  * reset all their shortcuts.  An existing binding (including a user-customized
- * one) always wins.
+ * one) always wins, except when it still uses an old default that is being
+ * replaced (old_key_name).
  */
 static void
 ensure_default_tracker_binding (Gtkmm2ext::Bindings* bindings,
                                  const char* action_name,
-                                 const char* key_name)
+                                 const char* key_name,
+                                 const char* old_key_name = nullptr)
 {
 	Gtkmm2ext::KeyboardKey key;
+
 	if (!bindings->is_registered (Gtkmm2ext::Bindings::Press, action_name) &&
-	    !bindings->is_registered (Gtkmm2ext::Bindings::Release, action_name) &&
-	    Gtkmm2ext::KeyboardKey::make_key (key_name, key)) {
-		bindings->add (key, Gtkmm2ext::Bindings::Press, action_name, 0, false);
+	    !bindings->is_registered (Gtkmm2ext::Bindings::Release, action_name)) {
+		if (Gtkmm2ext::KeyboardKey::make_key (key_name, key)) {
+			bindings->add (key, Gtkmm2ext::Bindings::Press, action_name, 0, false);
+		}
+		return;
 	}
+
+	if (!old_key_name) {
+		return;
+	}
+
+	Gtkmm2ext::KeyboardKey old_key;
+	std::string bound_action;
+
+	if (!Gtkmm2ext::KeyboardKey::make_key (old_key_name, old_key) ||
+	    !bindings->is_bound (old_key, Gtkmm2ext::Bindings::Press, &bound_action) ||
+	    bound_action != action_name ||
+	    !Gtkmm2ext::KeyboardKey::make_key (key_name, key)) {
+		return;
+	}
+
+	/* Do not steal the new key if the user has already given it to another
+	 * action. */
+	if (bindings->is_bound (key, Gtkmm2ext::Bindings::Press, &bound_action) &&
+	    bound_action != action_name) {
+		return;
+	}
+
+	bindings->replace (key, Gtkmm2ext::Bindings::Press, action_name, false);
 }
 
 MainToolbar* MainToolbar::_instance = nullptr;
@@ -474,6 +502,12 @@ MainToolbar::register_actions ()
 	// ensure_default_tracker_binding()).
 	ensure_default_tracker_binding (bindings, "Tracker/toggle-follow", "Secondary-f");
 	ensure_default_tracker_binding (bindings, "Tracker/interpolate", "Primary-l");
+
+	// Rows-per-beat used to be Primary-r/Primary-Tertiary-r, which conflicted
+	// with the main editor's redo shortcut.  Move the old default out of the
+	// way for users whose key file still has it.
+	ensure_default_tracker_binding (bindings, "Tracker/increase-rows-per-beat", "Primary-b", "Primary-r");
+	ensure_default_tracker_binding (bindings, "Tracker/decrease-rows-per-beat", "Primary-Tertiary-b", "Primary-Tertiary-r");
 }
 
 void

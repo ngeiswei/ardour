@@ -7242,18 +7242,28 @@ Grid::non_editing_key_release (GdkEventKey* ev)
 bool
 Grid::key_press (GdkEventKey* ev)
 {
+	bool ret = false;
+
 	// Modified keys are reserved for Ardour's configurable key-binding system
 	// (the "Tracker" binding set).  Shift is excluded because the grid itself
 	// uses it (e.g. Shift+Tab to step across tracks).
 	const guint mod_mask = Gtkmm2ext::Keyboard::RelevantModifierKeyMask & ~(guint) Gdk::SHIFT_MASK;
-	if ((ev->state & mod_mask) != 0) {
-		return false;
+	if ((ev->state & mod_mask) == 0) {
+		ret = step_edit() ? step_editing_key_press (ev) : non_editing_key_press (ev);
+
+		// Store last keyval to avoid repeating note during key repeat
+		last_keyval = ev->keyval;
 	}
 
-	bool ret = step_edit() ? step_editing_key_press (ev) : non_editing_key_press (ev);
-
-	// Store last keyval to avoid repeating note during key repeat
-	last_keyval = ev->keyval;
+	// If the grid did not handle the key, give Ardour's binding system a
+	// chance.  This makes global bindings such as space (transport), undo,
+	// save, etc. work while the tracker grid has focus, while keeping the
+	// grid's own note and navigation keys local.  This does not propagate the
+	// event back to the focus widget: the grid has already seen it, and doing
+	// so could recurse through this handler.
+	if (!ret) {
+		ret = tracker_editor.activate_ardour_binding (ev);
+	}
 
 	return ret;
 }

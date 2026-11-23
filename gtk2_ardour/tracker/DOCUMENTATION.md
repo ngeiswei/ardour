@@ -62,6 +62,12 @@ active only while the tracker editor window has focus.  In the tables below,
 `Ctrl` is Ardour's `Primary` modifier and `Alt` is the `Secondary` modifier;
 on macOS these are `Command` and `Option` respectively.
 
+Ardour's global shortcuts also remain active while the tracker grid has focus,
+so for example `Space` starts and stops playback and the usual undo/save
+shortcuts work.  The tracker's local note-entry and navigation keys take
+precedence over global bindings with the same key, and text fields such as the
+cell editor keep their normal typing and clipboard behaviour.
+
 ### Mode toggles
 
 | Shortcut | Action |
