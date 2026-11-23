@@ -53,7 +53,6 @@ A documentation can be found [here](DOCUMENTATION.md).
 - [ ] Try to replace as many gtk widgets by cairo widgets
 - [ ] Support shift-tab to move from right to left
 - [ ] Add piano keyboard display (see gtk_pianokeyboard.h)
-- [ ] Transfer Ardour shortcuts, spacebar, etc
 - [ ] Support layered regions
 - [ ] Maybe only have Octave, Ch, Vel in main toolbar is there is a midi track
-- [ ] Add play a line by pressing enter or so
+- [ ] Add play a line by pressing Ctrl+Enter or so
