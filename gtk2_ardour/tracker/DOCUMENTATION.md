@@ -90,7 +90,7 @@ on macOS these are `Command` and `Option` respectively.
 | Delay | `Ctrl+D` | `Ctrl+Shift+D` |
 | Precision | `Ctrl+P` | `Ctrl+Shift+P` |
 | Position | `Ctrl+I` | `Ctrl+Shift+I` |
-| Rows per beat | `Ctrl+R` | `Ctrl+Shift+R` |
+| Rows per beat | `Ctrl+B` | `Ctrl+Shift+B` |
 
 The rows-per-beat shortcuts cycle through the allowed settings (1, 2, 3, 4,
 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28 and 32 rows per beat), stopping at the
