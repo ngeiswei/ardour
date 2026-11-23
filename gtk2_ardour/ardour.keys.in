@@ -563,8 +563,8 @@ This mode provides many different operations on both regions and control points,
 @tracker|Tracker/decrease-precision|          <@PRIMARY@><@TERTIARY@>p|decrease precision
 @tracker|Tracker/increase-position|                       <@PRIMARY@>i|increase position
 @tracker|Tracker/decrease-position|           <@PRIMARY@><@TERTIARY@>i|decrease position
-@tracker|Tracker/increase-rows-per-beat|                  <@PRIMARY@>r|increase rows per beat
-@tracker|Tracker/decrease-rows-per-beat|      <@PRIMARY@><@TERTIARY@>r|decrease rows per beat
+@tracker|Tracker/increase-rows-per-beat|                  <@PRIMARY@>b|increase rows per beat
+@tracker|Tracker/decrease-rows-per-beat|      <@PRIMARY@><@TERTIARY@>b|decrease rows per beat
 
 @tracker|Tracker/cut|                                    <@PRIMARY@>x|cut
 @tracker|Tracker/copy|                                  <@PRIMARY@>c|copy
