@@ -252,6 +252,13 @@ descriptor-table consolidation is a somewhat larger internal refactor.
 
 ### 7. Use `Gtk::ToggleAction` for tracker modes instead of manually synchronizing state
 
+**Status: Done.** All ten modes are now `Gtk::ToggleAction` instances and own
+their state. Toolbar and TimeHeader buttons use `set_related_action()`, popup
+check items are created from the same actions, and Grid reads the action state.
+Callbacks remain only for side effects (step editing, playhead synchronization,
+following, and redisplay). Original defaults and keyboard bindings are
+preserved.
+
 **Current code:**
 
 - Ordinary actions at `gtk2_ardour/tracker/main_toolbar.cc:465-474`

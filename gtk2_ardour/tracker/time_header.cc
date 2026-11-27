@@ -18,6 +18,8 @@
 
 #include "pbd/i18n.h"
 
+#include "gtkmm2ext/actions.h"
+
 #include "time_header.h"
 #include "tracker_editor.h"
 
@@ -34,8 +36,7 @@ TimeHeader::TimeHeader (TrackerEditor& te)
 	// Reuse the red "record enable button" color scheme.
 	step_edit_button.set_name ("record enable button");
 	step_edit_button.set_text (S_("Step Edit"));
-	step_edit_button.signal_button_press_event ().connect (sigc::mem_fun (*this, &TimeHeader::step_edit_press), false);
-	step_edit_button.set_active_state (tracker_editor.main_toolbar.step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	step_edit_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-step-edit"), false));
 	step_edit_button.show ();
 
 	// Fill the (single-cell) table so the button spans the whole time header
@@ -45,22 +46,4 @@ TimeHeader::TimeHeader (TrackerEditor& te)
 
 TimeHeader::~TimeHeader ()
 {
-}
-
-bool
-TimeHeader::step_edit_press (GdkEventButton* ev)
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS) {
-		return true;
-	}
-
-	tracker_editor.main_toolbar.toggle_step_edit ();
-	return false;
-}
-
-void
-TimeHeader::set_step_edit (bool step_edit)
-{
-	step_edit_button.set_active_state (step_edit ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
 }

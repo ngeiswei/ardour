@@ -63,17 +63,23 @@ public:
 	void set_beats_per_row_to (Editing::GridType st);
 	void set_rows_per_beat_to (Editing::GridType st);
 
-	/** Toggle the mode buttons.  Used by both the buttons and the keyboard shortcuts. */
+	/** Side effects for mode changes driven by toggle actions. */
 	void toggle_step_edit ();
-	void toggle_chord_mode ();
-	void toggle_overwrite_default ();
-	void toggle_overwrite_existing ();
-	void toggle_overwrite_star ();
 	void toggle_sync_playhead ();
-	void toggle_jump ();
-	void toggle_wrap ();
 	void toggle_follow ();
 	void toggle_hex ();
+
+	/** Current mode state, owned by the corresponding toggle action. */
+	bool step_edit () const { return mode_active ("toggle-step-edit"); }
+	bool chord_mode () const { return mode_active ("toggle-chord-mode"); }
+	bool overwrite_default () const { return mode_active ("toggle-overwrite-default"); }
+	bool overwrite_existing () const { return mode_active ("toggle-overwrite-existing"); }
+	bool overwrite_star () const { return mode_active ("toggle-overwrite-star"); }
+	bool sync_playhead () const { return mode_active ("toggle-sync-playhead"); }
+	bool jump () const { return mode_active ("toggle-jump"); }
+	bool wrap () const { return mode_active ("toggle-wrap"); }
+	bool follow () const { return mode_active ("toggle-follow"); }
+	bool hex () const { return mode_active ("toggle-hex"); }
 
 	/** Adjust the spinner values and the rows-per-beat setting. */
 	void step_size_up ();
@@ -118,17 +124,6 @@ public:
 	static void register_actions ();
 
 	/**
-	 * Generic mode-button press handler: ignores double/triple clicks,
-	 * then calls the given toggle method.  Connected in setup_layout via
-	 * sigc::bind with the toggle to call.
-	 */
-	bool toggle_press (GdkEventButton* ev, void (MainToolbar::*toggle) ());
-
-	/** Shared implementation of the pure mode toggles: flip the flag and
-	 * update the button state. */
-	void toggle_mode_button (bool& flag, ArdourWidgets::ArdourButton& button);
-
-	/**
 	 * Trigger when precision_spinner value is changed.
 	 */
 	void change_precision ();
@@ -158,41 +153,28 @@ public:
 	uint8_t                      rows_per_beat;
 
 	// Buttons
-	bool                         step_edit;
-
 	ArdourWidgets::ArdourButton  chord_mode_button;
-	bool                         chord_mode;
 
 	Gtk::VSeparator              overwrite_default_separator;
 	ArdourWidgets::ArdourButton  overwrite_default_button;
-	bool                         overwrite_default;
 
 	Gtk::VSeparator              overwrite_existing_separator;
 	ArdourWidgets::ArdourButton  overwrite_existing_button;
-	bool                         overwrite_existing;
 
 	Gtk::VSeparator              overwrite_star_separator;
 	ArdourWidgets::ArdourButton  overwrite_star_button;
-	bool                         overwrite_star;
 
 	Gtk::VSeparator              sync_playhead_separator;
 	ArdourWidgets::ArdourButton  sync_playhead_button;
-	bool                         sync_playhead;
 
 	Gtk::VSeparator              jump_separator;
 	ArdourWidgets::ArdourButton  jump_button;
-	bool                         jump;
 
 	Gtk::VSeparator              wrap_separator;
 	ArdourWidgets::ArdourButton  wrap_button;
-	bool                         wrap;
 
 	Gtk::VSeparator              follow_separator;
 	ArdourWidgets::ArdourButton  follow_button;
-	bool                         follow;
-
-	bool                         hex;
-	int                          base; // 16 if hex else 10
 
 	// Spinners
 	Gtk::VSeparator              octave_separator;
@@ -254,6 +236,9 @@ private:
 	/** Cycle rows_per_beat among the allowed settings. */
 	void rows_per_beat_step (int direction);
 	static Editing::GridType grid_type_from_rows_per_beat (uint16_t rpb);
+
+	/** Look up mode state from an action registered in the Tracker group. */
+	static bool mode_active (const char* action_name);
 
 	/** Build the cut/copy/paste popup menu. */
 	void build_clipboard_menu ();

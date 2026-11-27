@@ -1065,7 +1065,7 @@ Grid::is_hex () const
 int
 Grid::base () const
 {
-	return tracker_editor.main_toolbar.base;
+	return tracker_editor.main_toolbar.hex () ? 16 : 10;
 }
 
 int
@@ -4197,7 +4197,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		// such.  That way the ardour/midi_model.h include can be removed.
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 		cmd->change (on_note, MidiModel::NoteDiffCommand::NoteNumber, pitch);
-		if (tracker_editor.main_toolbar.overwrite_existing) {
+		if (tracker_editor.main_toolbar.overwrite_existing ()) {
 			cmd->change (on_note, MidiModel::NoteDiffCommand::Channel, ch);
 			cmd->change (on_note, MidiModel::NoteDiffCommand::Velocity, vel);
 			set_note_delay_update_cmd (on_note, off_note, row_idx, mti, mri, delay, cmd);
@@ -4215,7 +4215,7 @@ Grid::set_on_note (int row_idx, int mti, int mri, int cgi, uint8_t pitch, uint8_
 		char const * opname = _("add note");
 		cmd = pattern.midi_model (mti, mri)->new_note_diff_command (opname);
 		NotePtr new_note = add_new_note (mti, mri, cgi, start, length, pitch, ch, vel, cmd);
-		if (tracker_editor.main_toolbar.overwrite_existing) {
+		if (tracker_editor.main_toolbar.overwrite_existing ()) {
 			set_note_delay_update_cmd (new_note, off_note, row_idx, mti, mri, delay, cmd);
 		}
 	} else {
@@ -4279,7 +4279,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 
 		remove_on_notes_update_cmd (row_idx, mti, mri, cgi, cmd);
 
-		int delay = (off_note and !tracker_editor.main_toolbar.overwrite_existing) ?
+		int delay = (off_note and !tracker_editor.main_toolbar.overwrite_existing ()) ?
 			get_off_note_delay (off_note, row_idx, mti, mri)
 			: tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
@@ -4306,7 +4306,7 @@ Grid::set_off_note (int row_idx, int mti, int mri, int cgi)
 		}
 	} else {
 		// Create a new off note in an empty cell or update existing off note
-		int delay = (off_note and !tracker_editor.main_toolbar.overwrite_existing) ?
+		int delay = (off_note and !tracker_editor.main_toolbar.overwrite_existing ()) ?
 			get_off_note_delay (off_note, row_idx, mti, mri)
 			: tracker_editor.main_toolbar.delay_spinner.get_value_as_int ();
 
@@ -4850,7 +4850,7 @@ Grid::set_current_row (const Gtk::TreeModel::Path& path, bool set_playhead)
 	scroll_to_current_row ();
 
 	// Update playhead accordingly
-	if (set_playhead && tracker_editor.main_toolbar.sync_playhead) {
+	if (set_playhead && tracker_editor.main_toolbar.sync_playhead ()) {
 		clock_pos = Temporal::timepos_t (pattern.sample_at_row (current_row_idx));
 		skip_follow_playhead.push (current_row_idx);
 		tracker_editor.session->request_locate (clock_pos.samples ());
@@ -5260,14 +5260,14 @@ bool
 Grid::skip_note_stars (int row_idx, int mti, int mri, int cgi) const
 {
 	return !is_note_displayable (row_idx, mti, mri, cgi)
-		and !tracker_editor.main_toolbar.overwrite_star;
+		and !tracker_editor.main_toolbar.overwrite_star ();
 }
 
 bool
 Grid::skip_automation_stars (int row_idx, int mti, int mri, int cgi) const
 {
 	return !is_automation_displayable (row_idx, mti, mri, cgi)
-		and !tracker_editor.main_toolbar.overwrite_star;
+		and !tracker_editor.main_toolbar.overwrite_star ();
 }
 
 bool
@@ -5504,7 +5504,7 @@ Grid::connect_events ()
 	// Scroll event is disabled for now because it doesn't work properly
 	// signal_scroll_event ().connect (sigc::mem_fun (*this, &Grid::scroll_event), false);
 
-	if (tracker_editor.main_toolbar.sync_playhead)
+	if (tracker_editor.main_toolbar.sync_playhead ())
 		connect_clock ();
 }
 
@@ -6064,31 +6064,31 @@ Grid::horizontal_move (int& colnum, const Gtk::TreeModel::Path& path, int steps,
 bool
 Grid::step_edit() const
 {
-	return tracker_editor.main_toolbar.step_edit;
+	return tracker_editor.main_toolbar.step_edit ();
 }
 
 bool
 Grid::chord_mode() const
 {
-	return tracker_editor.main_toolbar.chord_mode;
+	return tracker_editor.main_toolbar.chord_mode ();
 }
 
 bool
 Grid::wrap() const
 {
-	return tracker_editor.main_toolbar.wrap;
+	return tracker_editor.main_toolbar.wrap ();
 }
 
 bool
 Grid::jump() const
 {
-	return tracker_editor.main_toolbar.jump;
+	return tracker_editor.main_toolbar.jump ();
 }
 
 bool
 Grid::follow() const
 {
-	return tracker_editor.main_toolbar.follow;
+	return tracker_editor.main_toolbar.follow ();
 }
 
 bool
@@ -6434,21 +6434,21 @@ Grid::step_editing_check_midi_event ()
 			}
 			switch (current_note_type) {
 			case TrackerColumn::NoteType::NOTE:
-				if (tracker_editor.main_toolbar.overwrite_default) {
+				if (tracker_editor.main_toolbar.overwrite_default ()) {
 					step_editing_set_on_note (pitch, ch, vel, false);
 				} else {
 					step_editing_set_on_note (pitch, false);
 				}
 				break;
 			case TrackerColumn::NoteType::CHANNEL:
-				if (tracker_editor.main_toolbar.overwrite_default
-				    && tracker_editor.main_toolbar.overwrite_existing) {
+				if (tracker_editor.main_toolbar.overwrite_default ()
+				    && tracker_editor.main_toolbar.overwrite_existing ()) {
 					step_editing_set_note_channel (ch);
 				}
 				break;
 			case TrackerColumn::NoteType::VELOCITY:
-				if (tracker_editor.main_toolbar.overwrite_default
-				    && tracker_editor.main_toolbar.overwrite_existing) {
+				if (tracker_editor.main_toolbar.overwrite_default ()
+				    && tracker_editor.main_toolbar.overwrite_existing ()) {
 					step_editing_set_note_velocity (vel);
 				}
 				break;

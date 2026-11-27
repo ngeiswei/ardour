@@ -38,14 +38,8 @@ public:
 	explicit TimeHeader (TrackerEditor& te);
 	~TimeHeader ();
 
-	/** Update the Step Edit button to reflect the given step-editing mode. */
-	void set_step_edit (bool);
-
 	TrackerEditor& tracker_editor;
 	ArdourWidgets::ArdourButton step_edit_button;
-
-private:
-	bool step_edit_press (GdkEventButton* ev);
 };
 
 } // ~namespace tracker

@@ -378,7 +378,7 @@ TrackerEditor::map_handler ()
 {
 	// Resume step-editing MIDI input when the window becomes visible again.
 	// The step-edit cursor underline will be redrawn by the next cursor move.
-	if (main_toolbar.step_edit) {
+	if (main_toolbar.step_edit ()) {
 		connect_midi_event ();
 	}
 }

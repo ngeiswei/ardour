@@ -119,17 +119,6 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	, spacing (4)
 	, beats_per_row_strings (I18N (_beats_per_row_strings))
 	, rows_per_beat (4)
-	, step_edit (false)
-	, chord_mode (false)
-	, overwrite_default (true)
-	, overwrite_existing (false)
-	, overwrite_star (false)
-	, sync_playhead (false)
-	, jump (false)
-	, wrap (false)
-	, follow (false)
-	, hex (true)
-	, base (16)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
 	, octave_spinner (octave_adjustment)
@@ -274,8 +263,7 @@ MainToolbar::setup_layout ()
 	// Chord mode buttom
 	chord_mode_button.set_name ("mouse mode button");
 	chord_mode_button.set_text (S_("Chord Mode"));
-	chord_mode_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_chord_mode), false);
-	chord_mode_button.set_active_state (chord_mode ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	chord_mode_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-chord-mode"), false));
 	chord_mode_button.show ();
 	mr->pack_start (chord_mode_button, false, false);
 
@@ -284,8 +272,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (overwrite_default_separator, false, false);
 	overwrite_default_button.set_name ("mouse mode button");
 	overwrite_default_button.set_text (S_("Overwrite Default"));
-	overwrite_default_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_overwrite_default), false);
-	overwrite_default_button.set_active_state (overwrite_default ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	overwrite_default_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-overwrite-default"), false));
 	overwrite_default_button.show ();
 	mr->pack_start (overwrite_default_button, false, false);
 
@@ -294,8 +281,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (overwrite_existing_separator, false, false);
 	overwrite_existing_button.set_name ("mouse mode button");
 	overwrite_existing_button.set_text (S_("Overwrite Existing"));
-	overwrite_existing_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_overwrite_existing), false);
-	overwrite_existing_button.set_active_state (overwrite_existing ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	overwrite_existing_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-overwrite-existing"), false));
 	overwrite_existing_button.show ();
 	mr->pack_start (overwrite_existing_button, false, false);
 
@@ -304,8 +290,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (overwrite_star_separator, false, false);
 	overwrite_star_button.set_name ("mouse mode button");
 	overwrite_star_button.set_text (S_("Overwrite ***"));
-	overwrite_star_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_overwrite_star), false);
-	overwrite_star_button.set_active_state (overwrite_star ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	overwrite_star_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-overwrite-star"), false));
 	overwrite_star_button.show ();
 	mr->pack_start (overwrite_star_button, false, false);
 
@@ -314,8 +299,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (sync_playhead_separator, false, false);
 	sync_playhead_button.set_name ("mouse mode button");
 	sync_playhead_button.set_text (S_("Sync Playhead"));
-	sync_playhead_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_sync_playhead), false);
-	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	sync_playhead_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-sync-playhead"), false));
 	sync_playhead_button.show ();
 	mr->pack_start (sync_playhead_button, false, false);
 
@@ -324,8 +308,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (jump_separator, false, false);
 	jump_button.set_name ("mouse mode button");
 	jump_button.set_text (S_("Jump"));
-	jump_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_jump), false);
-	jump_button.set_active_state (jump ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	jump_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-jump"), false));
 	jump_button.show ();
 	mr->pack_start (jump_button, false, false);
 
@@ -334,8 +317,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (wrap_separator, false, false);
 	wrap_button.set_name ("mouse mode button");
 	wrap_button.set_text (S_("Wrap"));
-	wrap_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_wrap), false);
-	wrap_button.set_active_state (wrap ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	wrap_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-wrap"), false));
 	wrap_button.show ();
 	mr->pack_start (wrap_button, false, false);
 
@@ -344,8 +326,7 @@ MainToolbar::setup_layout ()
 	mr->pack_start (follow_separator, false, false);
 	follow_button.set_name ("mouse mode button");
 	follow_button.set_text (S_("Follow"));
-	follow_button.signal_button_press_event ().connect (sigc::bind (sigc::mem_fun (*this, &MainToolbar::toggle_press), &MainToolbar::toggle_follow), false);
-	follow_button.set_active_state (follow ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
+	follow_button.set_related_action (ActionManager::get_action (X_("Tracker"), X_("toggle-follow"), false));
 	follow_button.show ();
 	mr->pack_start (follow_button, false, false);
 
@@ -461,17 +442,22 @@ MainToolbar::register_actions ()
 	// Keyboard shortcuts for the tracker editor.
 	Glib::RefPtr<Gtk::ActionGroup> tracker_actions = ActionManager::create_action_group (bindings, X_("Tracker"));
 
-	// Mode toggles
-	ActionManager::register_action (tracker_actions, X_("toggle-step-edit"), _("Toggle Step Edit"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_step_edit));
-	ActionManager::register_action (tracker_actions, X_("toggle-chord-mode"), _("Toggle Chord Mode"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_chord_mode));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-default"), _("Toggle Overwrite Default"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_overwrite_default));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-existing"), _("Toggle Overwrite Existing"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_overwrite_existing));
-	ActionManager::register_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite ***"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_overwrite_star));
-	ActionManager::register_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_sync_playhead));
-	ActionManager::register_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_jump));
-	ActionManager::register_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_wrap));
-	ActionManager::register_action (tracker_actions, X_("toggle-follow"), _("Toggle Follow"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_follow));
-	ActionManager::register_action (tracker_actions, X_("toggle-hex"), _("Toggle Hexadecimal"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_hex));
+	// Mode toggles.  Pure modes need no callback: their ToggleAction owns the
+	// state.  Callbacks below are only for modes with side effects.
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-step-edit"), _("Toggle Step Edit"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_step_edit));
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-chord-mode"), _("Toggle Chord Mode"), sigc::slot<void> ());
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-overwrite-default"), _("Toggle Overwrite Default"), sigc::slot<void> ());
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-overwrite-existing"), _("Toggle Overwrite Existing"), sigc::slot<void> ());
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-overwrite-star"), _("Toggle Overwrite ***"), sigc::slot<void> ());
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-sync-playhead"), _("Toggle Sync Playhead"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_sync_playhead));
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-jump"), _("Toggle Jump"), sigc::slot<void> ());
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-wrap"), _("Toggle Wrap"), sigc::slot<void> ());
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-follow"), _("Toggle Follow"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_follow));
+	ActionManager::register_toggle_action (tracker_actions, X_("toggle-hex"), _("Toggle Hexadecimal"), sigc::bind (sigc::ptr_fun (&MainToolbar::call_instance_method), &MainToolbar::toggle_hex));
+
+	// Preserve the tracker's original defaults.
+	ActionManager::get_toggle_action (X_("Tracker"), X_("toggle-overwrite-default"))->set_active (true);
+	ActionManager::get_toggle_action (X_("Tracker"), X_("toggle-hex"))->set_active (true);
 
 	// Value adjustments
 	ActionManager::register_action (tracker_actions, X_("increase-step-size"), _("Increase Step Size"), sigc::bind (sigc::ptr_fun (&MainToolbar::adjust_action), AdjustParam::STEP_SIZE, 1));
@@ -644,25 +630,6 @@ MainToolbar::set_beats_per_row_to (GridType st)
 	}
 }
 
-bool
-MainToolbar::toggle_press (GdkEventButton* ev, void (MainToolbar::*toggle) ())
-{
-	/* ignore double/triple clicks */
-	if (ev->type == GDK_2BUTTON_PRESS || ev->type == GDK_3BUTTON_PRESS ) {
-		return true;
-	}
-
-	(this->*toggle) ();
-	return false;
-}
-
-void
-MainToolbar::toggle_mode_button (bool& flag, ArdourWidgets::ArdourButton& button)
-{
-	flag = !flag;
-	button.set_active_state (flag ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-}
-
 void
 MainToolbar::change_precision ()
 {
@@ -676,22 +643,24 @@ MainToolbar::change_position ()
 {
 	position = position_spinner.get_value_as_int ();
 	// TODO: possibly replace by signal
-	if (step_edit) {
+	if (step_edit ()) {
 		tracker_editor.grid.unset_underline_current_step_edit_cell ();
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
 	}
 }
 
+bool
+MainToolbar::mode_active (const char* action_name)
+{
+	Glib::RefPtr<Gtk::ToggleAction> action = ActionManager::get_toggle_action (X_("Tracker"), action_name, false);
+	return action && action->get_active ();
+}
+
 void
 MainToolbar::toggle_step_edit ()
 {
-	step_edit = !step_edit;
-	if (tracker_editor.grid_header) {
-		tracker_editor.grid_header->time_header.set_step_edit (step_edit);
-	}
-
 	tracker_editor.grid.redisplay_grid_direct_call ();
-	if (step_edit) {
+	if (step_edit ()) {
 		tracker_editor.connect_midi_event ();
 		tracker_editor.grid.set_underline_current_step_edit_cell ();
 	} else {
@@ -701,36 +670,9 @@ MainToolbar::toggle_step_edit ()
 }
 
 void
-MainToolbar::toggle_chord_mode ()
-{
-	toggle_mode_button (chord_mode, chord_mode_button);
-}
-
-void
-MainToolbar::toggle_overwrite_default ()
-{
-	toggle_mode_button (overwrite_default, overwrite_default_button);
-}
-
-void
-MainToolbar::toggle_overwrite_existing ()
-{
-	toggle_mode_button (overwrite_existing, overwrite_existing_button);
-}
-
-void
-MainToolbar::toggle_overwrite_star ()
-{
-	toggle_mode_button (overwrite_star, overwrite_star_button);
-}
-
-void
 MainToolbar::toggle_sync_playhead ()
 {
-	sync_playhead = !sync_playhead;
-	sync_playhead_button.set_active_state (sync_playhead ? Gtkmm2ext::ExplicitActive : Gtkmm2ext::Off);
-
-	if (sync_playhead) {
+	if (sync_playhead ()) {
 		tracker_editor.grid.connect_clock ();
 	} else {
 		tracker_editor.grid.disconnect_clock ();
@@ -738,22 +680,9 @@ MainToolbar::toggle_sync_playhead ()
 }
 
 void
-MainToolbar::toggle_jump ()
-{
-	toggle_mode_button (jump, jump_button);
-}
-
-void
-MainToolbar::toggle_wrap ()
-{
-	toggle_mode_button (wrap, wrap_button);
-}
-
-void
 MainToolbar::toggle_follow ()
 {
-	toggle_mode_button (follow, follow_button);
-	if (follow) {
+	if (follow ()) {
 		// Center the current row immediately, without waiting for the next
 		// cursor move.
 		tracker_editor.grid.scroll_to_current_row ();
@@ -763,9 +692,6 @@ MainToolbar::toggle_follow ()
 void
 MainToolbar::toggle_hex ()
 {
-	hex = !hex;
-	base = hex ? 16 : 10;
-
 	tracker_editor.grid.redisplay_grid_direct_call ();
 }
 
@@ -851,33 +777,31 @@ MainToolbar::build_clipboard_menu ()
 	clipboard_menu->append (*separator);
 
 	struct ModeItem {
-		const char*          action;
-		const char*          label;
-		bool MainToolbar::*  state;
-		void (MainToolbar::* toggle) ();
+		const char* action;
+		const char* label;
 	};
 
 	const ModeItem mode_items[] = {
-		{ "toggle-hex", _("Hexadecimal"), &MainToolbar::hex, &MainToolbar::toggle_hex },
-		{ "toggle-chord-mode", S_("Chord Mode"), &MainToolbar::chord_mode, &MainToolbar::toggle_chord_mode },
-		{ "toggle-overwrite-default", S_("Overwrite Default"), &MainToolbar::overwrite_default, &MainToolbar::toggle_overwrite_default },
-		{ "toggle-overwrite-existing", S_("Overwrite Existing"), &MainToolbar::overwrite_existing, &MainToolbar::toggle_overwrite_existing },
-		{ "toggle-overwrite-star", S_("Overwrite ***"), &MainToolbar::overwrite_star, &MainToolbar::toggle_overwrite_star },
-		{ "toggle-sync-playhead", S_("Sync Playhead"), &MainToolbar::sync_playhead, &MainToolbar::toggle_sync_playhead },
-		{ "toggle-jump", S_("Jump"), &MainToolbar::jump, &MainToolbar::toggle_jump },
-		{ "toggle-wrap", S_("Wrap"), &MainToolbar::wrap, &MainToolbar::toggle_wrap },
-		{ "toggle-follow", S_("Follow"), &MainToolbar::follow, &MainToolbar::toggle_follow },
+		{ "toggle-hex", _("Hexadecimal") },
+		{ "toggle-chord-mode", S_("Chord Mode") },
+		{ "toggle-overwrite-default", S_("Overwrite Default") },
+		{ "toggle-overwrite-existing", S_("Overwrite Existing") },
+		{ "toggle-overwrite-star", S_("Overwrite ***") },
+		{ "toggle-sync-playhead", S_("Sync Playhead") },
+		{ "toggle-jump", S_("Jump") },
+		{ "toggle-wrap", S_("Wrap") },
+		{ "toggle-follow", S_("Follow") },
 	};
 
 	for (size_t i = 0; i < sizeof (mode_items) / sizeof (mode_items[0]); ++i) {
-		Glib::RefPtr<Gtk::Action> act = ActionManager::get_action (X_("Tracker"), mode_items[i].action, false);
+		Glib::RefPtr<Gtk::ToggleAction> act = ActionManager::get_toggle_action (X_("Tracker"), mode_items[i].action, false);
 		if (!act) {
 			continue;
 		}
 
-		Gtk::CheckMenuItem* item = Gtk::manage (new Gtk::CheckMenuItem (mode_items[i].label));
-		item->set_active (this->*mode_items[i].state);
-		item->signal_toggled ().connect (sigc::mem_fun (*this, mode_items[i].toggle));
+		Gtk::MenuItem* item = Gtk::manage (act->create_menu_item ());
+		item->set_label (mode_items[i].label);
+		act->set_accel_group (ActionManager::ui_manager->get_accel_group ());
 
 		// Give the item the same accel path as its action so that its shortcut is
 		// shown right-aligned, after refreshing the AccelMap entry from the current
