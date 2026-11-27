@@ -357,6 +357,26 @@ cleaner first step.
 
 ### 9. Consolidate keyboard modifier tracking and forwarding
 
+**Status: Done.** The grid now reads the configured range-select modifier from
+`Gtkmm2ext::Keyboard::the_keyboard().modifier_state()` and no longer keeps a
+`shift_pressed` flag or handles Shift press/release in order to update it.
+Shift key events are still consumed so they do not fall through to Ardour's
+bindings, and range selection now honours Ardour's configurable
+`RangeSelectModifier` rather than hard-coding Shift.
+
+`TrackerEditor::activate_ardour_binding()` now tries the tracker window's own
+bindings first, then relays modified keys to the main window with
+`ARDOUR_UI_UTILS::relay_key_press()`, and offers unmodified keys only to
+Ardour's global bindings. The duplicated focus-hierarchy walk and the direct
+`Editor`/`Editing` binding lookup were removed.
+
+Manual checks should cover: range selection with Shift (and with a remapped
+`RangeSelectModifier`) after focus loss; tracker-local bindings taking
+precedence over conflicting editor bindings; undo/redo and other modified
+editor bindings; transport and other global unmodified keys; cell editing and
+clipboard handling; and unmodified letter keys still entering notes in the
+tracker.
+
 #### Shift/range-selection state
 
 **Current code:** `gtk2_ardour/tracker/grid.cc:7385-7402`

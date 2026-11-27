@@ -106,9 +106,13 @@ public:
 	/** Give Ardour's binding system a chance to handle a key event.
 	 *
 	 * Used by Grid when its own note/navigation handling did not consume the
-	 * key.  Checks bindings on the focused widget hierarchy, then the tracker
-	 * window bindings, then Ardour's global bindings.  This does not propagate
-	 * the event back to the focus widget, because Grid has already seen it.
+	 * key.  Tries the tracker's own window bindings first.  Modified keys are
+	 * then relayed to the main window, where ARDOUR_UI activates the
+	 * Editor/Editing and global bindings, while unmodified keys are only
+	 * offered to Ardour's global bindings so that tracker note entry is not
+	 * stolen by the main editor's single-key actions.  This does not
+	 * propagate the event back to the tracker's focus widget, because Grid
+	 * has already seen it.
 	 */
 	bool activate_ardour_binding (GdkEventKey* ev);
 

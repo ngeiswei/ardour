@@ -117,7 +117,6 @@ Grid::Grid (TrackerEditor& te)
 	, editing_editable (0)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
-	, shift_pressed (false)
 	, cellfont ("Monospace")
 	, time_column (0)
 	, _last_base (-1)
@@ -4923,7 +4922,7 @@ Grid::set_selector (const TreeModel::Path& path, const TreeViewColumn* col)
 {
 	int row_idx = to_row_index (path);
 	int col_idx = to_col_index (col);
-	if (is_shift_pressed ()) {
+	if (is_range_select_modifier_down ()) {
 		_subgrid_selector.set_destination (row_idx, col_idx);
 	} else {
 		_subgrid_selector.set_source (row_idx, col_idx);
@@ -6534,10 +6533,11 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
-	// Set shift modifier (TODO: very hacky way)
+	// Modifier state is tracked by Gtkmm2ext::Keyboard.  Consume the Shift
+	// key itself so it does not fall through to Ardour's bindings.
 	case GDK_Shift_L:
 	case GDK_Shift_R:
-		ret = shift_key_press ();
+		ret = true;
 		break;
 
 	// Cell edit
@@ -6691,10 +6691,11 @@ Grid::step_editing_typed_key_press (GdkEventKey* ev, StepDigitFn set_digit, bool
 	case GDK_End:
 		return move_current_cursor_key_press (ev);
 
-	// Set shift modifier (TODO: very hacky way)
+	// Modifier state is tracked by Gtkmm2ext::Keyboard.  Consume the Shift
+	// key itself so it does not fall through to Ardour's bindings.
 	case GDK_Shift_L:
 	case GDK_Shift_R:
-		return shift_key_press ();
+		return true;
 
 	// Delete cell content, if supported for that column
 	case GDK_BackSpace:
@@ -7086,10 +7087,11 @@ Grid::non_editing_key_press (GdkEventKey* ev)
 		ret = move_current_cursor_key_press (ev);
 		break;
 
-	// Set shift modifier (TODO: very hacky way)
+	// Modifier state is tracked by Gtkmm2ext::Keyboard.  Consume the Shift
+	// key itself so it does not fall through to Ardour's bindings.
 	case GDK_Shift_L:
 	case GDK_Shift_R:
-		ret = shift_key_press ();
+		ret = true;
 		break;
 
 	// Cell edit
@@ -7273,10 +7275,11 @@ Grid::key_press (GdkEventKey* ev)
 bool
 Grid::key_release (GdkEventKey* ev)
 {
-	// Hack to handle shift modifer
+	// Modifier state is tracked by Gtkmm2ext::Keyboard.  Consume the Shift
+	// key itself so it does not fall through to Ardour's bindings.
 	switch (ev->keyval) {
 	case GDK_Shift_L:
-	case GDK_Shift_R: return shift_key_release ();
+	case GDK_Shift_R: return true;
 	}
 
 	bool ret = step_edit() ? step_editing_key_release (ev) : non_editing_key_release (ev);
@@ -7384,21 +7387,7 @@ Grid::scroll_event (GdkEventScroll* ev)
 }
 
 bool
-Grid::shift_key_press ()
+Grid::is_range_select_modifier_down () const
 {
-	shift_pressed = true;
-	return true;
-}
-
-bool
-Grid::shift_key_release ()
-{
-	shift_pressed = false;
-	return true;
-}
-
-bool
-Grid::is_shift_pressed () const
-{
-	return shift_pressed;
+	return Gtkmm2ext::Keyboard::the_keyboard ().modifier_state () & Gtkmm2ext::Keyboard::RangeSelectModifier;
 }

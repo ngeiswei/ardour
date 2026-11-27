@@ -534,11 +534,13 @@ private:
 	bool time_view_button_event (GdkEventButton*);
 	bool scroll_event (GdkEventScroll*);
 
-	// Hack until proper dealing with shortcut keys
-	bool shift_key_press ();
-	bool shift_key_release ();
-	bool is_shift_pressed () const;
-	bool shift_pressed;
+	// Return true while the configured range-select modifier is held.
+	//
+	// This is read from Gtkmm2ext::Keyboard rather than tracked from key
+	// press/release events, so losing focus cannot leave a stale modifier
+	// state behind.  It also honours Ardour's configurable range-select
+	// modifier instead of hard-coding Shift.
+	bool is_range_select_modifier_down () const;
 
 	// Return the row index of a tree model path and vice versa
 	int to_row_index (const std::string& path_str) const;

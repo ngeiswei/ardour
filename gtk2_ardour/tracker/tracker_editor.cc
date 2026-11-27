@@ -55,6 +55,7 @@
 #include "midi_region_view.h"
 #include "note_player.h"
 #include "ui_config.h"
+#include "utils.h"
 
 #include "midi_track_toolbar.h"
 #include "tracker_editor.h"
@@ -214,62 +215,44 @@ TrackerEditor::build_regions_per_track () const
 bool
 TrackerEditor::activate_ardour_binding (GdkEventKey* ev)
 {
-	if (!ARDOUR_UI::instance () || ARDOUR_UI::instance ()->loading_session ()) {
+	ARDOUR_UI* ui = ARDOUR_UI::instance ();
+
+	if (!ui || ui->loading_session ()) {
 		return false;
 	}
 
 	Gtkmm2ext::KeyboardKey key (ev->state, ev->keyval);
 
-	/* Check the focused widget and its parents first. */
-	GtkWidget* focus = gtk_window_get_focus (gobj ());
-	while (focus) {
-		Gtkmm2ext::BindingSet* bindings = reinterpret_cast<Gtkmm2ext::BindingSet*> (
-			g_object_get_data (G_OBJECT (focus), Gtkmm2ext::ARDOUR_BINDING_KEY));
-
-		if (bindings) {
-			for (Gtkmm2ext::Bindings* binding : *bindings) {
-				if (binding->activate (key, Gtkmm2ext::Bindings::Press)) {
-					return true;
-				}
-			}
-		}
-
-		focus = gtk_widget_get_parent (focus);
-	}
-
-	/* Also check the window-level bindings in case there is no focus widget or
-	 * the focus hierarchy did not include the window. */
-	Gtkmm2ext::BindingSet* window_bindings = reinterpret_cast<Gtkmm2ext::BindingSet*> (
+	/* Give the tracker's own (window-level) bindings the first chance.  The
+	 * tracker window is the only widget in this window hierarchy that carries
+	 * an ARDOUR binding set, and walking up from the focused widget always
+	 * reaches it, so there is no need to duplicate that search here. */
+	Gtkmm2ext::BindingSet* tracker_bindings = reinterpret_cast<Gtkmm2ext::BindingSet*> (
 		g_object_get_data (G_OBJECT (gobj ()), Gtkmm2ext::ARDOUR_BINDING_KEY));
 
-	if (window_bindings) {
-		for (Gtkmm2ext::Bindings* binding : *window_bindings) {
+	if (tracker_bindings) {
+		for (Gtkmm2ext::Bindings* binding : *tracker_bindings) {
 			if (binding->activate (key, Gtkmm2ext::Bindings::Press)) {
 				return true;
 			}
 		}
 	}
 
-	/* Modified keys can also drive the main editor's own and shared bindings.
-	 * This is what makes undo/redo (Editing/undo, Editing/redo) work while the
-	 * tracker is focused.  Do not do this for unmodified keys: those belong to
-	 * the tracker grid or to the global bindings, and the main editor has many
-	 * single-key actions that would otherwise steal tracker note entry. */
 	const guint mod_mask = Gtkmm2ext::Keyboard::RelevantModifierKeyMask & ~(guint) Gdk::SHIFT_MASK;
-	if (ev->state & mod_mask) {
-		Gtkmm2ext::Bindings* editor_bindings = Gtkmm2ext::Bindings::get_bindings ("Editor");
-		if (editor_bindings && editor_bindings->activate (key, Gtkmm2ext::Bindings::Press)) {
-			return true;
-		}
 
-		Gtkmm2ext::Bindings* editing_bindings = Gtkmm2ext::Bindings::get_bindings ("Editing");
-		if (editing_bindings && editing_bindings->activate (key, Gtkmm2ext::Bindings::Press)) {
-			return true;
-		}
+	if (ev->state & mod_mask) {
+		/* Modified keys can also drive the main editor's own and shared
+		 * bindings (undo/redo, etc.).  Relay them to the main window, which is
+		 * where ARDOUR_UI keeps the Editor/Editing tab bindings and the global
+		 * bindings.  Do not do this for unmodified keys: the main editor has
+		 * many single-key actions that would steal tracker note entry. */
+		return ARDOUR_UI_UTILS::relay_key_press (ev, &ui->main_window ());
 	}
 
-	/* Finally, use Ardour's global bindings. */
-	Gtkmm2ext::Bindings* global_bindings = ARDOUR_UI::instance ()->global_bindings;
+	/* Unmodified keys: only Ardour's global bindings.  The tracker-local
+	 * bindings above and the grid's own note/navigation handling take
+	 * precedence. */
+	Gtkmm2ext::Bindings* global_bindings = ui->global_bindings;
 	return global_bindings && global_bindings->activate (key, Gtkmm2ext::Bindings::Press);
 }
 
