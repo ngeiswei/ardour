@@ -21,6 +21,10 @@ class MidiNotesPatternTest : public CppUnit::TestFixture
 	CPPUNIT_TEST (testBothNonDisplayable);
 	CPPUNIT_TEST (testOffMeetsOn);
 	CPPUNIT_TEST (testOnHidesOff);
+	CPPUNIT_TEST (testOverlapDisjoint);
+	CPPUNIT_TEST (testOverlapPartial);
+	CPPUNIT_TEST (testOverlapContainment);
+	CPPUNIT_TEST (testOverlapZeroLength);
 
 	CPPUNIT_TEST_SUITE_END ();
 
@@ -38,6 +42,12 @@ public:
 	void testBothNonDisplayable ();
 	void testOffMeetsOn ();
 	void testOnHidesOff ();
+	void testOverlapDisjoint ();
+	void testOverlapPartial ();
+	void testOverlapContainment ();
+	void testOverlapZeroLength ();
+
+	void assert_overlap (double a_start, double a_end, double b_start, double b_end, bool expected);
 };
 
 #endif /* __ardour_tracker_test_midi_notes_pattern_test_h_ */

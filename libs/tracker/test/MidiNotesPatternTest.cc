@@ -101,6 +101,19 @@ assert_rows (const std::set<int>& got, const std::set<int>& expected)
 } // anonymous namespace
 
 void
+MidiNotesPatternTest::assert_overlap (double a_start, double a_end, double b_start, double b_end, bool expected)
+{
+	NotePtr a = mknote (a_start, a_end - a_start);
+	NotePtr b = mknote (b_start, b_end - b_start);
+
+	std::stringstream ss;
+	ss << "A=[" << a_start << ',' << a_end << "), B=[" << b_start << ',' << b_end << ')';
+	CPPUNIT_ASSERT_EQUAL_MESSAGE (ss.str (), expected, MidiNotesPattern::overlap (a, b));
+	ss << "; reversed arguments";
+	CPPUNIT_ASSERT_EQUAL_MESSAGE (ss.str (), expected, MidiNotesPattern::overlap (b, a));
+}
+
+void
 MidiNotesPatternTest::testIsRowDisplayable ()
 {
 	/* Empty row */
@@ -275,4 +288,42 @@ MidiNotesPatternTest::testOnHidesOff ()
 	l.add_on (4, 4, 2, 60);
 	r.add_off (4, 0, 4, 55); // ends at 4
 	assert_rows (diff_rows (l, r), rows_from_to (4, 4));
+}
+
+void
+MidiNotesPatternTest::testOverlapDisjoint ()
+{
+	assert_overlap (2, 4, 0, 1, false); // Entirely before
+	assert_overlap (2, 4, 5, 6, false); // Entirely after
+	assert_overlap (2, 4, 0, 2, false); // End meets start
+	assert_overlap (2, 4, 4, 6, false); // Start meets end
+}
+
+void
+MidiNotesPatternTest::testOverlapPartial ()
+{
+	assert_overlap (2, 6, 0, 3, true);  // Overlap start
+	assert_overlap (2, 6, 5, 8, true);  // Overlap end
+	assert_overlap (2, 6, 1, 7, true);  // Second contains first
+	assert_overlap (2, 6, 2, 4, true);  // Same start
+	assert_overlap (2, 6, 4, 6, true);  // Same end
+}
+
+void
+MidiNotesPatternTest::testOverlapContainment ()
+{
+	assert_overlap (2, 8, 3, 5, true);  // Strict containment
+	assert_overlap (2, 8, 2, 4, true);  // Contained at start
+	assert_overlap (2, 8, 6, 8, true);  // Contained at end
+	assert_overlap (2, 8, 2, 8, true);  // Identical ranges
+}
+
+void
+MidiNotesPatternTest::testOverlapZeroLength ()
+{
+	assert_overlap (3, 3, 1, 5, false); // Empty point inside range
+	assert_overlap (1, 1, 1, 5, false); // Empty point at range start
+	assert_overlap (5, 5, 1, 5, false); // Empty point at range end
+	assert_overlap (3, 3, 0, 1, false); // Empty point outside range
+	assert_overlap (3, 3, 3, 3, false); // Two empty ranges
 }
