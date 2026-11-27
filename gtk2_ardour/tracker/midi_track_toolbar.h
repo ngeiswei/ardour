@@ -28,8 +28,6 @@
 #include "ardour/pannable.h"
 #include "ardour/processor.h"
 
-#include "midi++2/midi++/midnam_patch.h"
-
 #include "midi_track_pattern.h"
 #include "track_toolbar.h"
 
@@ -78,7 +76,7 @@ public:
 	void add_single_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items,
 	                                         int ctl, const std::string& name);
 	void add_multi_channel_controller_item (Gtk::Menu_Helpers::MenuList& ctl_items,
-	                                        int ctl, const std::string& name);
+	                                        uint16_t channels, int ctl, const std::string& name);
 	Gtk::CheckMenuItem* automation_child_menu_item (const IDParameter& id_param);
 
 	/**
@@ -103,8 +101,6 @@ public:
 
 	void print_widths () const;
 	int get_min_width () const;
-
-	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names ();
 
 	MidiTrackPtr midi_track;
 	MidiTrackPattern& midi_track_pattern;

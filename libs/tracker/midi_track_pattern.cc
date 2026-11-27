@@ -547,12 +547,6 @@ MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 	return nullptr;
 }
 
-std::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiTrackPattern::get_device_names () const
-{
-	return midi_track->instrument_info ().master_device_names ();
-}
-
 bool
 MidiTrackPattern::is_integer (int mri, const IDParameter& id_param) const
 {

@@ -19,8 +19,6 @@
 #ifndef __ardour_tracker_midi_track_pattern_h_
 #define __ardour_tracker_midi_track_pattern_h_
 
-#include "midi++2/midi++/midnam_patch.h"
-
 #include "midi_region_pattern.h"
 #include "track_automation_pattern.h"
 #include "track_pattern.h"
@@ -164,8 +162,6 @@ public:
 
 	// Return point of midi region pattern corresponding to midi_region, or 0 if it doesn't exist
 	MidiRegionPattern* find_midi_region_pattern (MidiRegionPtr midi_region);
-
-	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names () const;
 
 	bool is_integer (int mri, const IDParameter& id_param) const override;
 

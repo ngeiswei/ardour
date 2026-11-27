@@ -23,6 +23,8 @@
 
 #include "gtkmm2ext/utils.h"
 
+#include "midi_util.h"
+
 #include "widgets/tooltips.h"
 
 #include "ardour/amp.h"
@@ -275,110 +277,17 @@ MidiTrackToolbar::build_midi_automation_menu ()
 void
 MidiTrackToolbar::build_controller_menu ()
 {
-	using namespace Menu_Helpers;
-
-	/* For some reason an already built controller menu cannot be attached
-	   so let's rebuild it */
+	/* An already built controller menu cannot be reattached, so rebuild it
+	 * using the same MIDNAM/channel-aware builder as the other MIDI views. */
 	delete controller_menu;
+	controller_menu = new Menu;
+	controller_menu->set_name ("ArdourContextMenu");
 
-	// TODO: compare with lastest ardour changes to update if necessary
-
-	controller_menu = new Menu; // explicitly managed by us
-	Menu_Helpers::MenuList& items (controller_menu->items ());
-
-	/* create several "top level" menu items for sets of controllers (16 at a
-	   time), and populate each one with a submenu for each controller+channel
-	   combination covering the currently selected channels for this track
-	*/
-
-	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
-
-	/* count the number of selected channels because we will build a different menu
-	   structure if there is more than 1 selected.
-	*/
-
-	int chn_cnt = 0;
-	for (uint8_t chn = 0; chn < 16; chn++) {
-		if (selected_channels & (0x0001 << chn)) {
-			if (++chn_cnt > 1) {
-				break;
-			}
-		}
-	}
-
-	using namespace MIDI::Name;
-	std::shared_ptr<MasterDeviceNames> device_names = get_device_names ();
-
-	if (device_names && !device_names->controls ().empty ()) {
-		/* Controllers names available in midnam file, generate fancy menu */
-		unsigned n_items  = 0;
-		unsigned n_groups = 0;
-
-		/* TODO: This is not correct, should look up the currently applicable ControlNameList
-		   and only build a menu for that one. */
-		for (MasterDeviceNames::ControlNameLists::const_iterator l = device_names->controls ().begin ();
-		     l != device_names->controls ().end (); ++l) {
-			std::shared_ptr<ControlNameList> name_list = l->second;
-			Menu*                            ctl_menu  = 0;
-
-			for (ControlNameList::Controls::const_iterator c = name_list->controls ().begin ();
-			     c != name_list->controls ().end ();) {
-				const uint16_t ctl = c->second->number ();
-				if (ctl != MIDI_CTL_MSB_BANK && ctl != MIDI_CTL_LSB_BANK) {
-					/* Skip bank select controllers since they're handled specially */
-					if (n_items == 0) {
-						/* Create a new submenu */
-						ctl_menu = Gtk::manage (new Menu);
-					}
-
-					Menu_Helpers::MenuList& ctl_items (ctl_menu->items ());
-					if (chn_cnt > 1) {
-						add_multi_channel_controller_item (ctl_items, ctl, c->second->name ());
-					} else {
-						add_single_channel_controller_item (ctl_items, ctl, c->second->name ());
-					}
-				}
-
-				++c;
-				if (ctl_menu && (++n_items == 16 || c == name_list->controls ().end ())) {
-					/* Submenu has 16 items or we're done, add it to controller menu and reset */
-					items.push_back (
-						Menu_Helpers::MenuElem (string_compose (_("Controllers %1-%2"),
-						                                        (16 * n_groups), (16 * n_groups) + n_items - 1),
-						                        *ctl_menu));
-					ctl_menu = 0;
-					n_items  = 0;
-					++n_groups;
-				}
-			}
-		}
-	} else {
-		/* No controllers names, generate generic numeric menu */
-		for (int i = 0; i < 127; i += 16) {
-			Menu*     ctl_menu = Gtk::manage (new Menu);
-			Menu_Helpers::MenuList& ctl_items (ctl_menu->items ());
-
-			for (int ctl = i; ctl < i+16; ++ctl) {
-				if (ctl == MIDI_CTL_MSB_BANK || ctl == MIDI_CTL_LSB_BANK) {
-					/* Skip bank select controllers since they're handled specially */
-					continue;
-				}
-
-				if (chn_cnt > 1) {
-					add_multi_channel_controller_item (
-						ctl_items, ctl, string_compose (_("Controller %1"), ctl));
-				} else {
-					add_single_channel_controller_item (
-						ctl_items, ctl, string_compose (_("Controller %1"), ctl));
-				}
-			}
-
-			/* Add submenu for this block of controllers to controller menu */
-			items.push_back (
-				Menu_Helpers::MenuElem (string_compose (_("Controllers %1-%2"), i, i + 15),
-				                        *ctl_menu));
-		}
-	}
+	::build_controller_menu (*controller_menu,
+	                         midi_track->instrument_info (),
+	                         midi_track->get_playback_channel_mask (),
+	                         sigc::mem_fun (*this, &MidiTrackToolbar::add_single_channel_controller_item),
+	                         sigc::mem_fun (*this, &MidiTrackToolbar::add_multi_channel_controller_item));
 }
 
 void
@@ -511,12 +420,11 @@ MidiTrackToolbar::add_single_channel_controller_item (Menu_Helpers::MenuList& ct
 /** Add a submenu with 1 item per channel for a controller on many channels. */
 void
 MidiTrackToolbar::add_multi_channel_controller_item (Menu_Helpers::MenuList& ctl_items,
+                                                     uint16_t                channels,
                                                      int                     ctl,
                                                      const std::string&      name)
 {
 	using namespace Menu_Helpers;
-
-	const uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 
 	Menu* chn_menu = Gtk::manage (new Menu);
 	Menu_Helpers::MenuList& chn_items (chn_menu->items ());
@@ -534,7 +442,7 @@ MidiTrackToolbar::add_multi_channel_controller_item (Menu_Helpers::MenuList& ctl
 		                                    track_index, true, param_without_channel)));
 
 	for (uint8_t chn = 0; chn < 16; chn++) {
-		if (selected_channels & (0x0001 << chn)) {
+		if (channels & (0x0001 << chn)) {
 
 			/* for each selected channel, add a menu item for this controller */
 
@@ -707,10 +615,4 @@ MidiTrackToolbar::get_min_width () const
 		automation_button.get_width ();
 
 	return width;
-}
-
-std::shared_ptr<MIDI::Name::MasterDeviceNames>
-MidiTrackToolbar::get_device_names ()
-{
-	return midi_track_pattern.get_device_names ();
 }

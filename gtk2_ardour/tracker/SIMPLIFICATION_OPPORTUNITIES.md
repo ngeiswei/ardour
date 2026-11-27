@@ -22,6 +22,11 @@ The strongest candidates are:
 
 ### 1. Replace the tracker controller-menu implementation with the shared builder
 
+**Status: Done.** `MidiTrackToolbar` now calls the shared
+`build_controller_menu()` from `gtk2_ardour/midi_util.h`. The multi-channel
+callback accepts the shared API's channel-mask argument, and the obsolete
+`get_device_names()` forwarding methods were removed.
+
 **Current code:** `gtk2_ardour/tracker/midi_track_toolbar.cc:276-430`
 
 `MidiTrackToolbar::build_controller_menu()` reimplements controller/MIDNAM
