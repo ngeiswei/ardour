@@ -217,6 +217,13 @@ more correct.
 
 ### 6. Reuse `EditingContext::get_grid_beat_divisions()` and `ArdourDropdown` actions
 
+**Status: Done.** Row counts now come from
+`PublicEditor::get_grid_beat_divisions()`, and the dropdown is built with
+`ArdourDropdown::append(action)`. A single descriptor table supplies grid
+types, row counts, action names, labels, and stepping order. Action and menu
+labels intentionally use the same concise `N Row/Beat` text. The unsupported
+one-row-per-bar behavior remains excluded from the dropdown.
+
 **Current code:**
 
 - `gtk2_ardour/tracker/main_toolbar.cc:524-645`

@@ -36,30 +36,32 @@ using namespace Tracker;
 
 #define COMBO_TRIANGLE_WIDTH 25
 
-static const gchar *_beats_per_row_strings[] = {
-	N_("1 Row/Bar"),
-	N_("1 Row/Beat"),
-	N_("2 Rows/Beat"),
-	N_("4 Rows/Beat"),
-	N_("8 Rows/Beat"),
-	N_("16 Rows/Beat"),
-	N_("32 Rows/Beat"),
-	N_("3 Rows/Beat"),
-	N_("6 Rows/Beat"),
-	N_("12 Rows/Beat"),
-	N_("24 Rows/Beat"),
-	N_("5 Rows/Beat"),
-	N_("10 Rows/Beat"),
-	N_("20 Rows/Beat"),
-	N_("7 Rows/Beat"),
-	N_("14 Rows/Beat"),
-	N_("28 Rows/Beat"),
-	0
+struct RowsPerBeatChoice {
+	Editing::GridType grid_type;
+	uint16_t          rows;
+	const char*       action_name;
+	const char*       menu_label;
 };
 
-/** Allowed rows_per_beat values, in the order of the beats-per-row menu. */
-static const uint16_t _rows_per_beat_choices[] = {
-	1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32
+/* Single source for grid types, row counts, actions, labels and step order. */
+static const RowsPerBeatChoice _rows_per_beat_choices[] = {
+	{ GridTypeBar,        0,  "beats-per-row-bar",            N_("1 Row/Bar") },
+	{ GridTypeBeat,       1,  "beats-per-row-beat",           N_("1 Row/Beat") },
+	{ GridTypeBeatDiv2,   2,  "beats-per-row-halves",         N_("2 Rows/Beat") },
+	{ GridTypeBeatDiv3,   3,  "beats-per-row-thirds",         N_("3 Rows/Beat") },
+	{ GridTypeBeatDiv4,   4,  "beats-per-row-quarters",       N_("4 Rows/Beat") },
+	{ GridTypeBeatDiv5,   5,  "beats-per-row-fifths",         N_("5 Rows/Beat") },
+	{ GridTypeBeatDiv6,   6,  "beats-per-row-sixths",         N_("6 Rows/Beat") },
+	{ GridTypeBeatDiv7,   7,  "beats-per-row-sevenths",       N_("7 Rows/Beat") },
+	{ GridTypeBeatDiv8,   8,  "beats-per-row-eighths",        N_("8 Rows/Beat") },
+	{ GridTypeBeatDiv10, 10,  "beats-per-row-tenths",         N_("10 Rows/Beat") },
+	{ GridTypeBeatDiv12, 12,  "beats-per-row-twelfths",       N_("12 Rows/Beat") },
+	{ GridTypeBeatDiv14, 14,  "beats-per-row-fourteenths",    N_("14 Rows/Beat") },
+	{ GridTypeBeatDiv16, 16,  "beats-per-row-asixteenthbeat", N_("16 Rows/Beat") },
+	{ GridTypeBeatDiv20, 20,  "beats-per-row-twentieths",     N_("20 Rows/Beat") },
+	{ GridTypeBeatDiv24, 24,  "beats-per-row-twentyfourths",  N_("24 Rows/Beat") },
+	{ GridTypeBeatDiv28, 28,  "beats-per-row-twentyeighths",  N_("28 Rows/Beat") },
+	{ GridTypeBeatDiv32, 32,  "beats-per-row-thirtyseconds",  N_("32 Rows/Beat") },
 };
 
 /**
@@ -117,7 +119,6 @@ MainToolbar::MainToolbar (TrackerEditor& te)
 	: tracker_editor (te)
 	, bindings (0)
 	, spacing (4)
-	, beats_per_row_strings (I18N (_beats_per_row_strings))
 	, rows_per_beat (4)
 	, octave_label (_("Octave"))
 	, octave_adjustment (4, -1, 9, 1, 2)
@@ -360,28 +361,15 @@ MainToolbar::setup_tooltips ()
 void
 MainToolbar::setup_beats_per_row_menu ()
 {
-	using namespace Gtk::Menu_Helpers;
+	for (const RowsPerBeatChoice& choice : _rows_per_beat_choices) {
+		// One row per bar is registered for completeness but is not yet supported.
+		if (choice.grid_type != GridTypeBar) {
+			beats_per_row_selector.append (
+				ActionManager::get_action (X_("BeatsPerRow"), choice.action_name));
+		}
+	}
 
-	// TODO GridTypeBar is not yet supported
-	// beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBar - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBar)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeat - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeat)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv2 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv2)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv3 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv3)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv4 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv4)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv5 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv5)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv6 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv6)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv7 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv7)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv8 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv8)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv10 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv10)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv12 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv12)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv14 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv14)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv16 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv16)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv20 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv20)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv24 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv24)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv28 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv28)));
-	beats_per_row_selector.add_menu_elem (MenuElem ( beats_per_row_strings[(int)GridTypeBeatDiv32 - (int)GridTypeBar], sigc::bind (sigc::mem_fun (*this, &MainToolbar::beats_per_row_selection_done), (GridType) GridTypeBeatDiv32)));
-
-	set_size_request_to_display_given_text (beats_per_row_selector, beats_per_row_strings.back(), COMBO_TRIANGLE_WIDTH, 2);
+	set_size_request_to_display_given_text (beats_per_row_selector, _("32 Rows/Beat"), COMBO_TRIANGLE_WIDTH, 2);
 }
 
 void
@@ -404,40 +392,13 @@ MainToolbar::register_actions ()
 	Glib::RefPtr<Gtk::ActionGroup> beats_per_row_actions = ActionManager::create_action_group (bindings, X_("BeatsPerRow"));
 	Gtk::RadioAction::Group beats_per_row_choice_group;
 
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirtyseconds"), _("Beats Per Row to Thirty Seconds"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv32)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyeighths"), _("Beats Per Row to Twenty Eighths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv28)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentyfourths"), _("Beats Per Row to Twenty Fourths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv24)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twentieths"), _("Beats Per Row to Twentieths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv20)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-asixteenthbeat"), _("Beats Per Row to Sixteenths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv16)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fourteenths"), _("Beats Per Row to Fourteenths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv14)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-twelfths"), _("Beats Per Row to Twelfths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv12)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-tenths"), _("Beats Per Row to Tenths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv10)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-eighths"), _("Beats Per Row to Eighths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv8)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sevenths"), _("Beats Per Row to Sevenths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv7)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-sixths"), _("Beats Per Row to Sixths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv6)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-fifths"), _("Beats Per Row to Fifths"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv5)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-quarters"), _("Beats Per Row to Quarters"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv4)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-thirds"), _("Beats Per Row to Thirds"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv3)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-halves"), _("Beats Per Row to Halves"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeatDiv2)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-beat"), _("Beats Per Row to Beat"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBeat)));
-	ActionManager::register_radio_action (beats_per_row_actions, beats_per_row_choice_group, X_("beats-per-row-bar"), _("Beats Per Row to Bar"),
-	                                      (sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), Editing::GridTypeBar)));
+	for (const RowsPerBeatChoice& choice : _rows_per_beat_choices) {
+		Glib::RefPtr<Gtk::RadioAction> action = ActionManager::register_radio_action (
+			beats_per_row_actions, beats_per_row_choice_group,
+			choice.action_name, _(choice.menu_label),
+			sigc::bind (sigc::ptr_fun (&MainToolbar::beats_per_row_chosen_action), choice.grid_type));
+		action->set_short_label (_(choice.menu_label));
+	}
 
 	// Keyboard shortcuts for the tracker editor.
 	Glib::RefPtr<Gtk::ActionGroup> tracker_actions = ActionManager::create_action_group (bindings, X_("Tracker"));
@@ -496,88 +457,17 @@ MainToolbar::register_actions ()
 	ensure_default_tracker_binding (bindings, "Tracker/decrease-rows-per-beat", "Primary-Tertiary-b", "Primary-Tertiary-r");
 }
 
-void
-MainToolbar::beats_per_row_selection_done (GridType st)
-{
-	Glib::RefPtr<Gtk::RadioAction> ract = beats_per_row_action (st);
-	if (ract) {
-		ract->set_active ();
-	}
-}
-
 Glib::RefPtr<Gtk::RadioAction>
 MainToolbar::beats_per_row_action (GridType st)
 {
-	const char* action = nullptr;
-	Glib::RefPtr<Gtk::Action> act;
-
-	switch (st) {
-	case Editing::GridTypeBeatDiv32:
-		action = "beats-per-row-thirtyseconds";
-		break;
-	case Editing::GridTypeBeatDiv28:
-		action = "beats-per-row-twentyeighths";
-		break;
-	case Editing::GridTypeBeatDiv24:
-		action = "beats-per-row-twentyfourths";
-		break;
-	case Editing::GridTypeBeatDiv20:
-		action = "beats-per-row-twentieths";
-		break;
-	case Editing::GridTypeBeatDiv16:
-		action = "beats-per-row-asixteenthbeat";
-		break;
-	case Editing::GridTypeBeatDiv14:
-		action = "beats-per-row-fourteenths";
-		break;
-	case Editing::GridTypeBeatDiv12:
-		action = "beats-per-row-twelfths";
-		break;
-	case Editing::GridTypeBeatDiv10:
-		action = "beats-per-row-tenths";
-		break;
-	case Editing::GridTypeBeatDiv8:
-		action = "beats-per-row-eighths";
-		break;
-	case Editing::GridTypeBeatDiv7:
-		action = "beats-per-row-sevenths";
-		break;
-	case Editing::GridTypeBeatDiv6:
-		action = "beats-per-row-sixths";
-		break;
-	case Editing::GridTypeBeatDiv5:
-		action = "beats-per-row-fifths";
-		break;
-	case Editing::GridTypeBeatDiv4:
-		action = "beats-per-row-quarters";
-		break;
-	case Editing::GridTypeBeatDiv3:
-		action = "beats-per-row-thirds";
-		break;
-	case Editing::GridTypeBeatDiv2:
-		action = "beats-per-row-halves";
-		break;
-	case Editing::GridTypeBeat:
-		action = "beats-per-row-beat";
-		break;
-	case Editing::GridTypeBar:
-		action = "beats-per-row-bar";
-		break;
-	default:
-		fatal << string_compose (_("programming error: %1: %2"), "Editor: impossible beats-per-row", (int) st) << endmsg;
-		abort (); /*NOTREACHED*/
+	for (const RowsPerBeatChoice& choice : _rows_per_beat_choices) {
+		if (choice.grid_type == st) {
+			return ActionManager::get_radio_action (X_("BeatsPerRow"), choice.action_name, false);
+		}
 	}
 
-	act = ActionManager::get_action (X_("BeatsPerRow"), action);
-
-	if (act) {
-		Glib::RefPtr<Gtk::RadioAction> ract = Glib::RefPtr<Gtk::RadioAction>::cast_dynamic (act);
-		return ract;
-
-	} else  {
-		error << string_compose (_("programming error: %1"), "Tracker::MainToolbar::beats_per_row_chosen could not find action to match type.") << endmsg;
-		return Glib::RefPtr<Gtk::RadioAction> ();
-	}
+	fatal << string_compose (_("programming error: %1: %2"), "Tracker: impossible beats-per-row", (int) st) << endmsg;
+	abort (); /*NOTREACHED*/
 }
 
 void
@@ -598,35 +488,19 @@ MainToolbar::beats_per_row_chosen (GridType st)
 void
 MainToolbar::set_beats_per_row_to (GridType st)
 {
-	unsigned int snap_ind = (int)st - (int)GridTypeBar;
+	for (const RowsPerBeatChoice& choice : _rows_per_beat_choices) {
+		if (choice.grid_type != st) {
+			continue;
+		}
 
-	std::string str = beats_per_row_strings[snap_ind];
+		const int32_t divisions = tracker_editor.public_editor.get_grid_beat_divisions (st);
+		rows_per_beat = (st == GridTypeBar) ? 0 : divisions;
 
-	if (str != beats_per_row_selector.get_text ()) {
-		beats_per_row_selector.set_text (str);
-	}
-
-	switch (st) {
-	case GridTypeBeatDiv32: rows_per_beat = 32; break;
-	case GridTypeBeatDiv28: rows_per_beat = 28; break;
-	case GridTypeBeatDiv24: rows_per_beat = 24; break;
-	case GridTypeBeatDiv20: rows_per_beat = 20; break;
-	case GridTypeBeatDiv16: rows_per_beat = 16; break;
-	case GridTypeBeatDiv14: rows_per_beat = 14; break;
-	case GridTypeBeatDiv12: rows_per_beat = 12; break;
-	case GridTypeBeatDiv10: rows_per_beat = 10; break;
-	case GridTypeBeatDiv8: rows_per_beat = 8; break;
-	case GridTypeBeatDiv7: rows_per_beat = 7; break;
-	case GridTypeBeatDiv6: rows_per_beat = 6; break;
-	case GridTypeBeatDiv5: rows_per_beat = 5; break;
-	case GridTypeBeatDiv4: rows_per_beat = 4; break;
-	case GridTypeBeatDiv3: rows_per_beat = 3; break;
-	case GridTypeBeatDiv2: rows_per_beat = 2; break;
-	case GridTypeBeat: rows_per_beat = 1; break;
-	case GridTypeBar: rows_per_beat = 0; break;
-	default:
-		/* relax */
-		break;
+		const std::string label = _(choice.menu_label);
+		if (label != beats_per_row_selector.get_text ()) {
+			beats_per_row_selector.set_text (label);
+		}
+		return;
 	}
 }
 
@@ -873,39 +747,15 @@ MainToolbar::rows_per_beat_step (int direction)
 	const size_t nchoices = sizeof (_rows_per_beat_choices) / sizeof (_rows_per_beat_choices[0]);
 	size_t idx = 0;
 	for (size_t i = 0; i < nchoices; i++) {
-		if (_rows_per_beat_choices[i] == rows_per_beat) {
+		if (_rows_per_beat_choices[i].rows == rows_per_beat) {
 			idx = i;
 			break;
 		}
 	}
 	const int new_idx = std::min ((int) nchoices - 1, std::max (0, (int) idx + direction));
 	if ((size_t) new_idx != idx) {
-		set_rows_per_beat_to (grid_type_from_rows_per_beat (_rows_per_beat_choices[new_idx]));
+		set_rows_per_beat_to (_rows_per_beat_choices[new_idx].grid_type);
 	}
-}
-
-Editing::GridType
-MainToolbar::grid_type_from_rows_per_beat (uint16_t rpb)
-{
-	switch (rpb) {
-	case 1:  return GridTypeBeat;
-	case 2:  return GridTypeBeatDiv2;
-	case 3:  return GridTypeBeatDiv3;
-	case 4:  return GridTypeBeatDiv4;
-	case 5:  return GridTypeBeatDiv5;
-	case 6:  return GridTypeBeatDiv6;
-	case 7:  return GridTypeBeatDiv7;
-	case 8:  return GridTypeBeatDiv8;
-	case 10: return GridTypeBeatDiv10;
-	case 12: return GridTypeBeatDiv12;
-	case 14: return GridTypeBeatDiv14;
-	case 16: return GridTypeBeatDiv16;
-	case 20: return GridTypeBeatDiv20;
-	case 24: return GridTypeBeatDiv24;
-	case 28: return GridTypeBeatDiv28;
-	case 32: return GridTypeBeatDiv32;
-	}
-	return GridTypeBeatDiv4;
 }
 
 void

@@ -57,7 +57,6 @@ public:
 	 */
 	void setup_beats_per_row_menu ();
 	void load_bindings ();
-	void beats_per_row_selection_done (Editing::GridType st);
 	Glib::RefPtr<Gtk::RadioAction> beats_per_row_action (Editing::GridType st);
 	void beats_per_row_chosen (Editing::GridType st);
 	void set_beats_per_row_to (Editing::GridType st);
@@ -149,7 +148,6 @@ public:
 	int spacing;
 
 	ArdourWidgets::ArdourDropdown beats_per_row_selector;
-	std::vector<std::string>     beats_per_row_strings;
 	uint8_t                      rows_per_beat;
 
 	// Buttons
@@ -235,7 +233,6 @@ private:
 
 	/** Cycle rows_per_beat among the allowed settings. */
 	void rows_per_beat_step (int direction);
-	static Editing::GridType grid_type_from_rows_per_beat (uint16_t rpb);
 
 	/** Look up mode state from an action registered in the Tracker group. */
 	static bool mode_active (const char* action_name);
