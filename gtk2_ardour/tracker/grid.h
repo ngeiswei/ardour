@@ -319,7 +319,7 @@ public:
 	std::pair<std::string, Pango::AttrList> underlined_value (float val) const;
 	std::pair<std::string, Pango::AttrList> underlined_value (const std::string& val_str) const;
 
-	bool is_int_param (const IDParameter& id_param) const;
+	bool is_int_param (int mti, int mri, const IDParameter& id_param) const;
 
 	// Call on user preference change
 	void parameter_changed (const std::string& p);

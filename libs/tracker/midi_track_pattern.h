@@ -167,6 +167,8 @@ public:
 
 	std::shared_ptr<MIDI::Name::MasterDeviceNames> get_device_names () const;
 
+	bool is_integer (int mri, const IDParameter& id_param) const override;
+
 	double lower (int rowi, const IDParameter& id_param) const;
 	double upper (int rowi, const IDParameter& id_param) const;
 

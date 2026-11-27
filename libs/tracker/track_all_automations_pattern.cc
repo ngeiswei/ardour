@@ -336,6 +336,13 @@ TrackAllAutomationsPattern::get_enabled_parameters () const
 	return ieps;
 }
 
+bool
+TrackAllAutomationsPattern::is_integer (const IDParameter& id_param) const
+{
+	const AutomationPattern* ap = automation_pattern (id_param.first);
+	return ap && ap->is_integer (id_param.second);
+}
+
 double
 TrackAllAutomationsPattern::lower (const IDParameter& id_param) const
 {

@@ -861,6 +861,13 @@ AutomationPattern::get_enabled_parameters () const
 	return eps;
 }
 
+bool
+AutomationPattern::is_integer (const Evoral::Parameter& param) const
+{
+	const AutomationControlPtr actl = get_actl (param);
+	return actl && actl->desc ().integer_step;
+}
+
 double
 AutomationPattern::lower (const Evoral::Parameter& param) const
 {

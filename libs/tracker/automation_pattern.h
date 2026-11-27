@@ -231,6 +231,9 @@ public:
 	// param_to_enabled[p] is true.
 	ParameterSet get_enabled_parameters () const;
 
+	// Return whether the parameter has integer-valued steps
+	bool is_integer (const Evoral::Parameter& param) const;
+
 	// Return the lower and upper value bounds of the given parameter
 	double lower (const Evoral::Parameter& param) const;
 	double upper (const Evoral::Parameter& param) const;

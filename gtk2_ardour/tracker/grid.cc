@@ -2383,7 +2383,7 @@ void
 Grid::redisplay_automation_interpolation (TreeModel::Row& row, int row_idx, int mti, int mri, int cgi, const IDParameter& id_param)
 {
 	double inter_val = get_automation_interpolation_value (row_idx, mti, mri, id_param);
-	if (is_int_param (id_param)) {
+	if (is_int_param (mti, mri, id_param)) {
 		set_cell (row, columns->automation[mti][cgi], TrackerUtils::num_to_string ((int)std::round (inter_val), base (), precision ()));
 	} else {
 		set_cell (row, columns->automation[mti][cgi], TrackerUtils::num_to_string (inter_val, base (), precision ()));
@@ -3216,7 +3216,7 @@ Grid::set_underline_current_step_edit_automation_cell ()
 		double l = lower (current_row, mti, id_param);
 		double u = upper (current_row, mti, id_param);
 		double mlu = std::max (std::abs (l), std::abs (u));
-		int min_pos = is_int_param (id_param) ? 0 : MainToolbar::min_position;
+		int min_pos = is_int_param (current_mti, current_mri, id_param) ? 0 : MainToolbar::min_position;
 		int max_pos = std::floor (std::log10 (mlu));
 		set_current_pos (min_pos, max_pos);
 		std::pair<std::string, Pango::AttrList> ul = underlined_value (val_str);
@@ -3580,7 +3580,7 @@ Grid::interpolate_selection ()
 
 						double interpolated = TrackerUtils::interpolate (value_top, value_bottom,
 						                                                 top_row_idx, bottom_row_idx, row_idx);
-						if (is_int_param (id_param)) {
+						if (is_int_param (mti, mri_top, id_param)) {
 							const int lower_bound = (int)std::lround (lower (row_idx, mti, id_param));
 							const int upper_bound = (int)std::lround (upper (row_idx, mti, id_param));
 							interpolated = TrackerUtils::interpolate_int (value_top, value_bottom,
@@ -3738,9 +3738,9 @@ Grid::underlined_value (const std::string& val_str) const
 }
 
 bool
-Grid::is_int_param (const IDParameter& id_param) const
+Grid::is_int_param (int mti, int mri, const IDParameter& id_param) const
 {
-	return TrackerUtils::is_region_automation (id_param.second);
+	return pattern.is_integer (mti, mri, id_param);
 }
 
 void
@@ -6824,7 +6824,7 @@ Grid::step_editing_set_automation_value (int digit)
 
 	// Set new value
 	// Round in case it is int automation
-	if (is_int_param (get_id_param (current_mti, current_cgi))) {
+	if (is_int_param (current_mti, current_mri, get_id_param (current_mti, current_cgi))) {
 		oval = std::round (oval);
 	}
 

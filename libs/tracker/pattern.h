@@ -146,6 +146,9 @@ public:
 	void set_param_enabled (int mti, const IDParameter& id_param, bool enabled);
 	bool is_param_enabled (int mti, const IDParameter& id_param) const;
 
+	// Return whether the given parameter has integer-valued steps.
+	bool is_integer (int mti, int mri, const IDParameter& id_param) const;
+
 	// Return the set of enabled parameters for the given mti, and possibly mri
 	// in the case of a region.
 	IDParameterSet get_enabled_parameters (int mti, int mri) const;

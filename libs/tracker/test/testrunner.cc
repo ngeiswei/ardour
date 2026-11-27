@@ -10,7 +10,11 @@
 
 #include "pbd/debug.h"
 #include "pbd/pbd.h"
+#include "ardour/ardour.h"
+#include "ardour/test/test_ui.h"
 #include "temporal/types.h"
+
+static const char* localedir = LOCALEDIR;
 
 int
 main(int argc, char* argv[])
@@ -48,6 +52,12 @@ main(int argc, char* argv[])
 	Temporal::init ();
 	Temporal::reset ();
 
+	if (!ARDOUR::init (true, localedir)) {
+		return 1;
+	}
+
+	TestUI* test_ui = new TestUI ();
+
 	CppUnit::TestResult testresult;
 
 	CppUnit::TestResultCollector collectedresults;
@@ -62,6 +72,9 @@ main(int argc, char* argv[])
 
 	CppUnit::CompilerOutputter compileroutputter (&collectedresults, std::cerr);
 	compileroutputter.write ();
+
+	delete test_ui;
+	ARDOUR::cleanup ();
 
 	return collectedresults.wasSuccessful () ? 0 : 1;
 }

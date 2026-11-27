@@ -133,6 +133,8 @@ public:
 
 	virtual IDParameterSet get_enabled_parameters (int mri) const;
 
+	virtual bool is_integer (int mri, const IDParameter& id_param) const;
+
 	virtual double lower (int rowi, const IDParameter& id_param) const;
 
 	virtual double upper (int rowi, const IDParameter& id_param) const;

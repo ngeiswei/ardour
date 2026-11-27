@@ -94,6 +94,8 @@ public:
 	// the track.
 	IDParameterSet get_enabled_parameters () const;
 
+	bool is_integer (const IDParameter& id_param) const;
+
 	double lower (const IDParameter& id_param) const;
 	double upper (const IDParameter& id_param) const;
 

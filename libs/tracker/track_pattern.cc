@@ -270,6 +270,12 @@ TrackPattern::get_enabled_parameters (int mri) const
 	return track_all_automations_pattern.get_enabled_parameters ();
 }
 
+bool
+TrackPattern::is_integer (int mri, const IDParameter& id_param) const
+{
+	return track_all_automations_pattern.is_integer (id_param);
+}
+
 double
 TrackPattern::lower (int rowi, const IDParameter& id_param) const
 {

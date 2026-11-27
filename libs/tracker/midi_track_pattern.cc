@@ -553,6 +553,15 @@ MidiTrackPattern::get_device_names () const
 	return midi_track->instrument_info ().master_device_names ();
 }
 
+bool
+MidiTrackPattern::is_integer (int mri, const IDParameter& id_param) const
+{
+	if (TrackerUtils::is_region_automation (id_param.second) && 0 <= mri && mri < (int)mrps.size ()) {
+		return mrps[mri]->mrap.is_integer (id_param.second);
+	}
+	return TrackPattern::is_integer (mri, id_param);
+}
+
 double
 MidiTrackPattern::lower (int rowi, const IDParameter& id_param) const
 {

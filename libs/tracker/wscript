@@ -79,7 +79,11 @@ def build(bld):
                 'test/BasePatternTest.cc',
                 'test/PhenomenalDiffTest.cc',
                 'test/AutomationPatternTest.cc',
+                'test/AutomationIntegerTest.cc',
                 'test/MidiNotesPatternTest.cc',
+                '../ardour/test/test_needing_session.cc',
+                '../ardour/test/test_util.cc',
+                '../ardour/test/test_ui.cc',
                 ]
         obj.includes     = ['.', '..']
         obj.use          = ['libtracker', 'libpbd', 'libmidipp', 'libevoral', 'libtemporal', 'libardour']
@@ -87,7 +91,12 @@ def build(bld):
         obj.target       = 'run-tests'
         obj.name         = 'libtracker-tests'
         obj.install_path = ''
-        obj.defines      = ['PACKAGE="libtrackertest"']
+        obj.defines      = [
+                'PACKAGE="libtrackertest"',
+                'DATA_DIR="' + autowaf.normpath(bld.env['DATADIR']) + '"',
+                'CONFIG_DIR="' + autowaf.normpath(bld.env['SYSCONFDIR']) + '"',
+                'LOCALEDIR="' + autowaf.normpath(bld.env['LOCALEDIR']) + '"',
+                ]
         if bld.env['TEST_COVERAGE']:
             obj.linkflags      = ['--coverage']
             obj.cflags         = ['--coverage']

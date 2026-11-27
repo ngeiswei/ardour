@@ -116,6 +116,13 @@ advisable.
 
 ### 4. Use `AutomationControl::desc().integer_step` for integer automation decisions
 
+**Status: Done.** Integer decisions now use the actual automation control's
+`ParameterDescriptor::integer_step`. Region automation, main automation, and
+processor automation are routed through the existing pattern hierarchy, and
+all four Grid callers use the descriptor. Session-backed unit tests cover the
+direct lookup, main and processor dispatch, track and region dispatch, and
+top-level Pattern forwarding, including missing controls.
+
 **Current code:** `gtk2_ardour/tracker/grid.cc:3740-3744`
 
 Currently:
