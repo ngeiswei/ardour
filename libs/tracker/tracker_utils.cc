@@ -19,6 +19,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "pbd/control_math.h"
+
 #include "ardour/parameter_types.h"
 
 #include "tracker_utils.h"
@@ -63,8 +65,8 @@ TrackerUtils::interpolate (double first, double last,
 		return first;
 	}
 
-	const double t = (double)(row - first_row) / (double)(last_row - first_row);
-	return first + (last - first) * t;
+	const double fraction = (double)(row - first_row) / (double)(last_row - first_row);
+	return interpolate_linear (first, last, fraction);
 }
 
 int

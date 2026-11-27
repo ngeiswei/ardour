@@ -55,6 +55,9 @@ which is a small mechanical change.
 
 ### 2. Reuse `interpolate_linear()` instead of maintaining another implementation
 
+**Status: Done.** `tracker_utils.cc` now includes `pbd/control_math.h` and uses
+`interpolate_linear()` for the nondegenerate calculation.
+
 **Current code:** `libs/tracker/tracker_utils.cc:59-77`
 
 `TrackerUtils::interpolate()` implements the same operation as
