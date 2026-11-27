@@ -26,6 +26,8 @@
 #include "midi_notes_pattern_phenomenal_diff.h"
 #include "tracker_utils.h"
 
+class MidiNotesPatternTest;
+
 namespace ARDOUR {
 	class MidiRegion;
 	class MidiModel;
@@ -196,6 +198,8 @@ public:
 	std::vector<RowToNotes> off_notes;
 
 private:
+	friend class ::MidiNotesPatternTest;
+
 	// Return the row of the on (resp. off) occurrence of the note
 	// designated by inote, located by the given row selector.  Rows of off
 	// notes located before the on row of the note are rejected and

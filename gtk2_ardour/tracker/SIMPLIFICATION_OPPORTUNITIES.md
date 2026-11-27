@@ -81,6 +81,12 @@ and clamping.
 
 ### 3. Replace `MidiNotesPattern::overlap()` with Temporal's range coverage helper
 
+**Status: Done.** The implementation now uses the `int64_t` specialization of
+`Temporal::coverage_exclusive_ends()` in tick space. Unit tests cover disjoint,
+touching, partial, containing, identical, and zero-length ranges in both
+argument orders. Zero-length notes are consistently treated as empty ranges
+and do not overlap, eliminating the previous argument-order inconsistency.
+
 **Current code:** `libs/tracker/midi_notes_pattern.cc:875-886`
 
 The hand-written overlap test can use Temporal's range machinery:

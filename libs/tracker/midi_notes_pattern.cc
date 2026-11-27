@@ -28,6 +28,8 @@
 #include "ardour/session.h"
 #include "ardour/tempo.h"
 
+#include "temporal/range.h"
+
 #include "midi_notes_pattern.h"
 
 using namespace ARDOUR;
@@ -874,13 +876,7 @@ MidiNotesPattern::find_free_track (NotePtr note) const
 bool
 MidiNotesPattern::overlap (NotePtr a, NotePtr b)
 {
-	Temporal::Beats sa = a->time ();
-	Temporal::Beats ea  = a->end_time ();
-	Temporal::Beats sb = b->time ();
-	Temporal::Beats eb = b->end_time ();
-
-	return (((sb > sa) && (eb <= ea)) ||
-	        ((eb > sa) && (eb <= ea)) ||
-	        ((sb > sa) && (sb < ea)) ||
-	        ((sa >= sb) && (sa <= eb) && (ea <= eb)));
+	return Temporal::coverage_exclusive_ends<int64_t> (
+		a->time ().to_ticks (), a->end_time ().to_ticks (),
+		b->time ().to_ticks (), b->end_time ().to_ticks ()) != Temporal::OverlapNone;
 }
