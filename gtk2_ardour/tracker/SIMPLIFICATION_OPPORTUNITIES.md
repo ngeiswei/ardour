@@ -167,6 +167,12 @@ parameters.
 
 ### 5. Use `ARDOUR::MidiNoteTracker` for chord/note-on state
 
+**Status: Done.** `Grid` now uses a channel-aware `MidiNoteTracker` for step
+and chord entry. Both MIDI-input and computer-keyboard paths register notes,
+note-offs remove the matching pitch/channel voice, and the tracker resets on
+step-edit and track transitions. The pitch-to-channel map remains responsible
+for selecting the channel of generated note-off messages.
+
 **Current code:**
 
 - `gtk2_ardour/tracker/grid.h:410-412` — `current_on_notes`

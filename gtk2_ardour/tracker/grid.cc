@@ -4699,6 +4699,7 @@ Grid::release_note (int mti, uint8_t pitch)
 	std::map<uint8_t, uint8_t>::iterator it = pressed_keys_pitch_to_channel.find(pitch);
 	bool is_present = it != pressed_keys_pitch_to_channel.end();
 	uint8_t ch = is_present ? it->second : (tracker_editor.main_toolbar.channel_spinner.get_value_as_int () - 1);
+	_note_tracker.remove (pitch, ch);
 	event[0] = (MIDI_CMD_NOTE_OFF | ch);
 	event[1] = pitch;
 	event[2] = 0;
@@ -6283,6 +6284,7 @@ Grid::select_current_track ()
 void
 Grid::set_step_editing_current_track ()
 {
+	_note_tracker.reset ();
 	if (step_edit() && current_tp && current_tp->is_midi_track_pattern ()) {
 		current_tp->midi_track ()->set_step_editing (true, false);
 	}
@@ -6291,6 +6293,7 @@ Grid::set_step_editing_current_track ()
 void
 Grid::unset_step_editing_current_track ()
 {
+	_note_tracker.reset ();
 	if (current_tp && current_tp->is_midi_track_pattern ()) {
 		current_tp->midi_track ()->set_step_editing (false, false);
 	}
@@ -6299,6 +6302,7 @@ Grid::unset_step_editing_current_track ()
 void
 Grid::unset_step_editing_previous_track ()
 {
+	_note_tracker.reset ();
 	if (previous_tp && previous_tp->is_midi_track_pattern ()) {
 		previous_tp->midi_track ()->set_step_editing (false, false);
 	}
@@ -6416,8 +6420,8 @@ Grid::step_editing_check_midi_event ()
 
 		if ((buf[0] & 0xf0) == MIDI_CMD_NOTE_OFF && size == 3) {
 			uint8_t pitch = buf[1];
-			current_on_notes.erase(pitch);
-			if (chord_mode() && current_on_notes.empty()) {
+			_note_tracker.remove (pitch, buf[0] & 0xf);
+			if (chord_mode() && _note_tracker.empty()) {
 				vertical_move_current_cursor_default_steps (wrap(), jump());
 			}
 		}
@@ -6425,7 +6429,9 @@ Grid::step_editing_check_midi_event ()
 			uint8_t pitch = buf[1];
 			uint8_t ch = buf[0] & 0xf;
 			uint8_t vel = buf[2];
-			current_on_notes.insert(pitch);
+			if (current_note_type != TrackerColumn::NoteType::NOTE) {
+				_note_tracker.add (pitch, ch, vel);
+			}
 			switch (current_note_type) {
 			case TrackerColumn::NoteType::NOTE:
 				if (tracker_editor.main_toolbar.overwrite_default) {
@@ -6549,7 +6555,6 @@ Grid::step_editing_note_key_press (GdkEventKey* ev)
 		uint8_t pitch = pitch_key (ev);
 		if (is_current_cursor_defined () && pitch < 128) {
 			if (!chord_mode() || last_keyval != ev->keyval) { // Avoid key repeat in chord mode
-				current_on_notes.insert(pitch);
 				ret = step_editing_set_on_note (pitch);
 			} else {
 				ret = true;
@@ -6566,6 +6571,7 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch);
+	_note_tracker.add (pitch, ch_vel.first, ch_vel.second);
 
 	// In chord mode, move the cursor to the right to form a chord and differ
 	// vertical move once the notes have been released.
@@ -6585,6 +6591,7 @@ bool
 Grid::step_editing_set_on_note (uint8_t pitch, uint8_t ch, uint8_t vel, bool play)
 {
 	std::pair<uint8_t, uint8_t> ch_vel = set_on_note (current_row_idx, current_mti, current_mri, current_cgi, pitch, ch, vel);
+	_note_tracker.add (pitch, ch_vel.first, ch_vel.second);
 
 	// In chord mode, move the cursor to the right to form a chord and differ
 	// vertical move once the notes have been released.
@@ -7205,8 +7212,7 @@ Grid::step_editing_key_release (GdkEventKey* ev)
 	uint8_t pitch = pitch_key (ev);
 	if (pitch < 128) {
 		release_note (current_mti, pitch);
-		current_on_notes.erase(pitch);
-		if (current_note_type == TrackerColumn::NoteType::NOTE && chord_mode() && current_on_notes.empty()) {
+		if (current_note_type == TrackerColumn::NoteType::NOTE && chord_mode() && _note_tracker.empty()) {
 			vertical_move_current_cursor_default_steps (wrap(), jump());
 		}
 

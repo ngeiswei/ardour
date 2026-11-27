@@ -31,6 +31,8 @@
 #include <ytkmm/treeview.h>
 #include <ytkmm/tooltip.h>
 
+#include "ardour/midi_state_tracker.h"
+
 #include "../piano_key_bindings.h"
 
 #include "main_toolbar.h"
@@ -406,10 +408,6 @@ public:
 	// editing. TODO: should probably be replaced by a lock, and have
 	// redisplay_grid_connect_call immediately return when such lock is taken.
 	bool                         redisplay_grid_connect_call_enabled;
-
-	// Set of current on notes.  For now each note is identified by its
-	// pitch
-	std::set<uint8_t> current_on_notes;
 
 private:
 	// Determine whether the current pattern needs more columns than
@@ -1028,6 +1026,10 @@ private:
 	//
 	// TODO: maybe make sure that it is thread safe.
 	std::stack<int> skip_follow_playhead;
+
+	// Channel-aware state of notes held during step/chord entry.  Counting
+	// voices also handles repeated pitches correctly.
+	ARDOUR::MidiNoteTracker _note_tracker;
 
 	// Mapping from pitch to channel of the current pressed keys, so
 	// that release_note knows what is the channel of the note to
