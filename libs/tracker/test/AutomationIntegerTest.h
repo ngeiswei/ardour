@@ -21,6 +21,8 @@ class AutomationIntegerTest : public TestNeedingSession
 	CPPUNIT_TEST (testTrackPatternDescriptor);
 	CPPUNIT_TEST (testMidiTrackPatternDescriptor);
 	CPPUNIT_TEST (testPatternDescriptor);
+	CPPUNIT_TEST (testProcessorRegistryRefresh);
+	CPPUNIT_TEST (testAutomationRangeAfterRegionMove);
 
 	CPPUNIT_TEST_SUITE_END ();
 
@@ -35,6 +37,8 @@ public:
 	void testTrackPatternDescriptor ();
 	void testMidiTrackPatternDescriptor ();
 	void testPatternDescriptor ();
+	void testProcessorRegistryRefresh ();
+	void testAutomationRangeAfterRegionMove ();
 
 private:
 	Tracker::AutomationControlPtr make_control (const Evoral::Parameter& param, bool integer);

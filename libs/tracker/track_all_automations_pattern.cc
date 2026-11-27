@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <map>
+#include <set>
 
 #include "ardour/pannable.h"
 #include "ardour/panner.h"
@@ -134,7 +135,28 @@ TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& p
 
 void TrackAllAutomationsPattern::setup_processors_automation_controls ()
 {
-	track->foreach_processor (sigc::mem_fun (*this, &TrackAllAutomationsPattern::setup_processor_automation_control));
+	std::set<PBD::ID> active_processor_ids;
+	track->foreach_processor (
+		[this, &active_processor_ids] (std::weak_ptr<ARDOUR::Processor> p) {
+			ProcessorPtr processor = p.lock ();
+			if (!processor || !processor->display_to_user ()) {
+				return;
+			}
+			active_processor_ids.insert (processor->id ());
+			setup_processor_automation_control (p);
+		});
+
+	// Drop processors which are no longer present or user-visible, without
+	// disturbing the state of processors which remain in the route.
+	for (auto it = id_to_processor_automation_pattern.begin ();
+	     it != id_to_processor_automation_pattern.end ();) {
+		if (active_processor_ids.find (it->first) == active_processor_ids.end ()) {
+			delete it->second;
+			it = id_to_processor_automation_pattern.erase (it);
+		} else {
+			++it;
+		}
+	}
 }
 
 void
@@ -146,12 +168,29 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 		return;
 	}
 
-	// Owned by id_to_processor_automation_pattern, see
-	// ~TrackAllAutomationsPattern.  Delete any pre-existing pattern for
-	// that processor to remain leak-free if setup is run twice.
-	delete id_to_processor_automation_pattern[processor->id ()];
+	// Keep existing patterns (and their enabled-parameter state) when this
+	// refresh is run after a route processor change.
+	if (id_to_processor_automation_pattern.find (processor->id ()) !=
+	    id_to_processor_automation_pattern.end ()) {
+		return;
+	}
+
 	id_to_processor_automation_pattern[processor->id()] =
 		new ProcessorAutomationPattern(context, track, position, length, end, nt_last, connect, processor);
+}
+
+void
+TrackAllAutomationsPattern::set_position_etc (Temporal::timepos_t pos,
+                                              Temporal::timepos_t sta,
+                                              Temporal::timecnt_t len,
+                                              Temporal::timepos_t ed,
+                                              Temporal::timepos_t ntl)
+{
+	BasePattern::set_position_etc (pos, sta, len, ed, ntl);
+	main_automation_pattern.set_position_etc (pos, sta, len, ed, ntl);
+	for (auto& idpap : id_to_processor_automation_pattern) {
+		idpap.second->set_position_etc (pos, sta, len, ed, ntl);
+	}
 }
 
 void

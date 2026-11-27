@@ -202,10 +202,8 @@ Pattern::update_position_etc ()
 	nt_last = TrackerUtils::get_nt_last (regions_per_track);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti];
-		tp->position = position;
-		tp->length = length;
-		tp->end = end;
-		tp->nt_last = nt_last;
+		tp->set_position_etc (position, tp->start, length, end, nt_last);
+		tp->track_all_automations_pattern.set_position_etc (position, tp->start, length, end, nt_last);
 	}
 }
 

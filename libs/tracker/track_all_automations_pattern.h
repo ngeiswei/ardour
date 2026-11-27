@@ -57,6 +57,13 @@ public:
 	void setup_processors_automation_controls ();
 	void setup_processor_automation_control (std::weak_ptr<ARDOUR::Processor> p);
 
+	// Propagate the current range to main and processor automation patterns.
+	void set_position_etc (Temporal::timepos_t position,
+	                       Temporal::timepos_t start,
+	                       Temporal::timecnt_t length,
+	                       Temporal::timepos_t end,
+	                       Temporal::timepos_t nt_last);
+
 	// Set the number of rows per beat. 0 means 1 row per bar (TODO: not fully
 	// supported). After changing that you probably need to update the pattern,
 	// see below.

@@ -271,3 +271,73 @@ AutomationIntegerTest::testPatternDescriptor ()
 	CPPUNIT_ASSERT (pattern.is_integer (0, -1, IDParameter (PBD::ID (0), _integer_param)));
 	CPPUNIT_ASSERT (!pattern.is_integer (0, -1, IDParameter (PBD::ID (0), _float_param)));
 }
+
+void
+AutomationIntegerTest::testProcessorRegistryRefresh ()
+{
+	TrackAllAutomationsPattern pattern (
+		*_context, audio_track (), Temporal::timepos_t (Temporal::Beats ()),
+		Temporal::timecnt_t (Temporal::Beats::beats (16)),
+		Temporal::timepos_t (Temporal::Beats::beats (16)),
+		Temporal::timepos_t (Temporal::Beats::beats (16)), false);
+
+	ProcessorPtr processor = audio_track ()->amp ();
+	CPPUNIT_ASSERT (processor);
+	auto before_it = pattern.id_to_processor_automation_pattern.find (processor->id ());
+	CPPUNIT_ASSERT (before_it != pattern.id_to_processor_automation_pattern.end ());
+	ProcessorAutomationPattern* before = before_it->second;
+	before->insert_actl (make_control (_integer_param, true), "integer");
+	before->set_param_enabled (_integer_param, true);
+
+	// Refreshing an unchanged route must preserve the existing object and its
+	// enabled parameters rather than deleting and recreating them.
+	pattern.setup_processors_automation_controls ();
+
+	auto after_it = pattern.id_to_processor_automation_pattern.find (processor->id ());
+	CPPUNIT_ASSERT (after_it != pattern.id_to_processor_automation_pattern.end ());
+	CPPUNIT_ASSERT (before == after_it->second);
+	CPPUNIT_ASSERT (after_it->second->is_param_enabled (_integer_param));
+	CPPUNIT_ASSERT (after_it->second->is_integer (_integer_param));
+}
+
+void
+AutomationIntegerTest::testAutomationRangeAfterRegionMove ()
+{
+	TrackRegionsMap regions_per_track;
+	regions_per_track[midi_track ()].push_back (midi_region ());
+	Pattern pattern (*_context, regions_per_track, false);
+	pattern.setup (regions_per_track);
+	pattern.set_rows_per_beat (4, true);
+	pattern.update ();
+
+	// Change the range represented by an existing selection, as happens when
+	// the tracker is reopened on a different region or a region is moved.
+	midi_region ()->set_position (Temporal::timepos_t (Temporal::Beats::beats (32)));
+	midi_region ()->set_length (Temporal::timecnt_t (Temporal::Beats::beats (8)));
+	pattern.update ();
+
+	const BasePattern& track = *pattern.tps[0];
+	const BasePattern& main_automation =
+		pattern.tps[0]->track_all_automations_pattern.main_automation_pattern;
+	CPPUNIT_ASSERT (main_automation.position == pattern.position);
+	CPPUNIT_ASSERT (main_automation.length == pattern.length);
+	CPPUNIT_ASSERT (main_automation.end == pattern.end);
+	CPPUNIT_ASSERT_EQUAL (pattern.global_nrows, main_automation.nrows);
+
+	ProcessorPtr processor = midi_track ()->amp ();
+	CPPUNIT_ASSERT (processor);
+	auto processor_it =
+		pattern.tps[0]->track_all_automations_pattern.id_to_processor_automation_pattern.find (processor->id ());
+	CPPUNIT_ASSERT (processor_it !=
+	                pattern.tps[0]->track_all_automations_pattern.id_to_processor_automation_pattern.end ());
+	CPPUNIT_ASSERT (processor_it->second->position == pattern.position);
+	CPPUNIT_ASSERT (processor_it->second->length == pattern.length);
+	CPPUNIT_ASSERT (processor_it->second->end == pattern.end);
+	CPPUNIT_ASSERT_EQUAL (pattern.global_nrows, processor_it->second->nrows);
+
+	// Keep the track's own range covered by the same assertions as the nested
+	// automation patterns.
+	CPPUNIT_ASSERT (track.position == pattern.position);
+	CPPUNIT_ASSERT (track.length == pattern.length);
+	CPPUNIT_ASSERT (track.end == pattern.end);
+}

@@ -325,6 +325,17 @@ TrackerEditor::connect_track (TrackPtr track)
 		                                                     }
 	                                                     },
 	                                                     gui_context ());
+
+	track->processors_changed.connect (content_connections, invalidator (*this),
+	                                   [this, track] (ARDOUR::RouteProcessorChange) {
+		                                   for (TrackPattern* tp : grid.pattern.tps) {
+			                                   if (tp->track == track) {
+				                                   tp->track_all_automations_pattern.setup_processors_automation_controls ();
+			                                   }
+		                                   }
+		                                   grid.redisplay_grid_connect_call ();
+	                                   },
+	                                   gui_context ());
 }
 
 void

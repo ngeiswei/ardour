@@ -40,42 +40,6 @@ using namespace Gtkmm2ext;
 using namespace ARDOUR;
 using namespace Tracker;
 
-ProcessorAutomationNode::ProcessorAutomationNode (ProcessorPtr proc, Evoral::Parameter param, Gtk::CheckMenuItem* mitem)
-	: processor(proc), parameter (param), menu_item (mitem), column (0)
-{
-}
-
-std::string
-ProcessorAutomationNode::to_string (const std::string& indent) const
-{
-	std::stringstream ss;
-	ss << indent << "parameter[" << parameter << "] name = " << processor->describe_parameter (parameter) << std::endl
-	   << indent << "menu_item = " << menu_item << std::endl
-	   << indent << "column = " << column;
-	return ss.str ();
-}
-
-ProcessorAutomationInfo::ProcessorAutomationInfo (ProcessorPtr i)
-	: processor (i), menu (0)
-{
-}
-
-std::string
-ProcessorAutomationInfo::to_string(const std::string& indent) const
-{
-	std::stringstream ss;
-	std::string indent2 = indent + "  ";
-	ss << indent << "processor = " << processor << std::endl
-	   << indent << "menu = " << menu << std::endl
-	   << indent << "columns:" << std::endl
-	   << indent2 << "size = " << columns.size();
-	std::string indent3 = indent2 + "  ";
-	for (size_t i = 0; i < columns.size(); i++)
-		ss << std::endl << indent2 << "processor automation node[" << i << "]:"
-		   << std::endl << columns[i]->to_string(indent3);
-	return ss.str ();
-}
-
 TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, int mti)
 	: tracker_editor (te)
 	, track (tp->track)
@@ -263,147 +227,71 @@ TrackToolbar::build_show_hide_automations (Menu_Helpers::MenuList& items)
 void
 TrackToolbar::setup_processor_menu_and_curves ()
 {
-	_subplugin_menu_map.clear ();
+	_processor_menu_items.clear ();
 	subplugin_menu.items ().clear ();
-	track->foreach_processor (sigc::mem_fun (*this, &TrackToolbar::add_processor_to_subplugin_menu));
+
+	for (const auto& id_pattern : track_pattern->track_all_automations_pattern.id_to_processor_automation_pattern) {
+		add_processor_to_subplugin_menu (id_pattern.second);
+	}
 }
 
 void
-TrackToolbar::add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor> p)
+TrackToolbar::add_processor_to_subplugin_menu (ProcessorAutomationPattern* pattern)
 {
 	using namespace Menu_Helpers;
 
-	ProcessorPtr processor (p.lock ());
-
-	if (!processor || !processor->display_to_user ()) {
+	ProcessorPtr processor = track->processor_by_id (pattern->id ());
+	if (!processor || !processor->display_to_user () || std::dynamic_pointer_cast<Amp> (processor)) {
 		return;
 	}
 
-	// /* we use this override to veto the Amp processor from the plugin menu,
-	//    as its automation lane can be accessed using the special "Fader" menu
-	//    option
-	// */
-
-	if (std::dynamic_pointer_cast<Amp> (processor) != 0) {
+	if (pattern->param_to_actl.empty ()) {
 		return;
 	}
 
-	// Abort if nothing is automatable
-	const ParameterSet& automatable = processor->what_can_be_automated ();
-	if (automatable.empty ()) {
-		return;
-	}
+	Menu* menu = Gtk::manage (new Menu);
+	menu->set_name ("ArdourContextMenu");
+	MenuList& items = menu->items ();
 
-	// Find the processor automation info corresponding to the given
-	// processor if it exists, otherwise construct it first.
-	ProcessorAutomationInfo *pai;
-	ProcessorAutomationInfoSeqIt it = find_processor_automation_info (processor);
-	if (it == processor_automations.end ()) {
-		pai = new ProcessorAutomationInfo (processor);
-		processor_automations.push_back (pai);
-	} else {
-		pai = *it;
-	}
-
-	// Any older menu was deleted at the top of processors_changed ()
-	// when we cleared the subplugin menu.
-	pai->menu = Gtk::manage (new Menu);
-	pai->menu->set_name ("ArdourContextMenu");
-	MenuList& items = pai->menu->items ();
-	items.clear ();
-
-	for (ParameterSetConstIt param_it = automatable.begin (); param_it != automatable.end (); ++param_it) {
-
-		std::string name = processor->describe_parameter (*param_it);
-
-		if (name == X_("hidden")) { // TODO: What does that mean?
+	for (const ParamAutomationControlMap::value_type& param_actl : pattern->param_to_actl) {
+		const Evoral::Parameter& param = param_actl.first;
+		const std::string& name = pattern->get_name (param);
+		if (name == X_("hidden")) {
 			continue;
 		}
 
 		items.push_back (CheckMenuElem (name));
 		CheckMenuItem* mitem = dynamic_cast<CheckMenuItem*> (&items.back ());
+		const IDParameter id_param (pattern->id (), param);
+		_processor_menu_items[id_param] = mitem;
 
-		_subplugin_menu_map[*param_it] = mitem;
-
-		ProcessorAutomationNode* pauno = nullptr;
-		if ((pauno = find_processor_automation_node (processor, *param_it)) == 0) {
-			/* new item */
-			pauno = new ProcessorAutomationNode (processor, *param_it, mitem);
-			pai->columns.push_back (pauno);
-		} else {
-			pauno->menu_item = mitem;
-		}
-
-		mitem->signal_toggled ().connect (sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), pai, pauno));
-		Evoral::Parameter param(*param_it);
-		IDParameter id_param(processor->id(), param);
-		bool visible = grid.is_automation_visible (track_index, id_param);
-		mitem->set_active (visible);
+		mitem->signal_toggled ().connect (
+			sigc::bind (sigc::mem_fun (*this, &TrackToolbar::processor_menu_item_toggled), id_param));
+		mitem->set_active (grid.is_automation_visible (track_index, id_param));
 	}
 
-	if (items.size () == 0) {
-		return;
+	if (!items.empty ()) {
+		subplugin_menu.items ().push_back (MenuElem (processor->name (), *menu));
 	}
-
-	/* add the menu for this processor, because the subplugin
-	   menu is always cleared at the top of processors_changed ().
-	   this is the result of some poor design in gtkmm and/or
-	   GTK+.
-	*/
-
-	subplugin_menu.items ().push_back (MenuElem (processor->name (), *pai->menu));
 }
 
 void
-TrackToolbar::processor_menu_item_toggled (ProcessorAutomationInfo* pai, ProcessorAutomationNode* pauno)
+TrackToolbar::processor_menu_item_toggled (IDParameter id_param)
 {
-	const bool showit = pauno->menu_item->get_active ();
-
-	if (pauno->column == 0) {
-		grid.add_processor_automation_column (track_index, pai->processor, pauno->parameter);
+	const bool showit = _processor_menu_items[id_param]->get_active ();
+	ProcessorPtr processor = track->processor_by_id (id_param.first);
+	if (!processor) {
+		return;
 	}
 
-	IDParameter id_param (pauno->processor->id(), pauno->parameter);
-	grid.set_automation_column_visible (track_index, id_param, pauno->column, showit);
+	const int column = grid.add_processor_automation_column (
+		track_index, processor, id_param.second);
+	if (column == 0) {
+		return;
+	}
 
-	/* now trigger a redisplay */
+	grid.set_automation_column_visible (track_index, id_param, column, showit);
 	redisplay_grid ();
-}
-
-ProcessorAutomationInfoSeqIt
-TrackToolbar::find_processor_automation_info (ProcessorPtr processor)
-{
-	ProcessorAutomationInfoSeqIt it;
-	for (it = processor_automations.begin (); it != processor_automations.end (); ++it) {
-		if ((*it)->processor == processor) {
-			break;
-		}
-	}
-	return it;
-}
-
-ProcessorAutomationInfoSeqConstIt
-TrackToolbar::find_processor_automation_info (ProcessorPtr processor) const
-{
-	ProcessorAutomationInfoSeqConstIt it;
-	for (it = processor_automations.begin (); it != processor_automations.end (); ++it) {
-		if ((*it)->processor == processor) {
-			break;
-		}
-	}
-	return it;
-}
-
-ProcessorAutomationNode*
-TrackToolbar::find_processor_automation_node (ProcessorPtr processor, Evoral::Parameter param)
-{
-	ProcessorAutomationInfoSeqIt i = find_processor_automation_info (processor);
-	for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-		if ((*ii)->parameter == param) {
-			return *ii;
-		}
-	}
-	return nullptr;
 }
 
 // Show all automation.
@@ -520,31 +408,32 @@ TrackToolbar::hide_processor_automations ()
 void
 TrackToolbar::set_all_processor_automation_visibility (bool visible, bool only_existing)
 {
-	for (ProcessorAutomationInfoSeqIt i = processor_automations.begin (); i != processor_automations.end (); ++i) {
-		for (ProcessorAutomationNodeSeqIt ii = (*i)->columns.begin (); ii != (*i)->columns.end (); ++ii) {
-			ProcessorAutomationNode* node = *ii;
-
-			// When only_existing is set, only show automations with content
-			bool show = visible;
-			if (only_existing) {
-				IDParameter id_param (node->processor->id (), node->parameter);
-				show = !track_pattern->is_empty (id_param);
-			}
-
-			// Create automation column if necessary
-			if (show && node->column == 0) {
-				grid.add_processor_automation_column (track_index, node->processor, node->parameter);
-			}
-
-			// Still no column available, skip
-			if (node->column == 0) {
-				continue;
-			}
-
-			IDParameter id_param (node->processor->id (), node->parameter);
-			grid.set_automation_column_visible (track_index, id_param, node->column, show);
-			node->menu_item->set_active (show);
+	for (const ProcessorMenuMap::value_type& item : _processor_menu_items) {
+		const IDParameter& id_param = item.first;
+		const bool show = visible && (!only_existing || !track_pattern->is_empty (id_param));
+		ProcessorPtr processor = track->processor_by_id (id_param.first);
+		if (!processor) {
+			continue;
 		}
+
+		int column = 0;
+		Grid::IndexParamBimap::right_const_iterator it =
+			grid.col2params[track_index].right.find (id_param);
+		if (it != grid.col2params[track_index].right.end ()) {
+			column = it->second;
+		}
+
+		if (show && column == 0) {
+			column = grid.add_processor_automation_column (
+				track_index, processor, id_param.second);
+		}
+		if (column == 0) {
+			item.second->set_active (false);
+			continue;
+		}
+
+		grid.set_automation_column_visible (track_index, id_param, column, show);
+		item.second->set_active (show);
 	}
 }
 

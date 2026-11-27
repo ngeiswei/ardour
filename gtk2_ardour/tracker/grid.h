@@ -135,8 +135,8 @@ public:
 	int select_available_automation_column (int mti /* midi track index */);
 	int add_main_automation_column (int mti, const Evoral::Parameter& param);
 	int add_midi_automation_column (int mti, const Evoral::Parameter& param);
-	void add_processor_automation_column (int mti, ProcessorPtr processor,
-	                                      const Evoral::Parameter& what);
+	int add_processor_automation_column (int mti, ProcessorPtr processor,
+	                                     const Evoral::Parameter& what);
 
 	void change_all_channel_tracks_visibility (int mti, bool yn, const Evoral::Parameter& param);
 	void update_automation_column_visibility (int mti, const IDParameter& id_param);

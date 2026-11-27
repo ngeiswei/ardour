@@ -463,43 +463,29 @@ Grid::add_midi_automation_column (int mti, const Evoral::Parameter& param)
 	return column;
 }
 
-/**
- * Add an AutomationTimeAxisView to display automation for a processor's
- * parameter.
- */
-void
+/** Add a processor automation column and return its index, or zero if none
+ * could be allocated.  Existing assignments are returned unchanged. */
+int
 Grid::add_processor_automation_column (int mti, ProcessorPtr processor, const Evoral::Parameter& param)
 {
-	ProcessorAutomationNode* pauno;
-
-	if ((pauno = tracker_editor.grid_header->track_headers[mti]->track_toolbar->find_processor_automation_node (processor, param)) == 0) {
-		/* session state may never have been saved with new plugin */
-		error << _("programming error: ")
-		      << string_compose (X_("processor automation column for %1:%2/%3/%4 not registered with track!"),
-		                         processor->name (), param.type (), (int) param.channel (), param.id () )
-		      << endmsg;
-		abort (); /*NOTREACHED*/
-		return;
+	const IDParameter id_param (processor->id (), param);
+	IndexParamBimap::right_const_iterator existing = col2params[mti].right.find (id_param);
+	if (existing != col2params[mti].right.end ()) {
+		return existing->second;
 	}
 
-	if (pauno->column) {
-		return;
+	const int column = select_available_automation_column (mti);
+	if (column == 0) {
+		return 0;
 	}
 
-	// Find the next available column
-	pauno->column = select_available_automation_column (mti);
-	if (!pauno->column) {
-		return;
-	}
+	col2params[mti].insert (IndexParamBimap::value_type (column, id_param));
 
-	// Associate that column to the parameter
-	IDParameter id_param (processor->id(), param);
-	col2params[mti].insert (IndexParamBimap::value_type (pauno->column, id_param));
+	const std::string long_name = get_name (mti, id_param, false);
+	const std::string short_name = get_name (mti, id_param, true);
+	set_col_title (to_col (column), short_name, long_name);
 
-	// Set the column title and tooltip
-	std::string long_name = get_name (mti, id_param, false);
-	std::string short_name = get_name (mti, id_param, true);
-	set_col_title (to_col (pauno->column), short_name, long_name);
+	return column;
 }
 
 void
@@ -2618,8 +2604,18 @@ Grid::redisplay_track_automation_param (int mti, const TrackAutomationPattern& t
 void
 Grid::redisplay_track_automation_param_row (int mti, int cgi, int row_idx, const TrackAutomationPattern& tap, const IDParameter& id_param)
 {
+	// A stale diff or nested pattern range must never turn a failed row lookup
+	// into a dereference of a default-constructed Gtk::TreeModel::Row.
+	if (!model || row_idx < 0 || row_idx >= (int)model->children ().size ()) {
+		return;
+	}
+
 	// TODO: optimize!
 	Gtk::TreeModel::Row row = to_row (row_idx);
+	if (!row) {
+		return;
+	}
+
 	int mri = -1;
 	int automation_count = pattern.control_events_count (row_idx, mti, mri, id_param);
 

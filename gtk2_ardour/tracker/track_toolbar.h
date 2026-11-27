@@ -39,38 +39,7 @@ class TrackerEditor;
 class Grid;
 class MidiTrackToolbar;
 class AudioTrackToolbar;
-
-struct ProcessorAutomationNode {
-	ProcessorAutomationNode (ProcessorPtr proc, Evoral::Parameter param, Gtk::CheckMenuItem* mitem);
-	~ProcessorAutomationNode ();
-
-	// For debugging
-	std::string to_string (const std::string& indent="") const;
-
-	ProcessorPtr processor;
-	Evoral::Parameter parameter;
-	Gtk::CheckMenuItem* menu_item;
-
-	// Corresponding column index. If set to 0 then undetermined yet
-	int column;
-};
-typedef std::vector<ProcessorAutomationNode*> ProcessorAutomationNodeSeq;
-typedef ProcessorAutomationNodeSeq::iterator ProcessorAutomationNodeSeqIt;
-typedef ProcessorAutomationNodeSeq::const_iterator ProcessorAutomationNodeSeqConstIt;
-
-struct ProcessorAutomationInfo {
-	// explicit ProcessorAutomationInfo (ProcessorPtr i, const TrackPattern* tp);
-	explicit ProcessorAutomationInfo (ProcessorPtr i);
-
-	std::string to_string (const std::string& indent="") const;
-
-	ProcessorPtr processor;
-	Gtk::Menu* menu;
-	ProcessorAutomationNodeSeq columns; // TODO: why is it called columns?
-};
-typedef std::list<ProcessorAutomationInfo*> ProcessorAutomationInfoSeq;
-typedef ProcessorAutomationInfoSeq::iterator ProcessorAutomationInfoSeqIt;
-typedef ProcessorAutomationInfoSeq::const_iterator ProcessorAutomationInfoSeqConstIt;
+class ProcessorAutomationPattern;
 
 class TrackToolbar : public Gtk::HBox
 {
@@ -79,6 +48,7 @@ public:
 	~TrackToolbar ();
 
 	typedef std::map<Evoral::Parameter, Gtk::CheckMenuItem*> ParameterMenuMap;
+	typedef std::map<IDParameter, Gtk::CheckMenuItem*> ProcessorMenuMap;
 
 	void setup ();
 
@@ -105,11 +75,8 @@ public:
 	void build_main_automation_menu (Gtk::Menu_Helpers::MenuList& items);
 	virtual void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void setup_processor_menu_and_curves ();
-	void add_processor_to_subplugin_menu (std::weak_ptr<ARDOUR::Processor>);
-	void processor_menu_item_toggled (ProcessorAutomationInfo*, ProcessorAutomationNode*);
-	ProcessorAutomationInfoSeqIt find_processor_automation_info (ProcessorPtr processor);
-	ProcessorAutomationInfoSeqConstIt find_processor_automation_info (ProcessorPtr processor) const;
-	ProcessorAutomationNode* find_processor_automation_node (ProcessorPtr processor, Evoral::Parameter what);
+	void add_processor_to_subplugin_menu (ProcessorAutomationPattern*);
+	void processor_menu_item_toggled (IDParameter);
 
 	/**
 	 * Helpers to update automations
@@ -182,14 +149,8 @@ public:
 	Gtk::Menu*                   automation_action_menu;
 	Gtk::Menu*                   controller_menu;
 
-	/**
-	 * Information about all automatable processor parameters that apply to
-	 * this route (midi track). The Amp processor is not included in this list.
-	 */
-	ProcessorAutomationInfoSeq processor_automations;
-
-	/** parameter -> menu item map for the plugin automation menu */
-	ParameterMenuMap _subplugin_menu_map;
+	/** processor ID and parameter -> menu item map for plugin automation */
+	ProcessorMenuMap _processor_menu_items;
 	/** parameter -> menu item map for the controller menu */
 	ParameterMenuMap _controller_menu_map;
 

@@ -180,6 +180,13 @@ public:
 	// rows. Specifially between 0 and nrow - 1
 	virtual bool is_defined (int row_idx) const;
 
+	// Set the position and extent represented by this pattern.
+	void set_position_etc (Temporal::timepos_t position,
+	                       Temporal::timepos_t start,
+	                       Temporal::timecnt_t length,
+	                       Temporal::timepos_t end,
+	                       Temporal::timepos_t nt_last);
+
 	// Enable/disable pattern
 	virtual void set_enabled (bool e);
 

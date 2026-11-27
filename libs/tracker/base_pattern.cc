@@ -71,6 +71,20 @@ BasePattern::BasePattern (TrackerContext& ctx,
 {
 }
 
+void
+BasePattern::set_position_etc (Temporal::timepos_t pos,
+                               Temporal::timepos_t sta,
+                               Temporal::timecnt_t len,
+                               Temporal::timepos_t ed,
+                               Temporal::timepos_t ntl)
+{
+	position = pos;
+	start = sta;
+	length = len;
+	end = ed;
+	nt_last = ntl;
+}
+
 BasePattern::~BasePattern ()
 {
 }

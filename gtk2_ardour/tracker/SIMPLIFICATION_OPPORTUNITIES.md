@@ -300,6 +300,15 @@ because custom button styling and singleton forwarding must be preserved.
 
 ### 8. Make `TrackAllAutomationsPattern` the single automation registry for the toolbar
 
+**Status: Done.** `TrackToolbar` now iterates the processor/parameter registry
+owned by `TrackAllAutomationsPattern`; its only additional registry maps
+`IDParameter` to GTK menu items. The parallel ProcessorAutomationInfo/Node
+hierarchy and lookup functions were removed. `Grid` returns assigned columns
+directly. Registry refreshes preserve existing parameter state, remove
+departed processors, and run on `Route::processors_changed`. A session-backed
+test verifies that refreshing an unchanged route preserves objects and enabled
+parameters.
+
 **Current duplication:**
 
 - `gtk2_ardour/tracker/track_toolbar.cc:264-354`
