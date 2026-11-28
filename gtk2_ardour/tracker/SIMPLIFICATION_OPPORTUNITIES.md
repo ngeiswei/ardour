@@ -6,433 +6,127 @@ This report reviews the Tracker Editor model in `libs/tracker/` and its GTK
 implementation in `gtk2_ardour/tracker/`, looking for code that can be
 simplified by reusing existing Ardour classes, functions, or data structures.
 
-The review was static. No source code was changed and no tests were run.
+The review was static. No production source code was changed in the course of
+writing the original report. Items 1–9 have since been implemented as a series
+of follow-up commits; they are recorded below as one-line summaries with their
+current locations and commit hashes. Items 10–14 remain outstanding.
 
-The strongest candidates are:
+Unit tests exist for several of the completed items (see
+`libs/tracker/test/`). They were not executed for this revision because the
+build tree in use was configured with `BUILD_TESTS = False`; validating them
+requires a build with tests enabled.
 
-- Replacing the tracker-specific MIDI controller-menu builder with Ardour's
-  shared implementation.
-- Reusing Temporal, PBD, and Evoral arithmetic and parameter APIs.
-- Using `ARDOUR::MidiNoteTracker` for chord/note-on state.
-- Consolidating tracker mode state with `Gtk::ToggleAction`.
-- Making `TrackAllAutomationsPattern` the single processor-automation registry
-  used by both the model and toolbar.
+Scale at the time of writing: `libs/tracker/` is about 9k lines and
+`gtk2_ardour/tracker/` about 13k, of which `grid.cc` alone is 7.4k.
 
-## Best immediate candidates
+The strongest remaining candidates are:
 
-### 1. Replace the tracker controller-menu implementation with the shared builder
+- Removing the dead code catalogued in item 14.
+- Converting phenomenal diffs (and then other raw-owned collections) to
+  `std::unique_ptr`.
+- Moving `BasePattern` row arithmetic into tick space, with tests.
+- Optionally caching color strings and consolidating the remaining
+  controller-menu callbacks.
 
-**Status: Done.** `MidiTrackToolbar` now calls the shared
-`build_controller_menu()` from `gtk2_ardour/midi_util.h`. The multi-channel
-callback accepts the shared API's channel-mask argument, and the obsolete
-`get_device_names()` forwarding methods were removed.
+### Status at a glance
 
-**Current code:** `gtk2_ardour/tracker/midi_track_toolbar.cc:276-430`
+| # | Opportunity | Status |
+|---|-------------|--------|
+| 1 | Shared MIDI controller-menu builder | Done (`7969deded3`) |
+| 2 | `interpolate_linear()` | Done (`85cacd90bb`) |
+| 3 | Temporal range coverage for note overlap | Done (`5c4f1b964d`, tests `86b9265b8a`) |
+| 4 | `ParameterDescriptor::integer_step` | Done (`8cea15b7fd`) |
+| 5 | `ARDOUR::MidiNoteTracker` for chord state | Done (`bab648e21e`) |
+| 6 | `get_grid_beat_divisions()` and `ArdourDropdown` actions | Done (`66b37b7099`) |
+| 7 | `Gtk::ToggleAction` for tracker modes | Done (`6c86ae7e86`) |
+| 8 | Single automation registry for the toolbar | Done (`eb63bb69a8`) |
+| 9 | Keyboard modifier tracking and forwarding | Done (`55273f6c0f`) |
+| 10 | `std::unique_ptr` ownership, starting with phenomenal diffs | Outstanding |
+| 11 | Tick-space row arithmetic in `BasePattern` | Outstanding |
+| 12 | Cache or reuse GDK/GTK color conversion | Outstanding |
+| 13 | `ARDOUR::RegionSortByPosition` for region sorting | Outstanding (remove comparator) |
+| 14 | Remove unused code | Outstanding (list below expanded) |
 
-`MidiTrackToolbar::build_controller_menu()` reimplements controller/MIDNAM
-menu logic already provided by:
+## Completed work (items 1–9)
 
-- `gtk2_ardour/midi_util.cc:50-172` — `build_controller_menu()`
-- `gtk2_ardour/midi_util.h:46-49` — declaration
-- `gtk2_ardour/midi_time_axis.cc:1088-1100` — existing caller
-- `Pianoroll` — another existing caller
+**1. Shared controller menu.** `MidiTrackToolbar::build_controller_menu()`
+(`gtk2_ardour/tracker/midi_track_toolbar.cc:278-296`) now calls the shared
+`build_controller_menu()` from `gtk2_ardour/midi_util.h:46`, passing its own
+single- and multi-channel callbacks. The obsolete `get_device_names()`
+forwarding methods were removed.
 
-The tracker can call the shared function with its own
-`add_single_channel_controller_item` and `add_multi_channel_controller_item`
-callbacks, just as the other views do.
+**2. `interpolate_linear()`.** `TrackerUtils::interpolate()`
+(`libs/tracker/tracker_utils.cc:61-69`) includes `pbd/control_math.h` and
+delegates the arithmetic to `interpolate_linear()`; the `last_row <= first_row`
+guard remains.
 
-Benefits:
-
-- Removes roughly 150 lines of duplicated menu construction.
-- Picks up the shared implementation's newer behavior:
-  - Proper `InstrumentInfo::channels_for_control_list()` handling.
-  - Better handling of multiple MIDNAM control-name lists.
-  - Current grouping logic.
-  - Correct channel masks passed to multi-channel callbacks.
-- Avoids future divergence between the tracker, piano roll, and track
-  automation menus.
-
-The tracker's existing `add_multi_channel_controller_item()` signature would
-need the additional `uint16_t channels` argument required by the shared API,
-which is a small mechanical change.
-
-**Confidence:** very high. This is the clearest duplication found.
-
-### 2. Reuse `interpolate_linear()` instead of maintaining another implementation
-
-**Status: Done.** `tracker_utils.cc` now includes `pbd/control_math.h` and uses
-`interpolate_linear()` for the nondegenerate calculation.
-
-**Current code:** `libs/tracker/tracker_utils.cc:59-77`
-
-`TrackerUtils::interpolate()` implements the same operation as
-`interpolate_linear()` in `libs/pbd/pbd/control_math.h:84-88`:
-
-```cpp
-first + (last - first) * fraction
-```
-
-The tracker helper can become a row-fraction calculation followed by:
-
-```cpp
-return interpolate_linear (first, last, fraction);
-```
-
-The special handling for `last_row <= first_row` should remain.
-`TrackerUtils::interpolate_int()` can continue using the helper before rounding
-and clamping.
-
-**Confidence:** very high. Small, behavior-preserving replacement.
-
-### 3. Replace `MidiNotesPattern::overlap()` with Temporal's range coverage helper
-
-**Status: Done.** The implementation now uses the `int64_t` specialization of
-`Temporal::coverage_exclusive_ends()` in tick space. Unit tests cover disjoint,
+**3. Temporal range coverage.** `MidiNotesPattern::overlap()`
+(`libs/tracker/midi_notes_pattern.cc:877-882`) uses the `int64_t`
+specialization of `Temporal::coverage_exclusive_ends()`. Tests cover disjoint,
 touching, partial, containing, identical, and zero-length ranges in both
-argument orders. Zero-length notes are consistently treated as empty ranges
-and do not overlap, eliminating the previous argument-order inconsistency.
-
-**Current code:** `libs/tracker/midi_notes_pattern.cc:875-886`
-
-The hand-written overlap test can use Temporal's range machinery:
-
-```cpp
-Temporal::coverage_exclusive_ends (
-    a->time (), a->end_time (),
-    b->time (), b->end_time ()) != Temporal::OverlapNone
-```
-
-See `libs/temporal/temporal/range.h:127-133`.
-
-This expresses the intended half-open note intervals more clearly and uses the
-same overlap definitions used by `MidiModel` and region/playlist code.
-
-Tests should cover:
-
-- Notes touching end-to-start, which must **not** overlap.
-- Identical notes.
-- Notes wholly containing one another.
-- Partial overlaps in both directions.
-- Zero-length notes, since their semantics may differ between the current
-  custom expression and the general range helper.
-
-**Confidence:** high for ordinary positive-length notes; edge-case tests are
-advisable.
-
-### 4. Use `AutomationControl::desc().integer_step` for integer automation decisions
-
-**Status: Done.** Integer decisions now use the actual automation control's
-`ParameterDescriptor::integer_step`. Region automation, main automation, and
-processor automation are routed through the existing pattern hierarchy, and
-all four Grid callers use the descriptor. Session-backed unit tests cover the
-direct lookup, main and processor dispatch, track and region dispatch, and
-top-level Pattern forwarding, including missing controls.
-
-**Current code:** `gtk2_ardour/tracker/grid.cc:3740-3744`
-
-Currently:
-
-```cpp
-bool
-Grid::is_int_param (const IDParameter& id_param) const
-{
-    return TrackerUtils::is_region_automation (id_param.second);
-}
-```
-
-This treats all region MIDI automation as integral but ignores integer-valued
-plugin and processor parameters.
-
-The actual `AutomationControl` already owns the authoritative descriptor:
-
-```cpp
-actl->desc ().integer_step
-```
-
-See `libs/ardour/ardour/automation_control.h:117` and existing descriptor use
-in `generic_pluginui.cc`.
-
-A clean implementation would expose a small
-`AutomationPattern::is_integer(param)` helper that retrieves the control and
-returns `desc().integer_step`, then have `Grid::is_int_param()` forward to it.
-
-Benefits:
-
-- Less type-specific logic in the GTK layer.
-- Correct rounding for integer plugin parameters during interpolation and step
-  editing.
-- One authoritative source for parameter semantics.
-
-Constructing a generic `ParameterDescriptor` from only the
-`Evoral::Parameter` would be less reliable for plugin-specific metadata;
-using the existing control's descriptor is preferable.
-
-**Confidence:** high, with a deliberate behavior improvement for integer plugin
-parameters.
-
-### 5. Use `ARDOUR::MidiNoteTracker` for chord/note-on state
-
-**Status: Done.** `Grid` now uses a channel-aware `MidiNoteTracker` for step
-and chord entry. Both MIDI-input and computer-keyboard paths register notes,
-note-offs remove the matching pitch/channel voice, and the tracker resets on
-step-edit and track transitions. The pitch-to-channel map remains responsible
-for selecting the channel of generated note-off messages.
-
-**Current code:**
-
-- `gtk2_ardour/tracker/grid.h:410-412` — `current_on_notes`
-- `gtk2_ardour/tracker/grid.cc:6378-6459` — incoming MIDI processing
-- Related pitch/channel bookkeeping at `grid.h:1033-1035`
-
-Ardour already has `ARDOUR::MidiNoteTracker` in
-`libs/ardour/ardour/midi_state_tracker.h`, including:
-
-- `track(const uint8_t*)`
-- `empty()`
-- `on()`
-- `active(note, channel)`
-- `reset()`
-- Per-channel and repeated-note voice counting
-
-It is already used by `StepEditor`.
-
-The tracker grid can call `note_tracker.track(buf)` for each incoming event
-and use `note_tracker.empty()` when deciding whether chord entry is complete.
-
-This also fixes a limitation of the current `std::set<uint8_t>`: if the same
-pitch is played twice before the first note-off, the first note-off empties the
-set even though another voice remains active. `MidiNoteTracker` counts those
-voices correctly.
-
-The separate `pressed_keys_pitch_to_channel` map may still be useful for
-generating a note-off on the same channel when the only information available
-is the pitch. Alternatively, channel-aware tracker queries can be used where
-appropriate.
-
-The tracker should be reset when step editing starts, stops, or changes
-tracks.
-
-**Confidence:** high, though repeated-note behavior will intentionally become
-more correct.
-
-### 6. Reuse `EditingContext::get_grid_beat_divisions()` and `ArdourDropdown` actions
-
-**Status: Done.** Row counts now come from
-`PublicEditor::get_grid_beat_divisions()`, and the dropdown is built with
-`ArdourDropdown::append(action)`. A single descriptor table supplies grid
-types, row counts, action names, labels, and stepping order. Action and menu
-labels intentionally use the same concise `N Row/Beat` text. The unsupported
-one-row-per-bar behavior remains excluded from the dropdown.
-
-**Current code:**
-
-- `gtk2_ardour/tracker/main_toolbar.cc:524-645`
-- `gtk2_ardour/tracker/main_toolbar.cc:923-984`
-
-`MainToolbar::set_beats_per_row_to()` repeats the `GridType` to rows-per-beat
-mapping already implemented by:
-
-```cpp
-tracker_editor.public_editor.get_grid_beat_divisions (grid_type)
-```
-
-See `gtk2_ardour/editing_context.cc:3010-3040`.
-
-`GridTypeBar` needs its existing special handling because Ardour returns `-1`
-for that case, while the tracker currently uses `0`.
-
-In addition:
-
-- `ArdourDropdown::append(action)` can build the menu directly from the radio
-  actions, as `EditingContext` does at `editing_context.cc:1341-1377`.
-- A small table containing `{ GridType, rows_per_beat, action_name, label }`
-  could replace the separate forward switch, reverse switch,
-  menu-registration repetition, and choices array.
-
-There is no existing reverse rows-per-beat-to-`GridType` helper worth adding
-another dependency for; a single descriptor table would handle that cleanly.
-
-**Confidence:** high for `get_grid_beat_divisions()` and dropdown actions. The
-descriptor-table consolidation is a somewhat larger internal refactor.
-
-## Broader consolidation opportunities
-
-### 7. Use `Gtk::ToggleAction` for tracker modes instead of manually synchronizing state
-
-**Status: Done.** All ten modes are now `Gtk::ToggleAction` instances and own
-their state. Toolbar and TimeHeader buttons use `set_related_action()`, popup
-check items are created from the same actions, and Grid reads the action state.
-Callbacks remain only for side effects (step editing, playhead synchronization,
-following, and redisplay). Original defaults and keyboard bindings are
-preserved.
-
-**Current code:**
-
-- Ordinary actions at `gtk2_ardour/tracker/main_toolbar.cc:465-474`
-- Manual popup check items at `main_toolbar.cc:808-901`
-- Independent boolean flags and `ArdourButton::set_active_state()` calls
-  throughout the toolbar
-
-Ardour already provides:
-
-- `ActionManager::register_toggle_action()`
-- `ArdourButton::set_related_action()`
-- `Gtk::ToggleAction::create_menu_item()`
-- `ActionManager::set_toggle_action()` and related state helpers
-
-These are used extensively by the editor and `StepEntry`.
-
-Tracker modes could become toggle actions, with:
-
-- Toolbar buttons related to those actions.
-- Popup items created from the same actions.
-- Mode state read from the action rather than independently maintained in
-  toolbar/menu objects.
-- Callbacks retained only for actual side effects, such as connecting the
-  playhead clock or enabling MIDI input.
-
-This would eliminate much of the manual active-state synchronization and
-simplify the popup's check-item handling. It may also reduce the need to
-rebuild the menu merely to refresh state.
-
-**Confidence:** high architectural fit, but medium implementation effort
-because custom button styling and singleton forwarding must be preserved.
-
-### 8. Make `TrackAllAutomationsPattern` the single automation registry for the toolbar
-
-**Status: Done.** `TrackToolbar` now iterates the processor/parameter registry
-owned by `TrackAllAutomationsPattern`; its only additional registry maps
-`IDParameter` to GTK menu items. The parallel ProcessorAutomationInfo/Node
-hierarchy and lookup functions were removed. `Grid` returns assigned columns
-directly. Registry refreshes preserve existing parameter state, remove
-departed processors, and run on `Route::processors_changed`. A session-backed
-test verifies that refreshing an unchanged route preserves objects and enabled
-parameters.
-
-**Current duplication:**
-
-- `gtk2_ardour/tracker/track_toolbar.cc:264-354`
-- `ProcessorAutomationInfo` and `ProcessorAutomationNode` in `track_toolbar.h`
-- Existing model registry in
-  `libs/tracker/track_all_automations_pattern.h:107-110`
-- Parameter/control/name maps in
-  `libs/tracker/automation_pattern.h:264-276`
-
-`TrackToolbar` independently walks every processor and reconstructs
-processor/parameter trees that `TrackAllAutomationsPattern` already owns.
-
-The toolbar can instead iterate:
-
-```cpp
-track_pattern
-    ->track_all_automations_pattern
-    .id_to_processor_automation_pattern
-```
-
-and each `ProcessorAutomationPattern`'s existing parameter/control/name maps.
-
-It only needs a GTK-specific structure for:
-
-- Menu item pointer.
-- Column index/visibility.
-- Possibly submenu organization.
-
-That structure can be keyed directly by `IDParameter`, eliminating:
-
-- Duplicate processor discovery.
-- `find_processor_automation_info()`
-- `find_processor_automation_node()`
-- Parallel `ProcessorAutomationInfo` and `ProcessorAutomationNode` ownership.
-- Divergence between the model and toolbar when processor contents change.
-
-The processor menu implementation also resembles
-`RouteTimeAxisView::add_processor_to_subplugin_menu()`. The nested
-`RouteTimeAxisView` automation-node classes should **not** be reused directly:
-they are protected, own `AutomationTimeAxisView` lane pointers, and carry
-unrelated lifetime responsibilities. A generic menu builder could be extracted
-later if desired, but using the tracker's existing model registry is the
-cleaner first step.
-
-**Confidence:** high potential payoff, medium refactor size.
-
-### 9. Consolidate keyboard modifier tracking and forwarding
-
-**Status: Done.** The grid now reads the configured range-select modifier from
-`Gtkmm2ext::Keyboard::the_keyboard().modifier_state()` and no longer keeps a
-`shift_pressed` flag or handles Shift press/release in order to update it.
-Shift key events are still consumed so they do not fall through to Ardour's
-bindings, and range selection now honours Ardour's configurable
-`RangeSelectModifier` rather than hard-coding Shift.
-
-`TrackerEditor::activate_ardour_binding()` now tries the tracker window's own
-bindings first, then relays modified keys to the main window with
-`ARDOUR_UI_UTILS::relay_key_press()`, and offers unmodified keys only to
-Ardour's global bindings. The duplicated focus-hierarchy walk and the direct
-`Editor`/`Editing` binding lookup were removed.
-
-Manual checks should cover: range selection with Shift (and with a remapped
-`RangeSelectModifier`) after focus loss; tracker-local bindings taking
-precedence over conflicting editor bindings; undo/redo and other modified
-editor bindings; transport and other global unmodified keys; cell editing and
-clipboard handling; and unmodified letter keys still entering notes in the
-tracker.
-
-#### Shift/range-selection state
-
-**Current code:** `gtk2_ardour/tracker/grid.cc:7385-7402`
-
-The grid maintains `shift_pressed` manually through key press/release
-handlers.
-
-It can instead use:
-
-- The modifier mask from the initiating event, or
-- `Gtkmm2ext::Keyboard::the_keyboard().key_is_down()`, or
-- `the_keyboard().modifier_state()` with `Keyboard::RangeSelectModifier`.
-
-Using `RangeSelectModifier` would also align tracker selection with Ardour's
-configurable range-selection convention.
-
-That removes the manual state machine and its focus-loss edge cases.
-
-#### Forwarding unhandled keys
-
-**Current code:** `gtk2_ardour/tracker/tracker_editor.cc:215-274`
-
-`activate_ardour_binding()` duplicates parts of
-`ARDOUR_UI::key_press_focus_accelerator_handler()`.
-
-`ARDOUR_UI_UTILS::relay_key_press()` in `gtk2_ardour/utils.cc:331-334` can
-handle forwarding to the main window. A simplified design would:
-
-1. Try Tracker-local bindings.
-2. For modified keys, relay to the main window so Editor/Editing/global
-   bindings work.
-3. For unmodified keys, only try the appropriate global binding, preserving
-   tracker note entry.
-
-It is important **not** to blindly relay unmodified keys to the main editor:
-many single-key editor actions would steal tracker note/navigation input.
-Directly calling the full focus accelerator handler from the grid also risks
-recursive propagation back into the same grid.
-
-This is a valid consolidation, but event-routing behavior needs focused
-testing.
-
-**Confidence:** high for modifier-state reuse; medium for forwarding
-simplification.
+argument orders. Zero-length notes are consistently treated as empty ranges.
+
+**4. Descriptor-driven integer detection.** `AutomationPattern::is_integer()`
+(`libs/tracker/automation_pattern.cc:865-869`) reads
+`actl->desc().integer_step`. Region, main, and processor automation dispatch
+through `Pattern::is_integer()`, `TrackPattern::is_integer()`,
+`TrackAllAutomationsPattern::is_integer()`, and the `MidiTrackPattern`
+override; `Grid::is_int_param()` (`gtk2_ardour/tracker/grid.cc:3736-3739`)
+forwards to it. `libs/tracker/test/AutomationIntegerTest.cc` covers the
+dispatch chain, missing controls, registry refresh, and ranges after a region
+move.
+
+**5. `MidiNoteTracker`.** `Grid` uses an `ARDOUR::MidiNoteTracker`
+(`gtk2_ardour/tracker/grid.h:1034`) for step and chord entry. MIDI input and
+computer-keyboard step entry add notes, note-offs remove the matching
+pitch/channel voice, and the tracker is reset on step-edit and track
+transitions (`grid.cc:6282, 6291, 6300`). The pitch-to-channel map remains for
+choosing the channel of generated note-offs.
+
+**6. Rows-per-beat menu.** `MainToolbar` derives row counts from
+`PublicEditor::get_grid_beat_divisions()` (`main_toolbar.cc:489-505`) and
+builds the dropdown with `ArdourDropdown::append(action)`. A single descriptor
+table (`main_toolbar.cc:39-65`) supplies grid types, action names, labels, and
+stepping order; one-row-per-bar remains excluded from the dropdown. Action and
+menu labels deliberately share the concise `N Row/Beat` text. See the residual
+note under “Further observations”.
+
+**7. Toggle-action modes.** All ten tracker modes are `Gtk::ToggleAction`
+instances (`main_toolbar.cc:408-417`). Toolbar and `TimeHeader` buttons use
+`set_related_action()`, popup check items are created from the same actions
+(`main_toolbar.cc:670-699`), and `Grid` reads the action state. Callbacks
+remain only for side effects (step editing, playhead synchronization,
+following, redisplay); original defaults and keyboard bindings are preserved.
+
+**8. Single automation registry.** `TrackToolbar` iterates
+`TrackAllAutomationsPattern::id_to_processor_automation_pattern`
+(`libs/tracker/track_all_automations_pattern.h:119`) via
+`track_toolbar.cc:228-276`; its only extra registry maps `IDParameter` to GTK
+menu items. The parallel `ProcessorAutomationInfo`/`ProcessorAutomationNode`
+hierarchy and lookup helpers were removed. Registry refresh preserves existing
+parameter state, drops departed processors, and is wired to
+`Route::processors_changed` (`gtk2_ardour/tracker/tracker_editor.cc:311-321`).
+
+**9. Keyboard modifiers and forwarding.** `Grid` reads
+`Gtkmm2ext::Keyboard::the_keyboard().modifier_state()` against
+`RangeSelectModifier` (`grid.cc:7388-7392`); the manual `shift_pressed` state
+machine is gone. Shift key events are still consumed so they do not fall
+through to Ardour. `TrackerEditor::activate_ardour_binding()`
+(`tracker_editor.cc:215-263`) tries the tracker window's bindings first, relays
+modified keys to the main window with `ARDOUR_UI_UTILS::relay_key_press()`, and
+offers unmodified keys only to Ardour's global bindings.
+
+## Outstanding opportunities
 
 ### 10. Use `std::unique_ptr` for ownership, starting with phenomenal diffs
 
-The easiest ownership conversion is:
+**Current code:**
 
-- `libs/tracker/pattern_phenomenal_diff.h:35-48`
-- `libs/tracker/pattern_phenomenal_diff.cc`
+- `libs/tracker/pattern_phenomenal_diff.h:31-48`
+- `libs/tracker/pattern_phenomenal_diff.cc:27-41`
 
 `mti2tp_diff` manually owns raw pointers, requiring custom `release()`, a
-destructor, and move assignment.
-
-Changing it to something like:
+destructor, and move assignment. Changing it to something like:
 
 ```cpp
 std::map<int, std::unique_ptr<TrackPatternPhenomenalDiff>>
@@ -441,35 +135,44 @@ std::map<int, std::unique_ptr<TrackPatternPhenomenalDiff>>
 and returning `std::unique_ptr` from `phenomenal_diff_ptr()` would provide
 destruction and move behavior automatically.
 
-Other raw-owned collections exist in:
+Other raw-owned collections:
 
-- `Pattern::tps`
-- `MidiTrackPattern::mrps`
-- `TrackAllAutomationsPattern::id_to_processor_automation_pattern`
-- `GridHeader::track_headers`
-- Grid column objects
-- Toolbar automation info/nodes
+- `Pattern::tps` — `libs/tracker/pattern.h:208`, freed in `pattern.cc:46-50`
+- `MidiTrackPattern::mrps` — `midi_track_pattern.h:182`, freed in
+  `midi_track_pattern.cc:44-48`
+- `TrackAllAutomationsPattern::id_to_processor_automation_pattern` —
+  `track_all_automations_pattern.h:119`, freed in
+  `track_all_automations_pattern.cc:53-58`
+- `GridHeader::track_headers` — `gtk2_ardour/tracker/grid_header.h:73`, freed
+  in `grid_header.cc:98-106`
+- Grid column objects — owned by `Grid`, allocated during schema
+  construction and deleted in `grid.cc:143-163`
 
-Those larger objects have snapshot/copy semantics, so they should be converted
+These larger objects have snapshot/copy semantics, so they should be converted
 deliberately with explicit clone/snapshot operations rather than mechanically
-replacing pointer types.
+replacing pointer types. The toolbar automation info/nodes listed by an
+earlier revision of this report no longer exist; item 8 removed them.
 
 **Confidence:** very high for phenomenal diffs; medium elsewhere.
 
-## Smaller substitutions and cleanup
-
 ### 11. Keep `BasePattern` row arithmetic in tick space
 
-**Current code:** `libs/tracker/base_pattern.cc:143-149` and `:188-242`
+**Current code:**
+
+- `libs/tracker/base_pattern.cc:171-178` — `set_rows_per_beat()`
+- `:199-202` — `find_nrows()`
+- `:224-229` — `beats_at_row()`
+- `:253-258` — `row_distance()`
+- `:266-273` and `:282-289` — min/max-delay row selection
+- `:317-325` — delay bounds
 
 Several conversions go through `Temporal::DoubleableBeats` and `double`, even
 though `Temporal::Beats` and PBD already provide exact integer operations:
 
-- `beats_per_row * rowi` instead of
-  `Beats::from_double(rowi / rows_per_beat)`.
-- `PBD::muldiv_round()` from `pbd/integer_division.h` for nearest-row
+- `beats_per_row * rowi` instead of `Beats::from_double(rowi / rows_per_beat)`.
+- `PBD::muldiv_round()` from `pbd/integer_division.h:52` for nearest-row
   calculations.
-- `PBD::muldiv_floor()` for row counts.
+- `PBD::muldiv_floor()` (`:90`) for row counts.
 - Deriving `_ticks_per_row` directly from `beats_per_row.to_ticks()`.
 
 For example, nearest-row distance can be expressed using:
@@ -488,8 +191,12 @@ Thus row positions and delay bounds currently use different row durations.
 
 The lowest-risk first change is to derive `_ticks_per_row` from the existing
 `beats_per_row`, preserving the current 69-tick row spacing while making delay
-calculations consistent. A separate decision can then be made about the desired
-duration for non-divisor resolutions.
+calculations consistent. A separate decision can then be made about the
+desired duration for non-divisor resolutions.
+
+`row_at_time_min_delay()` and `row_at_time_max_delay()`
+(`base_pattern.cc:277, 292`) are unused wrappers around the beats variants and
+can simply be removed (see item 14).
 
 Tests should include 7, 14, and especially 28 rows/beat, plus nearest,
 minimum, and maximum delay behavior.
@@ -501,15 +208,16 @@ reviewed and tested rather than changed blindly.
 
 **Current code:**
 
-- `libs/tracker/tracker_utils.cc:410-423`
+- `libs/tracker/tracker_utils.cc:412-425` — `TrackerUtils::color_to_string()`
 - String color columns in `gtk2_ardour/tracker/grid.h:85-116`
+- `Grid::read_colors()` — `grid.cc:1569-1581`
+- Direct cairo overlay — `grid.cc:2099`
 
 Possible existing facilities include:
 
 - `Gtkmm2ext::gdk_color_from_rgb()` / `gdk_color_from_rgba()`
 - `Gdk::Color::to_string()` or `gdk_color_to_string()`
 - `Gtk::TreeModelColumn<Gdk::Color>` and GDK cell-renderer properties
-- `CairoWidget::set_source_rgb_a()` for the overlay at `grid.cc:2114`
 
 The custom `#rrggbb` converter is already deliberately optimized, so repeated
 per-cell GDK object construction should be avoided. A better simplification
@@ -524,28 +232,80 @@ performance-conscious.
 
 ### 13. Reuse `ARDOUR::RegionSortByPosition` where region sorting is needed
 
-`TrackerUtils::region_position_less` in `tracker_utils.h:86-91` duplicates
-`ARDOUR::RegionSortByPosition` from
-`libs/ardour/ardour/region_sorters.h:26-30`.
-
-At present, the tracker comparator appears unused, so removal is simpler than
-replacement. If retained or reused later, it should use the Ardour comparator.
+`TrackerUtils::region_position_less` (`libs/tracker/tracker_utils.h:86-90`,
+`tracker_utils.cc:30-32`) duplicates `ARDOUR::RegionSortByPosition` from
+`libs/ardour/ardour/region_sorters.h:26-30`. The tracker comparator still has
+no production users, so removal is simpler than replacement.
 
 ### 14. Remove unused code rather than abstracting it
 
-Static reference checks found no production users for several items:
+Static reference checks found no production users for the symbols below. All
+are still present in the tree; the list has been expanded since the first
+revision.
 
-- `TrackerUtils::is_pan_type()` and `get_pan_param_types()`
-- `AutomationPattern::clone_actl()`, `clone_param_actl()`, and `clone_alist()`
-- `BasePattern::clamp()`
-- `TrackerUtils::region_position_less`
-- `Grid::set_current_row_undefined()` — already marked unused
-- `MidiNotesPattern::erase()` declaration
+**`libs/tracker`**
+
+| Symbol | Location |
+|---|---|
+| `TrackerUtils::is_pan_type`, `get_pan_param_types` | `tracker_utils.h:123-124`, `tracker_utils.cc:36-52` |
+| `AutomationPattern::clone_actl`, `clone_param_actl`, `clone_alist` | `automation_pattern.h:58-60`, `automation_pattern.cc:92-108` |
+| `BasePattern::clamp` | `base_pattern.h:253`, `base_pattern.cc:346-349` |
+| `TrackerUtils::region_position_less` | `tracker_utils.h:86-90`, `tracker_utils.cc:30-32` |
+| `BasePattern::row_at_time_min_delay`, `row_at_time_max_delay` | `base_pattern.h:156,164`, `base_pattern.cc:277,292` |
+| `Pattern::sample_at_row_at_mti` | `pattern.h:87`, `pattern.cc:294` |
+| `Pattern::find_next_on_note` | `pattern.h:102`, `pattern.cc:416` |
+| `MidiNotesPattern::find_prev_off` | `midi_notes_pattern.h:153`, `midi_notes_pattern.cc:679` |
+| `AutomationPattern::previous_row` | `automation_pattern.h:99`, `automation_pattern.cc:365` |
+| `MidiNotesPattern::erase` (declaration only, no definition) | `midi_notes_pattern.h:262` |
+
+**`gtk2_ardour/tracker`**
+
+| Symbol | Location |
+|---|---|
+| `Grid::set_current_row_undefined` | `grid.h:597`, `grid.cc:4895` |
+| `Grid::set_current_cursor_undefined` | `grid.h:578`, `grid.cc:4761` |
+| `Grid::left_separator_colnum` | `grid.h:181`, `grid.cc:745` |
+| `Grid::region_name_colnum` | `grid.h:183`, `grid.cc:757` |
+| `Grid::automation_col_offset` | `grid.h:194`, `grid.cc:940` |
+| `Grid::right_separator_colnum` | `grid.h:200`, `grid.cc:1033` |
+| `Grid::redisplay_undefined_region_name` | `grid.h:231`, `grid.cc:1937` |
+| `Grid::mk_blank` | `grid.h:897`, `grid.cc:5210` |
+| `MainToolbar::rows_per_beat_up`, `rows_per_beat_down` | `main_toolbar.h:98-99`, `main_toolbar.cc:733,739` |
+| `TrackToolbar::setup_label` | `track_toolbar.h:58`, `track_toolbar.cc:80` |
+| `MidiTrackToolbar::print_widths` | `midi_track_toolbar.h:102`, `midi_track_toolbar.cc:592` |
 
 The unused automation cloning functions are particularly worth removing:
 `clone_alist()` currently returns the original list despite the surrounding
 “deep copy” terminology, which is misleading even though the functions are
-unused.
+unused. `MainToolbar::rows_per_beat_step()` remains live (it backs the
+increase/decrease-rows-per-beat actions); only the two wrappers above are
+dead.
+
+## Further observations
+
+These were noticed while verifying the completed items; none is urgent.
+
+- **Rows-per-beat counts still have two sources.** `RowsPerBeatChoice::rows`
+  (`main_toolbar.cc:39-65`) duplicates
+  `EditingContext::get_grid_beat_divisions()`. The field is still needed for
+  the reverse lookup in `rows_per_beat_step()` (`main_toolbar.cc:745-759`), so
+  the table must be kept in sync with the core mapping by hand.
+- **Controller-item callbacks remain near-duplicates.**
+  `MidiTrackToolbar::add_single_channel_controller_item` and
+  `add_multi_channel_controller_item` (`midi_track_toolbar.cc:388-467`) still
+  mirror `MidiTimeAxisView`'s versions (`midi_time_axis.cc:991-1088`); only
+  the leaf visibility mechanism differs. Item 1 removed the bulk of the
+  duplication, so this is a smaller, optional follow-up.
+- **The automation menu is rebuilt on every click.**
+  `TrackToolbar::build_automation_menu()` tears down and rebuilds the
+  processor menu each time (`track_toolbar.cc:149-176`), with an existing
+  `TODO could be optimized` at line 165. The stable registry introduced by
+  item 8 now makes persistent menu items keyed by `IDParameter` feasible.
+- **`grid.cc` dominates the UI layer.** At 7.4k lines it contains several
+  200–350-line functions (`rebuild_schema`, `redisplay_grid`,
+  `interpolate_selection`). Splitting `Grid` by concern is the largest
+  remaining structural change, but it is a refactor rather than a reuse
+  opportunity and is out of scope here.
 
 ## Cases where reuse would not be a simplification
 
@@ -578,16 +338,12 @@ The following substitutions are not recommended:
 
 ## Suggested order of work
 
-1. **Low-risk substitutions:** shared controller-menu builder,
-   `interpolate_linear()`, Temporal coverage, `get_grid_beat_divisions()`,
-   descriptor-based integer detection, and unused-code removal.
-2. **Behavior-sensitive improvements with tests:** tick-space row arithmetic
-   and `MidiNoteTracker`.
-3. **State/registry consolidation:** toggle actions and using
-   `TrackAllAutomationsPattern` as the toolbar's registry.
-4. **Larger cleanups:** keyboard forwarding, ownership conversion, and optional
-   color-schema changes.
-
-The shared controller-menu builder and the small arithmetic/helper
-substitutions alone would remove meaningful duplication without requiring any
-redesign.
+1. **Low-risk cleanup:** remove the dead code in item 14 (including the
+   expanded list above) and the unused `region_position_less` comparator
+   (item 13).
+2. **Ownership:** convert `PatternPhenomenalDiff` to `std::unique_ptr`
+   (item 10), then consider the other raw-owned collections deliberately.
+3. **Behavior-sensitive work with tests:** move row arithmetic into tick space
+   (item 11), especially at 7, 14, and 28 rows/beat.
+4. **Optional polish:** cache color strings (item 12) and address the
+   follow-ups in “Further observations”.
