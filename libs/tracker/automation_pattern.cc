@@ -88,30 +88,6 @@ AutomationPattern::operator= (const AutomationPattern& other)
 	return *this;
 }
 
-AutomationControlPtr
-AutomationPattern::clone_actl (AutomationControlPtr actl) const
-{
-	AutomationControlPtr actl_cp (new ARDOUR::AutomationControl (const_cast<ARDOUR::Session&> (actl->session ()), actl->parameter (), actl->desc (), clone_alist (actl->alist ())));
-	return actl_cp;
-}
-
-ParamAutomationControlPair
-AutomationPattern::clone_param_actl (const ParamAutomationControlPair& param_actl) const
-{
-	return std::make_pair (param_actl.first, clone_actl (param_actl.second));
-}
-
-AutomationListPtr
-AutomationPattern::clone_alist (AutomationListPtr alist) const
-{
-	// TODO: optimize by only copying events within the time range in
-	// consideration
-	// NEXT: Make freeze!!!!
-	// AutomationListPtr alist_cp (new ARDOUR::AutomationList (*alist));
-	// return alist_cp;
-	return alist;
-}
-
 void
 AutomationPattern::rows_diff (const RowToControlEvents& l_row2ces, const RowToControlEvents& r_row2ces, std::set<int>& rows) const
 {
@@ -357,16 +333,6 @@ AutomationPattern::centered_row (const Evoral::Parameter& param, ARDOUR::Automat
 	if (is_valid(param, ev_it)) {
 		Temporal::Beats beats = event2beats (param, *ev_it);
 		return row_at_beats (beats);
-	}
-	return INVALID_ROW;
-}
-
-int
-AutomationPattern::previous_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const
-{
-	if (is_valid(param, ev_it)) {
-		Temporal::Beats beats = event2beats (param, *ev_it);
-		return row_at_beats_max_delay (beats);
 	}
 	return INVALID_ROW;
 }

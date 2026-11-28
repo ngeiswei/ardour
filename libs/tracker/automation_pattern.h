@@ -55,9 +55,6 @@ public:
 
 	// Make a deep copy of the automation controls
 	AutomationPattern& operator= (const AutomationPattern& other);
-	AutomationControlPtr clone_actl (AutomationControlPtr actl) const;
-	ParamAutomationControlPair clone_param_actl (const ParamAutomationControlPair& param_name) const;
-	AutomationListPtr clone_alist (AutomationListPtr alist) const;
 
 	// Compare the row->control-event mappings of a single automation parameter
 	// and record into rd the rows whose rendition may change.  This includes:
@@ -96,7 +93,6 @@ public:
 	bool is_valid (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
 
 	int centered_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
-	int previous_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
 	int next_row (const Evoral::Parameter& param, ARDOUR::AutomationList::iterator ev_it) const;
 
 	// In the process of update the automation mapping from row to event, find

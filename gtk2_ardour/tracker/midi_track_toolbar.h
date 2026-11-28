@@ -99,7 +99,6 @@ public:
 	void update_remove_note_column_button ();
 	void update_add_note_column_button ();
 
-	void print_widths () const;
 	int get_min_width () const;
 
 	MidiTrackPtr midi_track;

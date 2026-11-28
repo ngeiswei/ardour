@@ -77,17 +77,6 @@ TrackToolbar::setup ()
 }
 
 void
-TrackToolbar::setup_label ()
-{
-	// Add label
-	std::string label = track->name ();
-	label += ":\t";
-	Gtk::Label* mtt_label = Gtk::manage (new Gtk::Label (label.c_str ()));
-	mtt_label->show ();
-	pack_start (*mtt_label, false, false);
-}
-
-void
 TrackToolbar::setup_delay ()
 {
 	// Add visible delay button (green outline when enabled)

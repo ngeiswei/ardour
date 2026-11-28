@@ -707,37 +707,10 @@ Grid::redisplay_visible_note ()
 	tracker_editor.grid_header->align_deferred ();
 }
 
-int
-Grid::mti_col_offset (int mti) const
-{
-	int offset = 0; // time column now lives in its own frozen view
-	for (int i = 0; i < mti; i++) {
-		offset += 1; // left separator
-		offset += 1; // region name
-		offset += note_colnums[i].size () * NUMBER_OF_COL_PER_NOTE_TRACK;
-		offset += automation_colnums[i].size () * NUMBER_OF_COL_PER_AUTOMATION_TRACK;
-		offset += 1; // right separator
-		offset += 1; // track separator
-	}
-	return offset;
-}
-
-int
-Grid::left_separator_colnum (int mti) const
-{
-	return left_separator_colnums[mti];
-}
-
 void
 Grid::redisplay_visible_left_separator (int mti) const
 {
 	left_separator_columns[mti]->set_visible (pattern.tps[mti]->enabled);
-}
-
-int
-Grid::region_name_colnum (int mti) const
-{
-	return region_name_colnums[mti];
 }
 
 int
@@ -918,12 +891,6 @@ Grid::redisplay_visible_automation ()
 }
 
 int
-Grid::automation_col_offset (int mti) const
-{
-	return automation_col_offsets[mti][0];
-}
-
-int
 Grid::automation_colnum (int mti, int cgi) const
 {
 	return automation_colnums[mti][cgi];
@@ -1008,12 +975,6 @@ int
 Grid::automation_separator_colnum (int mti, int cgi) const
 {
 	return automation_separator_colnums[mti][cgi];
-}
-
-int
-Grid::right_separator_colnum (int mti) const
-{
-	return right_separator_colnums[mti];
 }
 
 void
@@ -1294,8 +1255,6 @@ Grid::rebuild_schema (size_t nauto_hint)
 	_left_right_separator_nrows = -1;
 
 	// Resize dynamic lookup tables.
-	ensure_size (left_separator_colnums, ntracks);
-	ensure_size (region_name_colnums, ntracks);
 	ensure_size_2d (note_colnums, ntracks, nnotes);
 	ensure_size_2d (note_channel_colnums, ntracks, nnotes);
 	ensure_size_2d (note_velocity_colnums, ntracks, nnotes);
@@ -1304,8 +1263,6 @@ Grid::rebuild_schema (size_t nauto_hint)
 	ensure_size_2d (automation_colnums, ntracks, nauto);
 	ensure_size_2d (automation_delay_colnums, ntracks, nauto);
 	ensure_size_2d (automation_separator_colnums, ntracks, nauto);
-	ensure_size (right_separator_colnums, ntracks);
-	ensure_size_2d (automation_col_offsets, ntracks, 1);
 
 	// Rebuild TreeView columns from scratch.
 	setup_time_column ();
@@ -1893,12 +1850,6 @@ Grid::redisplay_track_separator_columns ()
 	for (size_t mti = 0; mti < pattern.tps.size () && mti < track_separator_columns.size (); mti++) {
 		redisplay_track_separator (mti);
 	}
-}
-
-void
-Grid::redisplay_undefined_region_name (TreeModel::Row& row, int mti)
-{
-	set_cell (row, columns->region_name[mti], "");
 }
 
 void
@@ -4719,28 +4670,6 @@ Grid::set_current_cursor (const TreeModel::Path& path, TreeViewColumn* col, bool
 	tracker_editor.grid_header->align ();
 }
 
-void
-Grid::set_current_cursor_undefined ()
-{
-	// Remember the current mtp to update the current track and the
-	// step editor
-	previous_tp = current_tp;
-
-	current_tp = 0;
-	current_col_idx = BasePattern::INVALID_COL;
-	current_col = 0;
-	current_mti = -1;
-	current_mri = -1;
-	current_cgi = BasePattern::INVALID_CGI;
-	current_note_type = TrackerColumn::NoteType::NOTE;
-	current_automation_type = TrackerColumn::AutomationType::AUTOMATION_SEPARATOR;
-
-	if (!is_current_row_defined ())
-		return;
-
-	set_current_row (current_path, true);
-}
-
 bool
 Grid::is_current_col_defined () const
 {
@@ -4850,20 +4779,6 @@ Grid::set_current_col (TreeViewColumn* col)
 
 	// Set underline
 	set_underline_current_step_edit_cell ();
-}
-
-// TODO: this is unused, maybe remove
-void
-Grid::set_current_row_undefined ()
-{
-	// Reset background color over the previous row
-	redisplay_row_background (current_row, current_row_idx);
-
-	// Unset underline over previous cursor
-	unset_underline_current_step_edit_cell ();
-
-	// Set undefined row
-	current_row_idx = BasePattern::INVALID_ROW;
 }
 
 bool
@@ -5166,12 +5081,6 @@ Grid::follow_playhead (Temporal::timepos_t pos)
 	} else { // Skip
 		skip_follow_playhead.pop ();
 	}
-}
-
-std::string
-Grid::mk_blank (size_t n)
-{
-	return std::string (n, blank_char);
 }
 
 const std::string&
@@ -5576,7 +5485,6 @@ Grid::setup_init_col ()
 void
 Grid::setup_left_separator_column (int mti)
 {
-	left_separator_colnums[mti] = get_columns ().size ();
 	left_separator_columns[mti] = std::make_unique<TreeViewColumn> ("", columns->left_separator[mti]);
 	CellRenderer* left_separator_cellrenderer = left_separator_columns[mti]->get_first_cell_renderer ();
 
@@ -5593,7 +5501,6 @@ Grid::setup_left_separator_column (int mti)
 void
 Grid::setup_region_name_column (int mti)
 {
-	region_name_colnums[mti] = get_columns ().size ();
 	std::string label ("");
 	region_name_columns[mti] = std::make_unique<TreeViewColumn> (label, columns->region_name[mti]);
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
@@ -5827,7 +5734,6 @@ Grid::setup_automation_separator_column (int mti, int cgi)
 void
 Grid::setup_right_separator_column (int mti)
 {
-	right_separator_colnums[mti] = get_columns ().size ();
 	right_separator_columns[mti] = std::make_unique<TreeViewColumn> ("", columns->right_separator[mti]);
 	CellRenderer* right_separator_cellrenderer = right_separator_columns[mti]->get_first_cell_renderer ();
 
@@ -5844,8 +5750,6 @@ Grid::setup_right_separator_column (int mti)
 void
 Grid::setup_track_separator_column (int mti)
 {
-	automation_col_offsets[mti][0] = mti_col_offset (mti) + 1 /* left separator */ + 1 /* region name */
-		+ note_colnums[mti].size () * NUMBER_OF_COL_PER_NOTE_TRACK;
 	track_separator_columns[mti] = std::make_unique<TreeViewColumn> ("", columns->track_separator[mti]);
 
 	// Set width

@@ -730,18 +730,6 @@ void MainToolbar::position_up ()    { position_spinner.spin (Gtk::SPIN_STEP_FORW
 void MainToolbar::position_down ()  { position_spinner.spin (Gtk::SPIN_STEP_BACKWARD, 1.0); }
 
 void
-MainToolbar::rows_per_beat_up ()
-{
-	rows_per_beat_step (1);
-}
-
-void
-MainToolbar::rows_per_beat_down ()
-{
-	rows_per_beat_step (-1);
-}
-
-void
 MainToolbar::rows_per_beat_step (int direction)
 {
 	const size_t nchoices = sizeof (_rows_per_beat_choices) / sizeof (_rows_per_beat_choices[0]);

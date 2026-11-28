@@ -56,7 +56,6 @@ typedef std::vector<RegionPtr> RegionSeq;
 typedef std::vector<MidiRegionPtr> MidiRegionSeq;
 typedef std::map<TrackPtr, RegionSeq, ARDOUR::Stripable::Sorter> TrackRegionsMap;
 typedef std::map<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlMap;
-typedef std::pair<Evoral::Parameter, AutomationControlPtr> ParamAutomationControlPair;
 
 // Allows to identify a parameter of a processor of a certain ID
 typedef std::pair<PBD::ID, Evoral::Parameter> IDParameter;
@@ -79,14 +78,6 @@ typedef std::map<Temporal::Beats, int> BeatsToRow;
 typedef std::set<Evoral::Parameter> ParameterSet;
 typedef ParameterSet::iterator ParameterSetIt;
 typedef ParameterSet::const_iterator ParameterSetConstIt;
-
-/**
- * Less than operator for regions, order according to position, earlier comes first
- */
-struct region_position_less
-{
-	bool operator () (RegionPtr lhs, RegionPtr rhs);
-};
 
 /**
 * Like Sequence::EarlierNoteComparator, but in case the two notes have the
@@ -117,12 +108,6 @@ typedef std::multiset<NotePtr, EarlierNoteStrictComparator> StrictNotes;
 class TrackerUtils
 {
 public:
-	/**
-	 * Return true iff param pertains to pan control
-	 */
-	static bool is_pan_type (const Evoral::Parameter& param);
-	static std::set<ARDOUR::AutomationType> get_pan_param_types ();
-
 	/**
 	 * Return true iff the given param is for region automation (as opposed to
 	 * track automation).

@@ -83,10 +83,6 @@ public:
 	// Return an event's delay in a certain row and mti in ticks
 	int64_t delay_ticks (samplepos_t when, int rowi, int mti) const;
 
-	// Return the sample at the corresponding row index and delay in relative
-	// ticks
-	int sample_at_row_at_mti (int rowi, int mti, int delay=0) const;
-
 	size_t off_notes_count (int rowi, int mti, int mri, int cgi) const;
 	size_t on_notes_count (int rowi, int mti, int mri, int cgi) const;
 	bool is_note_displayable (int rowi, int mti, int mri, int cgi) const;
@@ -100,7 +96,6 @@ public:
 	size_t control_events_count (int rowi, int mti, int mri, const IDParameter& id_param) const;
 
 	NotePtr find_prev_on_note (int rowi, int mti, int mri, int cgi) const;
-	NotePtr find_next_on_note (int rowi, int mti, int mri, int cgi) const;
 
 	// Return the Beats of the next note on (resp. off) or the end of the region
 	// if none

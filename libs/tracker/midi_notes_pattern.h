@@ -148,9 +148,7 @@ public:
 	NotePtr find_prev_on (int row, int cgi) const;
 	NotePtr find_next_on (int row, int cgi) const;
 
-	// Find the previous (resp. next) off note of a given row on a given track
-	// index.
-	NotePtr find_prev_off (int row, int cgi) const;
+	// Find the next off note of a given row on a given track index.
 	NotePtr find_next_off (int row, int cgi) const;
 
 	// Return the Beats of the next note on (resp. off) or the end of the region
@@ -257,9 +255,6 @@ private:
 	// Insert off note to off_notes and _off_beats_to_row fields at a given cgi
 	// and row
 	void insert_off_note (int cgi, int row, NotePtr off_note);
-
-	// Erase pointer iterator from notes and return the next iterator
-	ARDOUR::MidiModel::Notes::iterator erase (ARDOUR::MidiModel::Notes& notes, ARDOUR::MidiModel::Notes::iterator it);
 
 	// Check if a track (cgi) is available to receive a note.
 	bool is_free (int cgi, NotePtr note) const;

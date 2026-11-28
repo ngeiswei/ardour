@@ -152,16 +152,10 @@ public:
 	// beats interval, then return INVALID_ROW.
 	int row_at_beats_min_delay (const Temporal::Beats& beats) const;
 
-	// Like row_at_beats_min_delay but use timepos_t instead of beats
-	int row_at_time_min_delay (Temporal::timepos_t pos) const;
-
 	// Return the row index assuming the beats is allowed to have the maximum
 	// positive delay (_ticks_per_row - 1).  If beats is outside of the pattern
 	// beats interval, then return INVALID_ROW.
 	int row_at_beats_max_delay (const Temporal::Beats& beats) const;
-
-	// Like row_at_beats_max_delay but use timepos_t instead of beats
-	int row_at_time_max_delay (Temporal::timepos_t pos) const;
 
 	// Return an event's delay in a certain row in ticks
 	int64_t delay_ticks_at_row (const Temporal::Beats& event_time, int rowi) const;
@@ -248,9 +242,6 @@ protected:
 	int _ticks_per_row;
 
 	ARDOUR::Session* _session;
-
-	// Make sure a given row is clamped to be in [0, nrows)
-	int clamp (double row) const;
 };
 
 } // ~namespace tracker

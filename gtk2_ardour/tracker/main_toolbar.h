@@ -95,8 +95,6 @@ public:
 	void precision_down ();
 	void position_up ();
 	void position_down ();
-	void rows_per_beat_up ();
-	void rows_per_beat_down ();
 
 	/** Trigger the cut/copy/paste operations. */
 	void cut ();

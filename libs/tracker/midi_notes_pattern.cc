@@ -676,12 +676,6 @@ MidiNotesPattern::find_next_on (int row, int cgi) const
 }
 
 NotePtr
-MidiNotesPattern::find_prev_off (int row, int cgi) const
-{
-	return find_prev_note (off_notes[cgi], row);
-}
-
-NotePtr
 MidiNotesPattern::find_next_off (int row, int cgi) const
 {
 	return find_next_note (off_notes[cgi], row);

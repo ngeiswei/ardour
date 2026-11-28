@@ -588,19 +588,6 @@ MidiTrackToolbar::update_add_note_column_button ()
 	add_note_column_button.set_sensitive (true);
 }
 
-void
-MidiTrackToolbar::print_widths () const
-{
-	std::cout << "visible_note_button.get_width () = " << visible_note_button.get_width () << std::endl;
-	std::cout << "visible_channel_button.get_width () = " << visible_channel_button.get_width () << std::endl;
-	std::cout << "visible_velocity_button.get_width () = " << visible_velocity_button.get_width () << std::endl;
-	std::cout << "remove_note_column_button.get_width () = " << remove_note_column_button.get_width () << std::endl;
-	std::cout << "add_note_column_button.get_width () = " << add_note_column_button.get_width () << std::endl;
-	std::cout << "rm_add_note_column_separator.get_width () = " << rm_add_note_column_separator.get_width () << std::endl;
-	std::cout << "automation_separator.get_width () = " << automation_separator.get_width () << std::endl;
-	std::cout << "automation_button.get_width () = " << automation_button.get_width () << std::endl;
-}
-
 int
 MidiTrackToolbar::get_min_width () const
 {

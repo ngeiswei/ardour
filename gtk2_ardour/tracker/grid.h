@@ -51,10 +51,7 @@ class CheckMenuItem;
 namespace Tracker {
 
 // The number of columns is no longer hard-limited.  Columns are allocated
-// on demand.  These constants describe the shape of a single group.
-#define NUMBER_OF_COL_PER_NOTE_TRACK 5 /*note+channel+velocity+delay+separator*/
-#define NUMBER_OF_COL_PER_AUTOMATION_TRACK 3 /*automation+delay+separator*/
-
+// on demand.
 #define LEFT_RIGHT_SEPARATOR_WIDTH 16
 #define GROUP_SEPARATOR_WIDTH 8
 #define TRACK_SEPARATOR_WIDTH 8
@@ -177,10 +174,7 @@ public:
 	////////////////////////
 
 	void redisplay_visible_note ();
-	int mti_col_offset (int mti) const;
-	int left_separator_colnum (int mti) const;
 	void redisplay_visible_left_separator (int mti) const;
-	int region_name_colnum (int mti) const;
 	int note_colnum (int mti, int cgi /* column group index */) const;
 	void redisplay_visible_channel ();
 	int note_channel_colnum (int mti, int cgi) const;
@@ -191,13 +185,11 @@ public:
 	void redisplay_visible_note_separator ();
 	int note_separator_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation ();
-	int automation_col_offset (int mti) const;
 	int automation_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation_delay ();
 	int automation_delay_colnum (int mti, int cgi) const;
 	void redisplay_visible_automation_separator ();
 	int automation_separator_colnum (int mti, int cgi) const;
-	int right_separator_colnum (int mti) const;
 	void redisplay_visible_right_separator (int mti) const;
 
 	int base () const;
@@ -228,7 +220,6 @@ public:
 	void set_right_separator_width (int mti, int width);
 	void redisplay_track_separator (int mti);
 	void redisplay_track_separator_columns ();
-	void redisplay_undefined_region_name (Gtk::TreeModel::Row& row, int mti);
 	void redisplay_undefined_notes (Gtk::TreeModel::Row& row, int mti); // Display undefined notes at row and mti
 	void redisplay_undefined_note (Gtk::TreeModel::Row& row, int mti, int cgi); // Display undefined note at row, mti and cgi
 	void redisplay_undefined_automations (Gtk::TreeModel::Row& row, int mti, const ParameterSet& enabled_params);
@@ -574,9 +565,6 @@ private:
 	void set_current_cursor (int row_idx, Gtk::TreeViewColumn* col, bool set_playhead=false);
 	void set_current_cursor (const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* col, bool set_playhead=false);
 
-	// Set current cursor undefined, let the current row defined however
-	void set_current_cursor_undefined ();
-
 	// Return true iff the current column is defined
 	bool is_current_col_defined () const;
 
@@ -592,9 +580,6 @@ private:
 	// Set current col, including selecting track and drawing cursor background
 	// and underlining automation
 	void set_current_col (Gtk::TreeViewColumn* col);
-
-	// Set current row undefined
-	void set_current_row_undefined ();
 
 	// Return true iff the current row is defined. An undefined row may
 	// only happen if there is nothing whatsoever to render.
@@ -894,7 +879,6 @@ private:
 	 * Create a string of n blank chars.
 	 */
 	static const char blank_char = '-';
-	static std::string mk_blank (size_t n);
 
 	/**
 	 * Check whether a string is blank such as "----"
@@ -930,8 +914,6 @@ private:
 	// Dynamic column-index lookups.  These are filled when the
 	// TreeView columns are appended and are stable between rebuilds
 	// (but values change after rebuilds).
-	std::vector<int> left_separator_colnums;
-	std::vector<int> region_name_colnums;
 	std::vector<std::vector<int> > note_colnums;
 	std::vector<std::vector<int> > note_channel_colnums;
 	std::vector<std::vector<int> > note_velocity_colnums;
@@ -940,8 +922,6 @@ private:
 	std::vector<std::vector<int> > automation_colnums;
 	std::vector<std::vector<int> > automation_delay_colnums;
 	std::vector<std::vector<int> > automation_separator_colnums;
-	std::vector<int> right_separator_colnums;
-	std::vector<std::vector<int> > automation_col_offsets;
 
 	// Columns
 	std::unique_ptr<Gtk::TreeViewColumn> time_column;

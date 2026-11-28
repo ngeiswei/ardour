@@ -282,12 +282,6 @@ Pattern::delay_ticks (samplepos_t when, int rowi, int mti) const
 	return tps[mti]->delay_ticks_at_row (when, to_rri (rowi, mti));
 }
 
-int
-Pattern::sample_at_row_at_mti (int rowi, int mti, int delay) const
-{
-	return tps[mti]->sample_at_row (to_rri (rowi, mti), delay);
-}
-
 size_t
 Pattern::off_notes_count (int rowi, int mti, int mri, int cgi) const
 {
@@ -402,12 +396,6 @@ NotePtr
 Pattern::find_prev_on_note (int rowi, int mti, int mri, int cgi) const
 {
 	return midi_region_pattern (mti, mri).mnp.find_prev_on (to_rrri (rowi, mti, mri), cgi);
-}
-
-NotePtr
-Pattern::find_next_on_note (int rowi, int mti, int mri, int cgi) const
-{
-	return midi_region_pattern (mti, mri).mnp.find_next_on (to_rrri (rowi, mti, mri), cgi);
 }
 
 Temporal::Beats

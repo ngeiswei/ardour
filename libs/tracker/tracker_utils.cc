@@ -27,30 +27,6 @@
 
 using namespace Tracker;
 
-bool region_position_less::operator () (RegionPtr lhs, RegionPtr rhs)
-{
-	return lhs->position () < rhs->position ();
-}
-
-bool
-TrackerUtils::is_pan_type (const Evoral::Parameter& param)
-{
-	static std::set<ARDOUR::AutomationType> pan_param_types = get_pan_param_types ();
-	return pan_param_types.find ((ARDOUR::AutomationType)param.type ()) != pan_param_types.end ();
-}
-
-std::set<ARDOUR::AutomationType>
-TrackerUtils::get_pan_param_types ()
-{
-	std::set<ARDOUR::AutomationType> pan_param_types;
-	pan_param_types.insert (ARDOUR::PanAzimuthAutomation);
-	pan_param_types.insert (ARDOUR::PanElevationAutomation);
-	pan_param_types.insert (ARDOUR::PanWidthAutomation);
-	pan_param_types.insert (ARDOUR::PanFrontBackAutomation);
-	pan_param_types.insert (ARDOUR::PanLFEAutomation);
-	return pan_param_types;
-}
-
 bool
 TrackerUtils::is_region_automation (const Evoral::Parameter& param)
 {

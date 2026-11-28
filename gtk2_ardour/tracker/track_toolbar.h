@@ -55,7 +55,6 @@ public:
 	/**
 	 * Build the toolbar layout
 	 */
-	void setup_label ();
 	void setup_delay ();
 	void setup_automation ();
 	void setup_tooltips ();

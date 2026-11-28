@@ -21,7 +21,6 @@ Scale at the time of writing: `libs/tracker/` is about 9k lines and
 
 The strongest remaining candidates are:
 
-- Removing the dead code catalogued in item 14.
 - Moving `BasePattern` row arithmetic into tick space, with tests.
 - Optionally caching color strings and consolidating the remaining
   controller-menu callbacks.
@@ -42,10 +41,10 @@ The strongest remaining candidates are:
 | 10 | `std::unique_ptr` ownership for tracker-owned collections | Done |
 | 11 | Tick-space row arithmetic in `BasePattern` | Outstanding |
 | 12 | Cache or reuse GDK/GTK color conversion | Outstanding |
-| 13 | `ARDOUR::RegionSortByPosition` for region sorting | Outstanding (remove comparator) |
-| 14 | Remove unused code | Outstanding (list below expanded) |
+| 13 | `ARDOUR::RegionSortByPosition` for region sorting | Done (comparator removed) |
+| 14 | Remove unused code | Done |
 
-## Completed work (items 1–10)
+## Completed work (items 1–10, 13–14)
 
 **1. Shared controller menu.** `MidiTrackToolbar::build_controller_menu()`
 (`gtk2_ardour/tracker/midi_track_toolbar.cc:278-296`) now calls the shared
@@ -54,31 +53,31 @@ single- and multi-channel callbacks. The obsolete `get_device_names()`
 forwarding methods were removed.
 
 **2. `interpolate_linear()`.** `TrackerUtils::interpolate()`
-(`libs/tracker/tracker_utils.cc:61-69`) includes `pbd/control_math.h` and
+(`libs/tracker/tracker_utils.cc:37-45`) includes `pbd/control_math.h` and
 delegates the arithmetic to `interpolate_linear()`; the `last_row <= first_row`
 guard remains.
 
 **3. Temporal range coverage.** `MidiNotesPattern::overlap()`
-(`libs/tracker/midi_notes_pattern.cc:877-882`) uses the `int64_t`
+(`libs/tracker/midi_notes_pattern.cc:871-876`) uses the `int64_t`
 specialization of `Temporal::coverage_exclusive_ends()`. Tests cover disjoint,
 touching, partial, containing, identical, and zero-length ranges in both
 argument orders. Zero-length notes are consistently treated as empty ranges.
 
 **4. Descriptor-driven integer detection.** `AutomationPattern::is_integer()`
-(`libs/tracker/automation_pattern.cc:865-869`) reads
+(`libs/tracker/automation_pattern.cc:831-835`) reads
 `actl->desc().integer_step`. Region, main, and processor automation dispatch
 through `Pattern::is_integer()`, `TrackPattern::is_integer()`,
 `TrackAllAutomationsPattern::is_integer()`, and the `MidiTrackPattern`
-override; `Grid::is_int_param()` (`gtk2_ardour/tracker/grid.cc:3698-3701`)
+override; `Grid::is_int_param()` (`gtk2_ardour/tracker/grid.cc:3649-3652`)
 forwards to it. `libs/tracker/test/AutomationIntegerTest.cc` covers the
 dispatch chain, missing controls, registry refresh, and ranges after a region
 move.
 
 **5. `MidiNoteTracker`.** `Grid` uses an `ARDOUR::MidiNoteTracker`
-(`gtk2_ardour/tracker/grid.h:1034`) for step and chord entry. MIDI input and
+(`gtk2_ardour/tracker/grid.h:1014`) for step and chord entry. MIDI input and
 computer-keyboard step entry add notes, note-offs remove the matching
 pitch/channel voice, and the tracker is reset on step-edit and track
-transitions (`grid.cc:6244, 6253, 6262`). The pitch-to-channel map remains for
+transitions (`grid.cc:6148, 6157, 6166`). The pitch-to-channel map remains for
 choosing the channel of generated note-offs.
 
 **6. Rows-per-beat menu.** `MainToolbar` derives row counts from
@@ -99,7 +98,7 @@ following, redisplay); original defaults and keyboard bindings are preserved.
 **8. Single automation registry.** `TrackToolbar` iterates
 `TrackAllAutomationsPattern::id_to_processor_automation_pattern`
 (`libs/tracker/track_all_automations_pattern.h:121`) via
-`track_toolbar.cc:228-276`; its only extra registry maps `IDParameter` to GTK
+`track_toolbar.cc:217-264`; its only extra registry maps `IDParameter` to GTK
 menu items. The parallel `ProcessorAutomationInfo`/`ProcessorAutomationNode`
 hierarchy and lookup helpers were removed. Registry refresh preserves existing
 parameter state, drops departed processors, and is wired to
@@ -107,7 +106,7 @@ parameter state, drops departed processors, and is wired to
 
 **9. Keyboard modifiers and forwarding.** `Grid` reads
 `Gtkmm2ext::Keyboard::the_keyboard().modifier_state()` against
-`RangeSelectModifier` (`grid.cc:7352-7355`); the manual `shift_pressed` state
+`RangeSelectModifier` (`grid.cc:7256-7259`); the manual `shift_pressed` state
 machine is gone. Shift key events are still consumed so they do not fall
 through to Ardour. `TrackerEditor::activate_ardour_binding()`
 (`tracker_editor.cc:215-263`) tries the tracker window's bindings first, relays
@@ -127,18 +126,33 @@ patterns, while `Pattern`/`MidiTrackPattern` continue to copy into existing
 objects in place. The tracker registry and phenomenal-diff tests cover the
 resulting ownership behaviour.
 
+**13. Region comparator.** Removed `TrackerUtils::region_position_less`,
+which had no production users. Any future tracker-side region sort should use
+`ARDOUR::RegionSortByPosition` (`libs/ardour/ardour/region_sorters.h:26-30`).
+
+**14. Dead code.** Removed the unused helpers catalogued in earlier revisions:
+the pan-type helpers, the `clone_actl`/`clone_param_actl`/`clone_alist` trio
+(and the now-unused `ParamAutomationControlPair` typedef), `BasePattern::clamp`
+and the `row_at_time_{min,max}_delay` wrappers, `Pattern::sample_at_row_at_mti`,
+`Pattern::find_next_on_note`, `MidiNotesPattern::{find_prev_off,erase}`,
+`AutomationPattern::previous_row`, Grid's dead column accessors and
+`mti_col_offset`/`automation_col_offsets` (including the now-unused
+`NUMBER_OF_COL_PER_*` macros), the two undefined-cursor setters,
+`redisplay_undefined_region_name`, `mk_blank`, `MainToolbar::rows_per_beat_{up,
+down}`, `TrackToolbar::setup_label`, and `MidiTrackToolbar::print_widths`.
+
 ## Outstanding opportunities
 
 ### 11. Keep `BasePattern` row arithmetic in tick space
 
 **Current code:**
 
-- `libs/tracker/base_pattern.cc:171-178` — `set_rows_per_beat()`
+- `libs/tracker/base_pattern.cc:172-183` — `set_rows_per_beat()`
 - `:199-202` — `find_nrows()`
 - `:224-229` — `beats_at_row()`
-- `:253-258` — `row_distance()`
-- `:266-273` and `:282-289` — min/max-delay row selection
-- `:317-325` — delay bounds
+- `:254-258` — `row_distance()`
+- `:267-274` and `:277-284` — min/max-delay row selection
+- `:304-313` — delay bounds
 
 Several conversions go through `Temporal::DoubleableBeats` and `double`, even
 though `Temporal::Beats` and PBD already provide exact integer operations:
@@ -168,10 +182,6 @@ The lowest-risk first change is to derive `_ticks_per_row` from the existing
 calculations consistent. A separate decision can then be made about the
 desired duration for non-divisor resolutions.
 
-`row_at_time_min_delay()` and `row_at_time_max_delay()`
-(`base_pattern.cc:277, 292`) are unused wrappers around the beats variants and
-can simply be removed (see item 14).
-
 Tests should include 7, 14, and especially 28 rows/beat, plus nearest,
 minimum, and maximum delay behavior.
 
@@ -182,10 +192,10 @@ reviewed and tested rather than changed blindly.
 
 **Current code:**
 
-- `libs/tracker/tracker_utils.cc:412-425` — `TrackerUtils::color_to_string()`
-- String color columns in `gtk2_ardour/tracker/grid.h:85-116`
-- `Grid::read_colors()` — `grid.cc:1531-1543`
-- Direct cairo overlay — `grid.cc:2061`
+- `libs/tracker/tracker_utils.cc:388-401` — `TrackerUtils::color_to_string()`
+- String color columns in `gtk2_ardour/tracker/grid.h:84-115`
+- `Grid::read_colors()` — `grid.cc:1488-1500`
+- Direct cairo overlay — `grid.cc:2012`
 
 Possible existing facilities include:
 
@@ -204,57 +214,6 @@ not obviously worthwhile schema change.
 **Priority:** low; the current implementation is correct and
 performance-conscious.
 
-### 13. Reuse `ARDOUR::RegionSortByPosition` where region sorting is needed
-
-`TrackerUtils::region_position_less` (`libs/tracker/tracker_utils.h:86-90`,
-`tracker_utils.cc:30-32`) duplicates `ARDOUR::RegionSortByPosition` from
-`libs/ardour/ardour/region_sorters.h:26-30`. The tracker comparator still has
-no production users, so removal is simpler than replacement.
-
-### 14. Remove unused code rather than abstracting it
-
-Static reference checks found no production users for the symbols below. All
-are still present in the tree; the list has been expanded since the first
-revision.
-
-**`libs/tracker`**
-
-| Symbol | Location |
-|---|---|
-| `TrackerUtils::is_pan_type`, `get_pan_param_types` | `tracker_utils.h:123-124`, `tracker_utils.cc:36-52` |
-| `AutomationPattern::clone_actl`, `clone_param_actl`, `clone_alist` | `automation_pattern.h:58-60`, `automation_pattern.cc:92-108` |
-| `BasePattern::clamp` | `base_pattern.h:253`, `base_pattern.cc:346-349` |
-| `TrackerUtils::region_position_less` | `tracker_utils.h:86-90`, `tracker_utils.cc:30-32` |
-| `BasePattern::row_at_time_min_delay`, `row_at_time_max_delay` | `base_pattern.h:156,164`, `base_pattern.cc:277,292` |
-| `Pattern::sample_at_row_at_mti` | `pattern.h:88`, `pattern.cc:286` |
-| `Pattern::find_next_on_note` | `pattern.h:103`, `pattern.cc:408` |
-| `MidiNotesPattern::find_prev_off` | `midi_notes_pattern.h:153`, `midi_notes_pattern.cc:679` |
-| `AutomationPattern::previous_row` | `automation_pattern.h:99`, `automation_pattern.cc:365` |
-| `MidiNotesPattern::erase` (declaration only, no definition) | `midi_notes_pattern.h:262` |
-
-**`gtk2_ardour/tracker`**
-
-| Symbol | Location |
-|---|---|
-| `Grid::set_current_row_undefined` | `grid.h:597`, `grid.cc:4857` |
-| `Grid::set_current_cursor_undefined` | `grid.h:578`, `grid.cc:4723` |
-| `Grid::left_separator_colnum` | `grid.h:181`, `grid.cc:726` |
-| `Grid::region_name_colnum` | `grid.h:183`, `grid.cc:738` |
-| `Grid::automation_col_offset` | `grid.h:194`, `grid.cc:921` |
-| `Grid::right_separator_colnum` | `grid.h:200`, `grid.cc:1014` |
-| `Grid::redisplay_undefined_region_name` | `grid.h:231`, `grid.cc:1899` |
-| `Grid::mk_blank` | `grid.h:897`, `grid.cc:5172` |
-| `MainToolbar::rows_per_beat_up`, `rows_per_beat_down` | `main_toolbar.h:98-99`, `main_toolbar.cc:733,739` |
-| `TrackToolbar::setup_label` | `track_toolbar.h:58`, `track_toolbar.cc:80` |
-| `MidiTrackToolbar::print_widths` | `midi_track_toolbar.h:102`, `midi_track_toolbar.cc:592` |
-
-The unused automation cloning functions are particularly worth removing:
-`clone_alist()` currently returns the original list despite the surrounding
-“deep copy” terminology, which is misleading even though the functions are
-unused. `MainToolbar::rows_per_beat_step()` remains live (it backs the
-increase/decrease-rows-per-beat actions); only the two wrappers above are
-dead.
-
 ## Further observations
 
 These were noticed while verifying the completed items; none is urgent.
@@ -262,7 +221,7 @@ These were noticed while verifying the completed items; none is urgent.
 - **Rows-per-beat counts still have two sources.** `RowsPerBeatChoice::rows`
   (`main_toolbar.cc:39-65`) duplicates
   `EditingContext::get_grid_beat_divisions()`. The field is still needed for
-  the reverse lookup in `rows_per_beat_step()` (`main_toolbar.cc:745-759`), so
+  the reverse lookup in `rows_per_beat_step()` (`main_toolbar.cc:733-747`), so
   the table must be kept in sync with the core mapping by hand.
 - **Controller-item callbacks remain near-duplicates.**
   `MidiTrackToolbar::add_single_channel_controller_item` and
@@ -272,8 +231,8 @@ These were noticed while verifying the completed items; none is urgent.
   duplication, so this is a smaller, optional follow-up.
 - **The automation menu is rebuilt on every click.**
   `TrackToolbar::build_automation_menu()` tears down and rebuilds the
-  processor menu each time (`track_toolbar.cc:149-176`), with an existing
-  `TODO could be optimized` at line 165. The stable registry introduced by
+  processor menu each time (`track_toolbar.cc:135-165`), with an existing
+  `TODO could be optimized` at line 154. The stable registry introduced by
   item 8 now makes persistent menu items keyed by `IDParameter` feasible.
 - **`grid.cc` dominates the UI layer.** At 7.4k lines it contains several
   200–350-line functions (`rebuild_schema`, `redisplay_grid`,
@@ -312,10 +271,7 @@ The following substitutions are not recommended:
 
 ## Suggested order of work
 
-1. **Low-risk cleanup:** remove the dead code in item 14 (including the
-   expanded list above) and the unused `region_position_less` comparator
-   (item 13).
-2. **Behavior-sensitive work with tests:** move row arithmetic into tick space
+1. **Behavior-sensitive work with tests:** move row arithmetic into tick space
    (item 11), especially at 7, 14, and 28 rows/beat.
-3. **Optional polish:** cache color strings (item 12) and address the
+2. **Optional polish:** cache color strings (item 12) and address the
    follow-ups in “Further observations”.

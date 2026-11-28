@@ -274,24 +274,12 @@ BasePattern::row_at_beats_min_delay (const Temporal::Beats& beats) const
 }
 
 int
-BasePattern::row_at_time_min_delay (Temporal::timepos_t pos) const
-{
-	return row_at_beats_min_delay (pos.beats ());
-}
-
-int
 BasePattern::row_at_beats_max_delay (const Temporal::Beats& beats) const
 {
 	if (position_row_beats <= beats and beats <= end_row_beats) {
 		return Temporal::DoubleableBeats(beats - position_row_beats).to_double () * rows_per_beat;
 	}
 	return INVALID_ROW;
-}
-
-int
-BasePattern::row_at_time_max_delay (Temporal::timepos_t pos) const
-{
-	return row_at_beats_max_delay (pos.beats ());
 }
 
 int64_t
@@ -340,12 +328,6 @@ void
 BasePattern::set_selected (bool s)
 {
 	selected = s;
-}
-
-int
-BasePattern::clamp (double row) const
-{
-	return std::min (std::max (0.0, row), nrows - 1.0);
 }
 
 std::string
