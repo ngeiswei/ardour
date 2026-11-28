@@ -7,21 +7,20 @@ implementation in `gtk2_ardour/tracker/`, looking for code that can be
 simplified by reusing existing Ardour classes, functions, or data structures.
 
 The review was static. No production source code was changed in the course of
-writing the original report. Items 1–9 have since been implemented as a series
-of follow-up commits; they are recorded below as one-line summaries with their
-current locations and commit hashes. Items 10–14 remain outstanding.
+writing the original report. All fourteen items have since been implemented;
+items 1–9 landed first as a series of follow-up commits, and items 10–14
+followed. The completed work is recorded below with current locations and
+commit hashes where applicable.
 
 Unit tests exist for the completed items (see `libs/tracker/test/`). The build
 tree used for this revision has tests enabled (`BUILD_TESTS = True`), and the
-tracker suite passes (81 tests as of item 11).
+tracker suite passes (81 tests).
 
 Scale at the time of writing: `libs/tracker/` is about 9k lines and
 `gtk2_ardour/tracker/` about 13k, of which `grid.cc` alone is 7.4k.
 
-The strongest remaining candidates are:
-
-- Caching color strings (item 12).
-- Consolidating the remaining controller-menu callbacks.
+All numbered items are complete. The remaining optional follow-ups are listed
+under “Further observations”.
 
 ### Status at a glance
 
@@ -38,11 +37,11 @@ The strongest remaining candidates are:
 | 9 | Keyboard modifier tracking and forwarding | Done (`55273f6c0f`) |
 | 10 | `std::unique_ptr` ownership for tracker-owned collections | Done |
 | 11 | Tick-space row arithmetic in `BasePattern` | Done |
-| 12 | Cache or reuse GDK/GTK color conversion | Outstanding |
+| 12 | Cache or reuse GDK/GTK color conversion | Done (colors cached) |
 | 13 | `ARDOUR::RegionSortByPosition` for region sorting | Done (comparator removed) |
 | 14 | Remove unused code | Done |
 
-## Completed work (items 1–11, 13–14)
+## Completed work (items 1–14)
 
 **1. Shared controller menu.** `MidiTrackToolbar::build_controller_menu()`
 (`gtk2_ardour/tracker/midi_track_toolbar.cc:278-296`) now calls the shared
@@ -137,6 +136,15 @@ rows span 1904 ticks rather than a full 1920-tick beat. `BasePatternTest` now
 covers every supported division, delay row selection, and the 28-rows/beat
 boundaries and drift.
 
+**12. Cached color strings.** `Grid::read_colors()` now converts each
+configured color to its `#rrggbb` string once and stores it alongside the
+`Gtkmm2ext::Color` (`gtk2_ardour/tracker/grid.h:955-977`,
+`grid.cc:1488-1505`). The redisplay paths use those cached strings directly,
+so `TrackerUtils::color_to_string()` is no longer called per cell; it remains
+the one-time converter and is still covered by `TrackerUtilsTest`. The model
+columns remain string-based: switching them to `Gdk::Color` would be a much
+larger schema change without a clear benefit.
+
 **13. Region comparator.** Removed `TrackerUtils::region_position_less`,
 which had no production users. Any future tracker-side region sort should use
 `ARDOUR::RegionSortByPosition` (`libs/ardour/ardour/region_sorters.h:26-30`).
@@ -151,34 +159,6 @@ and the `row_at_time_{min,max}_delay` wrappers, `Pattern::sample_at_row_at_mti`,
 `NUMBER_OF_COL_PER_*` macros), the two undefined-cursor setters,
 `redisplay_undefined_region_name`, `mk_blank`, `MainToolbar::rows_per_beat_{up,
 down}`, `TrackToolbar::setup_label`, and `MidiTrackToolbar::print_widths`.
-
-## Outstanding opportunities
-
-### 12. Reuse GDK/GTK color conversion where convenient, without regressing the hot path
-
-**Current code:**
-
-- `libs/tracker/tracker_utils.cc:388-401` — `TrackerUtils::color_to_string()`
-- String color columns in `gtk2_ardour/tracker/grid.h:84-115`
-- `Grid::read_colors()` — `grid.cc:1488-1500`
-- Direct cairo overlay — `grid.cc:2012`
-
-Possible existing facilities include:
-
-- `Gtkmm2ext::gdk_color_from_rgb()` / `gdk_color_from_rgba()`
-- `Gdk::Color::to_string()` or `gdk_color_to_string()`
-- `Gtk::TreeModelColumn<Gdk::Color>` and GDK cell-renderer properties
-
-The custom `#rrggbb` converter is already deliberately optimized, so repeated
-per-cell GDK object construction should be avoided. A better simplification
-would be to convert/cache colors once in `read_colors()` and reuse those
-values.
-
-Changing every model column to `Gdk::Color` is possible but a much larger and
-not obviously worthwhile schema change.
-
-**Priority:** low; the current implementation is correct and
-performance-conscious.
 
 ## Further observations
 
@@ -237,5 +217,5 @@ The following substitutions are not recommended:
 
 ## Suggested order of work
 
-1. **Optional polish:** cache color strings (item 12) and address the
-   follow-ups in “Further observations”.
+All numbered items are complete. The remaining optional follow-ups are in
+“Further observations”.

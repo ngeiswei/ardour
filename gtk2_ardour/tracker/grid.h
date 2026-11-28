@@ -20,6 +20,7 @@
 #define __ardour_tracker_tracker_grid_h_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <sigc++/connection.h>
@@ -961,6 +962,19 @@ private:
 	Gtkmm2ext::Color current_row_color;
 	Gtkmm2ext::Color current_edit_row_color;
 	Gtkmm2ext::Color selection_color;
+
+	// Precomputed #rrggbb strings for the colors above.  Cell rendering uses
+	// these directly instead of converting a color for every cell.
+	std::string gtk_bases_color_str;
+	std::string beat_background_color_str;
+	std::string bar_background_color_str;
+	std::string background_color_str;
+	std::string active_foreground_color_str;
+	std::string passive_foreground_color_str;
+	std::string cursor_color_str;
+	std::string current_row_color_str;
+	std::string current_edit_row_color_str;
+	std::string selection_color_str;
 
 	// Keep track of phenomenal differences between prev_pattern and pattern so
 	// speed up redisplay_grid
