@@ -135,11 +135,20 @@ Grid::Grid (TrackerEditor& te)
 	// handler after the default handler (i.e. after the tree view has drawn its
 	// cells), which is exactly what we need.
 	signal_expose_event ().connect (sigc::mem_fun (*this, &Grid::on_grid_expose));
+
+	// The grid and the frozen time view lay their rows out independently, so
+	// keep their explicit row height in sync whenever the widget font (and
+	// therefore the font metrics) may have changed.
+	UIConfiguration::instance ().DPIReset.connect (sigc::mem_fun (*this, &Grid::queue_row_height_sync));
+	signal_style_changed ().connect ([this] (const Glib::RefPtr<Gtk::Style>&) { queue_row_height_sync (); });
+	time_view.signal_style_changed ().connect ([this] (const Glib::RefPtr<Gtk::Style>&) { queue_row_height_sync (); });
+	signal_map ().connect (sigc::mem_fun (*this, &Grid::queue_row_height_sync));
 }
 
 Grid::~Grid ()
 {
 	_redisplay_idle.disconnect ();
+	_row_height_idle.disconnect ();
 	disconnect_clock ();
 }
 
@@ -3661,6 +3670,10 @@ Grid::parameter_changed (std::string const& p)
 {
 	if (p == "vkeybd-layout") {
 		read_keyboard_layout ();
+	} else if (p == "font-scale") {
+		// Defer: reset_dpi() updates the font resolution right after the
+		// parameter signal, so measuring now would use stale metrics.
+		queue_row_height_sync ();
 	}
 }
 
@@ -5459,6 +5472,99 @@ Grid::setup_data_columns ()
 		setup_right_separator_column (mti);
 		setup_track_separator_column (mti);
 	}
+
+	// Both views now have all their columns; give every renderer the same
+	// explicit height so their rows cannot drift apart.
+	sync_row_height ();
+}
+
+void
+Grid::sync_row_height ()
+{
+	if (!time_column) {
+		return;
+	}
+
+	const int height = measure_row_content_height ();
+	if (height <= 0) {
+		return;
+	}
+
+	apply_row_height (height);
+}
+
+void
+Grid::queue_row_height_sync ()
+{
+	if (_row_height_idle.connected ()) {
+		return;
+	}
+
+	_row_height_idle = Glib::signal_idle ().connect (
+		[this] () {
+			sync_row_height ();
+			return false;
+		});
+}
+
+int
+Grid::measure_row_content_height ()
+{
+	// A CellRendererText reports the height of its font merged with the font
+	// of the widget it is measured against, including vertical padding.  Data
+	// columns override the family with cellfont, while the time column and the
+	// separator columns use the tree view's style font.  Measuring both and
+	// keeping the maximum gives the height of the tallest row either view can
+	// naturally produce.
+	int height = 0;
+	const std::string families[2] = { std::string (), cellfont };
+
+	for (int i = 0; i < 2; ++i) {
+		Gtk::CellRendererText probe;
+		probe.property_text () = "0";
+		if (!families[i].empty ()) {
+			probe.property_family () = families[i];
+		}
+
+		Gdk::Rectangle cell_area;
+		int x_offset = 0;
+		int y_offset = 0;
+		int width = 0;
+		int probe_height = 0;
+		probe.get_size (*this, cell_area, x_offset, y_offset, width, probe_height);
+		height = std::max (height, probe_height);
+	}
+
+	return height;
+}
+
+void
+Grid::apply_row_height (int height)
+{
+	auto apply = [height] (Gtk::TreeView& tv) {
+		std::vector<Gtk::TreeViewColumn*> cols = (std::vector<Gtk::TreeViewColumn*>)tv.get_columns ();
+		for (std::vector<Gtk::TreeViewColumn*>::iterator it = cols.begin (); it != cols.end (); ++it) {
+			Gtk::TreeViewColumn* col = *it;
+			if (!col) {
+				continue;
+			}
+
+			Gtk::CellRenderer* renderer = col->get_first_cell_renderer ();
+			if (!renderer || renderer->property_height ().get_value () == height) {
+				continue;
+			}
+
+			renderer->property_height () = height;
+
+			// A renderer size change is not picked up by rows that have
+			// already been laid out, so flag the column (and hence its rows)
+			// for size renegotiation.
+			gtk_tree_view_column_queue_resize (col->gobj ());
+		}
+	};
+
+	apply (*this);
+	apply (time_view);
 }
 
 void

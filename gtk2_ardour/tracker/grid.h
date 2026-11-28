@@ -437,6 +437,17 @@ private:
 	void setup_tree_view ();
 	void setup_time_column ();
 	void setup_data_columns ();
+
+	// The grid and the frozen time column are separate TreeViews, each of
+	// which derives its row height from its own cell renderers.  The time
+	// column does not use the data columns' font family, so when the system
+	// fonts have different line heights the two views drift apart
+	// progressively as rows are added.  Pin every renderer of both views to
+	// a common explicit height to keep the rows aligned regardless of fonts.
+	void sync_row_height ();
+	void queue_row_height_sync ();
+	void apply_row_height (int height);
+	int  measure_row_content_height ();
 public:
 	void setup_init_cursor ();
 	void setup_init_row ();
@@ -986,6 +997,9 @@ private:
 	// one redisplay per event loop turn instead.
 	sigc::connection _redisplay_idle;
 	bool on_redisplay_idle ();
+
+	// Coalesced pending sync_row_height() (e.g. after a font/DPI change).
+	sigc::connection _row_height_idle;
 
 	// Run a scheduled coalesced redisplay right away, if any, so that code
 	// which is about to read the pattern (cursor moves, cell lookups) sees an
