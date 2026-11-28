@@ -14,6 +14,9 @@ class BasePatternTest : public CppUnit::TestFixture
 	CPPUNIT_TEST (testBeatsAtRow);
 	CPPUNIT_TEST (testDelayBounds);
 	CPPUNIT_TEST (testDelayRoundTrip);
+	CPPUNIT_TEST (testIntegerTickRows);
+	CPPUNIT_TEST (testDelayRowSelection);
+	CPPUNIT_TEST (test28RowsPerBeat);
 	CPPUNIT_TEST (testIsDefined);
 	CPPUNIT_TEST (testRegionRelativeBeats);
 	CPPUNIT_TEST (testRankedRowHelpers);
@@ -29,6 +32,9 @@ public:
 	void testBeatsAtRow ();
 	void testDelayBounds ();
 	void testDelayRoundTrip ();
+	void testIntegerTickRows ();
+	void testDelayRowSelection ();
+	void test28RowsPerBeat ();
 	void testIsDefined ();
 	void testRegionRelativeBeats ();
 	void testRankedRowHelpers ();

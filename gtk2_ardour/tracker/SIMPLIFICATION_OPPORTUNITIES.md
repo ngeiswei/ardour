@@ -11,19 +11,17 @@ writing the original report. Items 1–9 have since been implemented as a series
 of follow-up commits; they are recorded below as one-line summaries with their
 current locations and commit hashes. Items 10–14 remain outstanding.
 
-Unit tests exist for several of the completed items (see
-`libs/tracker/test/`). They were not executed for this revision because the
-build tree in use was configured with `BUILD_TESTS = False`; validating them
-requires a build with tests enabled.
+Unit tests exist for the completed items (see `libs/tracker/test/`). The build
+tree used for this revision has tests enabled (`BUILD_TESTS = True`), and the
+tracker suite passes (81 tests as of item 11).
 
 Scale at the time of writing: `libs/tracker/` is about 9k lines and
 `gtk2_ardour/tracker/` about 13k, of which `grid.cc` alone is 7.4k.
 
 The strongest remaining candidates are:
 
-- Moving `BasePattern` row arithmetic into tick space, with tests.
-- Optionally caching color strings and consolidating the remaining
-  controller-menu callbacks.
+- Caching color strings (item 12).
+- Consolidating the remaining controller-menu callbacks.
 
 ### Status at a glance
 
@@ -39,12 +37,12 @@ The strongest remaining candidates are:
 | 8 | Single automation registry for the toolbar | Done (`eb63bb69a8`) |
 | 9 | Keyboard modifier tracking and forwarding | Done (`55273f6c0f`) |
 | 10 | `std::unique_ptr` ownership for tracker-owned collections | Done |
-| 11 | Tick-space row arithmetic in `BasePattern` | Outstanding |
+| 11 | Tick-space row arithmetic in `BasePattern` | Done |
 | 12 | Cache or reuse GDK/GTK color conversion | Outstanding |
 | 13 | `ARDOUR::RegionSortByPosition` for region sorting | Done (comparator removed) |
 | 14 | Remove unused code | Done |
 
-## Completed work (items 1–10, 13–14)
+## Completed work (items 1–11, 13–14)
 
 **1. Shared controller menu.** `MidiTrackToolbar::build_controller_menu()`
 (`gtk2_ardour/tracker/midi_track_toolbar.cc:278-296`) now calls the shared
@@ -126,6 +124,19 @@ patterns, while `Pattern`/`MidiTrackPattern` continue to copy into existing
 objects in place. The tracker registry and phenomenal-diff tests cover the
 resulting ownership behaviour.
 
+**11. Tick-space row arithmetic.** `BasePattern` now uses Ardour's integer
+grid step: `_ticks_per_row = Temporal::ticks_per_beat / rows_per_beat` and
+`beats_per_row = Beats::ticks(_ticks_per_row)` (`base_pattern.cc:174-193`).
+`beats_at_row()` multiplies that tick duration directly, `find_nrows()` divides
+the row range by it, and `row_distance()`/`row_at_beats()` use `int_div_round`
+with the same divisor (`:262-265`). Min/max-delay row selection uses
+ceiling/floor division by `_ticks_per_row` (`:274-292`), and `row_distance()`
+now returns `int`. This matches `EditingContext::get_grid_beat_divisions()` and
+`Beats::round_to_subdivision()`. At 28 rows/beat the row is 68 ticks, so 28
+rows span 1904 ticks rather than a full 1920-tick beat. `BasePatternTest` now
+covers every supported division, delay row selection, and the 28-rows/beat
+boundaries and drift.
+
 **13. Region comparator.** Removed `TrackerUtils::region_position_less`,
 which had no production users. Any future tracker-side region sort should use
 `ARDOUR::RegionSortByPosition` (`libs/ardour/ardour/region_sorters.h:26-30`).
@@ -142,51 +153,6 @@ and the `row_at_time_{min,max}_delay` wrappers, `Pattern::sample_at_row_at_mti`,
 down}`, `TrackToolbar::setup_label`, and `MidiTrackToolbar::print_widths`.
 
 ## Outstanding opportunities
-
-### 11. Keep `BasePattern` row arithmetic in tick space
-
-**Current code:**
-
-- `libs/tracker/base_pattern.cc:172-183` — `set_rows_per_beat()`
-- `:199-202` — `find_nrows()`
-- `:224-229` — `beats_at_row()`
-- `:254-258` — `row_distance()`
-- `:267-274` and `:277-284` — min/max-delay row selection
-- `:304-313` — delay bounds
-
-Several conversions go through `Temporal::DoubleableBeats` and `double`, even
-though `Temporal::Beats` and PBD already provide exact integer operations:
-
-- `beats_per_row * rowi` instead of `Beats::from_double(rowi / rows_per_beat)`.
-- `PBD::muldiv_round()` from `pbd/integer_division.h:52` for nearest-row
-  calculations.
-- `PBD::muldiv_floor()` (`:90`) for row counts.
-- Deriving `_ticks_per_row` directly from `beats_per_row.to_ticks()`.
-
-For example, nearest-row distance can be expressed using:
-
-```cpp
-PBD::muldiv_round ((to - from).to_ticks (),
-                   rows_per_beat, Temporal::ticks_per_beat);
-```
-
-This is not merely cosmetic. At 28 rows/beat:
-
-- `Beats::from_double(1.0 / 28)` rounds to **69 ticks**.
-- `_ticks_per_row` currently becomes `1920 / 28 == 68`.
-
-Thus row positions and delay bounds currently use different row durations.
-
-The lowest-risk first change is to derive `_ticks_per_row` from the existing
-`beats_per_row`, preserving the current 69-tick row spacing while making delay
-calculations consistent. A separate decision can then be made about the
-desired duration for non-divisor resolutions.
-
-Tests should include 7, 14, and especially 28 rows/beat, plus nearest,
-minimum, and maximum delay behavior.
-
-**Confidence:** high simplification value, but arithmetic behavior should be
-reviewed and tested rather than changed blindly.
 
 ### 12. Reuse GDK/GTK color conversion where convenient, without regressing the hot path
 
@@ -271,7 +237,5 @@ The following substitutions are not recommended:
 
 ## Suggested order of work
 
-1. **Behavior-sensitive work with tests:** move row arithmetic into tick space
-   (item 11), especially at 7, 14, and 28 rows/beat.
-2. **Optional polish:** cache color strings (item 12) and address the
+1. **Optional polish:** cache color strings (item 12) and address the
    follow-ups in “Further observations”.

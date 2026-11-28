@@ -134,15 +134,13 @@ public:
 	// region's position
 	Temporal::Beats region_relative_beats_at_row (int rowi, int delay=0) const;
 
-	// Return the row index corresponding to the given beats, assuming the
-	// minimum allowed delay is -_ticks_per_row/2 and the maximum allowed delay
-	// is _ticks_per_row/2.  If beats is outside of the pattern beats interval,
-	// then return INVALID_ROW.
+	// Return the nearest row index to the given beats.  If beats is outside
+	// of the pattern beats interval, then return INVALID_ROW.
 	int row_at_beats (const Temporal::Beats& beats) const;
 
-	// Return the number rows from contained between 2 beats. Return double just
-	// in case fraction of rows are used.
-	double row_distance (const Temporal::Beats& from, const Temporal::Beats& to) const;
+	// Return the nearest row distance between two beats (positive when to
+	// follows from, negative otherwise).
+	int row_distance (const Temporal::Beats& from, const Temporal::Beats& to) const;
 
 	// Like row_at_beats but use timepos_t instead of Beats
 	int row_at_time (Temporal::timepos_t pos) const;

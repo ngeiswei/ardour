@@ -245,7 +245,7 @@ Pattern::update_global_nrows ()
 	global_nrows = 0;
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		TrackPattern* tp = tps[mti].get ();
-		row_offset[mti] = (int)tp->row_distance (earliest_tp->position_row_beats, tp->position_row_beats);
+		row_offset[mti] = tp->row_distance (earliest_tp->position_row_beats, tp->position_row_beats);
 		tracks_nrows[mti] = tp->nrows;
 		global_nrows = std::max (global_nrows, row_offset[mti] + tracks_nrows[mti]);
 	}

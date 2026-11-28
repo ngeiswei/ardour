@@ -19,6 +19,8 @@
 #include <cmath>
 #include <map>
 
+#include "pbd/integer_division.h"
+
 #include "ardour/region.h"
 #include "ardour/session.h"
 #include "ardour/tempo.h"
@@ -173,8 +175,16 @@ BasePattern::set_rows_per_beat (uint16_t rpb, bool rfs)
 {
 	rows_per_beat = rpb;
 	// TODO: deal with rpb == 0 which would mean one row per bar
-	beats_per_row = Temporal::Beats::from_double (1.0 / rows_per_beat);
+
+	/* Match Ardour's grid arithmetic: a division of N rows per beat is
+	 * ticks_per_beat / N ticks (integer division). For example, 28 rows per
+	 * beat is 68 ticks, not the 69 ticks produced by
+	 * Beats::from_double(1.0 / 28). See
+	 * EditingContext::get_grid_beat_divisions() and
+	 * Beats::round_to_subdivision().
+	 */
 	_ticks_per_row = Temporal::ticks_per_beat / rows_per_beat;
+	beats_per_row = Temporal::Beats::ticks (_ticks_per_row);
 
 	if (rfs) {
 		// Set flag to rebuild the event to row mapping from scratch next time
@@ -198,7 +208,7 @@ BasePattern::find_end_row_beats () const
 int
 BasePattern::find_nrows () const
 {
-	return Temporal::DoubleableBeats (end_row_beats - position_row_beats).to_double () * rows_per_beat;
+	return (int) ((end_row_beats - position_row_beats).to_ticks () / _ticks_per_row);
 }
 
 void
@@ -223,9 +233,7 @@ BasePattern::sample_at_row (int rowi, int delay) const
 Temporal::Beats
 BasePattern::beats_at_row (int rowi, int delay) const
 {
-	Temporal::Beats result = position_row_beats + Temporal::Beats::from_double((rowi*1.0) / rows_per_beat);
-	result += Temporal::Beats::ticks (delay);
-	return result;
+	return position_row_beats + Temporal::Beats::ticks ((int64_t) rowi * _ticks_per_row + delay);
 }
 
 Temporal::BBT_Time
@@ -250,11 +258,10 @@ BasePattern::row_at_beats (const Temporal::Beats& beats) const
 	return INVALID_ROW;
 }
 
-double
+int
 BasePattern::row_distance (const Temporal::Beats& from, const Temporal::Beats& to) const
 {
-	Temporal::Beats half_row = Temporal::Beats::from_double(0.5 / rows_per_beat);
-	return Temporal::DoubleableBeats (to - from + half_row).to_double () * rows_per_beat;
+	return (int) int_div_round ((to - from).to_ticks (), (int64_t) _ticks_per_row);
 }
 
 int
@@ -267,8 +274,10 @@ int
 BasePattern::row_at_beats_min_delay (const Temporal::Beats& beats) const
 {
 	if (position_row_beats <= beats and beats <= end_row_beats) {
-		Temporal::Beats tpr_minus_1 = Temporal::Beats::ticks (_ticks_per_row - 1);
-		return Temporal::DoubleableBeats (beats - position_row_beats + tpr_minus_1).to_double () * rows_per_beat;
+		/* Smallest row whose start is at or after beats, i.e. the first row
+		 * that can represent beats with a non-positive delay. */
+		const int64_t ticks = (beats - position_row_beats).to_ticks ();
+		return (int) ((ticks + _ticks_per_row - 1) / _ticks_per_row);
 	}
 	return INVALID_ROW;
 }
@@ -277,7 +286,9 @@ int
 BasePattern::row_at_beats_max_delay (const Temporal::Beats& beats) const
 {
 	if (position_row_beats <= beats and beats <= end_row_beats) {
-		return Temporal::DoubleableBeats(beats - position_row_beats).to_double () * rows_per_beat;
+		/* Largest row whose start is at or before beats, i.e. the last row
+		 * that can represent beats with a non-negative delay. */
+		return (int) ((beats - position_row_beats).to_ticks () / _ticks_per_row);
 	}
 	return INVALID_ROW;
 }
