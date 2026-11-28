@@ -22,8 +22,8 @@ Scale at the time of writing: `libs/tracker/` is about 9k lines and
 The strongest remaining candidates are:
 
 - Removing the dead code catalogued in item 14.
-- Converting phenomenal diffs (and then other raw-owned collections) to
-  `std::unique_ptr`.
+- Converting the remaining raw-owned collections (`tps`, `mrps`, the processor
+  registry, track headers, and Grid columns) to `std::unique_ptr`.
 - Moving `BasePattern` row arithmetic into tick space, with tests.
 - Optionally caching color strings and consolidating the remaining
   controller-menu callbacks.
@@ -41,7 +41,7 @@ The strongest remaining candidates are:
 | 7 | `Gtk::ToggleAction` for tracker modes | Done (`6c86ae7e86`) |
 | 8 | Single automation registry for the toolbar | Done (`eb63bb69a8`) |
 | 9 | Keyboard modifier tracking and forwarding | Done (`55273f6c0f`) |
-| 10 | `std::unique_ptr` ownership, starting with phenomenal diffs | Outstanding |
+| 10 | `std::unique_ptr` ownership, starting with phenomenal diffs | Phenomenal diffs done; larger collections outstanding |
 | 11 | Tick-space row arithmetic in `BasePattern` | Outstanding |
 | 12 | Cache or reuse GDK/GTK color conversion | Outstanding |
 | 13 | `ARDOUR::RegionSortByPosition` for region sorting | Outstanding (remove comparator) |
@@ -118,24 +118,22 @@ offers unmodified keys only to Ardour's global bindings.
 
 ## Outstanding opportunities
 
-### 10. Use `std::unique_ptr` for ownership, starting with phenomenal diffs
+### 10. Use `std::unique_ptr` for ownership
 
-**Current code:**
+**Status: phenomenal diffs done; larger collections outstanding.**
 
-- `libs/tracker/pattern_phenomenal_diff.h:31-48`
-- `libs/tracker/pattern_phenomenal_diff.cc:27-41`
+`PatternPhenomenalDiff::mti2tp_diff` is now
+`std::map<int, std::unique_ptr<TrackPatternPhenomenalDiff>>`
+(`libs/tracker/pattern_phenomenal_diff.h:30-41`), and
+`TrackPattern::phenomenal_diff_ptr()` together with its MIDI and audio
+overrides return `std::unique_ptr`. The custom `release()`, destructor, and
+move assignment were removed; the defaulted move operations and the
+`unique_ptr` map now provide the ownership semantics.
+`Pattern::phenomenal_diff()` only moves non-empty diffs into the map
+(`libs/tracker/pattern.cc:106-116`), and `Grid` calls `.get()` when passing a
+diff to `redisplay_track()` (`gtk2_ardour/tracker/grid.cc:2484-2488`).
 
-`mti2tp_diff` manually owns raw pointers, requiring custom `release()`, a
-destructor, and move assignment. Changing it to something like:
-
-```cpp
-std::map<int, std::unique_ptr<TrackPatternPhenomenalDiff>>
-```
-
-and returning `std::unique_ptr` from `phenomenal_diff_ptr()` would provide
-destruction and move behavior automatically.
-
-Other raw-owned collections:
+Remaining raw-owned collections:
 
 - `Pattern::tps` — `libs/tracker/pattern.h:208`, freed in `pattern.cc:46-50`
 - `MidiTrackPattern::mrps` — `midi_track_pattern.h:182`, freed in
@@ -150,10 +148,12 @@ Other raw-owned collections:
 
 These larger objects have snapshot/copy semantics, so they should be converted
 deliberately with explicit clone/snapshot operations rather than mechanically
-replacing pointer types. The toolbar automation info/nodes listed by an
-earlier revision of this report no longer exist; item 8 removed them.
+replacing pointer types. `TrackAllAutomationsPattern::operator=` already
+deep-copies its processor patterns, and `Pattern`/`MidiTrackPattern` copy into
+existing objects in place, so those conversions are mostly about container
+types and the handful of places that currently assign raw pointers.
 
-**Confidence:** very high for phenomenal diffs; medium elsewhere.
+**Confidence:** very high for phenomenal diffs (done); medium elsewhere.
 
 ### 11. Keep `BasePattern` row arithmetic in tick space
 
@@ -341,8 +341,9 @@ The following substitutions are not recommended:
 1. **Low-risk cleanup:** remove the dead code in item 14 (including the
    expanded list above) and the unused `region_position_less` comparator
    (item 13).
-2. **Ownership:** convert `PatternPhenomenalDiff` to `std::unique_ptr`
-   (item 10), then consider the other raw-owned collections deliberately.
+2. **Ownership:** convert the remaining raw-owned collections in item 10
+   (`tps`, `mrps`, the processor registry, track headers, then Grid columns)
+   deliberately, preserving their snapshot/copy behavior.
 3. **Behavior-sensitive work with tests:** move row arithmetic into tick space
    (item 11), especially at 7, 14, and 28 rows/beat.
 4. **Optional polish:** cache color strings (item 12) and address the

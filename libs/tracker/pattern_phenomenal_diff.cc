@@ -17,37 +17,10 @@
  */
 
 #include <sstream>
-#include <utility>
 
 #include "pattern_phenomenal_diff.h"
 
 using namespace Tracker;
-
-void
-PatternPhenomenalDiff::release ()
-{
-	for (Mti2TrackPatternDiff::iterator it = mti2tp_diff.begin (); it != mti2tp_diff.end (); ++it) {
-		delete it->second;
-	}
-	mti2tp_diff.clear ();
-}
-
-PatternPhenomenalDiff& 
-PatternPhenomenalDiff::operator= (PatternPhenomenalDiff&& other)
-{
-	if (this != &other) {
-		release ();
-		mti2tp_diff = std::move (other.mti2tp_diff);
-		other.mti2tp_diff.clear ();
-		full = other.full;
-	}
-	return *this;
-}
-
-PatternPhenomenalDiff::~PatternPhenomenalDiff ()
-{
-	release ();
-}
 
 bool
 PatternPhenomenalDiff::empty () const
@@ -63,9 +36,8 @@ PatternPhenomenalDiff::to_string (const std::string& indent) const
 	ss << indent << "mti2tp_diff:";
 	for (Mti2TrackPatternDiff::const_iterator it = mti2tp_diff.begin (); it != mti2tp_diff.end (); ++it) {
 		int mti = it->first;
-		TrackPatternPhenomenalDiff* tp_diff = it->second;
 		ss << std::endl << indent + "  " << "track_pattern_diff[" << mti << "]:" << std::endl;
-		ss << tp_diff->to_string (indent + "    ");
+		ss << it->second->to_string (indent + "    ");
 	}
 	return ss.str ();
 }

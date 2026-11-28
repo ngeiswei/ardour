@@ -19,6 +19,8 @@
 #ifndef __ardour_tracker_track_pattern_h_
 #define __ardour_tracker_track_pattern_h_
 
+#include <memory>
+
 #include "ardour/audio_track.h"
 #include "ardour/midi_track.h"
 #include "ardour/region.h"
@@ -53,7 +55,7 @@ public:
 
 	TrackPattern& operator= (const TrackPattern& other);
 
-	virtual TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const = 0;
+	virtual std::unique_ptr<TrackPatternPhenomenalDiff> phenomenal_diff_ptr (const TrackPattern* prev) const = 0;
 
 	MidiTrackPtr midi_track ();
 	AudioTrackPtr audio_track ();

@@ -2483,7 +2483,7 @@ Grid::redisplay_pattern ()
 	} else {
 		for (const PatternPhenomenalDiff::Mti2TrackPatternDiff::value_type& mti_tpd : _phenomenal_diff.mti2tp_diff)
 		{
-			redisplay_track (mti_tpd.first, mti_tpd.second);
+			redisplay_track (mti_tpd.first, mti_tpd.second.get ());
 		}
 	}
 }

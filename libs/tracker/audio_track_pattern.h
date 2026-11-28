@@ -19,6 +19,8 @@
 #ifndef __ardour_tracker_audio_track_pattern_h_
 #define __ardour_tracker_audio_track_pattern_h_
 
+#include <memory>
+
 #include "ardour/audio_track.h"
 #include "ardour/audioregion.h"
 
@@ -53,7 +55,7 @@ public:
 
 	// Create a new PhenomenalDiff object at every call; ownership is
 	// passed to the caller.
-	TrackPatternPhenomenalDiff* phenomenal_diff_ptr (const TrackPattern* prev) const;
+	std::unique_ptr<TrackPatternPhenomenalDiff> phenomenal_diff_ptr (const TrackPattern* prev) const;
 
 	AudioTrackPatternPhenomenalDiff phenomenal_diff (const AudioTrackPattern& prev) const;
 };

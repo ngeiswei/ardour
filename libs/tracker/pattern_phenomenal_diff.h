@@ -20,6 +20,7 @@
 #define __ardour_tracker_pattern_phenomenal_diff_h_
 
 #include <map>
+#include <memory>
 
 #include "track_pattern_phenomenal_diff.h"
 
@@ -29,23 +30,17 @@ namespace Tracker {
 // set of mti that have changed.
 struct PatternPhenomenalDiff : public BasePatternPhenomenalDiff {
 	PatternPhenomenalDiff () = default;
-	// Non-copyable but movable: mti2tp_diff owns raw pointers.
+	// Non-copyable but movable: mti2tp_diff owns the nested diffs.
 	PatternPhenomenalDiff (const PatternPhenomenalDiff&) = delete;
 	PatternPhenomenalDiff& operator= (const PatternPhenomenalDiff&) = delete;
 	PatternPhenomenalDiff (PatternPhenomenalDiff&&) = default;
-	// Defined out of line: it must release the previously owned diffs.
-	PatternPhenomenalDiff& operator= (PatternPhenomenalDiff&& other);
-	~PatternPhenomenalDiff ();
+	PatternPhenomenalDiff& operator= (PatternPhenomenalDiff&&) = default;
 
-	typedef std::map<int, TrackPatternPhenomenalDiff*> Mti2TrackPatternDiff;
-	// Owned by this diff, see ~PatternPhenomenalDiff
+	typedef std::map<int, std::unique_ptr<TrackPatternPhenomenalDiff>> Mti2TrackPatternDiff;
 	Mti2TrackPatternDiff mti2tp_diff;
 
 	bool empty () const;
 	std::string to_string (const std::string& indent = std::string ()) const;
-
-private:
-	void release ();
 };
 
 } // ~namespace Tracker

@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "evoral/Parameter.h"
 
 #include "automation_pattern_phenomenal_diff.h"
@@ -189,6 +191,6 @@ PhenomenalDiffTest::testPatternDiff ()
 	d.full = false;
 	CPPUNIT_ASSERT (d.empty ());
 
-	d.mti2tp_diff[0] = 0;
+	d.mti2tp_diff[0] = std::make_unique<TrackPatternPhenomenalDiff> ();
 	CPPUNIT_ASSERT (!d.empty ());
 }

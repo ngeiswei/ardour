@@ -58,12 +58,11 @@ AudioTrackPattern::update ()
 	TrackPattern::update ();
 }
 
-TrackPatternPhenomenalDiff*
+std::unique_ptr<TrackPatternPhenomenalDiff>
 AudioTrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 {
 	const AudioTrackPattern* prev_atp = prev->audio_track_pattern ();
-	AudioTrackPatternPhenomenalDiff atp_diff = phenomenal_diff (*prev_atp);
-	return new AudioTrackPatternPhenomenalDiff (atp_diff);
+	return std::make_unique<AudioTrackPatternPhenomenalDiff> (phenomenal_diff (*prev_atp));
 }
 
 AudioTrackPatternPhenomenalDiff

@@ -95,12 +95,11 @@ MidiTrackPattern::operator= (const MidiTrackPattern& other)
 	return *this;
 }
 
-TrackPatternPhenomenalDiff*
+std::unique_ptr<TrackPatternPhenomenalDiff>
 MidiTrackPattern::phenomenal_diff_ptr (const TrackPattern* prev) const
 {
 	const MidiTrackPattern* prev_mtp = prev->midi_track_pattern ();
-	MidiTrackPatternPhenomenalDiff mtp_diff = phenomenal_diff (*prev_mtp);
-	return new MidiTrackPatternPhenomenalDiff (mtp_diff);
+	return std::make_unique<MidiTrackPatternPhenomenalDiff> (phenomenal_diff (*prev_mtp));
 }
 
 MidiTrackPatternPhenomenalDiff

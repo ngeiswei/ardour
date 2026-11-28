@@ -16,6 +16,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <memory>
+#include <utility>
+
 #include "pbd/error.h"
 
 #include "ardour/session.h"
@@ -103,13 +106,11 @@ Pattern::phenomenal_diff (const Pattern& prev) const
 
 	// No global difference, let's look on a per track basis
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		// The returned diff object is either stored in mti2tp_diff (which
-		// owns it), or destroyed if empty.
-		TrackPatternPhenomenalDiff* tp_diff = tps[mti]->phenomenal_diff_ptr (prev.tps[mti]);
+		// Only keep non-empty per-track diffs; unique_ptr releases the
+		// rest automatically.
+		std::unique_ptr<TrackPatternPhenomenalDiff> tp_diff = tps[mti]->phenomenal_diff_ptr (prev.tps[mti]);
 		if (!tp_diff->empty ()) {
-			diff.mti2tp_diff[mti] = tp_diff;
-		} else {
-			delete tp_diff;
+			diff.mti2tp_diff[mti] = std::move (tp_diff);
 		}
 	}
 	return diff;
