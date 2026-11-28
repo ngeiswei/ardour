@@ -19,6 +19,8 @@
 #ifndef __ardour_tracker_midi_track_toolbar_h_
 #define __ardour_tracker_midi_track_toolbar_h_
 
+#include <vector>
+
 #include <ytkmm/box.h>
 #include <ytkmm/separator.h>
 
@@ -68,6 +70,7 @@ public:
 	 * Helpers for building automation menu.
 	 */
 	void build_automation_menu ();
+	void refresh_automation_menu ();
 	void build_midi_automation_menu ();
 	void build_controller_menu ();
 	void add_channel_command_menu_item (Gtk::Menu_Helpers::MenuList& items,
@@ -117,6 +120,10 @@ public:
 
 	/** parameter -> menu item map for the channel command items */
 	ParameterMenuMap _channel_command_menu_map;
+
+	/** MIDI items appended after the base automation items, so they can be
+	 *  removed and rebuilt when the MIDI menu is refreshed. */
+	std::vector<Gtk::MenuItem*> _midi_menu_items;
 };
 
 } // ~namespace tracker

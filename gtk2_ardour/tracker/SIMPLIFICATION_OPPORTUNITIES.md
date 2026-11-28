@@ -44,7 +44,7 @@ under “Further observations”.
 ## Completed work (items 1–14)
 
 **1. Shared controller menu.** `MidiTrackToolbar::build_controller_menu()`
-(`gtk2_ardour/tracker/midi_track_toolbar.cc:278-296`) now calls the shared
+(`gtk2_ardour/tracker/midi_track_toolbar.cc:303-316`) now calls the shared
 `build_controller_menu()` from `gtk2_ardour/midi_util.h:46`, passing its own
 single- and multi-channel callbacks. The obsolete `get_device_names()`
 forwarding methods were removed.
@@ -95,7 +95,7 @@ following, redisplay); original defaults and keyboard bindings are preserved.
 **8. Single automation registry.** `TrackToolbar` iterates
 `TrackAllAutomationsPattern::id_to_processor_automation_pattern`
 (`libs/tracker/track_all_automations_pattern.h:121`) via
-`track_toolbar.cc:217-264`; its only extra registry maps `IDParameter` to GTK
+`track_toolbar.cc:274-282`; its only extra registry maps `IDParameter` to GTK
 menu items. The parallel `ProcessorAutomationInfo`/`ProcessorAutomationNode`
 hierarchy and lookup helpers were removed. Registry refresh preserves existing
 parameter state, drops departed processors, and is wired to
@@ -162,7 +162,10 @@ down}`, `TrackToolbar::setup_label`, and `MidiTrackToolbar::print_widths`.
 
 ## Further observations
 
-These were noticed while verifying the completed items; none is urgent.
+These were noticed while verifying the completed items; none is urgent. The
+automation-menu rebuild noted earlier has been addressed: the top-level menu is
+now built once and refreshed in place, with only the processor submenu rebuilt
+when the registry changes and only the dynamic MIDI portion rebuilt per popup.
 
 - **Rows-per-beat counts still have two sources.** `RowsPerBeatChoice::rows`
   (`main_toolbar.cc:39-65`) duplicates
@@ -171,15 +174,10 @@ These were noticed while verifying the completed items; none is urgent.
   the table must be kept in sync with the core mapping by hand.
 - **Controller-item callbacks remain near-duplicates.**
   `MidiTrackToolbar::add_single_channel_controller_item` and
-  `add_multi_channel_controller_item` (`midi_track_toolbar.cc:388-467`) still
+  `add_multi_channel_controller_item` (`midi_track_toolbar.cc:413-493`) still
   mirror `MidiTimeAxisView`'s versions (`midi_time_axis.cc:991-1088`); only
   the leaf visibility mechanism differs. Item 1 removed the bulk of the
   duplication, so this is a smaller, optional follow-up.
-- **The automation menu is rebuilt on every click.**
-  `TrackToolbar::build_automation_menu()` tears down and rebuilds the
-  processor menu each time (`track_toolbar.cc:135-165`), with an existing
-  `TODO could be optimized` at line 154. The stable registry introduced by
-  item 8 now makes persistent menu items keyed by `IDParameter` feasible.
 - **`grid.cc` dominates the UI layer.** At 7.4k lines it contains several
   200–350-line functions (`rebuild_schema`, `redisplay_grid`,
   `interpolate_selection`). Splitting `Grid` by concern is the largest

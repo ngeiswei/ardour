@@ -50,6 +50,8 @@ TrackToolbar::TrackToolbar (TrackerEditor& te, TrackPattern* tp, int mti)
 	, visible_delay (true)
 	, automation_action_menu (0)
 	, controller_menu (0)
+	, _processor_automation_separator (0)
+	, _processor_automation_item (0)
 	, gain_automation_item (0)
 	, trim_automation_item (0)
 	, mute_automation_item (0)
@@ -127,7 +129,12 @@ TrackToolbar::visible_delay_press (GdkEventButton* ev)
 void
 TrackToolbar::automation_click ()
 {
-	build_automation_menu ();
+	if (!automation_action_menu) {
+		build_automation_menu ();
+	} else {
+		refresh_automation_menu ();
+	}
+
 	automation_action_menu->popup (1, gtk_get_current_event_time ());
 }
 
@@ -138,6 +145,9 @@ TrackToolbar::build_automation_menu ()
 
 	detach_menu (subplugin_menu);
 
+	_processor_automation_separator = 0;
+	_processor_automation_item = 0;
+
 	delete automation_action_menu;
 	automation_action_menu = new Menu;
 
@@ -147,21 +157,68 @@ TrackToolbar::build_automation_menu ()
 
 	build_show_hide_automations (items);
 
-	/* Attach the plugin submenu. It may have previously been used elsewhere,
-	   so it was detached above
-	*/
-
-	// TODO could be optimized, no need to rebuild everything!
 	setup_processor_menu_and_curves ();
 
-	if (!subplugin_menu.items ().empty ()) {
-		items.push_back (SeparatorElem ());
-		items.push_back (MenuElem (_("Processor automation"), subplugin_menu));
-		items.back ().set_sensitive (true);
-	}
+	items.push_back (SeparatorElem ());
+	_processor_automation_separator = &items.back ();
+
+	items.push_back (MenuElem (_("Processor automation"), subplugin_menu));
+	_processor_automation_item = &items.back ();
+	_processor_automation_item->set_sensitive (true);
+
+	update_processor_automation_item ();
 
 	/* Add any main automation */
 	build_main_automation_menu (items);
+}
+
+void
+TrackToolbar::refresh_automation_menu ()
+{
+	/* The processor registry can change while the tracker is open (plugin
+	 * insert/remove, parameter changes).  Rebuild only the processor submenu
+	 * when its contents no longer match; otherwise just refresh the states
+	 * of the existing check items. */
+	if (processor_menu_needs_rebuild ()) {
+		setup_processor_menu_and_curves ();
+		update_processor_automation_item ();
+	} else {
+		for (const ProcessorMenuMap::value_type& item : _processor_menu_items) {
+			item.second->set_active (grid.is_automation_visible (track_index, item.first));
+		}
+	}
+
+	refresh_main_automation_items ();
+}
+
+void
+TrackToolbar::refresh_main_automation_items ()
+{
+	if (gain_automation_item) {
+		gain_automation_item->set_active (grid.is_gain_visible (track_index));
+	}
+	if (is_audio_track_toolbar () && trim_automation_item) {
+		trim_automation_item->set_active (grid.is_trim_visible (track_index));
+	}
+	if (mute_automation_item) {
+		mute_automation_item->set_active (grid.is_mute_visible (track_index));
+	}
+	if (pan_automation_item) {
+		pan_automation_item->set_active (grid.is_pan_visible (track_index));
+	}
+}
+
+void
+TrackToolbar::update_processor_automation_item ()
+{
+	const bool has_processors = !subplugin_menu.items ().empty ();
+
+	if (_processor_automation_separator) {
+		_processor_automation_separator->set_visible (has_processors);
+	}
+	if (_processor_automation_item) {
+		_processor_automation_item->set_visible (has_processors);
+	}
 }
 
 void
@@ -222,6 +279,41 @@ TrackToolbar::setup_processor_menu_and_curves ()
 	for (const auto& id_pattern : track_pattern->track_all_automations_pattern.id_to_processor_automation_pattern) {
 		add_processor_to_subplugin_menu (id_pattern.second.get ());
 	}
+}
+
+bool
+TrackToolbar::processor_menu_needs_rebuild () const
+{
+	size_t count = 0;
+
+	for (const auto& id_pattern : track_pattern->track_all_automations_pattern.id_to_processor_automation_pattern) {
+		ProcessorPtr processor = track->processor_by_id (id_pattern.first);
+		if (!processor || !processor->display_to_user () || std::dynamic_pointer_cast<Amp> (processor)) {
+			continue;
+		}
+
+		const ProcessorAutomationPattern* pattern = id_pattern.second.get ();
+		if (pattern->param_to_actl.empty ()) {
+			continue;
+		}
+
+		for (const ParamAutomationControlMap::value_type& param_actl : pattern->param_to_actl) {
+			const std::string& name = pattern->get_name (param_actl.first);
+			if (name == X_("hidden")) {
+				continue;
+			}
+
+			const IDParameter id_param (pattern->id (), param_actl.first);
+			ProcessorMenuMap::const_iterator item = _processor_menu_items.find (id_param);
+			if (item == _processor_menu_items.end () ||
+			    item->second->get_label ().raw () != name) {
+				return true;
+			}
+			++count;
+		}
+	}
+
+	return count != _processor_menu_items.size ();
 }
 
 void

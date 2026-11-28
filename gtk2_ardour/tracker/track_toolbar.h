@@ -71,6 +71,9 @@ public:
 	// Virtual: MidiTrackToolbar appends its own MIDI entries to the menu
 	// built by the base class, and automation_click() must dispatch to it.
 	virtual void build_automation_menu ();
+	// Update the dynamic state of an already built menu.  Rebuilds only the
+	// parts whose structure changed (currently the processor submenu).
+	virtual void refresh_automation_menu ();
 	void build_main_automation_menu (Gtk::Menu_Helpers::MenuList& items);
 	virtual void build_show_hide_automations (Gtk::Menu_Helpers::MenuList& items);
 	void setup_processor_menu_and_curves ();
@@ -131,6 +134,13 @@ private:
 	// (and already deleted) menu.
 	Gtk::CheckMenuItem* build_main_automation_menu_item (Gtk::Menu_Helpers::MenuList& items, const std::string& label, void (Grid::*update) (int), bool active, Gtk::CheckMenuItem*& slot);
 
+	// Refresh the check states of the persistent main automation items.
+	void refresh_main_automation_items ();
+	// Show or hide the processor submenu depending on whether it has entries.
+	void update_processor_automation_item ();
+	// True if the processor submenu no longer matches the automation registry.
+	bool processor_menu_needs_rebuild () const;
+
 public:
 	TrackerEditor& tracker_editor;
 	TrackPtr track;
@@ -147,6 +157,8 @@ public:
 	Gtk::Menu                    subplugin_menu;
 	Gtk::Menu*                   automation_action_menu;
 	Gtk::Menu*                   controller_menu;
+	Gtk::MenuItem*               _processor_automation_separator;
+	Gtk::MenuItem*               _processor_automation_item;
 
 	/** processor ID and parameter -> menu item map for plugin automation */
 	ProcessorMenuMap _processor_menu_items;

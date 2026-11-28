@@ -223,7 +223,19 @@ MidiTrackToolbar::add_note_column_press (GdkEventButton* ev)
 void
 MidiTrackToolbar::build_automation_menu ()
 {
+	/* The base rebuild (if any) destroys the old top-level menu and with it
+	 * the MIDI items; forget their pointers. */
+	_midi_menu_items.clear ();
+	_channel_command_menu_map.clear ();
+	_controller_menu_map.clear ();
 	TrackToolbar::build_automation_menu ();
+	build_midi_automation_menu ();
+}
+
+void
+MidiTrackToolbar::refresh_automation_menu ()
+{
+	TrackToolbar::refresh_automation_menu ();
 	build_midi_automation_menu ();
 }
 
@@ -232,15 +244,25 @@ MidiTrackToolbar::build_midi_automation_menu ()
 {
 	/* Add any midi automation */
 
-	_channel_command_menu_map.clear ();
-
 	Menu_Helpers::MenuList& automation_items = automation_action_menu->items ();
+
+	_channel_command_menu_map.clear ();
+	_controller_menu_map.clear ();
+
+	/* Remove the MIDI items appended on the previous popup, leaving the
+	 * persistent base menu (show/hide, processor and main automation)
+	 * untouched. */
+	for (Gtk::MenuItem* item : _midi_menu_items) {
+		automation_items.remove (*item);
+	}
+	_midi_menu_items.clear ();
 
 	uint16_t selected_channels = midi_track->get_playback_channel_mask ();
 
 	if (selected_channels !=  0) {
 
 		automation_items.push_back (Menu_Helpers::SeparatorElem ());
+		_midi_menu_items.push_back (&automation_items.back ());
 
 		/* these 2 MIDI "command" types are semantically more like automation
 		   than note data, but they are not MIDI controllers. We give them
@@ -252,9 +274,12 @@ MidiTrackToolbar::build_midi_automation_menu ()
 		add_channel_command_menu_item (
 			automation_items, _("Bender"), MidiPitchBenderAutomation, 0);
 		automation_items.back ().set_sensitive (true);
+		_midi_menu_items.push_back (&automation_items.back ());
+
 		add_channel_command_menu_item (
 			automation_items, _("Pressure"), MidiChannelPressureAutomation, 0);
 		automation_items.back ().set_sensitive (true);
+		_midi_menu_items.push_back (&automation_items.back ());
 
 		/* now all MIDI controllers. Always offer the possibility that we will
 		   rebuild the controllers menu since it might need to be updated after
@@ -267,9 +292,11 @@ MidiTrackToolbar::build_midi_automation_menu ()
 		automation_items.push_back (Menu_Helpers::MenuElem (_("Controllers"), *controller_menu));
 		// TODO: add Polyphonic Pressure.  See midi_time_axis.cc.
 		automation_items.back ().set_sensitive (true);
+		_midi_menu_items.push_back (&automation_items.back ());
 	} else {
 		automation_items.push_back (
 			Menu_Helpers::MenuElem (string_compose ("<i>%1</i>", _("No MIDI Channels selected"))));
+		_midi_menu_items.push_back (&automation_items.back ());
 		dynamic_cast<Label*> (automation_items.back ().get_child ())->set_use_markup (true);
 	}
 }
