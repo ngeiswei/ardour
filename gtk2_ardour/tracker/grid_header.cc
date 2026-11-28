@@ -87,10 +87,9 @@ GridHeader::setup_track_headers ()
 				track_headers[mti]->hide ();
 			}
 		} else {
-			TrackPattern* tp = tracker_editor.grid.pattern.tps[mti];
-			TrackHeader* th = new TrackHeader (tracker_editor, tp, mti);
-			track_headers.push_back (th);
-			track_headers_hbox.pack_start (*th, Gtk::PACK_SHRINK);
+			TrackPattern* tp = tracker_editor.grid.pattern.tps[mti].get ();
+			track_headers.push_back (std::make_unique<TrackHeader> (tracker_editor, tp, mti));
+			track_headers_hbox.pack_start (*track_headers.back (), Gtk::PACK_SHRINK);
 		}
 	}
 }
@@ -100,9 +99,6 @@ GridHeader::~GridHeader ()
 	hadjustment_connection.disconnect ();
 	grid_size_allocate_connection.disconnect ();
 	align_deferred_connection.disconnect ();
-	for (std::vector<TrackHeader*>::iterator it = track_headers.begin (); it != track_headers.end (); ++it) {
-		delete *it;
-	}
 }
 
 void

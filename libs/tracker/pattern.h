@@ -19,6 +19,8 @@
 #ifndef __ardour_tracker_pattern_h_
 #define __ardour_tracker_pattern_h_
 
+#include <memory>
+
 #include "ardour/automation_list.h"
 #include "ardour/midi_model.h"
 #include "ardour/stripable.h"
@@ -42,7 +44,6 @@ public:
 	// them to various signals to trigger grid redisplay.  regions_per_track
 	// is built by the application from its own selection.
 	Pattern (TrackerContext& context, const TrackRegionsMap& regions_per_track, bool connect);
-	~Pattern ();
 
 	// Phenomenal overload of operator= (), only need to copy what is necessary
 	// for phenomenal_diff to correctly operate.
@@ -205,7 +206,7 @@ public:
 	TrackRegionsMap regions_per_track;
 
 	// Pattern per track
-	std::vector<TrackPattern*> tps;
+	std::vector<std::unique_ptr<TrackPattern> > tps;
 
 	// Row index offset and number of valid rows per mti
 	size_t                       earliest_mti;

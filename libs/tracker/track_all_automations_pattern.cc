@@ -50,13 +50,6 @@ TrackAllAutomationsPattern::TrackAllAutomationsPattern (TrackerContext& te,
 	setup_processors_automation_controls ();
 }
 
-TrackAllAutomationsPattern::~TrackAllAutomationsPattern ()
-{
-	for (auto& idpap : id_to_processor_automation_pattern) {
-		delete idpap.second;
-	}
-}
-
 TrackAllAutomationsPattern&
 TrackAllAutomationsPattern::operator= (const TrackAllAutomationsPattern& other)
 {
@@ -77,14 +70,11 @@ TrackAllAutomationsPattern::operator= (const TrackAllAutomationsPattern& other)
 	// The processor automation patterns are owned by this object.  Release the
 	// previous snapshots, then create independent copies of the new state so
 	// that this snapshot and the live pattern never share pointers.
-	for (auto& id_p : id_to_processor_automation_pattern) {
-		delete id_p.second;
-	}
 	id_to_processor_automation_pattern.clear ();
 
 	for (const auto& id_p : other.id_to_processor_automation_pattern) {
 		id_to_processor_automation_pattern[id_p.first] =
-			new ProcessorAutomationPattern (context, *id_p.second);
+			std::make_unique<ProcessorAutomationPattern> (context, *id_p.second);
 	}
 
 	return *this;
@@ -104,7 +94,7 @@ TrackAllAutomationsPattern::phenomenal_diff (const TrackAllAutomationsPattern& p
 	// Calculate phenomenal diff of processor automations
 	for (const auto& id_prauto : id_to_processor_automation_pattern) {
 		const PBD::ID& id = id_prauto.first;
-		const ProcessorAutomationPattern* auto_ptrn = id_prauto.second;
+		const ProcessorAutomationPattern* auto_ptrn = id_prauto.second.get ();
 		auto prev_it = prev.id_to_processor_automation_pattern.find(id);
 		AutomationPatternPhenomenalDiff pppd;
 		if (prev_it != prev.id_to_processor_automation_pattern.end ()) {
@@ -151,7 +141,6 @@ void TrackAllAutomationsPattern::setup_processors_automation_controls ()
 	for (auto it = id_to_processor_automation_pattern.begin ();
 	     it != id_to_processor_automation_pattern.end ();) {
 		if (active_processor_ids.find (it->first) == active_processor_ids.end ()) {
-			delete it->second;
 			it = id_to_processor_automation_pattern.erase (it);
 		} else {
 			++it;
@@ -176,7 +165,7 @@ TrackAllAutomationsPattern::setup_processor_automation_control (std::weak_ptr<AR
 	}
 
 	id_to_processor_automation_pattern[processor->id()] =
-		new ProcessorAutomationPattern(context, track, position, length, end, nt_last, connect, processor);
+		std::make_unique<ProcessorAutomationPattern> (context, track, position, length, end, nt_last, connect, processor);
 }
 
 void
@@ -235,7 +224,7 @@ TrackAllAutomationsPattern::automation_pattern (const PBD::ID& id) const
 	}
 	auto it = id_to_processor_automation_pattern.find (id);
 	if (it != id_to_processor_automation_pattern.end ()) {
-		return it->second;
+		return it->second.get ();
 	}
 	std::cerr << "Cannot find processor in TrackAllAutomationsPattern (id=" << id.to_s () << ")" << std::endl;
 	return nullptr;

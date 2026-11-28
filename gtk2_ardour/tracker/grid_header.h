@@ -19,6 +19,7 @@
 #ifndef __ardour_tracker_grid_header_h_
 #define __ardour_tracker_grid_header_h_
 
+#include <memory>
 #include <vector>
 
 #include <sigc++/connection.h>
@@ -70,7 +71,7 @@ public:
 	TrackerEditor& tracker_editor;
 
 	TimeHeader time_header;
-	std::vector<TrackHeader*> track_headers;
+	std::vector<std::unique_ptr<TrackHeader> > track_headers;
 
 private:
 	// The track headers live in a viewport that scrolls horizontally in sync

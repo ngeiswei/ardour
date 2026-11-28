@@ -944,19 +944,19 @@ private:
 	std::vector<std::vector<int> > automation_col_offsets;
 
 	// Columns
-	Gtk::TreeViewColumn* time_column;
-	std::vector<Gtk::TreeViewColumn*> left_separator_columns;
-	std::vector<Gtk::TreeViewColumn*> region_name_columns;
-	std::vector<std::vector<NoteColumn*> > note_columns;
-	std::vector<std::vector<ChannelColumn*> > channel_columns;
-	std::vector<std::vector<VelocityColumn*> > velocity_columns;
-	std::vector<std::vector<DelayColumn*> > delay_columns;
-	std::vector<std::vector<Gtk::TreeViewColumn*> > note_separator_columns;
-	std::vector<std::vector<AutomationColumn*> > automation_columns;
-	std::vector<std::vector<AutomationDelayColumn*> > automation_delay_columns;
-	std::vector<std::vector<Gtk::TreeViewColumn*> > automation_separator_columns;
-	std::vector<Gtk::TreeViewColumn*> right_separator_columns;
-	std::vector<Gtk::TreeViewColumn*> track_separator_columns;
+	std::unique_ptr<Gtk::TreeViewColumn> time_column;
+	std::vector<std::unique_ptr<Gtk::TreeViewColumn> > left_separator_columns;
+	std::vector<std::unique_ptr<Gtk::TreeViewColumn> > region_name_columns;
+	std::vector<std::vector<std::unique_ptr<NoteColumn> > > note_columns;
+	std::vector<std::vector<std::unique_ptr<ChannelColumn> > > channel_columns;
+	std::vector<std::vector<std::unique_ptr<VelocityColumn> > > velocity_columns;
+	std::vector<std::vector<std::unique_ptr<DelayColumn> > > delay_columns;
+	std::vector<std::vector<std::unique_ptr<Gtk::TreeViewColumn> > > note_separator_columns;
+	std::vector<std::vector<std::unique_ptr<AutomationColumn> > > automation_columns;
+	std::vector<std::vector<std::unique_ptr<AutomationDelayColumn> > > automation_delay_columns;
+	std::vector<std::vector<std::unique_ptr<Gtk::TreeViewColumn> > > automation_separator_columns;
+	std::vector<std::unique_ptr<Gtk::TreeViewColumn> > right_separator_columns;
+	std::vector<std::unique_ptr<Gtk::TreeViewColumn> > track_separator_columns;
 
 	// Map column index to automation cgi per track
 	std::vector<IndexBimap> col2auto_cgi;

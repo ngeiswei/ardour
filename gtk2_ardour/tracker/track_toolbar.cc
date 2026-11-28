@@ -231,7 +231,7 @@ TrackToolbar::setup_processor_menu_and_curves ()
 	subplugin_menu.items ().clear ();
 
 	for (const auto& id_pattern : track_pattern->track_all_automations_pattern.id_to_processor_automation_pattern) {
-		add_processor_to_subplugin_menu (id_pattern.second);
+		add_processor_to_subplugin_menu (id_pattern.second.get ());
 	}
 }
 

@@ -41,12 +41,6 @@ MidiTrackPattern::MidiTrackPattern (TrackerContext& te,
 	setup (regions);
 }
 
-MidiTrackPattern::~MidiTrackPattern ()
-{
-	for (size_t i = 0; i < mrps.size(); i++)
-		delete mrps[i];
-}
-
 void
 MidiTrackPattern::setup (const RegionSeq& regions)
 {
@@ -59,14 +53,17 @@ MidiTrackPattern::setup (const RegionSeq& regions)
 		if (mrp) {
 			mrp->set_selected(true);
 		} else {
-			MidiRegionPattern* new_mrp = new MidiRegionPattern(context, midi_track, midi_region, true);
-			new_mrp->set_selected(true);
-			mrps.push_back (new_mrp);
+			auto new_mrp = std::make_unique<MidiRegionPattern> (context, midi_track, midi_region, true);
+			new_mrp->set_selected (true);
+			mrps.push_back (std::move (new_mrp));
 		}
 	}
 
 	// Chronologically sort regions per track
-	struct region_less { bool operator()(const MidiRegionPattern* l, const MidiRegionPattern* r) { return *l < *r; }};
+	struct region_less {
+		bool operator() (const std::unique_ptr<MidiRegionPattern>& l,
+		                 const std::unique_ptr<MidiRegionPattern>& r) { return *l < *r; }
+	};
 	std::sort (mrps.begin (), mrps.end (), region_less());
 
 	// Enable track
@@ -540,7 +537,7 @@ MidiTrackPattern::find_midi_region_pattern (MidiRegionPtr midi_region)
 {
 	for (size_t mri = 0; mri < mrps.size (); mri++) {
 		if (mrps[mri]->midi_region == midi_region) {
-			return mrps[mri];
+			return mrps[mri].get ();
 		}
 	}
 	return nullptr;

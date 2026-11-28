@@ -285,7 +285,7 @@ AutomationIntegerTest::testProcessorRegistryRefresh ()
 	CPPUNIT_ASSERT (processor);
 	auto before_it = pattern.id_to_processor_automation_pattern.find (processor->id ());
 	CPPUNIT_ASSERT (before_it != pattern.id_to_processor_automation_pattern.end ());
-	ProcessorAutomationPattern* before = before_it->second;
+	ProcessorAutomationPattern* before = before_it->second.get ();
 	before->insert_actl (make_control (_integer_param, true), "integer");
 	before->set_param_enabled (_integer_param, true);
 
@@ -295,7 +295,7 @@ AutomationIntegerTest::testProcessorRegistryRefresh ()
 
 	auto after_it = pattern.id_to_processor_automation_pattern.find (processor->id ());
 	CPPUNIT_ASSERT (after_it != pattern.id_to_processor_automation_pattern.end ());
-	CPPUNIT_ASSERT (before == after_it->second);
+	CPPUNIT_ASSERT (before == after_it->second.get ());
 	CPPUNIT_ASSERT (after_it->second->is_param_enabled (_integer_param));
 	CPPUNIT_ASSERT (after_it->second->is_integer (_integer_param));
 }

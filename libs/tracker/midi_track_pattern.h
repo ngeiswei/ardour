@@ -42,7 +42,6 @@ public:
 	                  Temporal::timepos_t end,
 	                  Temporal::timepos_t nt_last,
 	                  bool connect);
-	virtual ~MidiTrackPattern ();
 
 	void setup (const RegionSeq& regions);
 
@@ -181,7 +180,7 @@ public:
 	virtual std::string to_string (const std::string& indent = std::string ()) const;
 
 	MidiTrackPtr midi_track;
-	std::vector<MidiRegionPattern*> mrps;
+	std::vector<std::unique_ptr<MidiRegionPattern> > mrps;
 
 	// Keep track of enabled region automations
 	ParameterSet enabled_region_params;

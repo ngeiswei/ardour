@@ -118,7 +118,7 @@ Grid::Grid (TrackerEditor& te)
 	, last_keyval (GDK_VoidSymbol)
 	, redisplay_grid_connect_call_enabled (true)
 	, cellfont ("Monospace")
-	, time_column (0)
+	, time_column (nullptr)
 	, _last_base (-1)
 	, _force_full_redisplay (false)
 	, _fresh_rows (false)
@@ -141,25 +141,6 @@ Grid::~Grid ()
 {
 	_redisplay_idle.disconnect ();
 	disconnect_clock ();
-	delete time_column;
-	for (size_t mti = 0; mti < pattern.tps.size (); mti++) {
-		delete left_separator_columns[mti];
-		delete region_name_columns[mti];
-		for (size_t cgi = 0; cgi < note_columns[mti].size (); cgi++) {
-			delete note_columns[mti][cgi];
-			delete channel_columns[mti][cgi];
-			delete velocity_columns[mti][cgi];
-			delete delay_columns[mti][cgi];
-			delete note_separator_columns[mti][cgi];
-		}
-		for (size_t cgi = 0; cgi < automation_columns[mti].size (); cgi++) {
-			delete automation_columns[mti][cgi];
-			delete automation_delay_columns[mti][cgi];
-			delete automation_separator_columns[mti][cgi];
-		}
-		delete right_separator_columns[mti];
-		delete track_separator_columns[mti];
-	}
 }
 
 namespace {
@@ -1067,18 +1048,18 @@ Grid::init_columns ()
 			continue;
 		}
 
-		left_separator_columns.push_back (0);
-		region_name_columns.push_back (0);
-		note_columns.push_back (std::vector<NoteColumn*> ());
-		channel_columns.push_back (std::vector<ChannelColumn*> ());
-		velocity_columns.push_back (std::vector<VelocityColumn*> ());
-		delay_columns.push_back (std::vector<DelayColumn*> ());
-		note_separator_columns.push_back (std::vector<TreeViewColumn*> ());
-		automation_columns.push_back (std::vector<AutomationColumn*> ());
-		automation_delay_columns.push_back (std::vector<AutomationDelayColumn*> ());
-		automation_separator_columns.push_back (std::vector<TreeViewColumn*> ());
-		right_separator_columns.push_back (0);
-		track_separator_columns.push_back (0);
+		left_separator_columns.push_back (nullptr);
+		region_name_columns.push_back (nullptr);
+		note_columns.emplace_back ();
+		channel_columns.emplace_back ();
+		velocity_columns.emplace_back ();
+		delay_columns.emplace_back ();
+		note_separator_columns.emplace_back ();
+		automation_columns.emplace_back ();
+		automation_delay_columns.emplace_back ();
+		automation_separator_columns.emplace_back ();
+		right_separator_columns.push_back (nullptr);
+		track_separator_columns.push_back (nullptr);
 	}
 }
 
@@ -1219,26 +1200,7 @@ Grid::rebuild_schema (size_t nauto_hint)
 
 	// Destroy old TreeView column widgets and clear all containers so that
 	// setup_data_columns() performs a fresh build.
-	delete time_column;
-	time_column = 0;
-	for (size_t mti = 0; mti < left_separator_columns.size (); mti++) {
-		delete left_separator_columns[mti];
-		delete region_name_columns[mti];
-		for (size_t cgi = 0; cgi < note_columns[mti].size (); cgi++) {
-			delete note_columns[mti][cgi];
-			delete channel_columns[mti][cgi];
-			delete velocity_columns[mti][cgi];
-			delete delay_columns[mti][cgi];
-			delete note_separator_columns[mti][cgi];
-		}
-		for (size_t cgi = 0; cgi < automation_columns[mti].size (); cgi++) {
-			delete automation_columns[mti][cgi];
-			delete automation_delay_columns[mti][cgi];
-			delete automation_separator_columns[mti][cgi];
-		}
-		delete right_separator_columns[mti];
-		delete track_separator_columns[mti];
-	}
+	time_column.reset ();
 	left_separator_columns.clear ();
 	region_name_columns.clear ();
 	note_columns.clear ();
@@ -1281,18 +1243,18 @@ Grid::rebuild_schema (size_t nauto_hint)
 	// Re-create widget containers pre-sized to the new capacities so that
 	// setup_data_columns() can assign by index ([mti][cgi] = ...).
 	for (size_t mti = 0; mti < ntracks; mti++) {
-		left_separator_columns.push_back (0);
-		region_name_columns.push_back (0);
-		note_columns.push_back (std::vector<NoteColumn*> (nnotes, 0));
-		channel_columns.push_back (std::vector<ChannelColumn*> (nnotes, 0));
-		velocity_columns.push_back (std::vector<VelocityColumn*> (nnotes, 0));
-		delay_columns.push_back (std::vector<DelayColumn*> (nnotes, 0));
-		note_separator_columns.push_back (std::vector<TreeViewColumn*> (nnotes, 0));
-		automation_columns.push_back (std::vector<AutomationColumn*> (nauto, 0));
-		automation_delay_columns.push_back (std::vector<AutomationDelayColumn*> (nauto, 0));
-		automation_separator_columns.push_back (std::vector<TreeViewColumn*> (nauto, 0));
-		right_separator_columns.push_back (0);
-		track_separator_columns.push_back (0);
+		left_separator_columns.push_back (nullptr);
+		region_name_columns.push_back (nullptr);
+		note_columns.emplace_back (nnotes);
+		channel_columns.emplace_back (nnotes);
+		velocity_columns.emplace_back (nnotes);
+		delay_columns.emplace_back (nnotes);
+		note_separator_columns.emplace_back (nnotes);
+		automation_columns.emplace_back (nauto);
+		automation_delay_columns.emplace_back (nauto);
+		automation_separator_columns.emplace_back (nauto);
+		right_separator_columns.push_back (nullptr);
+		track_separator_columns.push_back (nullptr);
 	}
 
 	// Drop the old model and column record.
@@ -1431,19 +1393,19 @@ Grid::rebuild_schema (size_t nauto_hint)
 			switch (saved_note_type) {
 			case TrackerColumn::NoteType::NOTE:
 				col = saved_mti < (int)note_columns.size () && saved_cgi < (int)note_columns[saved_mti].size ()
-					? note_columns[saved_mti][saved_cgi] : 0;
+					? note_columns[saved_mti][saved_cgi].get () : 0;
 				break;
 			case TrackerColumn::NoteType::CHANNEL:
 				col = saved_mti < (int)channel_columns.size () && saved_cgi < (int)channel_columns[saved_mti].size ()
-					? channel_columns[saved_mti][saved_cgi] : 0;
+					? channel_columns[saved_mti][saved_cgi].get () : 0;
 				break;
 			case TrackerColumn::NoteType::VELOCITY:
 				col = saved_mti < (int)velocity_columns.size () && saved_cgi < (int)velocity_columns[saved_mti].size ()
-					? velocity_columns[saved_mti][saved_cgi] : 0;
+					? velocity_columns[saved_mti][saved_cgi].get () : 0;
 				break;
 			case TrackerColumn::NoteType::DELAY:
 				col = saved_mti < (int)delay_columns.size () && saved_cgi < (int)delay_columns[saved_mti].size ()
-					? delay_columns[saved_mti][saved_cgi] : 0;
+					? delay_columns[saved_mti][saved_cgi].get () : 0;
 				break;
 			default:
 				break;
@@ -1452,11 +1414,11 @@ Grid::rebuild_schema (size_t nauto_hint)
 			switch (saved_auto_type) {
 			case TrackerColumn::AutomationType::AUTOMATION:
 				col = saved_mti < (int)automation_columns.size () && saved_cgi < (int)automation_columns[saved_mti].size ()
-					? automation_columns[saved_mti][saved_cgi] : 0;
+					? automation_columns[saved_mti][saved_cgi].get () : 0;
 				break;
 			case TrackerColumn::AutomationType::AUTOMATION_DELAY:
 				col = saved_mti < (int)automation_delay_columns.size () && saved_cgi < (int)automation_delay_columns[saved_mti].size ()
-					? automation_delay_columns[saved_mti][saved_cgi] : 0;
+					? automation_delay_columns[saved_mti][saved_cgi].get () : 0;
 				break;
 			default:
 				break;
@@ -1476,7 +1438,7 @@ Grid::rebuild_schema (size_t nauto_hint)
 			current_automation_type = saved_auto_type;
 			current_is_note_type = saved_is_note;
 			if (saved_mti >= 0 && saved_mti < (int)pattern.tps.size ()) {
-				current_tp = pattern.tps[saved_mti];
+				current_tp = pattern.tps[saved_mti].get ();
 			}
 		} else {
 			current_col = 0;
@@ -4053,7 +4015,7 @@ Grid::editing_started (CellEditable* ed, const std::string& path, int mti, int c
 	edit_path = TreePath (path);
 	edit_row_idx = to_row_index (edit_path);
 	edit_mti = mti;
-	edit_mtp = pattern.tps[edit_mti];
+	edit_mtp = pattern.tps[edit_mti].get ();
 	edit_mri = pattern.to_mri (edit_row_idx, edit_mti);
 	edit_cgi = cgi;
 	editing_editable = ed;
@@ -4869,7 +4831,7 @@ Grid::set_current_col (TreeViewColumn* col)
 
 	// Update current mti, mtp, cgi and types
 	current_mti = to_mti (col);
-	current_tp = pattern.tps[current_mti];
+	current_tp = pattern.tps[current_mti].get ();
 	current_mri = pattern.to_mri (current_row_idx, current_mti);
 	current_cgi = to_cgi (col);
 	current_note_type = get_note_type (col);
@@ -5303,7 +5265,7 @@ Grid::set_tooltip (int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::
 	int cgi = to_cgi (col);
 
 	std::string tooltip_msg;
-	if (time_column == col) {
+	if (time_column.get () == col) {
 		tooltip_msg = time_tooltip_msg (row_idx);
 	} else if (is_note_type (col)) {
 		tooltip_msg = note_tooltip_msg (row_idx, mti, mri, cgi);
@@ -5532,7 +5494,7 @@ Grid::setup_time_column ()
 		return;
 	}
 
-	time_column = new TreeViewColumn (_("Time"), columns->time);
+	time_column = std::make_unique<TreeViewColumn> (_("Time"), columns->time);
 	Gtk::CellRenderer* time_cellrenderer = time_column->get_first_cell_renderer ();
 
 	// Link to color attributes
@@ -5615,7 +5577,7 @@ void
 Grid::setup_left_separator_column (int mti)
 {
 	left_separator_colnums[mti] = get_columns ().size ();
-	left_separator_columns[mti] = new TreeViewColumn ("", columns->left_separator[mti]);
+	left_separator_columns[mti] = std::make_unique<TreeViewColumn> ("", columns->left_separator[mti]);
 	CellRenderer* left_separator_cellrenderer = left_separator_columns[mti]->get_first_cell_renderer ();
 
 	// Link to color attributes
@@ -5633,7 +5595,7 @@ Grid::setup_region_name_column (int mti)
 {
 	region_name_colnums[mti] = get_columns ().size ();
 	std::string label ("");
-	region_name_columns[mti] = new TreeViewColumn (label, columns->region_name[mti]);
+	region_name_columns[mti] = std::make_unique<TreeViewColumn> (label, columns->region_name[mti]);
 	CellRendererText* cellrenderer_region_name = dynamic_cast<CellRendererText*> (region_name_columns[mti]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5651,7 +5613,7 @@ Grid::setup_note_column (int mti, int cgi)
 {
 	note_colnums[mti][cgi] = get_columns ().size ();
 	// TODO: maybe put the information of the mti, cgi, midi_note_type or automation_type in the TreeViewColumn
-	note_columns[mti][cgi] = new NoteColumn (columns->note_name[mti][cgi], mti, cgi);
+	note_columns[mti][cgi] = std::make_unique<NoteColumn> (columns->note_name[mti][cgi], mti, cgi);
 	CellRendererText* note_cellrenderer = dynamic_cast<CellRendererText*> (note_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5680,7 +5642,7 @@ void
 Grid::setup_note_channel_column (int mti, int cgi)
 {
 	note_channel_colnums[mti][cgi] = get_columns ().size ();
-	channel_columns[mti][cgi] = new ChannelColumn (columns->channel[mti][cgi], mti, cgi);
+	channel_columns[mti][cgi] = std::make_unique<ChannelColumn> (columns->channel[mti][cgi], mti, cgi);
 	CellRendererText* channel_cellrenderer = dynamic_cast<CellRendererText*> (channel_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5711,7 +5673,7 @@ void
 Grid::setup_note_velocity_column (int mti, int cgi)
 {
 	note_velocity_colnums[mti][cgi] = get_columns ().size ();
-	velocity_columns[mti][cgi] = new VelocityColumn (columns->velocity[mti][cgi], mti, cgi);
+	velocity_columns[mti][cgi] = std::make_unique<VelocityColumn> (columns->velocity[mti][cgi], mti, cgi);
 	CellRendererText* velocity_cellrenderer = dynamic_cast<CellRendererText*> (velocity_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5747,7 +5709,7 @@ void
 Grid::setup_note_delay_column (int mti, int cgi)
 {
 	note_delay_colnums[mti][cgi] = get_columns ().size ();
-	delay_columns[mti][cgi] = new DelayColumn (columns->delay[mti][cgi], mti, cgi);
+	delay_columns[mti][cgi] = std::make_unique<DelayColumn> (columns->delay[mti][cgi], mti, cgi);
 	CellRendererText* delay_cellrenderer = dynamic_cast<CellRendererText*> (delay_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5778,7 +5740,7 @@ void
 Grid::setup_note_separator_column (int mti, int cgi)
 {
 	note_separator_colnums[mti][cgi] = get_columns ().size ();
-	note_separator_columns[mti][cgi] = new TreeViewColumn ("", columns->_note_empty[mti][cgi]);
+	note_separator_columns[mti][cgi] = std::make_unique<TreeViewColumn> ("", columns->_note_empty[mti][cgi]);
 
 	// Set width
 	note_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -5791,7 +5753,7 @@ void
 Grid::setup_automation_column (int mti, int cgi)
 {
 	automation_colnums[mti][cgi] = get_columns ().size ();
-	automation_columns[mti][cgi] = new AutomationColumn (columns->automation[mti][cgi], mti, cgi);
+	automation_columns[mti][cgi] = std::make_unique<AutomationColumn> (columns->automation[mti][cgi], mti, cgi);
 	CellRendererText* automation_cellrenderer = dynamic_cast<CellRendererText*> (automation_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5823,7 +5785,7 @@ void
 Grid::setup_automation_delay_column (int mti, int cgi)
 {
 	automation_delay_colnums[mti][cgi] = get_columns ().size ();
-	automation_delay_columns[mti][cgi] = new AutomationDelayColumn (columns->automation_delay[mti][cgi], mti, cgi);
+	automation_delay_columns[mti][cgi] = std::make_unique<AutomationDelayColumn> (columns->automation_delay[mti][cgi], mti, cgi);
 	CellRendererText* automation_delay_cellrenderer = dynamic_cast<CellRendererText*> (automation_delay_columns[mti][cgi]->get_first_cell_renderer ());
 
 	// Link to font attributes
@@ -5853,7 +5815,7 @@ void
 Grid::setup_automation_separator_column (int mti, int cgi)
 {
 	automation_separator_colnums[mti][cgi] = get_columns ().size ();
-	automation_separator_columns[mti][cgi] = new TreeViewColumn ("", columns->_automation_empty[mti][cgi]);
+	automation_separator_columns[mti][cgi] = std::make_unique<TreeViewColumn> ("", columns->_automation_empty[mti][cgi]);
 
 	// Set width
 	automation_separator_columns[mti][cgi]->set_min_width (GROUP_SEPARATOR_WIDTH);
@@ -5866,7 +5828,7 @@ void
 Grid::setup_right_separator_column (int mti)
 {
 	right_separator_colnums[mti] = get_columns ().size ();
-	right_separator_columns[mti] = new TreeViewColumn ("", columns->right_separator[mti]);
+	right_separator_columns[mti] = std::make_unique<TreeViewColumn> ("", columns->right_separator[mti]);
 	CellRenderer* right_separator_cellrenderer = right_separator_columns[mti]->get_first_cell_renderer ();
 
 	// Link to color attributes
@@ -5884,7 +5846,7 @@ Grid::setup_track_separator_column (int mti)
 {
 	automation_col_offsets[mti][0] = mti_col_offset (mti) + 1 /* left separator */ + 1 /* region name */
 		+ note_colnums[mti].size () * NUMBER_OF_COL_PER_NOTE_TRACK;
-	track_separator_columns[mti] = new TreeViewColumn ("", columns->track_separator[mti]);
+	track_separator_columns[mti] = std::make_unique<TreeViewColumn> ("", columns->track_separator[mti]);
 
 	// Set width
 	track_separator_columns[mti]->set_min_width (TRACK_SEPARATOR_WIDTH);

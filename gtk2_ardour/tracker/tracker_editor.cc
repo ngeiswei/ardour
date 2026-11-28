@@ -311,7 +311,7 @@ TrackerEditor::connect_track (TrackPtr track)
 
 	track->processors_changed.connect (content_connections, invalidator (*this),
 	                                   [this, track] (ARDOUR::RouteProcessorChange) {
-		                                   for (TrackPattern* tp : grid.pattern.tps) {
+		                                   for (const auto& tp : grid.pattern.tps) {
 			                                   if (tp->track == track) {
 				                                   tp->track_all_automations_pattern.setup_processors_automation_controls ();
 			                                   }

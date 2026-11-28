@@ -19,6 +19,9 @@
 #ifndef __ardour_tracker_track_all_automations_pattern_h_
 #define __ardour_tracker_track_all_automations_pattern_h_
 
+#include <map>
+#include <memory>
+
 #include "pbd/id.h"
 #include "ardour/track.h"
 
@@ -44,7 +47,6 @@ public:
 	                            Temporal::timepos_t end,
 	                            Temporal::timepos_t nt_last,
 	                            bool connect);
-	virtual ~TrackAllAutomationsPattern ();
 
 	// Snapshot assignment used by Pattern::operator=.  Deep-copies the
 	// processor automation patterns so that the snapshot owns independent
@@ -116,7 +118,7 @@ public:
 	MainAutomationPattern main_automation_pattern;
 
 	// Automation patterns for other processors, plugins, etc.
-	std::map<PBD::ID, ProcessorAutomationPattern*> id_to_processor_automation_pattern;
+	std::map<PBD::ID, std::unique_ptr<ProcessorAutomationPattern> > id_to_processor_automation_pattern;
 
 	// Whether the pattern is supposed to connect to the tracker editor
 	bool connect;

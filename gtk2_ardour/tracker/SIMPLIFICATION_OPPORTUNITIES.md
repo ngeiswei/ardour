@@ -22,8 +22,6 @@ Scale at the time of writing: `libs/tracker/` is about 9k lines and
 The strongest remaining candidates are:
 
 - Removing the dead code catalogued in item 14.
-- Converting the remaining raw-owned collections (`tps`, `mrps`, the processor
-  registry, track headers, and Grid columns) to `std::unique_ptr`.
 - Moving `BasePattern` row arithmetic into tick space, with tests.
 - Optionally caching color strings and consolidating the remaining
   controller-menu callbacks.
@@ -41,13 +39,13 @@ The strongest remaining candidates are:
 | 7 | `Gtk::ToggleAction` for tracker modes | Done (`6c86ae7e86`) |
 | 8 | Single automation registry for the toolbar | Done (`eb63bb69a8`) |
 | 9 | Keyboard modifier tracking and forwarding | Done (`55273f6c0f`) |
-| 10 | `std::unique_ptr` ownership, starting with phenomenal diffs | Phenomenal diffs done; larger collections outstanding |
+| 10 | `std::unique_ptr` ownership for tracker-owned collections | Done |
 | 11 | Tick-space row arithmetic in `BasePattern` | Outstanding |
 | 12 | Cache or reuse GDK/GTK color conversion | Outstanding |
 | 13 | `ARDOUR::RegionSortByPosition` for region sorting | Outstanding (remove comparator) |
 | 14 | Remove unused code | Outstanding (list below expanded) |
 
-## Completed work (items 1–9)
+## Completed work (items 1–10)
 
 **1. Shared controller menu.** `MidiTrackToolbar::build_controller_menu()`
 (`gtk2_ardour/tracker/midi_track_toolbar.cc:278-296`) now calls the shared
@@ -71,7 +69,7 @@ argument orders. Zero-length notes are consistently treated as empty ranges.
 `actl->desc().integer_step`. Region, main, and processor automation dispatch
 through `Pattern::is_integer()`, `TrackPattern::is_integer()`,
 `TrackAllAutomationsPattern::is_integer()`, and the `MidiTrackPattern`
-override; `Grid::is_int_param()` (`gtk2_ardour/tracker/grid.cc:3736-3739`)
+override; `Grid::is_int_param()` (`gtk2_ardour/tracker/grid.cc:3698-3701`)
 forwards to it. `libs/tracker/test/AutomationIntegerTest.cc` covers the
 dispatch chain, missing controls, registry refresh, and ranges after a region
 move.
@@ -80,7 +78,7 @@ move.
 (`gtk2_ardour/tracker/grid.h:1034`) for step and chord entry. MIDI input and
 computer-keyboard step entry add notes, note-offs remove the matching
 pitch/channel voice, and the tracker is reset on step-edit and track
-transitions (`grid.cc:6282, 6291, 6300`). The pitch-to-channel map remains for
+transitions (`grid.cc:6244, 6253, 6262`). The pitch-to-channel map remains for
 choosing the channel of generated note-offs.
 
 **6. Rows-per-beat menu.** `MainToolbar` derives row counts from
@@ -100,7 +98,7 @@ following, redisplay); original defaults and keyboard bindings are preserved.
 
 **8. Single automation registry.** `TrackToolbar` iterates
 `TrackAllAutomationsPattern::id_to_processor_automation_pattern`
-(`libs/tracker/track_all_automations_pattern.h:119`) via
+(`libs/tracker/track_all_automations_pattern.h:121`) via
 `track_toolbar.cc:228-276`; its only extra registry maps `IDParameter` to GTK
 menu items. The parallel `ProcessorAutomationInfo`/`ProcessorAutomationNode`
 hierarchy and lookup helpers were removed. Registry refresh preserves existing
@@ -109,51 +107,27 @@ parameter state, drops departed processors, and is wired to
 
 **9. Keyboard modifiers and forwarding.** `Grid` reads
 `Gtkmm2ext::Keyboard::the_keyboard().modifier_state()` against
-`RangeSelectModifier` (`grid.cc:7388-7392`); the manual `shift_pressed` state
+`RangeSelectModifier` (`grid.cc:7352-7355`); the manual `shift_pressed` state
 machine is gone. Shift key events are still consumed so they do not fall
 through to Ardour. `TrackerEditor::activate_ardour_binding()`
 (`tracker_editor.cc:215-263`) tries the tracker window's bindings first, relays
 modified keys to the main window with `ARDOUR_UI_UTILS::relay_key_press()`, and
 offers unmodified keys only to Ardour's global bindings.
 
+**10. `std::unique_ptr` ownership.** Every tracker-owned collection now uses
+`std::unique_ptr`: `PatternPhenomenalDiff::mti2tp_diff`, `Pattern::tps`,
+`MidiTrackPattern::mrps`,
+`TrackAllAutomationsPattern::id_to_processor_automation_pattern`,
+`GridHeader::track_headers`, `Grid::time_column`, and all Grid column
+containers. Factories return `std::unique_ptr`, creation uses
+`std::make_unique`, and the custom `release()`, destructors, delete loops, and
+one-shot raw-pointer temporaries were removed. Copy behavior is unchanged:
+`TrackAllAutomationsPattern::operator=` still deep-copies its processor
+patterns, while `Pattern`/`MidiTrackPattern` continue to copy into existing
+objects in place. The tracker registry and phenomenal-diff tests cover the
+resulting ownership behaviour.
+
 ## Outstanding opportunities
-
-### 10. Use `std::unique_ptr` for ownership
-
-**Status: phenomenal diffs done; larger collections outstanding.**
-
-`PatternPhenomenalDiff::mti2tp_diff` is now
-`std::map<int, std::unique_ptr<TrackPatternPhenomenalDiff>>`
-(`libs/tracker/pattern_phenomenal_diff.h:30-41`), and
-`TrackPattern::phenomenal_diff_ptr()` together with its MIDI and audio
-overrides return `std::unique_ptr`. The custom `release()`, destructor, and
-move assignment were removed; the defaulted move operations and the
-`unique_ptr` map now provide the ownership semantics.
-`Pattern::phenomenal_diff()` only moves non-empty diffs into the map
-(`libs/tracker/pattern.cc:106-116`), and `Grid` calls `.get()` when passing a
-diff to `redisplay_track()` (`gtk2_ardour/tracker/grid.cc:2484-2488`).
-
-Remaining raw-owned collections:
-
-- `Pattern::tps` — `libs/tracker/pattern.h:208`, freed in `pattern.cc:46-50`
-- `MidiTrackPattern::mrps` — `midi_track_pattern.h:182`, freed in
-  `midi_track_pattern.cc:44-48`
-- `TrackAllAutomationsPattern::id_to_processor_automation_pattern` —
-  `track_all_automations_pattern.h:119`, freed in
-  `track_all_automations_pattern.cc:53-58`
-- `GridHeader::track_headers` — `gtk2_ardour/tracker/grid_header.h:73`, freed
-  in `grid_header.cc:98-106`
-- Grid column objects — owned by `Grid`, allocated during schema
-  construction and deleted in `grid.cc:143-163`
-
-These larger objects have snapshot/copy semantics, so they should be converted
-deliberately with explicit clone/snapshot operations rather than mechanically
-replacing pointer types. `TrackAllAutomationsPattern::operator=` already
-deep-copies its processor patterns, and `Pattern`/`MidiTrackPattern` copy into
-existing objects in place, so those conversions are mostly about container
-types and the handful of places that currently assign raw pointers.
-
-**Confidence:** very high for phenomenal diffs (done); medium elsewhere.
 
 ### 11. Keep `BasePattern` row arithmetic in tick space
 
@@ -210,8 +184,8 @@ reviewed and tested rather than changed blindly.
 
 - `libs/tracker/tracker_utils.cc:412-425` — `TrackerUtils::color_to_string()`
 - String color columns in `gtk2_ardour/tracker/grid.h:85-116`
-- `Grid::read_colors()` — `grid.cc:1569-1581`
-- Direct cairo overlay — `grid.cc:2099`
+- `Grid::read_colors()` — `grid.cc:1531-1543`
+- Direct cairo overlay — `grid.cc:2061`
 
 Possible existing facilities include:
 
@@ -252,8 +226,8 @@ revision.
 | `BasePattern::clamp` | `base_pattern.h:253`, `base_pattern.cc:346-349` |
 | `TrackerUtils::region_position_less` | `tracker_utils.h:86-90`, `tracker_utils.cc:30-32` |
 | `BasePattern::row_at_time_min_delay`, `row_at_time_max_delay` | `base_pattern.h:156,164`, `base_pattern.cc:277,292` |
-| `Pattern::sample_at_row_at_mti` | `pattern.h:87`, `pattern.cc:294` |
-| `Pattern::find_next_on_note` | `pattern.h:102`, `pattern.cc:416` |
+| `Pattern::sample_at_row_at_mti` | `pattern.h:88`, `pattern.cc:286` |
+| `Pattern::find_next_on_note` | `pattern.h:103`, `pattern.cc:408` |
 | `MidiNotesPattern::find_prev_off` | `midi_notes_pattern.h:153`, `midi_notes_pattern.cc:679` |
 | `AutomationPattern::previous_row` | `automation_pattern.h:99`, `automation_pattern.cc:365` |
 | `MidiNotesPattern::erase` (declaration only, no definition) | `midi_notes_pattern.h:262` |
@@ -262,14 +236,14 @@ revision.
 
 | Symbol | Location |
 |---|---|
-| `Grid::set_current_row_undefined` | `grid.h:597`, `grid.cc:4895` |
-| `Grid::set_current_cursor_undefined` | `grid.h:578`, `grid.cc:4761` |
-| `Grid::left_separator_colnum` | `grid.h:181`, `grid.cc:745` |
-| `Grid::region_name_colnum` | `grid.h:183`, `grid.cc:757` |
-| `Grid::automation_col_offset` | `grid.h:194`, `grid.cc:940` |
-| `Grid::right_separator_colnum` | `grid.h:200`, `grid.cc:1033` |
-| `Grid::redisplay_undefined_region_name` | `grid.h:231`, `grid.cc:1937` |
-| `Grid::mk_blank` | `grid.h:897`, `grid.cc:5210` |
+| `Grid::set_current_row_undefined` | `grid.h:597`, `grid.cc:4857` |
+| `Grid::set_current_cursor_undefined` | `grid.h:578`, `grid.cc:4723` |
+| `Grid::left_separator_colnum` | `grid.h:181`, `grid.cc:726` |
+| `Grid::region_name_colnum` | `grid.h:183`, `grid.cc:738` |
+| `Grid::automation_col_offset` | `grid.h:194`, `grid.cc:921` |
+| `Grid::right_separator_colnum` | `grid.h:200`, `grid.cc:1014` |
+| `Grid::redisplay_undefined_region_name` | `grid.h:231`, `grid.cc:1899` |
+| `Grid::mk_blank` | `grid.h:897`, `grid.cc:5172` |
 | `MainToolbar::rows_per_beat_up`, `rows_per_beat_down` | `main_toolbar.h:98-99`, `main_toolbar.cc:733,739` |
 | `TrackToolbar::setup_label` | `track_toolbar.h:58`, `track_toolbar.cc:80` |
 | `MidiTrackToolbar::print_widths` | `midi_track_toolbar.h:102`, `midi_track_toolbar.cc:592` |
@@ -341,10 +315,7 @@ The following substitutions are not recommended:
 1. **Low-risk cleanup:** remove the dead code in item 14 (including the
    expanded list above) and the unused `region_position_less` comparator
    (item 13).
-2. **Ownership:** convert the remaining raw-owned collections in item 10
-   (`tps`, `mrps`, the processor registry, track headers, then Grid columns)
-   deliberately, preserving their snapshot/copy behavior.
-3. **Behavior-sensitive work with tests:** move row arithmetic into tick space
+2. **Behavior-sensitive work with tests:** move row arithmetic into tick space
    (item 11), especially at 7, 14, and 28 rows/beat.
-4. **Optional polish:** cache color strings (item 12) and address the
+3. **Optional polish:** cache color strings (item 12) and address the
    follow-ups in “Further observations”.

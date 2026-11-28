@@ -46,13 +46,6 @@ Pattern::Pattern (TrackerContext& ctx, const TrackRegionsMap& rpt, bool connect)
 {
 }
 
-Pattern::~Pattern ()
-{
-	for (std::vector<TrackPattern*>::iterator it = tps.begin (); it != tps.end (); ++it) {
-		delete *it;
-	}
-}
-
 Pattern&
 Pattern::operator= (const Pattern& other)
 {
@@ -78,7 +71,7 @@ Pattern::operator= (const Pattern& other)
 		}
 	}
 	earliest_mti = other.earliest_mti;
-	earliest_tp = other.tps[earliest_mti];
+	earliest_tp = other.tps[earliest_mti].get ();
 	row_offset = other.row_offset;
 	tracks_nrows = other.tracks_nrows;
 	global_nrows = other.global_nrows;
@@ -108,7 +101,7 @@ Pattern::phenomenal_diff (const Pattern& prev) const
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		// Only keep non-empty per-track diffs; unique_ptr releases the
 		// rest automatically.
-		std::unique_ptr<TrackPatternPhenomenalDiff> tp_diff = tps[mti]->phenomenal_diff_ptr (prev.tps[mti]);
+		std::unique_ptr<TrackPatternPhenomenalDiff> tp_diff = tps[mti]->phenomenal_diff_ptr (prev.tps[mti].get ());
 		if (!tp_diff->empty ()) {
 			diff.mti2tp_diff[mti] = std::move (tp_diff);
 		}
@@ -161,18 +154,16 @@ Pattern::add_track_pattern (TrackPtr track, const RegionSeq& regions)
 {
 	MidiTrackPtr midi_track = std::dynamic_pointer_cast<ARDOUR::MidiTrack> (track);
 	if (midi_track) {
-		// Owned by tps, see ~Pattern
-		MidiTrackPattern* mtp = new MidiTrackPattern (context, track, regions,
-		                                              position, length, end, nt_last, _connect);
-		tps.push_back (mtp);
+		// Owned by tps
+		tps.push_back (std::make_unique<MidiTrackPattern> (context, track, regions,
+		                                                   position, length, end, nt_last, _connect));
 	}
 	AudioTrackPtr audio_track = std::dynamic_pointer_cast<ARDOUR::AudioTrack> (track);
 	if (audio_track) {
 		// Only track automation (main and processor) is supported for audio
 		// tracks for now, not audio region content. See AudioTrackPattern.
-		AudioTrackPattern* atp = new AudioTrackPattern (context, track, regions,
-		                                                position, length, end, nt_last, _connect);
-		tps.push_back (atp);
+		tps.push_back (std::make_unique<AudioTrackPattern> (context, track, regions,
+		                                                    position, length, end, nt_last, _connect));
 	}
 }
 
@@ -202,7 +193,7 @@ Pattern::update_position_etc ()
 	end = TrackerUtils::get_end (regions_per_track);
 	nt_last = TrackerUtils::get_nt_last (regions_per_track);
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		TrackPattern* tp = tps[mti];
+		TrackPattern* tp = tps[mti].get ();
 		tp->set_position_etc (position, tp->start, length, end, nt_last);
 		tp->track_all_automations_pattern.set_position_etc (position, tp->start, length, end, nt_last);
 	}
@@ -221,7 +212,7 @@ void
 Pattern::update_content ()
 {
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		TrackPattern* tp = tps[mti];
+		TrackPattern* tp = tps[mti].get ();
 		tp->update ();
 	}
 
@@ -237,7 +228,7 @@ Pattern::update_earliest_mtp ()
 {
 	Temporal::Beats min_position_beats = std::numeric_limits<Temporal::Beats>::max ();
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		TrackPattern* tp = tps[mti];
+		TrackPattern* tp = tps[mti].get ();
 
 		// Get min position beat
 		if (tp->position_row_beats < min_position_beats) {
@@ -253,7 +244,7 @@ Pattern::update_global_nrows ()
 {
 	global_nrows = 0;
 	for (size_t mti = 0; mti < tps.size (); mti++) {
-		TrackPattern* tp = tps[mti];
+		TrackPattern* tp = tps[mti].get ();
 		row_offset[mti] = (int)tp->row_distance (earliest_tp->position_row_beats, tp->position_row_beats);
 		tracks_nrows[mti] = tp->nrows;
 		global_nrows = std::max (global_nrows, row_offset[mti] + tracks_nrows[mti]);
@@ -616,7 +607,7 @@ Pattern::find_track_pattern (TrackPtr track)
 {
 	for (size_t mti = 0; mti < tps.size (); mti++) {
 		if (tps[mti]->track == track) {
-			return tps[mti];
+			return tps[mti].get ();
 		}
 	}
 	return nullptr;
